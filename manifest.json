@@ -1,0 +1,20 @@
+{
+  "name": "Physics & Math Applets",
+  "short_name": "Applets",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e0f13",
+  "theme_color": "#0e0f13",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "shortcuts": [
+    { "name": "FYS.232 Structure of Matter", "url": "fys232-structure-of-matter/index.html" },
+    { "name": "FYS.240 Optics", "url": "fys240-optics/index.html" },
+    { "name": "FYS.310 Solid-State Physics", "url": "fys310-solid-state/index.html" },
+    { "name": "FYS.501 Laser Physics", "url": "fys501-laser-physics/index.html" },
+    { "name": "FinnMath-app", "url": "finnmath-app/index.html" }
+  ]
+}
