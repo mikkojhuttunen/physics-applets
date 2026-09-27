@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chained Radioactive Decay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EC; --surface:#FFFFFF; --ink:#20283B; --ink-soft:#4B5468; --muted:#8A8474;
+    --grid:#E2DCC9; --grid-strong:#C9C2AC; --accent:#B9662F; --accent-soft:#F0DFCB;
+    --nA:#20283B; --nB:#C0392B; --nC:#1D8A5F;
+    --shadow: 0 1px 2px rgba(32,40,59,0.06), 0 6px 20px rgba(32,40,59,0.06);
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171A20; --surface:#1F232B; --ink:#EDEAE1; --ink-soft:#C6C2B6; --muted:#8B8C8F;
+      --grid:#2B2F38; --grid-strong:#3A3F4A; --accent:#E1A165; --accent-soft:#3A2E20;
+      --nA:#EDEAE1; --nB:#E2685B; --nC:#4FC594;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.25);
+    }
+  }
+  :root[data-theme="dark"]{
+      --bg:#171A20; --surface:#1F232B; --ink:#EDEAE1; --ink-soft:#C6C2B6; --muted:#8B8C8F;
+      --grid:#2B2F38; --grid-strong:#3A3F4A; --accent:#E1A165; --accent-soft:#3A2E20;
+      --nA:#EDEAE1; --nB:#E2685B; --nC:#4FC594;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.25);
+  }
+  html,body{ height:100%; margin:0; }
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--bg); color:var(--ink); font-family:'Inter',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{
+    min-height:100%; display:flex; flex-direction:column;
+    padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px)); gap:16px;
+    max-width:1220px; margin:0 auto;
+  }
+  header{ display:flex; flex-direction:column; gap:4px; padding-top:2px; }
+  h1{
+    font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:clamp(21px,3.2vw,28px);
+    letter-spacing:-0.01em; margin:0; line-height:1.15;
+  }
+  .sub{ color:var(--ink-soft); font-size:14px; max-width:70ch; line-height:1.5; }
+  .chain{ font-family:'IBM Plex Mono',monospace; font-size:15px; margin-top:2px; }
+  .chain b{ font-weight:600; }
+  .layout{ display:flex; gap:16px; flex:1; min-height:0; }
+  @media (max-width: 780px){ .layout{ flex-direction:column; } }
+  aside.controls{
+    background:var(--surface); border:1px solid var(--grid); border-radius:14px; padding:16px;
+    width:300px; flex-shrink:0; display:flex; flex-direction:column; gap:16px; box-shadow:var(--shadow);
+    height:fit-content; max-height:calc(100vh - 160px); overflow-y:auto;
+  }
+  @media (max-width: 780px){ aside.controls{ width:100%; max-height:none; } }
+  .group-label{ font-size:11px; color:var(--muted); font-weight:600; margin-bottom:8px; letter-spacing:0.02em; }
+  .preset-row{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+  button.pill-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; background:var(--bg);
+    border:1px solid var(--grid); color:var(--ink); border-radius:8px; padding:9px 4px;
+    cursor:pointer; transition:background .12s ease, border-color .12s ease, color .12s ease;
+  }
+  button.pill-btn:hover{ border-color:var(--grid-strong); }
+  button.pill-btn.active{ background:var(--ink); color:var(--surface); border-color:var(--ink); }
+  button.pill-btn:focus-visible, .toggle:focus-visible, input[type="range"]:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  .slider-row{ display:flex; flex-direction:column; gap:8px; }
+  .slider-heading{ display:flex; justify-content:space-between; align-items:baseline; }
+  .slider-heading .group-label{ margin-bottom:0; }
+  .slider-val{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); }
+  input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:2px;
+    background:var(--grid-strong); outline-offset:4px;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px;height:16px;border-radius:50%; background:var(--accent);
+    cursor:pointer; border:2px solid var(--surface); box-shadow:0 0 0 1px var(--grid-strong);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--surface);
+  }
+  .toggles{ display:flex; flex-direction:column; gap:8px; }
+  .toggle{
+    display:flex; align-items:center; gap:10px; cursor:pointer; padding:6px 8px; border-radius:8px;
+    border:1px solid transparent; background:transparent; font-size:13.5px; color:var(--ink-soft);
+    width:100%; text-align:left; font-family:inherit;
+  }
+  .toggle:hover{ background:var(--bg); }
+  .swatch{ width:22px; height:0; border-top-width:3px; border-top-style:solid; flex-shrink:0; }
+  .swatch.dashed{ border-top-style:dashed; }
+  .switch{
+    margin-left:auto; width:32px; height:18px; border-radius:999px; background:var(--grid);
+    position:relative; flex-shrink:0; transition:background .15s ease;
+  }
+  .switch::after{
+    content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%;
+    background:var(--surface); box-shadow:0 1px 2px rgba(0,0,0,0.25); transition:transform .15s ease;
+  }
+  .toggle.on .switch{ background:var(--accent); }
+  .toggle.on .switch::after{ transform:translateX(14px); }
+  .toggle.on{ color:var(--ink); }
+  .box{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; display:flex; flex-direction:column; gap:6px;
+    background:var(--bg); border-radius:10px; padding:12px; border:1px solid var(--grid);
+  }
+  .box .eq-row{ display:flex; gap:8px; align-items:baseline; }
+  .box .eq-tag{ width:20px; flex-shrink:0; font-weight:600; }
+  .box .eq-expr{ word-break:break-word; }
+  .box .divider{ border-top:1px dashed var(--grid-strong); margin:4px 0; }
+  .box .fine{ font-family:'Inter',sans-serif; font-size:11.5px; color:var(--muted); line-height:1.4; }
+  .readout .row{ display:flex; justify-content:space-between; gap:8px; }
+  .readout .row span:first-child{ color:var(--muted); }
+  .tip{
+    font-size:12px; color:var(--ink-soft); line-height:1.5; background:var(--accent-soft);
+    border-radius:10px; padding:10px 12px; border:1px solid var(--grid);
+  }
+  main.stage{
+    flex:1; background:var(--surface); border:1px solid var(--grid); border-radius:14px;
+    box-shadow:var(--shadow); min-height:380px; position:relative; overflow:hidden; touch-action:none;
+  }
+  canvas{ width:100%; height:100%; display:block; cursor:grab; }
+  canvas.pinching{ cursor:grabbing; }
+  .zoom-reset{
+    position:absolute; top:10px; right:10px; z-index:5; font-family:'IBM Plex Mono',monospace; font-size:11px;
+    background:var(--surface); color:var(--ink-soft); border:1px solid var(--grid); border-radius:8px;
+    padding:6px 10px; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .15s ease;
+  }
+  .zoom-reset.visible{ opacity:1; pointer-events:auto; }
+  .zoom-hint{
+    position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:11px; color:var(--muted);
+    background:var(--surface); border:1px solid var(--grid); border-radius:999px; padding:4px 12px; z-index:5;
+    pointer-events:none; opacity:0.85;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Chained radioactive decay</h1>
+    <div class="chain"><b style="color:var(--nA)">A</b> → <b style="color:var(--nB)">B</b> → <b style="color:var(--nC)">C</b> <span style="color:var(--muted); font-size:12px;">(C stable)</span></div>
+    <div class="sub">A decays into B — which is itself radioactive — before B finally decays into stable C. B's amount is a tug-of-war: fed by A's decay, drained by its own.</div>
+  </header>
+
+  <div class="layout">
+    <aside class="controls">
+      <div>
+        <div class="group-label">SCENARIO</div>
+        <div class="preset-row" id="presetRow"></div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-heading"><div class="group-label">HALF-LIFE OF A</div><span class="slider-val" id="hlALabel">2.0</span></div>
+        <input type="range" id="hlASlider" min="0.2" max="15" value="2" step="0.1">
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-heading"><div class="group-label">HALF-LIFE OF B</div><span class="slider-val" id="hlBLabel">6.0</span></div>
+        <input type="range" id="hlBSlider" min="0.2" max="15" value="6" step="0.1">
+      </div>
+
+      <div>
+        <div class="group-label">SHOW</div>
+        <div class="toggles">
+          <button class="toggle on" id="toggleB" type="button">
+            <span class="swatch" style="border-color:var(--nB)"></span>
+            <span>N<sub>B</sub>(t) daughter</span>
+            <span class="switch"></span>
+          </button>
+          <button class="toggle on" id="toggleC" type="button">
+            <span class="swatch" style="border-color:var(--nC)"></span>
+            <span>N<sub>C</sub>(t) stable end product</span>
+            <span class="switch"></span>
+          </button>
+          <button class="toggle on" id="toggleAnalytic" type="button">
+            <span class="swatch dashed" style="border-color:var(--ink-soft)"></span>
+            <span>analytic (Bateman) overlay</span>
+            <span class="switch"></span>
+          </button>
+          <button class="toggle on" id="toggleHL" type="button">
+            <span class="swatch dashed" style="border-color:var(--muted)"></span>
+            <span>half-life markers</span>
+            <span class="switch"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="group-label">TIME CURSOR</div>
+        <input type="range" id="tSlider" min="0" max="1000" value="0" step="1">
+      </div>
+
+      <div class="box" id="equations"></div>
+
+      <div class="box readout" id="readout"></div>
+
+      <div class="tip">Watch N<sub>B</sub>: it rises while A is still plentiful, peaks exactly where A's feed rate equals B's own decay rate, then falls as B empties into C.</div>
+    </aside>
+
+    <main class="stage">
+      <canvas id="plot"></canvas>
+      <button class="zoom-reset" id="zoomReset" type="button">Reset view</button>
+      <div class="zoom-hint">drag to move cursor · pinch/scroll to zoom time</div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- state ----------
+  let halfLifeA = 2, halfLifeB = 6;
+  let showB = true, showC = true, showAnalytic = true, showHL = true;
+  let t0 = 0;
+  let xScale = 1, xCenter = 0;
+  let dragging = false;
+  let sim = null; // {table, dt, tMax, lamA, lamB}
+
+  const N0 = 1; // normalized: fraction of original A atoms
+
+  // ---------- DOM ----------
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const stage = document.querySelector('main.stage');
+  const presetRow = document.getElementById('presetRow');
+  const hlASlider = document.getElementById('hlASlider');
+  const hlBSlider = document.getElementById('hlBSlider');
+  const hlALabel = document.getElementById('hlALabel');
+  const hlBLabel = document.getElementById('hlBLabel');
+  const tSlider = document.getElementById('tSlider');
+  const equationsBox = document.getElementById('equations');
+  const readout = document.getElementById('readout');
+  const zoomResetBtn = document.getElementById('zoomReset');
+
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function fmt(v){
+    if (!isFinite(v)) return '—';
+    if (Math.abs(v) < 1e-4) return '0';
+    return v.toFixed(3);
+  }
+  function fmtRate(v){ return v.toFixed(3); }
+
+  // ---------- RK4 integration of the coupled ODE system ----------
+  // dNA/dt = -lamA NA
+  // dNB/dt =  lamA NA - lamB NB
+  // NC = N0 - NA - NB   (conservation; C is stable)
+  function integrate(hlA, hlB){
+    const lamA = Math.LN2/hlA, lamB = Math.LN2/hlB;
+    const tMax = Math.max(6, 7*Math.max(hlA,hlB));
+    const steps = 1600;
+    const dt = tMax/steps;
+    let NA = N0, NB = 0;
+    const table = new Array(steps+1);
+    table[0] = {t:0, NA, NB, NC:0};
+    const f = (na,nb)=>[-lamA*na, lamA*na-lamB*nb];
+    for (let i=1;i<=steps;i++){
+      const k1=f(NA,NB);
+      const k2=f(NA+dt/2*k1[0], NB+dt/2*k1[1]);
+      const k3=f(NA+dt/2*k2[0], NB+dt/2*k2[1]);
+      const k4=f(NA+dt*k3[0], NB+dt*k3[1]);
+      NA += dt/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]);
+      NB += dt/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]);
+      if (NA<0) NA=0; if (NB<0) NB=0;
+      const NC = Math.max(0, N0-NA-NB);
+      table[i] = {t:i*dt, NA, NB, NC};
+    }
+    return {table, dt, tMax, lamA, lamB};
+  }
+
+  function lookup(t){
+    const {table, dt} = sim;
+    let idx = t/dt;
+    if (idx <= 0) return table[0];
+    if (idx >= table.length-1) return table[table.length-1];
+    const i0 = Math.floor(idx), i1 = i0+1, frac = idx-i0;
+    const p0 = table[i0], p1 = table[i1];
+    return {
+      t,
+      NA: p0.NA+(p1.NA-p0.NA)*frac,
+      NB: p0.NB+(p1.NB-p0.NB)*frac,
+      NC: p0.NC+(p1.NC-p0.NC)*frac
+    };
+  }
+
+  function analyticNA(t){ return Math.exp(-sim.lamA*t); }
+  function analyticNB(t){
+    const {lamA,lamB} = sim;
+    if (Math.abs(lamA-lamB) < 1e-6) return lamA*t*Math.exp(-lamA*t);
+    return lamA/(lamB-lamA)*(Math.exp(-lamA*t)-Math.exp(-lamB*t));
+  }
+  function analyticNC(t){ return 1 - analyticNA(t) - analyticNB(t); }
+
+  // ---------- equations box ----------
+  function renderEquations(){
+    const equal = Math.abs(sim.lamA-sim.lamB) < 1e-6;
+    const nbFormula = equal
+      ? 'λ<sub>A</sub>·t·e<sup>−λ<sub>A</sub>t</sup>  <span style="color:var(--muted)">(λ<sub>A</sub>=λ<sub>B</sub> case)</span>'
+      : 'λ<sub>A</sub>/(λ<sub>B</sub>−λ<sub>A</sub>) · (e<sup>−λ<sub>A</sub>t</sup> − e<sup>−λ<sub>B</sub>t</sup>)';
+    equationsBox.innerHTML =
+      '<div class="fine">coupled rate equations</div>'+
+      '<div class="eq-row"><span class="eq-tag" style="color:var(--nA)">A</span><span class="eq-expr">dN<sub>A</sub>/dt = −λ<sub>A</sub>N<sub>A</sub></span></div>'+
+      '<div class="eq-row"><span class="eq-tag" style="color:var(--nB)">B</span><span class="eq-expr">dN<sub>B</sub>/dt = λ<sub>A</sub>N<sub>A</sub> − λ<sub>B</sub>N<sub>B</sub></span></div>'+
+      '<div class="eq-row"><span class="eq-tag" style="color:var(--nC)">C</span><span class="eq-expr">dN<sub>C</sub>/dt = λ<sub>B</sub>N<sub>B</sub></span></div>'+
+      '<div class="divider"></div>'+
+      '<div class="fine">closed-form (Bateman) solution, N<sub>A</sub>(0)=1</div>'+
+      '<div class="eq-row"><span class="eq-tag" style="color:var(--nA)">A</span><span class="eq-expr">N<sub>A</sub>(t) = e<sup>−λ<sub>A</sub>t</sup></span></div>'+
+      '<div class="eq-row"><span class="eq-tag" style="color:var(--nB)">B</span><span class="eq-expr">N<sub>B</sub>(t) = '+nbFormula+'</span></div>'+
+      '<div class="eq-row"><span class="eq-tag" style="color:var(--nC)">C</span><span class="eq-expr">N<sub>C</sub>(t) = 1 − N<sub>A</sub> − N<sub>B</sub></span></div>'+
+      '<div class="divider"></div>'+
+      '<div class="fine">λ<sub>A</sub> = '+fmtRate(sim.lamA)+' , λ<sub>B</sub> = '+fmtRate(sim.lamB)+'  (per time unit)</div>';
+  }
+
+  function updateReadout(){
+    const v = lookup(t0);
+    const pct = x => (x*100).toFixed(1)+'%';
+    readout.innerHTML =
+      '<div class="row"><span>t</span><span>'+fmt(t0)+'</span></div>'+
+      '<div class="row"><span style="color:var(--nA)">N<sub>A</sub>(t)</span><span>'+fmt(v.NA)+' ('+pct(v.NA)+')</span></div>'+
+      '<div class="row"><span style="color:var(--nB)">N<sub>B</sub>(t)</span><span>'+fmt(v.NB)+' ('+pct(v.NB)+')</span></div>'+
+      '<div class="row"><span style="color:var(--nC)">N<sub>C</sub>(t)</span><span>'+fmt(v.NC)+' ('+pct(v.NC)+')</span></div>';
+  }
+
+  // ---------- presets ----------
+  const PRESETS = [
+    { label:'Secular (λA≪λB)', a:12, b:0.6 },
+    { label:'Transient (λA>λB)', a:1.2, b:6 },
+    { label:'Equal half-lives', a:3, b:3 },
+    { label:'Default', a:2, b:6 }
+  ];
+  PRESETS.forEach(p=>{
+    const b = document.createElement('button');
+    b.className = 'pill-btn';
+    b.type = 'button';
+    b.textContent = p.label;
+    b.addEventListener('click', ()=>{
+      halfLifeA = p.a; halfLifeB = p.b;
+      hlASlider.value = p.a; hlBSlider.value = p.b;
+      hlALabel.textContent = p.a.toFixed(1);
+      hlBLabel.textContent = p.b.toFixed(1);
+      recompute();
+    });
+    presetRow.appendChild(b);
+  });
+
+  hlASlider.addEventListener('input', ()=>{
+    halfLifeA = parseFloat(hlASlider.value);
+    hlALabel.textContent = halfLifeA.toFixed(1);
+    recompute();
+  });
+  hlBSlider.addEventListener('input', ()=>{
+    halfLifeB = parseFloat(hlBSlider.value);
+    hlBLabel.textContent = halfLifeB.toFixed(1);
+    recompute();
+  });
+
+  function wireToggle(id, getter, setter){
+    const el = document.getElementById(id);
+    el.classList.toggle('on', getter());
+    el.addEventListener('click', ()=>{
+      setter(!getter());
+      el.classList.toggle('on', getter());
+      draw();
+    });
+  }
+  wireToggle('toggleB', ()=>showB, v=>showB=v);
+  wireToggle('toggleC', ()=>showC, v=>showC=v);
+  wireToggle('toggleAnalytic', ()=>showAnalytic, v=>showAnalytic=v);
+  wireToggle('toggleHL', ()=>showHL, v=>showHL=v);
+
+  // ---------- t-cursor slider ----------
+  function syncTSlider(){
+    tSlider.value = Math.round((t0/sim.tMax)*1000);
+  }
+  tSlider.addEventListener('input', ()=>{
+    t0 = (tSlider.value/1000)*sim.tMax;
+    draw();
+  });
+
+  function clampT(t){ return Math.max(0, Math.min(sim.tMax, t)); }
+
+  // ---------- recompute on parameter change ----------
+  function recompute(){
+    sim = integrate(halfLifeA, halfLifeB);
+    t0 = clampT(t0);
+    xScale = 1;
+    xCenter = sim.tMax/2;
+    syncTSlider();
+    renderEquations();
+    showResetIfZoomed();
+    draw();
+  }
+
+  // ---------- canvas sizing ----------
+  let W=0,H=0,DPR=1;
+  function resize(){
+    const rect = stage.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = Math.max(280, rect.width);
+    H = Math.max(260, rect.height);
+    canvas.width = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    draw();
+  }
+  new ResizeObserver(resize).observe(stage);
+  window.addEventListener('resize', resize);
+
+  // ---------- mapping (x = time, zoomable; y = fraction, fixed 0..1.06) ----------
+  const PAD = {l:48, r:18, t:18, b:34};
+  const YMIN=-0.04, YMAX=1.08;
+  function xHalfBase(){ return sim.tMax/2; }
+  function view(){
+    const xh = xHalfBase()*xScale;
+    return { xmin:xCenter-xh, xmax:xCenter+xh, ymin:YMIN, ymax:YMAX };
+  }
+  function xToPx(x,v,pw){ return PAD.l + (x-v.xmin)/(v.xmax-v.xmin)*pw; }
+  function yToPx(y,v,ph){ return PAD.t + (v.ymax-y)/(v.ymax-v.ymin)*ph; }
+  function pxToX(px,v,pw){ return v.xmin + (px-PAD.l)/pw*(v.xmax-v.xmin); }
+
+  function niceStep(range, targetCount){
+    const raw = range/targetCount;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw/mag;
+    let step;
+    if (norm<1.5) step=1; else if (norm<3) step=2; else if (norm<7) step=5; else step=10;
+    return step*mag;
+  }
+  function fmtTick(v){
+    if (Math.abs(v)<1e-9) return '0';
+    if (Math.abs(v)>=100) return v.toFixed(0);
+    if (Math.abs(v)>=10) return v.toFixed(1);
+    return v.toFixed(2);
+  }
+
+  function drawGrid(v,pw,ph){
+    ctx.strokeStyle = css('--grid'); ctx.lineWidth=1; ctx.fillStyle = css('--muted');
+    ctx.font = '11px IBM Plex Mono, monospace';
+
+    const xstep = niceStep(v.xmax-v.xmin,6);
+    const xstart = Math.ceil(v.xmin/xstep)*xstep;
+    for (let xv=xstart; xv<=v.xmax+1e-9; xv+=xstep){
+      const px = xToPx(xv,v,pw);
+      ctx.beginPath(); ctx.moveTo(px,PAD.t); ctx.lineTo(px,PAD.t+ph); ctx.stroke();
+      ctx.textAlign='center'; ctx.fillText(fmtTick(xv), px, PAD.t+ph+16);
+    }
+    const yticks=[0,0.25,0.5,0.75,1.0];
+    yticks.forEach(yv=>{
+      const py = yToPx(yv,v,ph);
+      ctx.beginPath(); ctx.moveTo(PAD.l,py); ctx.lineTo(PAD.l+pw,py); ctx.stroke();
+      ctx.textAlign='right'; ctx.fillText(yv.toFixed(2), PAD.l-8, py+4);
+    });
+
+    ctx.strokeStyle = css('--grid-strong'); ctx.lineWidth=1.4;
+    if (v.xmin<=0 && v.xmax>=0){
+      const px0=xToPx(0,v,pw);
+      ctx.beginPath(); ctx.moveTo(px0,PAD.t); ctx.lineTo(px0,PAD.t+ph); ctx.stroke();
+    }
+    const py0=yToPx(0,v,ph);
+    ctx.beginPath(); ctx.moveTo(PAD.l,py0); ctx.lineTo(PAD.l+pw,py0); ctx.stroke();
+  }
+
+  function drawTableCurve(key,v,pw,ph,color){
+    const {table} = sim;
+    ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.setLineDash([]);
+    ctx.beginPath();
+    let started=false;
+    for (let i=0;i<table.length;i++){
+      const x=table[i].t;
+      if (x<v.xmin-1 || x>v.xmax+1) { if (x>v.xmax+1) break; continue; }
+      const px=xToPx(x,v,pw), py=yToPx(table[i][key],v,ph);
+      if (!started){ ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+  }
+
+  function drawAnalyticCurve(fn,v,pw,ph,color){
+    const N=260;
+    ctx.strokeStyle=color; ctx.lineWidth=1.6; ctx.setLineDash([5,4]); ctx.globalAlpha=0.85;
+    ctx.beginPath();
+    let started=false;
+    for (let i=0;i<=N;i++){
+      const x = v.xmin + (v.xmax-v.xmin)*i/N;
+      if (x<0){ continue; }
+      const y = fn(x);
+      const px=xToPx(x,v,pw), py=yToPx(y,v,ph);
+      if (!started){ ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+  }
+
+  function drawHalfLifeMarkers(v,pw,ph){
+    const marks = [ {t:halfLifeA, color:css('--nA'), label:'T½,A'}, {t:halfLifeB, color:css('--nB'), label:'T½,B'} ];
+    marks.forEach(m=>{
+      if (m.t<v.xmin || m.t>v.xmax) return;
+      const px = xToPx(m.t,v,pw);
+      ctx.strokeStyle=m.color; ctx.lineWidth=1; ctx.globalAlpha=0.55; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(px,PAD.t); ctx.lineTo(px,PAD.t+ph); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha=1;
+      ctx.fillStyle=m.color; ctx.font='600 10px IBM Plex Mono, monospace'; ctx.textAlign='center';
+      ctx.fillText(m.label, px, PAD.t+11);
+    });
+  }
+
+  function drawCursor(v,pw,ph){
+    const val = lookup(t0);
+    const px = xToPx(t0,v,pw);
+    ctx.strokeStyle = css('--ink-soft'); ctx.lineWidth=1; ctx.globalAlpha=0.5; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(px,PAD.t); ctx.lineTo(px,PAD.t+ph); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+
+    const items=[{key:'NA',color:css('--nA'),label:'A'}];
+    if (showB) items.push({key:'NB',color:css('--nB'),label:'B'});
+    if (showC) items.push({key:'NC',color:css('--nC'),label:'C'});
+    items.forEach(it=>{
+      const y=val[it.key];
+      if (y<v.ymin||y>v.ymax) return;
+      const py=yToPx(y,v,ph);
+      ctx.fillStyle=it.color;
+      ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=css('--surface'); ctx.lineWidth=1.8; ctx.stroke();
+      ctx.font='700 12px IBM Plex Mono, monospace'; ctx.fillStyle=it.color;
+      const rightSide = px > PAD.l+pw*0.72;
+      ctx.textAlign = rightSide?'right':'left';
+      ctx.fillText(it.label, px+(rightSide?-10:10), py-9);
+    });
+  }
+
+  function draw(){
+    if (!W || !H || !sim) return;
+    ctx.clearRect(0,0,W,H);
+    const v = view();
+    const pw = W-PAD.l-PAD.r, ph = H-PAD.t-PAD.b;
+    drawGrid(v,pw,ph);
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(PAD.l,PAD.t,pw,ph); ctx.clip();
+    if (showAnalytic){
+      drawAnalyticCurve(analyticNA,v,pw,ph,css('--nA'));
+      if (showB) drawAnalyticCurve(analyticNB,v,pw,ph,css('--nB'));
+      if (showC) drawAnalyticCurve(analyticNC,v,pw,ph,css('--nC'));
+    }
+    if (showHL) drawHalfLifeMarkers(v,pw,ph);
+    drawTableCurve('NA',v,pw,ph,css('--nA'));
+    if (showB) drawTableCurve('NB',v,pw,ph,css('--nB'));
+    if (showC) drawTableCurve('NC',v,pw,ph,css('--nC'));
+    drawCursor(v,pw,ph);
+    ctx.restore();
+
+    updateReadout();
+  }
+
+  // ---------- pointer interaction: drag = move cursor, pinch/wheel = zoom+pan time axis ----------
+  function setCursorFromEvent(e){
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const v = view(); const pw = W-PAD.l-PAD.r;
+    t0 = clampT(pxToX(px,v,pw));
+    syncTSlider();
+    draw();
+  }
+
+  const activePointers = new Map();
+  let pinchStartDist=null, pinchStartScale=1, pinchAnchorX=0;
+
+  function ptDx(){ const pts=[...activePointers.values()]; return Math.abs(pts[0].x-pts[1].x); }
+  function ptMidX(){ const pts=[...activePointers.values()]; return (pts[0].x+pts[1].x)/2; }
+
+  const ZOOM_MIN=0.03, ZOOM_MAX=15;
+  function clampScale(s){ return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX,s)); }
+
+  function showResetIfZoomed(){
+    zoomResetBtn.classList.toggle('visible', Math.abs(xScale-1) > 0.02);
+  }
+  function resetZoom(){
+    xScale = 1; xCenter = sim.tMax/2;
+    showResetIfZoomed(); draw();
+  }
+  zoomResetBtn.addEventListener('click', resetZoom);
+  canvas.addEventListener('dblclick', resetZoom);
+
+  function dataXAt(px){
+    const pw=W-PAD.l-PAD.r; const v=view();
+    return v.xmin + (px-PAD.l)/pw*(v.xmax-v.xmin);
+  }
+
+  canvas.addEventListener('pointerdown', e=>{
+    canvas.setPointerCapture(e.pointerId);
+    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (activePointers.size===1){
+      dragging=true;
+      setCursorFromEvent(e);
+    } else if (activePointers.size===2){
+      dragging=false;
+      canvas.classList.add('pinching');
+      pinchStartDist = ptDx();
+      pinchStartScale = xScale;
+      const rect = canvas.getBoundingClientRect();
+      pinchAnchorX = dataXAt(ptMidX()-rect.left);
+    }
+  });
+  canvas.addEventListener('pointermove', e=>{
+    if (!activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (activePointers.size>=2 && pinchStartDist){
+      const rect = canvas.getBoundingClientRect();
+      const dist = Math.max(10, ptDx());
+      const ratio = dist/Math.max(10,pinchStartDist);
+      const newScale = clampScale(pinchStartScale/ratio);
+      const px = ptMidX()-rect.left;
+      const pw = W-PAD.l-PAD.r;
+      const t = (px-PAD.l)/pw;
+      xScale = newScale;
+      xCenter = pinchAnchorX - xHalfBase()*xScale*(2*t-1);
+      showResetIfZoomed(); draw();
+    } else if (dragging){
+      setCursorFromEvent(e);
+    }
+  });
+  function releasePointer(e){
+    activePointers.delete(e.pointerId);
+    if (activePointers.size<2){ pinchStartDist=null; canvas.classList.remove('pinching'); }
+    dragging = activePointers.size===1;
+  }
+  canvas.addEventListener('pointerup', releasePointer);
+  canvas.addEventListener('pointercancel', releasePointer);
+  canvas.addEventListener('pointerleave', e=>{ if (activePointers.has(e.pointerId)) releasePointer(e); });
+
+  canvas.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX-rect.left;
+    const pw = W-PAD.l-PAD.r;
+    const t = (px-PAD.l)/pw;
+    const anchor = dataXAt(px);
+    const factor = Math.exp(e.deltaY*0.0015);
+    xScale = clampScale(xScale*factor);
+    xCenter = anchor - xHalfBase()*xScale*(2*t-1);
+    showResetIfZoomed(); draw();
+  }, {passive:false});
+
+  recompute();
+  resize();
+})();
+</script>
+</body>
+</html>

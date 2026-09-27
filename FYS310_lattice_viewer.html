@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3D Lattice Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel-bg: #ffffff;
+    --panel-border: #e2e4e9;
+    --text: #17181c;
+    --text-dim: #6b7280;
+    --accent: #2563eb;
+    --accent-text: #ffffff;
+    --corner: #64748b;
+    --face: #2563eb;
+    --body: #dc2626;
+    --interior: #059669;
+    --bond: #94a3b8;
+    --edge: rgba(90,95,110,0.55);
+    --primitive: #d97706;
+    --gamma: #ca8a04;
+    --recip-zone: #0e7490;
+    --recip-face: #0891b2;
+    --recip-edge: #7c3aed;
+    --recip-corner: #e11d48;
+    --ws: #0d9488;
+    --path: #db2777;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121317;
+      --panel-bg: #1c1e24;
+      --panel-border: #2c2f37;
+      --text: #f2f3f5;
+      --text-dim: #9aa0ac;
+      --corner: #9aa4b2;
+      --face: #60a5fa;
+      --body: #f87171;
+      --interior: #34d399;
+      --bond: #6b7280;
+      --edge: rgba(200,205,220,0.35);
+      --primitive: #fbbf24;
+      --gamma: #fbbf24;
+      --recip-zone: #22d3ee;
+      --recip-face: #38bdf8;
+      --recip-edge: #a78bfa;
+      --recip-corner: #fb7185;
+      --ws: #2dd4bf;
+      --path: #f472b6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121317;
+    --panel-bg: #1c1e24;
+    --panel-border: #2c2f37;
+    --text: #f2f3f5;
+    --text-dim: #9aa0ac;
+    --corner: #9aa4b2;
+    --face: #60a5fa;
+    --body: #f87171;
+    --interior: #34d399;
+    --bond: #6b7280;
+    --edge: rgba(200,205,220,0.35);
+    --primitive: #fbbf24;
+    --gamma: #fbbf24;
+    --recip-zone: #22d3ee;
+    --recip-face: #38bdf8;
+    --recip-edge: #a78bfa;
+    --recip-corner: #fb7185;
+    --ws: #2dd4bf;
+    --path: #f472b6;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+  }
+  #app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 14px 16px 10px 16px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-size: 17px;
+    margin: 0 0 2px 0;
+    font-weight: 650;
+  }
+  header p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+  #canvas-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    touch-action: none;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  #controls {
+    flex-shrink: 0;
+    padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
+    background: var(--panel-bg);
+    border-top: 1px solid var(--panel-border);
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .row::-webkit-scrollbar { display: none; }
+  #modeRow { margin-bottom: 4px; }
+  .chip {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip.active {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+  #info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  #desc {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    flex: 1;
+  }
+  #desc b { color: var(--text); }
+  #legend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dash-swatch {
+    width: 14px;
+    height: 0;
+    border-top: 2px dashed var(--primitive);
+    flex-shrink: 0;
+  }
+  .ws-swatch {
+    width: 14px;
+    height: 0;
+    border-top: 2px solid var(--ws);
+    flex-shrink: 0;
+  }
+
+  #toolbar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 5;
+  }
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
+    color: var(--text);
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.92;
+  }
+  .icon-btn.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  #hint {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--panel-bg);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    opacity: 0.85;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>3D Lattice Viewer</h1>
+    <p>Drag to rotate &middot; pinch to zoom &middot; real space or reciprocal / BZ</p>
+  </header>
+
+  <div id="canvas-wrap">
+    <div id="toolbar">
+      <button class="icon-btn active" id="rotateBtn" title="Auto-rotate">&#8635;</button>
+      <button class="icon-btn" id="primBtn" title="Show primitive cell">&#9649;</button>
+      <button class="icon-btn" id="wsBtn" title="Show Wigner-Seitz cell">&#11041;</button>
+      <button class="icon-btn" id="themeBtn" title="Toggle theme">&#9788;</button>
+    </div>
+    <div id="hint">Drag to rotate</div>
+  </div>
+
+  <div id="controls">
+    <div class="row" id="modeRow">
+      <button class="chip active" data-mode="real">Real space</button>
+      <button class="chip" data-mode="reciprocal">Reciprocal / BZ</button>
+    </div>
+    <div class="row" id="chipRow"></div>
+    <div class="row" id="pathRow" style="display:none;"></div>
+    <div id="info">
+      <div id="desc"></div>
+      <div id="legend"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Lattice geometry generators ----------
+  function cubeCorners() {
+    var pts = [];
+    for (var x = 0; x <= 1; x++)
+      for (var y = 0; y <= 1; y++)
+        for (var z = 0; z <= 1; z++)
+          pts.push([x, y, z]);
+    return pts;
+  }
+  function cubeEdges(corners) {
+    var edges = [];
+    for (var i = 0; i < corners.length; i++) {
+      for (var j = i + 1; j < corners.length; j++) {
+        var a = corners[i], b = corners[j];
+        var diff = Math.abs(a[0]-b[0]) + Math.abs(a[1]-b[1]) + Math.abs(a[2]-b[2]);
+        if (Math.abs(diff - 1) < 1e-6) edges.push([a, b]);
+      }
+    }
+    return edges;
+  }
+  function dist(a, b) {
+    return Math.sqrt(Math.pow(a[0]-b[0],2) + Math.pow(a[1]-b[1],2) + Math.pow(a[2]-b[2],2));
+  }
+
+  // 12 index-space edges (0/1 combinations) reused to build any parallelepiped's wireframe
+  var UNIT_EDGES = cubeEdges(cubeCorners());
+  function primitiveEdges(prim) {
+    function map(idx) {
+      return [
+        prim.origin[0] + idx[0]*prim.a1[0] + idx[1]*prim.a2[0] + idx[2]*prim.a3[0],
+        prim.origin[1] + idx[0]*prim.a1[1] + idx[1]*prim.a2[1] + idx[2]*prim.a3[1],
+        prim.origin[2] + idx[0]*prim.a1[2] + idx[1]*prim.a2[2] + idx[2]*prim.a3[2]
+      ];
+    }
+    return UNIT_EDGES.map(function(e){ return [map(e[0]), map(e[1])]; });
+  }
+
+  // Reconstructs wireframe edges for convex polytopes whose edges all share
+  // one uniform length (true for the cube, truncated octahedron and rhombic
+  // dodecahedron used as Brillouin zones below): connect every vertex pair
+  // sitting at the minimum pairwise distance.
+  function minDistanceEdges(verts) {
+    var n = verts.length, pairs = [], minD = Infinity;
+    for (var i = 0; i < n; i++) {
+      for (var j = i + 1; j < n; j++) {
+        var d = dist(verts[i], verts[j]);
+        pairs.push({ a: verts[i], b: verts[j], d: d });
+        if (d < minD) minD = d;
+      }
+    }
+    var tol = minD * 0.01;
+    var edges = [];
+    pairs.forEach(function(p) { if (p.d <= minD + tol) edges.push([p.a, p.b]); });
+    return edges;
+  }
+
+  // Solve the 3x3 linear system {p1,p2,p3}*x = {r1,r2,r3} via Cramer's rule.
+  function solve3x3(p1, p2, p3, r1, r2, r3) {
+    var det = p1[0]*(p2[1]*p3[2]-p2[2]*p3[1]) - p1[1]*(p2[0]*p3[2]-p2[2]*p3[0]) + p1[2]*(p2[0]*p3[1]-p2[1]*p3[0]);
+    if (Math.abs(det) < 1e-9) return null;
+    function detWithCol(col, vals) {
+      var m = [p1.slice(), p2.slice(), p3.slice()];
+      m[0][col] = vals[0]; m[1][col] = vals[1]; m[2][col] = vals[2];
+      return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+    }
+    var dx = detWithCol(0, [r1,r2,r3]), dy = detWithCol(1, [r1,r2,r3]), dz = detWithCol(2, [r1,r2,r3]);
+    return [dx/det, dy/det, dz/det];
+  }
+
+  // Wigner-Seitz / Voronoi cell vertices around the origin, given a shell of
+  // neighboring lattice points: intersects every triple of perpendicular-
+  // bisector planes and keeps the ones that satisfy every plane's half-space.
+  function voronoiVertices(neighbors) {
+    var planes = neighbors.map(function(p){ return { p: p, rhs: (p[0]*p[0]+p[1]*p[1]+p[2]*p[2]) / 2 }; });
+    var verts = [], seen = {};
+    for (var i = 0; i < planes.length; i++) {
+      for (var j = i + 1; j < planes.length; j++) {
+        for (var k = j + 1; k < planes.length; k++) {
+          var sol = solve3x3(planes[i].p, planes[j].p, planes[k].p, planes[i].rhs, planes[j].rhs, planes[k].rhs);
+          if (!sol) continue;
+          var ok = true;
+          for (var m = 0; m < planes.length; m++) {
+            var lhs = sol[0]*planes[m].p[0] + sol[1]*planes[m].p[1] + sol[2]*planes[m].p[2];
+            if (lhs > planes[m].rhs + 1e-6) { ok = false; break; }
+          }
+          if (ok) {
+            var key = sol.map(function(v){ return Math.round(v*1000); }).join(',');
+            if (!seen[key]) { seen[key] = 1; verts.push(sol); }
+          }
+        }
+      }
+    }
+    return verts;
+  }
+
+  function buildSC() {
+    var corners = cubeCorners();
+    return {
+      atoms: corners.map(function(p){ return {pos:p, type:'corner'}; }),
+      edges: cubeEdges(corners),
+      bonds: [],
+      center: [0.5,0.5,0.5],
+      camDist: 3.0,
+      primitive: { origin:[0,0,0], a1:[1,0,0], a2:[0,1,0], a3:[0,0,1] },
+      primNote: 'Primitive cell = conventional cell for SC.'
+    };
+  }
+
+  function buildBCC() {
+    var corners = cubeCorners();
+    var atoms = corners.map(function(p){ return {pos:p, type:'corner'}; });
+    atoms.push({pos:[0.5,0.5,0.5], type:'body'});
+    return { atoms: atoms, edges: cubeEdges(corners), bonds: [], center:[0.5,0.5,0.5], camDist: 3.0,
+      primitive: { origin:[0,0,0], a1:[1,0,0], a2:[0,1,0], a3:[0.5,0.5,0.5] },
+      primNote: 'Primitive cell volume = &frac12; of the conventional cell (1 atom vs. 2).' };
+  }
+
+  function buildFCC() {
+    var corners = cubeCorners();
+    var faces = [[0.5,0.5,0],[0.5,0.5,1],[0.5,0,0.5],[0.5,1,0.5],[0,0.5,0.5],[1,0.5,0.5]];
+    var atoms = corners.map(function(p){ return {pos:p, type:'corner'}; })
+      .concat(faces.map(function(p){ return {pos:p, type:'face'}; }));
+    return { atoms: atoms, edges: cubeEdges(corners), bonds: [], center:[0.5,0.5,0.5], camDist: 3.0,
+      primitive: { origin:[0,0,0], a1:[0.5,0.5,0], a2:[0.5,0,0.5], a3:[0,0.5,0.5] },
+      primNote: 'Rhombohedral primitive cell &mdash; &frac14; of the conventional cell (1 atom vs. 4).' };
+  }
+
+  function buildDiamond() {
+    var corners = cubeCorners();
+    var faces = [[0.5,0.5,0],[0.5,0.5,1],[0.5,0,0.5],[0.5,1,0.5],[0,0.5,0.5],[1,0.5,0.5]];
+    var fccPts = corners.concat(faces);
+    var interior = [[0.25,0.25,0.25],[0.75,0.75,0.25],[0.75,0.25,0.75],[0.25,0.75,0.75]];
+    var atoms = corners.map(function(p){ return {pos:p, type:'corner'}; })
+      .concat(faces.map(function(p){ return {pos:p, type:'face'}; }))
+      .concat(interior.map(function(p){ return {pos:p, type:'interior'}; }));
+    var bonds = [];
+    interior.forEach(function(ip) {
+      var withDist = fccPts.map(function(fp){ return {p: fp, d: dist(ip, fp)}; });
+      withDist.sort(function(a,b){ return a.d - b.d; });
+      for (var k = 0; k < 4; k++) bonds.push([ip, withDist[k].p]);
+    });
+    return { atoms: atoms, edges: cubeEdges(corners), bonds: bonds, center:[0.5,0.5,0.5], camDist: 3.1,
+      primitive: { origin:[0,0,0], a1:[0.5,0.5,0], a2:[0.5,0,0.5], a3:[0,0.5,0.5] },
+      primNote: 'Same FCC primitive cell, now with a 2-atom basis (1 lattice point + 1 basis atom).' };
+  }
+
+  function buildHCP() {
+    var atoms = [], edges = [];
+    var topHex = [], botHex = [];
+    var c = 1.633; // ideal c/a
+    for (var i = 0; i < 6; i++) {
+      var ang = i * Math.PI / 3;
+      var x = Math.cos(ang), y = Math.sin(ang);
+      topHex.push([x, y, c]);
+      botHex.push([x, y, 0]);
+    }
+    topHex.forEach(function(p){ atoms.push({pos:p, type:'corner'}); });
+    botHex.forEach(function(p){ atoms.push({pos:p, type:'corner'}); });
+    atoms.push({pos:[0,0,c], type:'corner'});
+    atoms.push({pos:[0,0,0], type:'corner'});
+    // interior mid-plane atoms (ABAB stacking)
+    var interior = [];
+    for (var j = 0; j < 3; j++) {
+      var a2 = (Math.PI/3) * (2*j) + Math.PI/6;
+      interior.push([0.577*Math.cos(a2), 0.577*Math.sin(a2), c/2]);
+    }
+    interior.forEach(function(p){ atoms.push({pos:p, type:'interior'}); });
+
+    for (var k = 0; k < 6; k++) {
+      edges.push([topHex[k], topHex[(k+1)%6]]);
+      edges.push([botHex[k], botHex[(k+1)%6]]);
+      edges.push([topHex[k], botHex[k]]);
+    }
+    return { atoms: atoms, edges: edges, bonds: [], center:[0,0,c/2], camDist: 3.6,
+      primitive: { origin:[1,0,0], a1:[-0.5,0.8660254,0], a2:[-0.5,-0.8660254,0], a3:[0,0,c] },
+      primNote: 'Rhombic prism &mdash; 1 of 3 primitive cells making up the hexagonal prism shown (2 atoms each).' };
+  }
+
+  // ---------- Reciprocal-lattice / Brillouin-zone generators ----------
+  // Coordinates are schematic (not physical 2pi/a units) but preserve the
+  // correct relative geometry, so vertices double as the standard
+  // high-symmetry k-points (matching the labels used in the course booklet).
+  function buildSCRecip() {
+    var v = [];
+    [-1,1].forEach(function(x){ [-1,1].forEach(function(y){ [-1,1].forEach(function(z){ v.push([x,y,z]); }); }); });
+    return {
+      vertices: v, edges: minDistanceEdges(v), center:[0,0,0], camDist: 3.6,
+      shapeName: 'Cube', dualName: 'Simple Cubic',
+      highSym: [
+        {name:'\u0393', pos:[0,0,0], role:'gamma'},
+        {name:'X', pos:[1,0,0], role:'face'},
+        {name:'M', pos:[1,1,0], role:'edge'},
+        {name:'R', pos:[1,1,1], role:'corner'}
+      ]
+    };
+  }
+
+  function buildBCCRecip() {
+    var v = [[2,0,0],[-2,0,0],[0,2,0],[0,-2,0],[0,0,2],[0,0,-2]];
+    [-1,1].forEach(function(x){ [-1,1].forEach(function(y){ [-1,1].forEach(function(z){ v.push([x,y,z]); }); }); });
+    return {
+      vertices: v, edges: minDistanceEdges(v), center:[0,0,0], camDist: 5.4,
+      shapeName: 'Rhombic dodecahedron', dualName: 'Face-Centered Cubic',
+      highSym: [
+        {name:'\u0393', pos:[0,0,0], role:'gamma'},
+        {name:'N', pos:[1,1,0], role:'face'},
+        {name:'H', pos:[2,0,0], role:'edge'},
+        {name:'P', pos:[1,1,1], role:'corner'}
+      ]
+    };
+  }
+
+  function buildFCCRecip() {
+    // Vertices = all permutations of (0, +-1, +-2): the permutohedron, i.e.
+    // the truncated octahedron that is the FCC lattice's first Brillouin zone.
+    var base = [0,1,2], perms = [];
+    (function permute(a, k){
+      if (k === a.length) { perms.push(a.slice()); return; }
+      for (var i = k; i < a.length; i++) {
+        var t = a[k]; a[k] = a[i]; a[i] = t;
+        permute(a, k+1);
+        t = a[k]; a[k] = a[i]; a[i] = t;
+      }
+    })(base.slice(), 0);
+    var v = [], seen = {};
+    perms.forEach(function(pm) {
+      var s0 = pm[0] === 0 ? [1] : [1,-1];
+      var s1 = pm[1] === 0 ? [1] : [1,-1];
+      var s2 = pm[2] === 0 ? [1] : [1,-1];
+      s0.forEach(function(a){ s1.forEach(function(b){ s2.forEach(function(c){
+        var p = [pm[0]*a, pm[1]*b, pm[2]*c];
+        var key = p.join(',');
+        if (!seen[key]) { seen[key] = 1; v.push(p); }
+      }); }); });
+    });
+    return {
+      vertices: v, edges: minDistanceEdges(v), center:[0,0,0], camDist: 5.6,
+      shapeName: 'Truncated octahedron', dualName: 'Body-Centered Cubic',
+      highSym: [
+        {name:'\u0393', pos:[0,0,0], role:'gamma'},
+        {name:'X', pos:[2,0,0], role:'face'},
+        {name:'L', pos:[1,1,1], role:'face'},
+        {name:'K', pos:[1.5,1.5,0], role:'edge'},
+        {name:'U', pos:[2,0.5,0.5], role:'edge'},
+        {name:'W', pos:[2,1,0], role:'corner'}
+      ]
+    };
+  }
+
+  function buildHCPRecip() {
+    var r = 1, h = 0.55;
+    var top = [], bot = [];
+    for (var i = 0; i < 6; i++) {
+      var ang = i * Math.PI/3 + Math.PI/6;
+      top.push([r*Math.cos(ang), r*Math.sin(ang), h]);
+      bot.push([r*Math.cos(ang), r*Math.sin(ang), -h]);
+    }
+    var edges = [];
+    for (var k = 0; k < 6; k++) {
+      edges.push([top[k], top[(k+1)%6]]);
+      edges.push([bot[k], bot[(k+1)%6]]);
+      edges.push([top[k], bot[k]]);
+    }
+    var mR = r * Math.cos(Math.PI/6);
+    return {
+      vertices: top.concat(bot), edges: edges, center:[0,0,0], camDist: 4.2,
+      shapeName: 'Hexagonal prism', dualName: 'Hexagonal (basal plane rotated 30\u00b0)',
+      highSym: [
+        {name:'\u0393', pos:[0,0,0], role:'gamma'},
+        {name:'M', pos:[mR,0,0], role:'face'},
+        {name:'A', pos:[0,0,h], role:'face'},
+        {name:'H', pos: top[0], role:'corner'}
+      ]
+    };
+  }
+
+  // ---------- Real-space Wigner-Seitz cells ----------
+  // Computed from each lattice's actual nearest-neighbor shell(s), then
+  // translated back to the conventional-cell coordinates already on screen.
+  // Returns both the cell's wireframe edges and the neighbor positions whose
+  // bisector planes actually form those walls (for the translucent overlay).
+  function wsFromNeighbors(center, localNeighbors) {
+    var verts = voronoiVertices(localNeighbors);
+    var edges = minDistanceEdges(verts);
+    function T(p){ return [p[0]+center[0], p[1]+center[1], p[2]+center[2]]; }
+    return {
+      edges: edges.map(function(e){ return [T(e[0]), T(e[1])]; }),
+      neighbors: localNeighbors.map(T)
+    };
+  }
+
+  function wsHexPrism() {
+    var r = 1/Math.sqrt(3), h = 1.633/2; // apothem-derived corner radius & half-height
+    var top = [], bot = [];
+    for (var i = 0; i < 6; i++) {
+      var ang = i * Math.PI/3 + Math.PI/6;
+      top.push([r*Math.cos(ang), r*Math.sin(ang), h]);
+      bot.push([r*Math.cos(ang), r*Math.sin(ang), -h]);
+    }
+    var edges = [];
+    for (var k = 0; k < 6; k++) {
+      edges.push([top[k], top[(k+1)%6]]);
+      edges.push([bot[k], bot[(k+1)%6]]);
+      edges.push([top[k], bot[k]]);
+    }
+    // the 6 in-plane nearest neighbors (radius 1, z=0) plus the 2 vertical
+    // neighbors (0,0,+-1.633) that bound the prism top/bottom
+    var neighbors = [];
+    for (var j = 0; j < 6; j++) {
+      var a2 = j * Math.PI/3;
+      neighbors.push([Math.cos(a2), Math.sin(a2), 0]);
+    }
+    neighbors.push([0,0,1.633], [0,0,-1.633]);
+    return { edges: edges, neighbors: neighbors };
+  }
+
+  var WS_NOTE = {
+    sc: 'Wigner&ndash;Seitz cell = the same cube, just centered on a lattice point instead of cornered on one.',
+    bcc: 'Wigner&ndash;Seitz cell of BCC &mdash; a truncated octahedron. (Notice: the same shape as FCC&rsquo;s Brillouin zone!)',
+    fcc: 'Wigner&ndash;Seitz cell of FCC &mdash; a rhombic dodecahedron. (Same shape as BCC&rsquo;s Brillouin zone!)',
+    diamond: 'Wigner&ndash;Seitz cell of the underlying FCC Bravais lattice &mdash; a rhombic dodecahedron.',
+    hcp: 'Wigner&ndash;Seitz cell of the hexagonal Bravais lattice &mdash; a hexagonal prism.'
+  };
+  var WS_NEIGHBOR_HINT = ' Faded atoms are the neighboring lattice points whose perpendicular bisector planes actually form the cell walls.';
+
+  function getWSCell(key) {
+    if (key === 'sc') {
+      var r0 = wsFromNeighbors([0,0,0], [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]);
+      return { edges: r0.edges, neighbors: r0.neighbors.map(function(p){ return {pos:p, type:'corner'}; }) };
+    }
+    if (key === 'bcc') {
+      // order matters: first 6 are the axis-direction (body-type) neighbors,
+      // then 8 corner-type neighbors, so we can label them correctly below
+      var n = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+      [-0.5,0.5].forEach(function(x){ [-0.5,0.5].forEach(function(y){ [-0.5,0.5].forEach(function(z){ n.push([x,y,z]); }); }); });
+      var r1 = wsFromNeighbors([0.5,0.5,0.5], n);
+      return {
+        edges: r1.edges,
+        neighbors: r1.neighbors.map(function(p, idx){ return { pos:p, type: idx < 6 ? 'body' : 'corner' }; })
+      };
+    }
+    if (key === 'fcc' || key === 'diamond') {
+      var n2 = [[0.5,0.5,0],[0.5,-0.5,0],[-0.5,0.5,0],[-0.5,-0.5,0],
+                [0.5,0,0.5],[0.5,0,-0.5],[-0.5,0,0.5],[-0.5,0,-0.5],
+                [0,0.5,0.5],[0,0.5,-0.5],[0,-0.5,0.5],[0,-0.5,-0.5]];
+      var r2 = wsFromNeighbors([0,0,0], n2);
+      return { edges: r2.edges, neighbors: r2.neighbors.map(function(p){ return {pos:p, type:'face'}; }) };
+    }
+    if (key === 'hcp') {
+      var r3 = wsHexPrism();
+      return { edges: r3.edges, neighbors: r3.neighbors.map(function(p){ return {pos:p, type:'corner'}; }) };
+    }
+    return { edges: [], neighbors: [] };
+  }
+
+  // ---------- Common dispersion-diagram k-paths (Brillouin zone view) ----------
+  var FCC_PATHS = [
+    { label: 'L-\u0393-X-W-K-\u0393', pts: ['L','\u0393','X','W','K','\u0393'] },
+    { label: '\u0393-X-W-K-\u0393-L-U-W', pts: ['\u0393','X','W','K','\u0393','L','U','W'] }
+  ];
+  var PATHS = {
+    sc: [ { label: '\u0393-X-M-\u0393-R-X', pts: ['\u0393','X','M','\u0393','R','X'] } ],
+    bcc: [
+      { label: '\u0393-H-N-\u0393-P-H', pts: ['\u0393','H','N','\u0393','P','H'] },
+      { label: 'P-N', pts: ['P','N'] }
+    ],
+    fcc: FCC_PATHS,
+    diamond: FCC_PATHS,
+    hcp: [ { label: '\u0393-M-H-\u0393-A', pts: ['\u0393','M','H','\u0393','A'] } ]
+  };
+
+  var LATTICES = {
+    sc: { label: 'Simple Cubic', build: buildSC, buildRecip: buildSCRecip,
+      desc: '<b>Simple Cubic (SC)</b> &mdash; 1 atom per conventional cell. Rare in nature (polonium is the classic example).' },
+    bcc: { label: 'BCC', build: buildBCC, buildRecip: buildBCCRecip,
+      desc: '<b>Body-Centered Cubic (BCC)</b> &mdash; 2 atoms/cell. Examples: &alpha;-Fe, Cr, W, Na.' },
+    fcc: { label: 'FCC', build: buildFCC, buildRecip: buildFCCRecip,
+      desc: '<b>Face-Centered Cubic (FCC)</b> &mdash; 4 atoms/cell. Examples: Cu, Al, Au, Ag, Ni.' },
+    diamond: { label: 'Diamond', build: buildDiamond, buildRecip: buildFCCRecip,
+      desc: '<b>Diamond Cubic</b> &mdash; FCC lattice + 2-atom basis, 8 atoms/cell. Examples: Si, Ge, C (diamond) &mdash; tetrahedral bonds shown.' },
+    hcp: { label: 'HCP', build: buildHCP, buildRecip: buildHCPRecip,
+      desc: '<b>Hexagonal Close-Packed (HCP)</b> &mdash; ABAB stacking, ideal c/a &approx; 1.633. Examples: Mg, Zn, Ti, Co.' }
+  };
+  var LEGEND = {
+    corner: {color:'--corner', label:'lattice point'},
+    face: {color:'--face', label:'face-centered'},
+    body: {color:'--body', label:'body-centered'},
+    interior: {color:'--interior', label:'basis atom'}
+  };
+  var RECIP_ROLE = {
+    gamma: {color:'--gamma'},
+    face: {color:'--recip-face'},
+    edge: {color:'--recip-edge'},
+    corner: {color:'--recip-corner'}
+  };
+
+  // ---------- Three.js setup ----------
+  var wrap = document.getElementById('canvas-wrap');
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  wrap.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  var dl1 = new THREE.DirectionalLight(0xffffff, 0.75);
+  dl1.position.set(3, 4, 5);
+  scene.add(dl1);
+  var dl2 = new THREE.DirectionalLight(0xffffff, 0.35);
+  dl2.position.set(-4, -2, -3);
+  scene.add(dl2);
+
+  var group = new THREE.Group();
+  scene.add(group);
+
+  var sphereGeo = new THREE.SphereGeometry(0.09, 20, 16);
+  var sphereGeoBig = new THREE.SphereGeometry(0.1, 20, 16);
+
+  function cssVar(name) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || '#888888';
+  }
+
+  var current = null;
+  var viewMode = 'real';
+
+  function clearGroup() {
+    while (group.children.length) {
+      var c = group.children.pop();
+      if (c.geometry && c.geometry !== sphereGeo && c.geometry !== sphereGeoBig) c.geometry.dispose();
+      if (c.material) c.material.dispose();
+    }
+  }
+
+  function buildScene(key) {
+    clearGroup();
+    if (viewMode === 'reciprocal') buildReciprocalScene(key);
+    else buildRealScene(key);
+  }
+
+  function buildRealScene(key) {
+    var data = LATTICES[key].build();
+    current = data;
+    document.getElementById('pathRow').style.display = 'none';
+    document.getElementById('pathRow').innerHTML = '';
+
+    var colors = {
+      corner: cssVar('--corner'),
+      face: cssVar('--face'),
+      body: cssVar('--body'),
+      interior: cssVar('--interior')
+    };
+    var bondColor = cssVar('--bond');
+    var edgeColor = cssVar('--edge');
+
+    // edges (unit cell wireframe)
+    var edgeMat = new THREE.LineBasicMaterial({ color: new THREE.Color(edgeColor), transparent: true, opacity: 0.85 });
+    data.edges.forEach(function(e) {
+      var geo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(e[0][0], e[0][1], e[0][2]),
+        new THREE.Vector3(e[1][0], e[1][1], e[1][2])
+      ]);
+      group.add(new THREE.Line(geo, edgeMat));
+    });
+
+    // primitive cell overlay (dashed)
+    if (showPrimitive && data.primitive) {
+      var primColor = cssVar('--primitive');
+      var primMat = new THREE.LineDashedMaterial({ color: new THREE.Color(primColor), dashSize: 0.07, gapSize: 0.045, linewidth: 2 });
+      primitiveEdges(data.primitive).forEach(function(e) {
+        var geo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(e[0][0], e[0][1], e[0][2]),
+          new THREE.Vector3(e[1][0], e[1][1], e[1][2])
+        ]);
+        var line = new THREE.Line(geo, primMat);
+        line.computeLineDistances();
+        group.add(line);
+      });
+    }
+
+    // Wigner-Seitz cell overlay (solid) + faded neighboring atoms that define it
+    if (showWS) {
+      var wsData = getWSCell(key);
+      var wsMat = new THREE.LineBasicMaterial({ color: new THREE.Color(cssVar('--ws')), transparent: true, opacity: 0.95 });
+      wsData.edges.forEach(function(e) {
+        var geo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(e[0][0], e[0][1], e[0][2]),
+          new THREE.Vector3(e[1][0], e[1][1], e[1][2])
+        ]);
+        group.add(new THREE.Line(geo, wsMat));
+      });
+
+      function posKey(p){ return p.map(function(v){ return Math.round(v*1000); }).join(','); }
+      var existingKeys = {};
+      data.atoms.forEach(function(a){ existingKeys[posKey(a.pos)] = true; });
+      var faintMatCache = {};
+      wsData.neighbors.forEach(function(n) {
+        if (existingKeys[posKey(n.pos)]) return; // already shown opaquely, skip duplicate
+        var col = colors[n.type] || colors.corner;
+        if (!faintMatCache[n.type]) {
+          faintMatCache[n.type] = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(col), roughness: 0.5, metalness: 0.05,
+            transparent: true, opacity: 0.3, depthWrite: false
+          });
+        }
+        var geo = (n.type === 'corner') ? sphereGeo : sphereGeoBig;
+        var mesh = new THREE.Mesh(geo, faintMatCache[n.type]);
+        mesh.position.set(n.pos[0], n.pos[1], n.pos[2]);
+        group.add(mesh);
+      });
+    }
+
+    // bonds
+    var bondMat = new THREE.LineBasicMaterial({ color: new THREE.Color(bondColor), transparent: true, opacity: 0.9, linewidth: 2 });
+    data.bonds.forEach(function(b) {
+      var geo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(b[0][0], b[0][1], b[0][2]),
+        new THREE.Vector3(b[1][0], b[1][1], b[1][2])
+      ]);
+      group.add(new THREE.Line(geo, bondMat));
+    });
+
+    // atoms
+    var matCache = {};
+    data.atoms.forEach(function(a) {
+      var col = colors[a.type] || colors.corner;
+      if (!matCache[a.type]) {
+        matCache[a.type] = new THREE.MeshStandardMaterial({ color: new THREE.Color(col), roughness: 0.45, metalness: 0.05 });
+      }
+      var geo = (a.type === 'corner') ? sphereGeo : sphereGeoBig;
+      var mesh = new THREE.Mesh(geo, matCache[a.type]);
+      mesh.position.set(a.pos[0], a.pos[1], a.pos[2]);
+      group.add(mesh);
+    });
+
+    // recenter group
+    group.position.set(-data.center[0], -data.center[1], -data.center[2]);
+
+    camera.position.set(data.camDist * 0.85, data.camDist * 0.65, data.camDist * 0.95);
+    camera.lookAt(0, 0, 0);
+
+    // update UI
+    var descHtml = LATTICES[key].desc;
+    if (showPrimitive && data.primNote) {
+      descHtml += ' <span style="color:var(--primitive)">&#9649;</span> ' + data.primNote;
+    }
+    if (showWS && WS_NOTE[key]) {
+      descHtml += ' <span style="color:var(--ws)">&#11041;</span> ' + WS_NOTE[key] + WS_NEIGHBOR_HINT;
+    }
+    document.getElementById('desc').innerHTML = descHtml;
+    var legendEl = document.getElementById('legend');
+    legendEl.innerHTML = '';
+    var typesPresent = {};
+    data.atoms.forEach(function(a){ typesPresent[a.type] = true; });
+    Object.keys(LEGEND).forEach(function(t) {
+      if (!typesPresent[t]) return;
+      var item = document.createElement('div');
+      item.className = 'legend-item';
+      var dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = cssVar(LEGEND[t].color);
+      item.appendChild(dot);
+      var txt = document.createElement('span');
+      txt.textContent = LEGEND[t].label;
+      item.appendChild(txt);
+      legendEl.appendChild(item);
+    });
+    if (showPrimitive) {
+      var pItem = document.createElement('div');
+      pItem.className = 'legend-item';
+      var swatch = document.createElement('span');
+      swatch.className = 'dash-swatch';
+      pItem.appendChild(swatch);
+      var pTxt = document.createElement('span');
+      pTxt.textContent = 'primitive cell';
+      pItem.appendChild(pTxt);
+      legendEl.appendChild(pItem);
+    }
+    if (showWS) {
+      var wItem = document.createElement('div');
+      wItem.className = 'legend-item';
+      var wSwatch = document.createElement('span');
+      wSwatch.className = 'ws-swatch';
+      wItem.appendChild(wSwatch);
+      var wTxt = document.createElement('span');
+      wTxt.textContent = 'Wigner\u2013Seitz cell';
+      wItem.appendChild(wTxt);
+      legendEl.appendChild(wItem);
+    }
+  }
+
+  function buildReciprocalScene(key) {
+    var rdata = LATTICES[key].buildRecip();
+    current = rdata;
+
+    var zoneMat = new THREE.LineBasicMaterial({ color: new THREE.Color(cssVar('--recip-zone')), transparent: true, opacity: 0.95 });
+    rdata.edges.forEach(function(e) {
+      var geo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(e[0][0], e[0][1], e[0][2]),
+        new THREE.Vector3(e[1][0], e[1][1], e[1][2])
+      ]);
+      group.add(new THREE.Line(geo, zoneMat));
+    });
+
+    var matCache = {};
+    rdata.highSym.forEach(function(pt) {
+      var col = cssVar(RECIP_ROLE[pt.role].color);
+      if (!matCache[pt.role]) {
+        matCache[pt.role] = new THREE.MeshStandardMaterial({ color: new THREE.Color(col), roughness: 0.4, metalness: 0.05 });
+      }
+      var geo = (pt.role === 'gamma') ? sphereGeoBig : sphereGeo;
+      var mesh = new THREE.Mesh(geo, matCache[pt.role]);
+      mesh.position.set(pt.pos[0], pt.pos[1], pt.pos[2]);
+      group.add(mesh);
+    });
+
+    group.position.set(0, 0, 0);
+    camera.position.set(rdata.camDist * 0.85, rdata.camDist * 0.65, rdata.camDist * 0.95);
+    camera.lookAt(0, 0, 0);
+
+    // dispersion-path buttons
+    var pathList = PATHS[key] || [];
+    var pathRow = document.getElementById('pathRow');
+    pathRow.innerHTML = '';
+    if (pathList.length) {
+      pathRow.style.display = 'flex';
+      pathList.forEach(function(pathDef) {
+        var btn = document.createElement('button');
+        btn.className = 'chip' + (activePath === pathDef.label ? ' active' : '');
+        btn.textContent = pathDef.label;
+        btn.addEventListener('click', function() {
+          activePath = (activePath === pathDef.label) ? null : pathDef.label;
+          buildScene(activeKey);
+        });
+        pathRow.appendChild(btn);
+      });
+    } else {
+      pathRow.style.display = 'none';
+    }
+
+    // draw the selected k-path, if any, on top of the zone
+    var activePathDef = null;
+    pathList.forEach(function(p){ if (p.label === activePath) activePathDef = p; });
+    if (activePathDef) {
+      var ptMap = {};
+      rdata.highSym.forEach(function(pt){ ptMap[pt.name] = pt.pos; });
+      var pathMat = new THREE.LineBasicMaterial({ color: new THREE.Color(cssVar('--path')), linewidth: 3 });
+      for (var pi = 0; pi < activePathDef.pts.length - 1; pi++) {
+        var pA = ptMap[activePathDef.pts[pi]], pB = ptMap[activePathDef.pts[pi+1]];
+        if (!pA || !pB) continue;
+        var pgeo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(pA[0], pA[1], pA[2]),
+          new THREE.Vector3(pB[0], pB[1], pB[2])
+        ]);
+        group.add(new THREE.Line(pgeo, pathMat));
+      }
+    }
+
+    // update UI
+    var recipDesc = '<b>First Brillouin Zone</b> &mdash; ' + rdata.shapeName +
+      ', the Wigner&ndash;Seitz cell of the ' + rdata.dualName + ' reciprocal lattice.';
+    if (activePathDef) {
+      recipDesc += ' <span style="color:var(--path)">&#8213;</span> Path: ' + activePathDef.label;
+    }
+    document.getElementById('desc').innerHTML = recipDesc;
+    var legendEl = document.getElementById('legend');
+    legendEl.innerHTML = '';
+    rdata.highSym.forEach(function(pt) {
+      var item = document.createElement('div');
+      item.className = 'legend-item';
+      var dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = cssVar(RECIP_ROLE[pt.role].color);
+      item.appendChild(dot);
+      var txt = document.createElement('span');
+      txt.textContent = pt.name;
+      item.appendChild(txt);
+      legendEl.appendChild(item);
+    });
+  }
+
+  function resize() {
+    var w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / Math.max(h, 1);
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+
+  // ---------- Interaction: drag to rotate, pinch to zoom ----------
+  var autoRotate = true;
+  var dragging = false;
+  var lastX = 0, lastY = 0;
+  var rotX = -0.35, rotY = 0.6;
+  var zoom = 1;
+  var hintEl = document.getElementById('hint');
+  var hintShown = true;
+
+  function hideHint() {
+    if (hintShown) { hintEl.style.opacity = '0'; hintShown = false; }
+  }
+
+  function pointerDown(x, y) {
+    dragging = true;
+    lastX = x; lastY = y;
+    hideHint();
+  }
+  function pointerMove(x, y) {
+    if (!dragging) return;
+    var dx = x - lastX, dy = y - lastY;
+    rotY += dx * 0.008;
+    rotX += dy * 0.008;
+    rotX = Math.max(-1.4, Math.min(1.4, rotX));
+    lastX = x; lastY = y;
+  }
+  function pointerUp() { dragging = false; }
+
+  var dom = renderer.domElement;
+  dom.addEventListener('mousedown', function(e){ pointerDown(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', function(e){ pointerMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', pointerUp);
+
+  var pinchDist = null;
+  dom.addEventListener('touchstart', function(e){
+    if (e.touches.length === 1) {
+      pointerDown(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length === 2) {
+      dragging = false;
+      pinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+  dom.addEventListener('touchmove', function(e){
+    if (e.touches.length === 1) {
+      pointerMove(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length === 2 && pinchDist !== null) {
+      var d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      var delta = d - pinchDist;
+      zoom = Math.max(0.55, Math.min(2.2, zoom + delta * 0.003));
+      pinchDist = d;
+    }
+    e.preventDefault();
+  }, { passive: false });
+  dom.addEventListener('touchend', function(e){
+    if (e.touches.length === 0) { pointerUp(); pinchDist = null; }
+  });
+  dom.addEventListener('wheel', function(e){
+    zoom = Math.max(0.55, Math.min(2.2, zoom + e.deltaY * 0.0015));
+    e.preventDefault();
+  }, { passive: false });
+
+  // ---------- Controls: chips, rotate toggle, theme ----------
+  var chipRow = document.getElementById('chipRow');
+  var activeKey = 'fcc';
+  Object.keys(LATTICES).forEach(function(key) {
+    var chip = document.createElement('button');
+    chip.className = 'chip' + (key === activeKey ? ' active' : '');
+    chip.textContent = LATTICES[key].label;
+    chip.addEventListener('click', function() {
+      Array.prototype.forEach.call(chipRow.children, function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      activeKey = key;
+      activePath = null;
+      buildScene(key);
+    });
+    chipRow.appendChild(chip);
+  });
+
+  var rotateBtn = document.getElementById('rotateBtn');
+  rotateBtn.addEventListener('click', function() {
+    autoRotate = !autoRotate;
+    rotateBtn.classList.toggle('active', autoRotate);
+  });
+
+  var showPrimitive = false;
+  var primBtn = document.getElementById('primBtn');
+  primBtn.addEventListener('click', function() {
+    showPrimitive = !showPrimitive;
+    primBtn.classList.toggle('active', showPrimitive);
+    buildScene(activeKey);
+  });
+
+  var showWS = false;
+  var wsBtn = document.getElementById('wsBtn');
+  wsBtn.addEventListener('click', function() {
+    showWS = !showWS;
+    wsBtn.classList.toggle('active', showWS);
+    buildScene(activeKey);
+  });
+
+  var activePath = null;
+  var modeRow = document.getElementById('modeRow');
+  Array.prototype.forEach.call(modeRow.children, function(btn) {
+    btn.addEventListener('click', function() {
+      Array.prototype.forEach.call(modeRow.children, function(c){ c.classList.remove('active'); });
+      btn.classList.add('active');
+      viewMode = btn.getAttribute('data-mode');
+      var hideForRecip = (viewMode === 'reciprocal') ? 'none' : '';
+      primBtn.style.display = hideForRecip;
+      wsBtn.style.display = hideForRecip;
+      activePath = null;
+      buildScene(activeKey);
+    });
+  });
+
+  var themeBtn = document.getElementById('themeBtn');
+  var themeState = 'auto';
+  themeBtn.addEventListener('click', function() {
+    if (themeState === 'auto') { themeState = 'dark'; document.documentElement.setAttribute('data-theme','dark'); themeBtn.innerHTML = '&#9789;'; }
+    else if (themeState === 'dark') { themeState = 'light'; document.documentElement.setAttribute('data-theme','light'); themeBtn.innerHTML = '&#9728;'; }
+    else { themeState = 'auto'; document.documentElement.removeAttribute('data-theme'); themeBtn.innerHTML = '&#9788;'; }
+    buildScene(activeKey);
+  });
+
+  // ---------- Animation loop ----------
+  function animate() {
+    requestAnimationFrame(animate);
+    if (autoRotate && !dragging) rotY += 0.0035;
+    group.rotation.set(rotX, rotY, 0);
+    var baseDist = current ? current.camDist : 3;
+    var d = baseDist / zoom;
+    camera.position.set(d * 0.85, d * 0.65, d * 0.95);
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  }
+
+  resize();
+  buildScene(activeKey);
+  animate();
+
+  setTimeout(function(){ if (hintShown) hintEl.style.opacity = '0.85'; }, 300);
+  setTimeout(hideHint, 4500);
+})();
+</script>
+</body>
+</html>

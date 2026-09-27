@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Todennäköisyyssovellukset</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F7F9FB;
+    --grid-line: #DCE6ED;
+    --ink: #17232C;
+    --ink-soft: #536270;
+    --empirical: #1F7A6C;
+    --surface: #FFFFFF;
+    --border: #D7E0E6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #12181D; --grid-line: #202B33; --ink: #EBF1F4; --ink-soft: #9FB0BA;
+      --empirical: #4FBBA6; --surface: #1A222A; --border: #2A353E;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 100% 28px,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 28px 100%,
+      var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .page { max-width: 640px; margin: 0 auto; padding: 32px 20px 40px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 27px; margin: 0 0 8px; }
+  header p { margin: 0 0 24px; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
+  .card-link {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .card-link:hover { border-color: var(--empirical); }
+  .card-link h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 17px; margin: 0 0 6px; }
+  .card-link p { margin: 0; color: var(--ink-soft); font-size: 13.5px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Todennäköisyyssovellukset</h1>
+    <p>Kolme interaktiivista appletia todennäköisyyden ja tilastojen opetukseen.</p>
+  </header>
+
+  <a class="card-link" href="kolikko-ja-noppa.html">
+    <h2>Kolikko ja noppa</h2>
+    <p>Kolikonheitto, yksi noppa, kaksi noppaa ja kolme noppaa — suurten lukujen laki ja summajakaumat.</p>
+  </a>
+
+  <a class="card-link" href="pokerikasien-todennakoisyydet.html">
+    <h2>Pokerikäsien todennäköisyydet</h2>
+    <p>Jaa käsiä 52 kortin pakasta ja vertaa havaittuja käsityyppejä teoreettisiin todennäköisyyksiin.</p>
+  </a>
+
+  <a class="card-link" href="heita-sikaa.html">
+    <h2>Heitä sikaa</h2>
+    <p>Pass the Pigs -pelin epäreilut "nopat" ja niiden todelliset heittotodennäköisyydet.</p>
+  </a>
+</div>
+</body>
+</html>
