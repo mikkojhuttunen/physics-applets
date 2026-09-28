@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Field Strength Console — Laser Intensity Regimes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0f0c; --panel:#121815; --panel-2:#0e1310; --border:#233029;
+    --text:#dce7de; --text-dim:#8fa397; --text-faint:#5a6b60;
+    --accent:#ffb454; --accent-dim:#8a6a34; --accent-2:#62e0c4; --danger:#ff6a5f;
+    --grid:#1b2620;
+    --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#eef1ee; --panel:#ffffff; --panel-2:#f5f7f5; --border:#d6ddd8;
+      --text:#141c17; --text-dim:#54655b; --text-faint:#93a399;
+      --accent:#b8710f; --accent-dim:#e3c393; --accent-2:#0e8f76; --danger:#c73f34; --grid:#e2e7e3;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee;--panel:#ffffff;--panel-2:#f5f7f5;--border:#d6ddd8;--text:#141c17;
+    --text-dim:#54655b;--text-faint:#93a399;--accent:#b8710f;--accent-dim:#e3c393;
+    --accent-2:#0e8f76;--danger:#c73f34;--grid:#e2e7e3;
+  }
+  html,body{height:100%;}
+  *{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px; margin:0 auto; padding:22px 18px 40px;}
+  header{margin-bottom:18px;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.02em; color:var(--text-faint);}
+  h1{font-size:22px; margin:4px 0 6px; font-weight:600; letter-spacing:-0.01em;}
+  .sub{color:var(--text-dim); font-size:14px; max-width:64ch; line-height:1.5;}
+
+  .console{display:grid; grid-template-columns:320px 1fr; gap:16px;}
+  @media (max-width:860px){ .console{grid-template-columns:1fr;} }
+
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px;}
+
+  .presets{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+  .preset-btn{font-family:var(--sans); font-size:12px; padding:6px 10px; border-radius:20px; border:1px solid var(--border); background:var(--panel-2); color:var(--text-dim); cursor:pointer; transition:border-color .15s,color .15s;}
+  .preset-btn:hover{border-color:var(--accent); color:var(--text);}
+  .preset-btn:active{transform:translateY(1px);}
+
+  .master-block{background:var(--panel-2); border:1px solid var(--accent-dim); border-radius:8px; padding:12px 14px 14px;}
+
+  .collapsible{margin-top:16px; padding-top:14px; border-top:1px solid var(--border);}
+  .collapsible summary{font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; color:var(--text-faint); text-transform:uppercase; cursor:pointer; list-style:none;}
+  .collapsible summary::-webkit-details-marker{display:none;}
+  .collapsible summary::before{content:'▸  ';}
+  .collapsible[open] summary::before{content:'▾  ';}
+  .collapsible .content{padding-top:12px;}
+  .master-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px;}
+  .master-label{font-size:12.5px; color:var(--accent); font-weight:600;}
+  .master-val{font-family:var(--mono); font-size:15px; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .master-sci{font-family:var(--mono); font-size:11px; color:var(--text-faint); text-align:right; margin-top:-2px;}
+  input[type=range].master{accent-color:var(--accent);}
+
+  .ladder{display:flex; gap:5px; margin-top:10px;}
+  .rung{flex:1; text-align:center; padding:6px 3px; border-radius:6px; border:1px solid var(--border); background:var(--panel); transition:all .15s;}
+  .rung.active{border-color:var(--accent); background:var(--accent); color:#1a1200;}
+  .rung .rlabel{font-size:11px; font-weight:600; display:block;}
+  .rung .rsub{font-size:9.5px; color:inherit; opacity:.75; display:block; margin-top:1px;}
+  .rung:not(.active) .rsub{color:var(--text-faint);}
+  .need-line{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:8px; line-height:1.5;}
+  .warn-line{font-size:11.5px; color:var(--danger); margin-top:6px; line-height:1.4; display:none;}
+  .warn-line.show{display:block;}
+
+  .divider{font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; color:var(--text-faint); margin:16px 0 10px; text-transform:uppercase;}
+
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  .field-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; gap:6px;}
+  .field-top label{font-size:12.5px; color:var(--text-dim);}
+  .field-top output{font-family:var(--mono); font-size:13px; color:var(--accent); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .tier-chip{font-size:9.5px; font-family:var(--mono); padding:1px 6px; border-radius:8px; margin-left:6px; vertical-align:middle;}
+
+  input[type=range]{-webkit-appearance:none; width:100%; height:22px; background:transparent; margin:0; cursor:pointer;}
+  input[type=range]::-webkit-slider-runnable-track{height:4px; background:var(--border); border-radius:2px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:var(--accent); margin-top:-5.5px; border:2px solid var(--panel); box-shadow:0 0 0 1px var(--accent-dim);}
+  input[type=range]::-moz-range-track{height:4px; background:var(--border); border-radius:2px;}
+  input[type=range]::-moz-range-thumb{width:13px; height:13px; border-radius:50%; background:var(--accent); border:2px solid var(--panel);}
+  input[type=range].master::-webkit-slider-thumb{width:17px; height:17px; margin-top:-6.5px;}
+
+  .readout-panel{margin-top:14px; padding-top:14px; border-top:1px solid var(--border);}
+  .readout-title{font-size:11px; letter-spacing:.04em; color:var(--text-faint); margin-bottom:8px; font-family:var(--mono);}
+  .readout-grid{display:grid; grid-template-columns:1fr auto; gap:6px 10px; font-size:12.5px;}
+  .readout-grid .k{color:var(--text-dim);}
+  .readout-grid .v{font-family:var(--mono); color:var(--text); text-align:right; font-variant-numeric:tabular-nums;}
+  .readout-grid .v.hi{color:var(--accent);}
+
+  .plot-col{display:flex; flex-direction:column; gap:12px;}
+  .hero{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .hero-label{font-size:11px; color:var(--text-faint); font-family:var(--mono); letter-spacing:.04em; margin-bottom:2px;}
+  .hero-value{font-family:var(--mono); font-size:20px; color:var(--accent); font-weight:600;}
+  .hero-value.danger{color:var(--danger);}
+
+  svg{display:block; width:100%; height:auto;}
+  .plot-panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 6px 6px;}
+  .axis-label{font-family:var(--mono); font-size:15px; fill:var(--text-faint);}
+  .grid-line{stroke:var(--grid); stroke-width:1;}
+  .band-label{font-family:var(--sans); font-size:16px; font-weight:600;}
+  .curve{fill:none; stroke:var(--accent); stroke-width:2.2;}
+  .peak-line{stroke:var(--accent); stroke-width:1; stroke-dasharray:3 4; opacity:.7;}
+  .peak-dot{fill:var(--accent);}
+
+  .desc-panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px 18px;}
+  .desc-eyebrow{font-family:var(--mono); font-size:11px; color:var(--text-faint); letter-spacing:.04em; margin-bottom:4px;}
+  .desc-title{font-size:16px; font-weight:600; margin:0 0 8px;}
+  .desc-body{font-size:13.5px; line-height:1.55; color:var(--text-dim); max-width:74ch;}
+
+  details{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-top:14px;}
+  summary{cursor:pointer; font-size:12.5px; color:var(--text-dim); font-family:var(--mono);}
+  details p{font-size:12.5px; color:var(--text-dim); line-height:1.55; margin:10px 0 2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">FYS.501 — laser–matter interaction</div>
+    <h1>Field strength console</h1>
+    <div class="sub">Drag the target intensity slider and watch which laser technology it takes to get there — a tabletop oscillator, a kHz amplifier, or a few-shots-per-minute PW-class facility. Repetition rate and pulse energy trade against each other at a fixed average beam power, just as they do on an optical bench.</div>
+  </header>
+
+  <div class="console">
+
+    <div class="panel">
+      <div class="presets" id="presets"></div>
+
+      <details class="collapsible" open>
+        <summary>beam parameters</summary>
+        <div class="content">
+          <div class="field">
+            <div class="field-top"><label for="pavg">average beam power</label><output id="pavg_out"></output></div>
+            <input type="range" id="pavg" min="-1.3" max="2.7" step="0.02">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="tau">pulse duration (FWHM)</label><output id="tau_out"></output></div>
+            <input type="range" id="tau" min="0" max="4" step="0.02">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="d">focal spot diameter (FWHM)</label><output id="d_out"></output></div>
+            <input type="range" id="d" min="0" max="2.3" step="0.02">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="frep">repetition rate <span class="tier-chip" id="frep_chip"></span></label><output id="frep_out"></output></div>
+            <input type="range" id="frep" min="-2" max="8" step="0.02">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="lambda">wavelength</label><output id="lambda_out"></output></div>
+            <input type="range" id="lambda" min="200" max="1500" step="5">
+          </div>
+        </div>
+      </details>
+
+      <details class="collapsible" open>
+        <summary>calculated field parameters</summary>
+        <div class="content">
+          <div class="readout-grid">
+            <div class="k">pulse energy</div><div class="v" id="r_energy"></div>
+            <div class="k">peak power</div><div class="v" id="r_power"></div>
+            <div class="k">peak intensity</div><div class="v hi" id="r_intensity"></div>
+            <div class="k">peak E-field</div><div class="v hi" id="r_field"></div>
+            <div class="k">field / atomic unit</div><div class="v" id="r_fieldau"></div>
+            <div class="k">a₀ (norm. vector pot.)</div><div class="v" id="r_a0"></div>
+            <div class="k">Keldysh parameter γ</div><div class="v" id="r_keldysh"></div>
+            <div class="k">ponderomotive T_hot</div><div class="v" id="r_thot"></div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div class="plot-col">
+      <div class="master-block">
+        <div class="master-top">
+          <span class="master-label">target peak intensity</span>
+          <span class="master-val" id="master_val"></span>
+        </div>
+        <input type="range" class="master" id="master" min="6" max="30" step="0.02">
+        <div class="master-sci" id="master_sci"></div>
+        <div class="ladder" id="ladder"></div>
+        <div class="need-line" id="need_line"></div>
+        <div class="warn-line" id="warn_line"></div>
+      </div>
+
+      <div class="hero">
+        <div>
+          <div class="hero-label">current regime</div>
+          <div class="hero-value" id="hero_regime"></div>
+        </div>
+        <div>
+          <div class="hero-label" style="text-align:right">peak intensity</div>
+          <div class="hero-value" id="hero_intensity" style="text-align:right"></div>
+        </div>
+      </div>
+
+      <div class="plot-panel">
+        <svg id="plot" viewBox="0 0 900 580" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="desc-panel">
+        <div class="desc-eyebrow">application regime</div>
+        <h3 class="desc-title" id="desc_title"></h3>
+        <div class="desc-body" id="desc_body"></div>
+      </div>
+    </div>
+  </div>
+
+  <details>
+    <summary>assumptions &amp; caveats</summary>
+    <p>This is an order-of-magnitude instrument, not a simulation. Peak intensity assumes a Gaussian temporal profile (I ∝ exp(−4ln2·t²/τ²), so τ is FWHM) and a simple circular focal area from the stated spot diameter; real focusing (M², aberrations) typically costs a factor of a few. The field is the peak of a linearly-polarized plane wave, E₀ = √(2I/cε₀). a₀ = 0.85·λ[µm]·√(I/10¹⁸ W cm⁻²) is the standard normalized vector potential for linear polarization. T_hot uses the Wilks ponderomotive scaling. The Keldysh parameter γ = ω√(2mI_p)/(eE₀) uses hydrogen's ionization potential (13.6 eV) as a generic reference atom. Regime boundaries in the plot are illustrative bands, not sharp thresholds.</p>
+    <p><b>Technology tiers</b> (used by the target-intensity slider to pick a laser class) are representative, illustrative ceilings, not hard physical limits: an oscillator up to ~3 W average power at 1–100 MHz; a kHz-class CPA amplifier up to ~20 W average power at 1 Hz–1 MHz; a PW-class facility up to ~300 W average power (or 500 J per pulse, whichever binds) at 0.01–1 Hz. Given a target intensity, pulse duration and spot size, the app solves for the pulse energy needed, picks the least exotic tier that can supply it, and sets the repetition rate to whatever that tier's average-power budget allows — exactly as a real lab has to trade rep rate for pulse energy at fixed cooling/pump power. Pulse energy is always E = P_avg / f_rep. The Schwinger limit (2.3×10²⁹ W cm⁻²) is shown for scale — no laser comes close. Direct, field-driven neutron ejection via nuclear polarizability would need ~10³⁹ W cm⁻², off the top of this entire console, and is not achievable by any conceivable laser; real laser-driven neutron sources work indirectly through the bremsstrahlung route described below.</p>
+  </details>
+
+</div>
+
+<script>
+(function(){
+  const c = 2.998e8, eps0 = 8.854e-12, e = 1.602e-19, me = 9.109e-31;
+  const Ea_atomic = 5.142e11;
+  const Ip_H = 13.6 * e;
+
+  const regimes = [
+    {top:1e10,  name:"Linear optics", color:"#6b7f73",
+     title:"Linear, weak-field optics",
+     body:"No measurable nonlinear response. The field is a small perturbation on the atomic Coulomb potential (γ ≫ 1); ordinary refraction, absorption and scattering describe everything here."},
+    {top:1e13,  name:"Perturbative multiphoton", color:"#62e0c4",
+     title:"Perturbative multiphoton absorption",
+     body:"Ionization proceeds by simultaneous absorption of N photons, with rate ∝ Iᴺ — lowest-order perturbation theory (LOPT) still holds. γ is large: the field oscillates many times before it could plausibly bend the potential enough to matter."},
+    {top:1e14,  name:"Perturbation theory breaks down", color:"#8fd66a",
+     title:"Perturbation theory starts to fail",
+     body:"γ drops toward a few. Above-threshold ionization (ATI) sidebands appear, and the first high-harmonic-generation (HHG) photons are emitted as LOPT's power-law scaling stops matching experiment."},
+    {top:1e15,  name:"Tunneling onset / HHG plateau", color:"#c8d95f",
+     title:"Tunneling onset — HHG plateau",
+     body:"γ ≈ 1: the three-step model (tunnel ionization, laser-driven acceleration, recombination) takes over from perturbation theory. This is the classic regime for high-harmonic generation and attosecond pulses in gas jets."},
+    {top:1e16,  name:"Tunneling / over-barrier ionization", color:"#ffd25c",
+     title:"Tunneling &amp; over-barrier ionization — atom disintegration",
+     body:"γ &lt; 1: the field bends the atomic potential enough that outer electrons tunnel out, or the barrier is suppressed entirely within a single optical cycle. Atoms are stripped of their outer electrons outright; in gases this drives filamentation, on solids it initiates optical damage."},
+    {top:1e18,  name:"Dense plasma formation", color:"#ffb454",
+     title:"Dense surface-plasma formation",
+     body:"Solid surfaces ionize within a fraction of a cycle, forming a hot, dense plasma. Electron quiver energy climbs toward the electron rest mass — a₀ approaches 1, the threshold for relativistic electron dynamics."},
+    {top:1e20,  name:"Relativistic (a₀ ≳ 1)", color:"#ff9d54",
+     title:"Relativistic regime — electron acceleration begins",
+     body:"a₀ ≳ 1: electron quiver motion is relativistic. Relativistic self-focusing and induced transparency appear, and electrons are accelerated to several MeV. Bremsstrahlung from these electrons starts to exceed photonuclear (γ,n) thresholds (~8–20 MeV in most nuclei, ~1.7–2.2 MeV in ⁹Be or deuterium) — the first laser-driven neutrons appear here."},
+    {top:1e23,  name:"Ultra-relativistic frontier", color:"#ff7a54",
+     title:"Ultra-relativistic — today's experimental frontier",
+     body:"a₀ in the tens to hundreds. Wakefield and radiation-pressure acceleration reach tens to hundreds of MeV. This is where laser-driven photonuclear neutron sources actually operate, via bremsstrahlung-driven (γ,n) reactions in a high-Z converter. Current record intensities (~10²³ W cm⁻², 2023–24) sit at the top of this band."},
+    {top:2.3e29, name:"Beyond present-day lasers", color:"#ff6a5f",
+     title:"Beyond any laser built to date",
+     body:"No existing facility reaches this range. Toward its upper end, multiphoton (nonlinear) Breit–Wheeler pair production — colliding many laser photons with a single high-energy photon to make an e⁺e⁻ pair — becomes theoretically conceivable."},
+    {top:Infinity, name:"Schwinger / vacuum breakdown", color:"#ff4d4d",
+     title:"Schwinger limit — vacuum breakdown",
+     body:"Above ≈2.3×10²⁹ W cm⁻² (E ≈ 1.3×10¹⁸ V/m), the vacuum itself is predicted to become unstable, spontaneously producing electron–positron pairs — about ten orders of magnitude beyond anything achievable today."}
+  ];
+
+  const TIERS = [
+    {key:'osc', label:'Oscillator', sub:'MHz, mode-locked', color:'#62e0c4', frepMin:1e6, frepMax:1e8, PavgMax:3},
+    {key:'amp', label:'kHz Amplifier', sub:'CPA, 1 Hz–1 MHz', color:'#ffb454', frepMin:1,   frepMax:1e6, PavgMax:20},
+    {key:'pw',  label:'PW-class facility', sub:'≤1 Hz, high-energy', color:'#ff6a5f', frepMin:0.01, frepMax:1, PavgMax:300, EmaxHard:500}
+  ];
+  TIERS.forEach(t => { t.Emax = t.EmaxHard ? Math.min(t.EmaxHard, t.PavgMax/t.frepMin) : t.PavgMax/t.frepMin; });
+
+  function classifyTier(frep){
+    if (frep >= 1e6) return TIERS[0];
+    if (frep >= 1)   return TIERS[1];
+    return TIERS[2];
+  }
+
+  const presets = [
+    {label:"fs oscillator", pavg:0.4,  tau:100, d:100, frep:8e7, lambda:800},
+    {label:"CPA amplifier / HHG", pavg:2,    tau:35,  d:100, frep:1e3, lambda:800},
+    {label:"PW-class, relativistic", pavg:10,   tau:30,  d:3,   frep:10,  lambda:800},
+    {label:"Ultra-relativistic (neutron source)", pavg:30, tau:30, d:2.5, frep:1, lambda:800}
+  ];
+
+  const els = {
+    pavg: document.getElementById('pavg'), tau: document.getElementById('tau'),
+    d: document.getElementById('d'), frep: document.getElementById('frep'),
+    lambda: document.getElementById('lambda'), master: document.getElementById('master')
+  };
+  const out = {
+    pavg: document.getElementById('pavg_out'), tau: document.getElementById('tau_out'),
+    d: document.getElementById('d_out'), frep: document.getElementById('frep_out'),
+    lambda: document.getElementById('lambda_out')
+  };
+
+  function fmtSci(x, digits){
+    if (x === 0 || !isFinite(x)) return "0";
+    const exp = Math.floor(Math.log10(Math.abs(x)));
+    const mant = x / Math.pow(10, exp);
+    const sup = String(exp).split('').map(ch => ch==='-' ? '⁻' : "⁰¹²³⁴⁵⁶⁷⁸⁹"[ch]).join('');
+    return mant.toFixed(digits===undefined?2:digits) + "×10" + sup;
+  }
+  function fmtEng(x, unit){
+    if (x >= 1e9) return (x/1e9).toFixed(2)+" G"+unit;
+    if (x >= 1e6) return (x/1e6).toFixed(2)+" M"+unit;
+    if (x >= 1e3) return (x/1e3).toFixed(2)+" k"+unit;
+    if (x >= 1) return x.toFixed(x>=100?0:2)+" "+unit;
+    if (x >= 1e-3) return (x*1e3).toFixed(2)+" m"+unit;
+    if (x >= 1e-6) return (x*1e6).toFixed(2)+" µ"+unit;
+    if (x >= 1e-9) return (x*1e9).toFixed(2)+" n"+unit;
+    return fmtSci(x,2)+" "+unit;
+  }
+  const INTENSITY_PREFIXES = [
+    {exp:30,u:'QW'},{exp:27,u:'RW'},{exp:24,u:'YW'},{exp:21,u:'ZW'},{exp:18,u:'EW'},
+    {exp:15,u:'PW'},{exp:12,u:'TW'},{exp:9,u:'GW'},{exp:6,u:'MW'}
+  ];
+  function fmtIntensity(I){
+    for (const p of INTENSITY_PREFIXES){
+      if (I >= Math.pow(10,p.exp)) return (I/Math.pow(10,p.exp)).toFixed(2)+" "+p.u+"/cm²";
+    }
+    return fmtSci(I,2)+" W/cm²";
+  }
+
+  function setPreset(p){
+    els.pavg.value = Math.log10(p.pavg);
+    els.tau.value = Math.log10(p.tau);
+    els.d.value = Math.log10(p.d);
+    els.frep.value = Math.log10(p.frep);
+    els.lambda.value = p.lambda;
+    update(false);
+  }
+
+  const presetWrap = document.getElementById('presets');
+  presets.forEach(p=>{
+    const b = document.createElement('button');
+    b.className='preset-btn'; b.type='button'; b.textContent=p.label;
+    b.addEventListener('click', ()=>setPreset(p));
+    presetWrap.appendChild(b);
+  });
+
+  // technology ladder DOM
+  const ladderEl = document.getElementById('ladder');
+  TIERS.forEach(t=>{
+    const r = document.createElement('div');
+    r.className='rung'; r.id='rung_'+t.key;
+    r.innerHTML = '<span class="rlabel">'+t.label+'</span><span class="rsub">'+t.sub+'</span>';
+    ladderEl.appendChild(r);
+  });
+
+  // ---- plot geometry ----
+  const svg = document.getElementById('plot');
+  const svgNS = "http://www.w3.org/2000/svg";
+  const W=900, H=580, ML=72, MR=14, MT=20, MB=50;
+  const PW = W-ML-MR, PH = H-MT-MB;
+  const logMin=6, logMax=31;
+
+  function yOf(logI){
+    const clamped = Math.min(Math.max(logI, logMin), logMax);
+    return MT + (logMax - clamped)/(logMax-logMin)*PH;
+  }
+  function xOf(t, tMin, tMax){ return ML + (t - tMin)/(tMax-tMin)*PW; }
+  function el(tag, attrs){
+    const n = document.createElementNS(svgNS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function buildStaticGrid(){
+    for (let lg=logMin; lg<=logMax; lg+=2){
+      const y = yOf(lg);
+      svg.appendChild(el('line',{x1:ML,x2:ML+PW,y1:y,y2:y,class:'grid-line'}));
+      const sup = String(lg).split('').map(ch=>"⁰¹²³⁴⁵⁶⁷⁸⁹"[ch]).join('');
+      const t = el('text',{x:ML-10,y:y+5,class:'axis-label','text-anchor':'end'});
+      t.textContent = "10"+sup;
+      svg.appendChild(t);
+    }
+    const axT = el('text',{x:12,y:MT+12,class:'axis-label'});
+    axT.textContent="W/cm²"; svg.appendChild(axT);
+  }
+
+  function draw(Ipeak_Wcm2, tau_fs){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    buildStaticGrid();
+    const tMin=-3*tau_fs, tMax=3*tau_fs;
+
+    let prevTop = 0;
+    regimes.forEach(r=>{
+      const lo = prevTop<=0?0:Math.log10(prevTop);
+      const hi = r.top===Infinity?logMax:Math.log10(r.top);
+      const loC = Math.max(lo, logMin), hiC = Math.min(hi, logMax);
+      if (hiC>loC){
+        const y1=yOf(hiC), y2=yOf(loC);
+        svg.appendChild(el('rect',{x:ML,y:y1,width:PW,height:(y2-y1),fill:r.color,opacity:0.10}));
+        svg.appendChild(el('line',{x1:ML,x2:ML+PW,y1:y2,y2:y2,stroke:r.color,'stroke-width':1,opacity:0.35}));
+        if (y2-y1 > 20){
+          const lbl = el('text',{x:ML+10,y:y1+19,class:'band-label',fill:r.color});
+          lbl.textContent = r.name;
+          svg.appendChild(lbl);
+        }
+      }
+      prevTop = r.top;
+    });
+
+    [-3,-2,-1,0,1,2,3].forEach(k=>{
+      const t=k*tau_fs, x=xOf(t,tMin,tMax);
+      svg.appendChild(el('line',{x1:x,x2:x,y1:MT,y2:MT+PH,class:'grid-line'}));
+      const lbl = el('text',{x:x,y:MT+PH+22,class:'axis-label','text-anchor':'middle'});
+      lbl.textContent = (k===0?"0":(k>0?"+":"")+k+"τ");
+      svg.appendChild(lbl);
+    });
+    const axB = el('text',{x:ML+PW,y:MT+PH+42,class:'axis-label','text-anchor':'end'});
+    axB.textContent="time within pulse (τ = "+fmtEng(tau_fs*1e-15,"s")+")";
+    svg.appendChild(axB);
+
+    const N=240, pts=[];
+    const logIpeak = Math.log10(Ipeak_Wcm2);
+    for (let i=0;i<=N;i++){
+      const t = tMin + (tMax-tMin)*i/N;
+      const frac = t/tau_fs;
+      const I = Ipeak_Wcm2 * Math.exp(-4*Math.LN2*frac*frac);
+      const logI = I>0 ? Math.log10(I) : logMin-1;
+      pts.push([xOf(t,tMin,tMax), yOf(logI)]);
+    }
+    const d = "M"+pts.map(p=>p[0].toFixed(2)+","+p[1].toFixed(2)).join(" L");
+    svg.appendChild(el('path',{d:d, class:'curve'}));
+
+    const yPeak = yOf(logIpeak);
+    svg.appendChild(el('line',{x1:ML,x2:ML+PW,y1:yPeak,y2:yPeak,class:'peak-line'}));
+    svg.appendChild(el('circle',{cx:xOf(0,tMin,tMax),cy:yPeak,r:4,class:'peak-dot'}));
+  }
+
+  function classifyRegime(I){
+    for (const r of regimes){ if (I <= r.top) return r; }
+    return regimes[regimes.length-1];
+  }
+
+  // ---- backward solve: target intensity -> f_rep, P_avg, tier ----
+  function solveForTarget(I_target){
+    const dUm = Math.pow(10, parseFloat(els.d.value));
+    const d = dUm*1e-6;
+    const tauFs = Math.pow(10, parseFloat(els.tau.value));
+    const tau = tauFs*1e-15;
+    const area_cm2 = Math.PI*Math.pow(d/2,2)*1e4;
+
+    const E_req = I_target * area_cm2 * tau / 0.94;
+
+    let tier = null, E_used = E_req, unreachable = false;
+    for (const t of TIERS){
+      if (E_req <= t.Emax){ tier = t; break; }
+    }
+    if (!tier){ tier = TIERS[TIERS.length-1]; E_used = tier.Emax; unreachable = true; }
+
+    let f_rep = tier.PavgMax / E_used;
+    f_rep = Math.min(Math.max(f_rep, tier.frepMin), tier.frepMax);
+    const P_avg = f_rep * E_used;
+
+    els.frep.value = Math.log10(f_rep);
+    els.pavg.value = Math.log10(P_avg);
+
+    document.getElementById('need_line').textContent =
+      tier.label+": "+fmtEng(f_rep,"Hz")+" at "+fmtEng(E_used,"J")+" per pulse ("+fmtEng(P_avg,"W")+" average)";
+    const warn = document.getElementById('warn_line');
+    if (unreachable){
+      warn.textContent = "⚠ needs "+fmtEng(E_req,"J")+" per pulse — beyond any laser built to date (capped at "+fmtEng(tier.Emax,"J")+"). Try a shorter pulse or tighter focus.";
+      warn.classList.add('show');
+    } else {
+      warn.classList.remove('show');
+    }
+  }
+
+  function updateLadder(activeTierKey){
+    TIERS.forEach(t=>{
+      document.getElementById('rung_'+t.key).classList.toggle('active', t.key===activeTierKey);
+    });
+  }
+
+  function update(fromMaster){
+    const P_avg = Math.pow(10, parseFloat(els.pavg.value));
+    const tauFs = Math.pow(10, parseFloat(els.tau.value));
+    const tau = tauFs*1e-15;
+    const dUm = Math.pow(10, parseFloat(els.d.value));
+    const d = dUm*1e-6;
+    const fRep = Math.pow(10, parseFloat(els.frep.value));
+    const lambdaNm = parseFloat(els.lambda.value);
+    const lambdaUm = lambdaNm/1000;
+
+    const E = P_avg / fRep;
+
+    out.pavg.textContent = fmtEng(P_avg,"W");
+    out.tau.textContent = fmtEng(tau,"s");
+    out.d.textContent = fmtEng(d,"m");
+    out.frep.textContent = fmtEng(fRep,"Hz");
+    out.lambda.textContent = lambdaNm.toFixed(0)+" nm";
+
+    const tier = classifyTier(fRep);
+    document.getElementById('frep_chip').textContent = tier.label;
+    document.getElementById('frep_chip').style.background = tier.color+'33';
+    document.getElementById('frep_chip').style.color = tier.color;
+    updateLadder(tier.key);
+
+    const Ppeak = 0.94*E/tau;
+    const area_m2 = Math.PI*Math.pow(d/2,2);
+    const area_cm2 = area_m2*1e4;
+    const I_Wcm2 = Ppeak/area_cm2;
+    const I_Wm2 = I_Wcm2*1e4;
+
+    const Efield = Math.sqrt(2*I_Wm2/(c*eps0));
+    const I18 = I_Wcm2/1e18;
+    const a0 = 0.85*lambdaUm*Math.sqrt(Math.max(I18,0));
+    const Thot_MeV = 0.511*(Math.sqrt(1+a0*a0/2)-1);
+
+    const omega = 2*Math.PI*c/(lambdaNm*1e-9);
+    const pTunnel = Math.sqrt(2*me*Ip_H);
+    const keldysh = (omega*pTunnel)/(e*Efield);
+
+    document.getElementById('r_energy').textContent = fmtEng(E,"J");
+    document.getElementById('r_power').textContent = fmtEng(Ppeak,"W");
+    document.getElementById('r_intensity').textContent = fmtSci(I_Wcm2,2)+" W/cm²";
+    document.getElementById('r_field').textContent = fmtSci(Efield,2)+" V/m";
+    document.getElementById('r_fieldau').textContent = fmtSci(Efield/Ea_atomic,2)+" × E_a";
+    document.getElementById('r_a0').textContent = a0.toFixed(a0<0.01?4:2);
+    document.getElementById('r_keldysh').textContent = keldysh.toFixed(keldysh<0.01?4:(keldysh<10?2:1));
+    document.getElementById('r_thot').textContent = (Thot_MeV<0.001? (Thot_MeV*1e3).toFixed(2)+" keV" : Thot_MeV.toFixed(Thot_MeV<1?3:1)+" MeV");
+
+    const regime = classifyRegime(I_Wcm2);
+    document.getElementById('hero_regime').textContent = regime.name;
+    document.getElementById('hero_regime').className = 'hero-value' + (regime.top>=2.3e29 ? ' danger':'');
+    document.getElementById('hero_intensity').textContent = fmtSci(I_Wcm2,2)+" W/cm²";
+    document.getElementById('desc_title').innerHTML = regime.title;
+    document.getElementById('desc_body').innerHTML = regime.body;
+
+    document.getElementById('master_val').textContent = fmtIntensity(I_Wcm2);
+    document.getElementById('master_sci').textContent = fmtSci(I_Wcm2,2)+" W/cm²";
+    if (!fromMaster){ els.master.value = Math.min(Math.max(Math.log10(I_Wcm2),6),30); }
+    if (!document.getElementById('warn_line').classList.contains('show') || fromMaster){
+      if(!fromMaster){
+        document.getElementById('need_line').textContent =
+          tier.label+": "+fmtEng(fRep,"Hz")+" at "+fmtEng(E,"J")+" per pulse ("+fmtEng(P_avg,"W")+" average)";
+        document.getElementById('warn_line').classList.remove('show');
+      }
+    }
+
+    draw(I_Wcm2, tauFs);
+  }
+
+  ['pavg','tau','d','frep','lambda'].forEach(k=>{
+    els[k].addEventListener('input', ()=>update(false));
+  });
+  els.master.addEventListener('input', ()=>{
+    const I_target = Math.pow(10, parseFloat(els.master.value));
+    solveForTarget(I_target);
+    update(true);
+  });
+
+  // defaults: P_avg=10W, tau=30fs, d=3µm, f_rep=10Hz, 800nm  (PW-class relativistic)
+  els.pavg.value = Math.log10(10);
+  els.tau.value = Math.log10(30);
+  els.d.value = Math.log10(3);
+  els.frep.value = Math.log10(10);
+  els.lambda.value = 800;
+  update(false);
+})();
+</script>
+</body>
+</html>
