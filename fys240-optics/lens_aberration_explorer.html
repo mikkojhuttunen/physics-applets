@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lens Aberration Explorer — FYS.240 Optics</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys240-optics.css">
+<style>
+  body{padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));
+    padding-top:calc(14px + env(safe-area-inset-top,0px));
+    display:flex;flex-direction:column;gap:12px;max-width:760px;margin:0 auto;}
+
+  h1{font-size:1.15rem;margin:2px 0 2px;font-weight:600;letter-spacing:-0.01em;}
+  p.sub{margin:0;color:var(--text-dim);font-size:0.85rem;line-height:1.4;}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;}
+
+  .canvas-wrap{
+    position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.04), transparent 60%),
+      var(--panel);
+    border:1px solid var(--border);
+  }
+  canvas{display:block;width:100%;height:100%;}
+
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:0.82rem;margin-top:10px;font-family:var(--font-mono);}
+  .readout .full{grid-column:1/-1;}
+  .readout dt{color:var(--text-dim);font-family:var(--font-body);}
+  .readout dd{margin:0 0 4px 0;font-weight:600;}
+  .readout dd.red{color:var(--red);}
+  .readout dd.blue{color:var(--blue);}
+  .readout dd.green{color:var(--green);}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:0.78rem;color:var(--text-dim);margin-top:8px;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
+  .dash{background-image:repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px);height:2px;}
+
+  .controls{display:flex;flex-direction:column;gap:14px;}
+  .row{display:flex;flex-direction:column;gap:4px;}
+  .row .label-line{display:flex;justify-content:space-between;font-size:0.85rem;}
+  .row .label-line b{font-weight:600;}
+  .row .label-line span{color:var(--violet);font-variant-numeric:tabular-nums;font-family:var(--font-mono);}
+
+  input[type=range]{-webkit-appearance:none;width:100%;height:28px;background:transparent;}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:4px;background:var(--panel-2);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:var(--violet);margin-top:-7px;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--border);}
+  input[type=range]::-moz-range-track{height:6px;border-radius:4px;background:var(--panel-2);}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--violet);border:2px solid var(--panel);}
+
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:2px;}
+  .switch{position:relative;width:48px;height:28px;flex:none;}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .slider-pill{position:absolute;inset:0;background:var(--panel-2);border-radius:999px;transition:background .15s ease;}
+  .slider-pill::before{
+    content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+    background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s ease;
+  }
+  .switch input:checked + .slider-pill{background:linear-gradient(90deg,var(--red),var(--blue));}
+  .switch input:checked + .slider-pill::before{transform:translateX(20px);}
+
+  .btnrow{display:flex;gap:10px;}
+  button.reset{
+    flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--panel);
+    color:var(--text);font-size:0.85rem;font-weight:600;cursor:pointer;font-family:var(--font-body);
+  }
+  button.reset:active{background:var(--panel-2);}
+
+  .disp-note{font-size:0.78rem;color:var(--text-dim);}
+  .warn{color:var(--red);font-size:0.78rem;margin-top:6px;}
+  .back{display:inline-block;margin-bottom:2px;color:var(--text-dim);font-size:0.82rem;text-decoration:none;}
+  .back:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">&larr; FYS.240 Optics</a>
+
+<header>
+  <h1>🔬 Lens Aberration Explorer</h1>
+  <p class="sub">Real ray-traced (Snell's law, no paraxial shortcut) collimated bundle through a biconvex lens.
+  Watch marginal rays miss the paraxial focus as you open the aperture or shorten the radius — that's spherical aberration.
+  Toggle red/blue to see chromatic aberration from dispersion.</p>
+</header>
+
+<div class="card">
+  <div class="canvas-wrap">
+    <canvas id="cv"></canvas>
+  </div>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--green)"></span>rays (n₀)</span>
+    <span><span class="swatch" style="background:var(--red)"></span>red (n − Δn/2)</span>
+    <span><span class="swatch" style="background:var(--blue)"></span>blue (n + Δn/2)</span>
+    <span><span class="swatch dash" style="color:var(--text-dim)"></span>focal marker</span>
+  </div>
+  <dl class="readout" id="readout"></dl>
+  <div id="warn" class="warn" style="display:none;"></div>
+</div>
+
+<div class="card controls">
+
+  <div class="toggle-row">
+    <div>
+      <b>Chromatic aberration</b>
+      <div class="disp-note">Simulate red vs. blue with different refractive indices</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="chromToggle">
+      <span class="slider-pill"></span>
+    </label>
+  </div>
+
+  <div class="row">
+    <div class="label-line"><b>Radius of curvature (R)</b><span id="valR"></span></div>
+    <input type="range" id="R" min="40" max="250" step="1">
+  </div>
+
+  <div class="row">
+    <div class="label-line"><b>Lens size (aperture ⌀)</b><span id="valAp"></span></div>
+    <input type="range" id="ap" min="10" max="220" step="1">
+  </div>
+
+  <div class="row">
+    <div class="label-line"><b>Base refractive index n₀</b><span id="valN"></span></div>
+    <input type="range" id="n0" min="1.30" max="1.90" step="0.01">
+  </div>
+
+  <div class="row" id="dispRow">
+    <div class="label-line"><b>Dispersion Δn (red↔blue)</b><span id="valDisp"></span></div>
+    <input type="range" id="disp" min="1" max="10" step="0.5">
+  </div>
+
+  <div class="row">
+    <div class="label-line"><b>Number of rays</b><span id="valRays"></span></div>
+    <input type="range" id="rays" min="5" max="31" step="2">
+  </div>
+
+  <div class="btnrow">
+    <button class="reset" id="resetBtn">Reset to defaults</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- vector helpers ----------
+  const sub=(a,b)=>({z:a.z-b.z,y:a.y-b.y});
+  const add=(a,b)=>({z:a.z+b.z,y:a.y+b.y});
+  const scl=(a,s)=>({z:a.z*s,y:a.y*s});
+  const dot=(a,b)=>a.z*b.z+a.y*b.y;
+  const len=(a)=>Math.sqrt(dot(a,a));
+  const norm=(a)=>{const l=len(a); return l>1e-12?{z:a.z/l,y:a.y/l}:{z:0,y:0};};
+
+  function raySphereHit(O,D,C,R){
+    const oc=sub(O,C);
+    const b=2*dot(oc,D);
+    const c=dot(oc,oc)-R*R;
+    const disc=b*b-4*c;
+    if(disc<0) return null;
+    const sq=Math.sqrt(disc);
+    const s1=(-b-sq)/2, s2=(-b+sq)/2;
+    let s=null;
+    if(s1>1e-6 && s2>1e-6) s=Math.min(s1,s2);
+    else if(s1>1e-6) s=s1;
+    else if(s2>1e-6) s=s2;
+    else return null;
+    return {s, P:add(O,scl(D,s))};
+  }
+
+  function outwardNormalAgainst(P,C,D){
+    let n=norm(sub(P,C));
+    if(dot(n,D)>0) n=scl(n,-1);
+    return n;
+  }
+
+  // returns refracted dir, or null on total internal reflection
+  function refract(D,N,mu){
+    const cosI=-dot(N,D);
+    const sin2T=mu*mu*(1-cosI*cosI);
+    if(sin2T>1) return null;
+    const cosT=Math.sqrt(1-sin2T);
+    return norm(add(scl(D,mu), scl(N, mu*cosI-cosT)));
+  }
+
+  function sag(R,h){ return R-Math.sqrt(Math.max(R*R-h*h,0)); }
+
+  // trace a single ray at initial height y0, through symmetric biconvex lens
+  function traceRay(y0,R,tCenter,nLens,zStart,zEnd){
+    const C1={z:-tCenter/2+R,y:0};
+    const C2={z: tCenter/2-R,y:0};
+    const O={z:zStart,y:y0};
+    const D0={z:1,y:0};
+
+    const h1=raySphereHit(O,D0,C1,R);
+    if(!h1) return {ok:false};
+    const N1=outwardNormalAgainst(h1.P,C1,D0);
+    const D1=refract(D0,N1,1/nLens);
+    if(!D1) return {ok:false,tir:true,path:[O,h1.P]};
+
+    const h2=raySphereHit(h1.P,D1,C2,R);
+    if(!h2) return {ok:false};
+    const N2=outwardNormalAgainst(h2.P,C2,D1);
+    const D2=refract(D1,N2,nLens);
+    if(!D2) return {ok:false,tir:true,path:[O,h1.P,h2.P]};
+
+    let zCross=null;
+    if(Math.abs(D2.y)>1e-9){
+      const s=-h2.P.y/D2.y;
+      if(s>0) zCross=h2.P.z+s*D2.z;
+    }
+    // extend to zEnd for drawing
+    let endP=h2.P;
+    if(D2.z>1e-9){
+      const s=(zEnd-h2.P.z)/D2.z;
+      if(s>0) endP=add(h2.P,scl(D2,s));
+    }
+    return {ok:true,path:[O,h1.P,h2.P,endP],zCross};
+  }
+
+  // ---------- state ----------
+  const defaults={R:90,ap:70,n0:1.52,disp:3,rays:15,chrom:false};
+  let state=Object.assign({},defaults);
+
+  const els={
+    R:document.getElementById('R'),
+    ap:document.getElementById('ap'),
+    n0:document.getElementById('n0'),
+    disp:document.getElementById('disp'),
+    rays:document.getElementById('rays'),
+    chrom:document.getElementById('chromToggle'),
+    valR:document.getElementById('valR'),
+    valAp:document.getElementById('valAp'),
+    valN:document.getElementById('valN'),
+    valDisp:document.getElementById('valDisp'),
+    valRays:document.getElementById('valRays'),
+    dispRow:document.getElementById('dispRow'),
+    readout:document.getElementById('readout'),
+    warn:document.getElementById('warn'),
+    resetBtn:document.getElementById('resetBtn'),
+  };
+
+  function apertureMax(R){ return Math.min(220, Math.round(1.8*R)); }
+
+  function applyStateToInputs(){
+    els.R.value=state.R;
+    const apMax=apertureMax(state.R);
+    els.ap.max=apMax;
+    if(state.ap>apMax) state.ap=apMax;
+    els.ap.value=state.ap;
+    els.n0.value=state.n0;
+    els.disp.value=state.disp;
+    els.rays.value=state.rays;
+    els.chrom.checked=state.chrom;
+    els.dispRow.style.opacity=state.chrom?1:0.4;
+    updateLabels();
+  }
+
+  function updateLabels(){
+    els.valR.textContent=state.R+' mm';
+    els.valAp.textContent=state.ap+' mm';
+    els.valN.textContent=state.n0.toFixed(2);
+    els.valDisp.textContent=state.disp.toFixed(1)+'%';
+    els.valRays.textContent=state.rays;
+  }
+
+  // ---------- canvas setup ----------
+  const canvas=document.getElementById('cv');
+  const ctx=canvas.getContext('2d');
+
+  function resizeCanvas(){
+    const dpr=Math.max(1,window.devicePixelRatio||1);
+    const rect=canvas.parentElement.getBoundingClientRect();
+    canvas.width=Math.round(rect.width*dpr);
+    canvas.height=Math.round(rect.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    draw();
+  }
+
+  function cssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function computeGeometry(){
+    const R=state.R;
+    const hMax=state.ap/2;
+    const edgeMin=3;
+    const tCenter=2*sag(R,hMax)+edgeMin;
+    return {R,hMax,tCenter};
+  }
+
+  function paraxialF(R,n){ return R/(2*(n-1)); }
+
+  function buildRayHeights(hMax,n){
+    const heights=[];
+    if(n<=1) return heights;
+    for(let i=0;i<n;i++){
+      let y = -hMax + (2*hMax*i)/(n-1);
+      if(Math.abs(y)<1e-4) y = (i%2===0? 1:-1)*hMax*0.01; // avoid degenerate axial ray
+      heights.push(y);
+    }
+    return heights;
+  }
+
+  function draw(){
+    const rect=canvas.parentElement.getBoundingClientRect();
+    const cw=rect.width, ch=rect.height;
+    ctx.clearRect(0,0,cw,ch);
+
+    const geo=computeGeometry();
+    const {R,hMax,tCenter}=geo;
+
+    const f0=paraxialF(R,state.n0);
+    let worldZmax=Math.max(150,Math.min(900,f0*1.3+40));
+    let worldZmin=-100;
+    const yMargin=hMax*1.55;
+
+    const padPx=18;
+    const worldW=worldZmax-worldZmin;
+    const worldH=2*yMargin;
+    const scale=Math.min((cw-2*padPx)/worldW,(ch-2*padPx)/worldH);
+
+    const toPx=(p)=>({
+      x: padPx + (p.z-worldZmin)*scale,
+      y: ch/2 - p.y*scale
+    });
+
+    const muted=cssVar('--text-dim');
+    const lensStroke=cssVar('--blue');
+    const green=cssVar('--green'), red=cssVar('--red'), blue=cssVar('--blue');
+
+    // optical axis
+    ctx.save();
+    ctx.strokeStyle=muted;
+    ctx.setLineDash([2,4]);
+    ctx.lineWidth=1;
+    const axL=toPx({z:worldZmin,y:0}), axR=toPx({z:worldZmax,y:0});
+    ctx.beginPath();ctx.moveTo(axL.x,axL.y);ctx.lineTo(axR.x,axR.y);ctx.stroke();
+    ctx.restore();
+
+    // lens shape
+    const C1z=-tCenter/2+R, C2z=tCenter/2-R;
+    const N=48;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const h=hMax - (2*hMax*i)/N;
+      const z=C1z - Math.sqrt(Math.max(R*R-h*h,0));
+      const p=toPx({z,y:h});
+      if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+    }
+    for(let i=0;i<=N;i++){
+      const h=-hMax + (2*hMax*i)/N;
+      const z=C2z + Math.sqrt(Math.max(R*R-h*h,0));
+      const p=toPx({z,y:h});
+      ctx.lineTo(p.x,p.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle='rgba(62,142,247,0.16)';
+    ctx.strokeStyle=lensStroke;
+    ctx.lineWidth=1.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // ---- ray tracing & drawing ----
+    const heights=buildRayHeights(hMax,state.rays);
+    let tirCount=0;
+
+    function drawBundle(nLens,color,dashFocus){
+      const crossings=[];
+      ctx.strokeStyle=color;
+      ctx.lineWidth=1.1;
+      ctx.globalAlpha=0.85;
+      heights.forEach((y0)=>{
+        const r=traceRay(y0,R,tCenter,nLens,worldZmin,worldZmax);
+        if(!r.ok){ if(r.tir) tirCount++; return; }
+        if(r.zCross!==null) crossings.push({y0,z:r.zCross});
+        ctx.beginPath();
+        r.path.forEach((p,i)=>{
+          const px=toPx(p);
+          if(i===0) ctx.moveTo(px.x,px.y); else ctx.lineTo(px.x,px.y);
+        });
+        ctx.stroke();
+      });
+      ctx.globalAlpha=1;
+
+      // reference (near-axis) crossing & marginal crossing
+      if(crossings.length){
+        crossings.sort((a,b)=>Math.abs(a.y0)-Math.abs(b.y0));
+        const axialC=crossings[0];
+        const marginal=crossings.reduce((m,c)=>Math.abs(c.y0)>Math.abs(m.y0)?c:m,crossings[0]);
+        if(dashFocus){
+          const p1=toPx({z:axialC.z,y:-yMargin}), p2=toPx({z:axialC.z,y:yMargin});
+          ctx.save();
+          ctx.setLineDash([5,4]);
+          ctx.strokeStyle=color;
+          ctx.lineWidth=1;
+          ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+          ctx.restore();
+        }
+        return {axial:axialC.z, marginal:marginal.z};
+      }
+      return null;
+    }
+
+    let stats={};
+    if(state.chrom){
+      const dn=state.disp/100;
+      const nRed=state.n0*(1-dn/2);
+      const nBlue=state.n0*(1+dn/2);
+      stats.red=drawBundle(nRed,red,true);
+      stats.blue=drawBundle(nBlue,blue,true);
+    } else {
+      stats.base=drawBundle(state.n0,green,true);
+    }
+
+    // ---------- readout ----------
+    const fmt=(v)=> (v===null||v===undefined||!isFinite(v))?'—':v.toFixed(1)+' mm';
+    let html='';
+    html+=`<dt>Radius of curvature R</dt><dd>${R.toFixed(0)} mm</dd>`;
+    html+=`<dt>Lens aperture ⌀</dt><dd>${(2*hMax).toFixed(0)} mm</dd>`;
+    html+=`<dt>Center thickness</dt><dd>${tCenter.toFixed(1)} mm</dd>`;
+    html+=`<dt>Paraxial f (thin-lens est.)</dt><dd>${fmt(f0)}</dd>`;
+
+    if(state.chrom){
+      html+=`<dt>n (red / blue)</dt><dd class="red">${(state.n0*(1-state.disp/200)).toFixed(3)}</dd>`;
+      html+=`<dt>&nbsp;</dt><dd class="blue">${(state.n0*(1+state.disp/200)).toFixed(3)}</dd>`;
+      if(stats.red&&stats.blue){
+        html+=`<dt>Axial focus (red / blue)</dt><dd class="red">${fmt(stats.red.axial)}</dd>`;
+        html+=`<dt>&nbsp;</dt><dd class="blue">${fmt(stats.blue.axial)}</dd>`;
+        const shift=Math.abs(stats.red.axial-stats.blue.axial);
+        html+=`<dt class="full">Chromatic focal shift |Δz|</dt><dd class="full">${fmt(shift)}</dd>`;
+      }
+    } else if(stats.base){
+      html+=`<dt>Axial (near-paraxial) focus</dt><dd class="green">${fmt(stats.base.axial)}</dd>`;
+      html+=`<dt>Marginal ray focus</dt><dd class="green">${fmt(stats.base.marginal)}</dd>`;
+      const sa=stats.base.marginal-stats.base.axial;
+      html+=`<dt class="full">Spherical aberration (marginal − axial)</dt><dd class="full">${sa.toFixed(1)} mm</dd>`;
+    }
+    els.readout.innerHTML=html;
+
+    if(tirCount>0){
+      els.warn.style.display='block';
+      els.warn.textContent=`⚠ ${tirCount} marginal ray(s) hit total internal reflection at this angle and are not drawn — try a larger R or smaller aperture.`;
+    } else {
+      els.warn.style.display='none';
+    }
+  }
+
+  // ---------- wiring ----------
+  function onInput(){
+    state.R=parseFloat(els.R.value);
+    const apMax=apertureMax(state.R);
+    els.ap.max=apMax;
+    if(parseFloat(els.ap.value)>apMax) els.ap.value=apMax;
+    state.ap=parseFloat(els.ap.value);
+    state.n0=parseFloat(els.n0.value);
+    state.disp=parseFloat(els.disp.value);
+    state.rays=parseInt(els.rays.value,10);
+    state.chrom=els.chrom.checked;
+    els.dispRow.style.opacity=state.chrom?1:0.4;
+    updateLabels();
+    draw();
+  }
+
+  [els.R,els.ap,els.n0,els.disp,els.rays].forEach(el=>{
+    el.addEventListener('input',onInput);
+  });
+  els.chrom.addEventListener('change',onInput);
+  els.resetBtn.addEventListener('click',()=>{
+    state=Object.assign({},defaults);
+    applyStateToInputs();
+    draw();
+  });
+
+  window.addEventListener('resize',resizeCanvas);
+  if(window.ResizeObserver){
+    new ResizeObserver(resizeCanvas).observe(canvas.parentElement);
+  }
+
+  applyStateToInputs();
+  resizeCanvas();
+})();
+</script>
+</body>
+</html>
