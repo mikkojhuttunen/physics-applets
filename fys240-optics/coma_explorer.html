@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" data-course="optics">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coma Explorer — FYS-240 Optics</title>
+
+<!--
+  This file is a build.py SOURCE. The marker below is replaced at build time
+  with the inlined contents of shared/theme.css + shared/components.css
+  (see repo README / build.py). Until built, sensible fallbacks below keep
+  this file viewable and self-contained on its own.
+-->
+<!--SHARED_STYLES-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /*
+    Fallback tokens only. :where(:root) has zero specificity, so if
+    shared/theme.css defines :root{--accent:...} (per data-course) or
+    [data-course="optics"]{--accent:...}, that wins automatically —
+    nothing here needs to be hand-edited after a build.py run.
+  */
+  :where(:root){
+    --bg:#f4f6f9;
+    --panel:#ffffff;
+    --fg:#1a1e26;
+    --muted:#5b6472;
+    --border:#dfe4ea;
+    --accent:#2a8c82;      /* teal = optics course accent (fallback) */
+    --accent-soft:#e3f3f1;
+    --lens-fill:rgba(42,140,130,0.16);
+    --lens-stroke:rgba(30,110,100,0.85);
+    --track:#e2e6ec;
+    --grid:rgba(0,0,0,0.08);
+    --font-ui:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :where(:root):not([data-theme="light"]){
+      --bg:#12151a; --panel:#1b1f27; --fg:#eef1f6; --muted:#9aa4b2; --border:#2a3038;
+      --accent:#3fb8ac; --accent-soft:#173330;
+      --lens-fill:rgba(63,184,172,0.16); --lens-stroke:rgba(120,210,200,0.75);
+      --track:#2a3038; --grid:rgba(255,255,255,0.10);
+    }
+  }
+  :where(:root[data-theme="dark"]){
+    --bg:#12151a; --panel:#1b1f27; --fg:#eef1f6; --muted:#9aa4b2; --border:#2a3038;
+    --accent:#3fb8ac; --accent-soft:#173330;
+    --lens-fill:rgba(63,184,172,0.16); --lens-stroke:rgba(120,210,200,0.75);
+    --track:#2a3038; --grid:rgba(255,255,255,0.10);
+  }
+
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-ui);}
+  body{
+    padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));
+    padding-top:calc(14px + env(safe-area-inset-top,0px));
+    display:flex;flex-direction:column;gap:12px;max-width:820px;margin:0 auto;
+  }
+  h1{font-size:1.15rem;margin:2px 0 2px;}
+  h2{font-size:0.95rem;margin:0 0 6px;}
+  p.sub{margin:0;color:var(--muted);font-size:0.85rem;line-height:1.4;}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;}
+
+  .canvas-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;
+    background:var(--panel);border:1px solid var(--border);}
+  canvas{display:block;width:100%;height:100%;}
+
+  .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:0.76rem;color:var(--muted);margin-top:8px;font-family:var(--font-mono);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  table.stats{width:100%;border-collapse:collapse;font-size:0.8rem;margin-top:6px;}
+  table.stats th,table.stats td{padding:5px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-mono);}
+  table.stats th:first-child,table.stats td:first-child{text-align:left;font-family:var(--font-ui);}
+  table.stats th{color:var(--muted);font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:.02em;font-family:var(--font-ui);}
+
+  .spotgrid{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;justify-content:flex-start;}
+  .spotitem{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1 1 70px;max-width:110px;}
+  .spotitem canvas{width:100%;aspect-ratio:1/1;border-radius:8px;border:1px solid var(--border);background:var(--panel);}
+  .spotitem .lbl{font-size:0.68rem;color:var(--muted);text-align:center;line-height:1.2;font-family:var(--font-mono);}
+
+  .controls{display:flex;flex-direction:column;gap:14px;}
+  .row{display:flex;flex-direction:column;gap:4px;}
+  .row .label-line{display:flex;justify-content:space-between;font-size:0.85rem;}
+  .row .label-line span{color:var(--accent);font-variant-numeric:tabular-nums;font-family:var(--font-mono);}
+
+  input[type=range]{-webkit-appearance:none;width:100%;height:28px;background:transparent;}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:4px;background:var(--track);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:var(--accent);margin-top:-7px;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--border);}
+  input[type=range]::-moz-range-track{height:6px;border-radius:4px;background:var(--track);}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);}
+
+  button.reset{padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--panel);
+    color:var(--fg);font-size:0.85rem;font-weight:600;cursor:pointer;width:100%;font-family:var(--font-ui);}
+  button.reset:active{background:var(--accent-soft);}
+
+  .warn{color:#e0483e;font-size:0.78rem;margin-top:6px;}
+  .caption{font-size:0.76rem;color:var(--muted);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌀 Coma Explorer</h1>
+  <p class="sub">Point sources placed off the optical axis get imaged as asymmetric comet-shaped blurs, not sharp points — that's coma.
+  The object arrow on the left is sampled at several heights; each colored dot is a distinct point source traced through the real lens
+  (Snell's law, full pupil sampling), and the matching dot/cloud on the right is its image.</p>
+</header>
+
+<div class="card">
+  <div class="canvas-wrap"><canvas id="cv"></canvas></div>
+  <div class="legend" id="legend"></div>
+  <div id="warn" class="warn" style="display:none;"></div>
+</div>
+
+<div class="card">
+  <h2>Spot diagrams at the image plane</h2>
+  <p class="caption" id="spotCaption"></p>
+  <div class="spotgrid" id="spotgrid"></div>
+  <table class="stats" id="statsTable"></table>
+</div>
+
+<div class="card controls">
+  <div class="row">
+    <div class="label-line"><b>Radius of curvature (R)</b><span id="valR"></span></div>
+    <input type="range" id="R" min="40" max="250" step="1">
+  </div>
+  <div class="row">
+    <div class="label-line"><b>Lens size (aperture ⌀)</b><span id="valAp"></span></div>
+    <input type="range" id="ap" min="10" max="220" step="1">
+  </div>
+  <div class="row">
+    <div class="label-line"><b>Refractive index n</b><span id="valN"></span></div>
+    <input type="range" id="n0" min="1.30" max="1.90" step="0.01">
+  </div>
+  <div class="row">
+    <div class="label-line"><b>Object distance</b><span id="valObj"></span></div>
+    <input type="range" id="objDist" min="300" max="1200" step="10">
+  </div>
+  <div class="row">
+    <div class="label-line"><b>Max field height (off-axis extent)</b><span id="valField"></span></div>
+    <input type="range" id="fieldH" min="0" max="60" step="1">
+  </div>
+  <div class="row">
+    <div class="label-line"><b>Number of object points</b><span id="valNpts"></span></div>
+    <input type="range" id="npts" min="3" max="6" step="1">
+  </div>
+  <div class="row">
+    <div class="label-line"><b>Spot diagram density</b><span id="valDensity"></span></div>
+    <input type="range" id="density" min="6" max="20" step="1">
+  </div>
+  <button class="reset" id="resetBtn">Reset to defaults</button>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ---------- 3D vector helpers ----------
+const V=(x,y,z)=>({x,y,z});
+const sub=(a,b)=>V(a.x-b.x,a.y-b.y,a.z-b.z);
+const add=(a,b)=>V(a.x+b.x,a.y+b.y,a.z+b.z);
+const scl=(a,s)=>V(a.x*s,a.y*s,a.z*s);
+const dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+const len=(a)=>Math.sqrt(dot(a,a));
+const norm=(a)=>{const l=len(a); return l>1e-12?scl(a,1/l):V(0,0,0);};
+
+function raySphereHit(O,D,C,R){
+  const oc=sub(O,C);
+  const b=2*dot(oc,D);
+  const c=dot(oc,oc)-R*R;
+  const disc=b*b-4*c;
+  if(disc<0) return null;
+  const sq=Math.sqrt(disc);
+  const s1=(-b-sq)/2, s2=(-b+sq)/2;
+  let s=null;
+  if(s1>1e-6 && s2>1e-6) s=Math.min(s1,s2);
+  else if(s1>1e-6) s=s1;
+  else if(s2>1e-6) s=s2;
+  else return null;
+  return {s,P:add(O,scl(D,s))};
+}
+function outwardNormalAgainst(P,C,D){
+  let n=norm(sub(P,C));
+  if(dot(n,D)>0) n=scl(n,-1);
+  return n;
+}
+function refract(D,N,mu){
+  const cosI=-dot(N,D);
+  const sin2T=mu*mu*(1-cosI*cosI);
+  if(sin2T>1) return null;
+  const cosT=Math.sqrt(1-sin2T);
+  return norm(add(scl(D,mu), scl(N, mu*cosI-cosT)));
+}
+function sag(R,h){ return R-Math.sqrt(Math.max(R*R-h*h,0)); }
+
+function traceThroughLens(O,D0,R,tCenter,nLens){
+  const C1=V(0,0,-tCenter/2+R);
+  const C2=V(0,0, tCenter/2-R);
+  const h1=raySphereHit(O,D0,C1,R);
+  if(!h1) return {ok:false};
+  const N1=outwardNormalAgainst(h1.P,C1,D0);
+  const D1=refract(D0,N1,1/nLens);
+  if(!D1) return {ok:false,tir:true,path:[O,h1.P]};
+  const h2=raySphereHit(h1.P,D1,C2,R);
+  if(!h2) return {ok:false};
+  const N2=outwardNormalAgainst(h2.P,C2,D1);
+  const D2=refract(D1,N2,nLens);
+  if(!D2) return {ok:false,tir:true,path:[O,h1.P,h2.P]};
+  return {ok:true,p0:O,p1:h1.P,p2:h2.P,dirOut:D2};
+}
+
+// ---------- state ----------
+const defaults={R:110,ap:80,n0:1.55,objDist:500,fieldH:30,npts:5,density:10};
+let state=Object.assign({},defaults);
+
+const els={};
+['R','ap','n0','objDist','fieldH','npts','density'].forEach(id=>els[id]=document.getElementById(id));
+['valR','valAp','valN','valObj','valField','valNpts','valDensity'].forEach(id=>els[id]=document.getElementById(id));
+els.resetBtn=document.getElementById('resetBtn');
+els.warn=document.getElementById('warn');
+els.legend=document.getElementById('legend');
+els.spotgrid=document.getElementById('spotgrid');
+els.spotCaption=document.getElementById('spotCaption');
+els.statsTable=document.getElementById('statsTable');
+
+const FIELD_COLORS=['#2fa85a','#3aa0c8','#e0a83e','#e0703e','#e0483e','#b23ec0'];
+
+function apertureMax(R){ return Math.min(220, Math.round(1.8*R)); }
+
+function applyStateToInputs(){
+  els.R.value=state.R;
+  const apMax=apertureMax(state.R);
+  els.ap.max=apMax;
+  if(state.ap>apMax) state.ap=apMax;
+  els.ap.value=state.ap;
+  els.n0.value=state.n0;
+  els.objDist.value=state.objDist;
+  els.fieldH.value=state.fieldH;
+  els.npts.value=state.npts;
+  els.density.value=state.density;
+  updateLabels();
+}
+function updateLabels(){
+  els.valR.textContent=state.R+' mm';
+  els.valAp.textContent=state.ap+' mm';
+  els.valN.textContent=state.n0.toFixed(2);
+  els.valObj.textContent=state.objDist+' mm';
+  els.valField.textContent=state.fieldH+' mm';
+  els.valNpts.textContent=state.npts;
+  els.valDensity.textContent=state.density+'/ring';
+}
+
+// ---------- canvas ----------
+const canvas=document.getElementById('cv');
+const ctx=canvas.getContext('2d');
+
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function resizeMain(){
+  const dpr=Math.max(1,window.devicePixelRatio||1);
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=Math.round(rect.width*dpr);
+  canvas.height=Math.round(rect.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  computeAndDraw();
+}
+
+function paraxialF(R,n){ return R/(2*(n-1)); }
+
+function fieldHeights(maxH,n){
+  if(n<=1) return [0];
+  const arr=[];
+  for(let i=0;i<n;i++) arr.push(maxH*i/(n-1));
+  return arr;
+}
+
+function pupilSamplesForSpot(hMax,density){
+  const pts=[{x:0,y:0,chief:true}];
+  const rings=[0.25,0.5,0.75,1.0];
+  rings.forEach(fr=>{
+    const r=fr*hMax;
+    for(let j=0;j<density;j++){
+      const phi=2*Math.PI*j/density;
+      pts.push({x:r*Math.cos(phi), y:r*Math.sin(phi), chief:false});
+    }
+  });
+  return pts;
+}
+function meridionalFanHeights(hMax,count){
+  const arr=[];
+  for(let i=0;i<count;i++){
+    let h=-hMax+(2*hMax*i)/(count-1);
+    if(Math.abs(h)<1e-4) h=hMax*0.005;
+    arr.push(h);
+  }
+  return arr;
+}
+
+function frontSurfacePoint(xp,yp,C1z,R){
+  const rho2=xp*xp+yp*yp;
+  return V(xp,yp, C1z-Math.sqrt(Math.max(R*R-rho2,0)));
+}
+
+function computeAndDraw(){
+  const R=state.R, hMax=state.ap/2, n0=state.n0;
+  const edgeMin=3;
+  const tCenter=2*sag(R,hMax)+edgeMin;
+  const C1z=-tCenter/2+R;
+
+  const f0=paraxialF(R,n0);
+  const u=-state.objDist;
+  const v=1/(1/f0+1/u);
+
+  let warnMsg='';
+  let haveImage = isFinite(v) && v>1;
+  if(!haveImage){
+    warnMsg='Object is inside (or too near) the focal length — no real image forms. Increase object distance or reduce n/R.';
+  }
+  const z_obj=u;
+  const z_img=haveImage? v : null;
+
+  const heights=fieldHeights(state.fieldH,state.npts);
+
+  const fieldData = heights.map((yObj,idx)=>{
+    const color=FIELD_COLORS[idx%FIELD_COLORS.length];
+    const O=V(0,yObj,z_obj);
+
+    const fanH=meridionalFanHeights(hMax,11);
+    const fanPaths=[];
+    fanH.forEach(h=>{
+      const T=frontSurfacePoint(0,h,C1z,R);
+      const D0=norm(sub(T,O));
+      const res=traceThroughLens(O,D0,R,tCenter,n0);
+      if(res.ok && haveImage){
+        const s=(z_img-res.p2.z)/res.dirOut.z;
+        if(isFinite(s)){
+          const pImg=add(res.p2,scl(res.dirOut,s));
+          fanPaths.push({pts:[O,res.p1,res.p2,pImg], imgPt:pImg});
+        }
+      } else if(res.ok){
+        fanPaths.push({pts:[O,res.p1,res.p2], imgPt:null});
+      }
+    });
+
+    let spotPts=[]; let chief=null;
+    if(haveImage){
+      const samples=pupilSamplesForSpot(hMax,state.density);
+      samples.forEach(sm=>{
+        const T=frontSurfacePoint(sm.x,sm.y,C1z,R);
+        const D0=norm(sub(T,O));
+        const res=traceThroughLens(O,D0,R,tCenter,n0);
+        if(!res.ok) return;
+        const s=(z_img-res.p2.z)/res.dirOut.z;
+        if(!isFinite(s)) return;
+        const pImg=add(res.p2,scl(res.dirOut,s));
+        if(sm.chief) chief={x:pImg.x,y:pImg.y};
+        spotPts.push({x:pImg.x,y:pImg.y,chief:sm.chief});
+      });
+    }
+    return {yObj,color,fanPaths,spotPts,chief};
+  });
+
+  drawMain(R,hMax,tCenter,C1z,z_obj,z_img,haveImage,fieldData,f0,v);
+  drawSpotDiagrams(fieldData,haveImage);
+  drawStats(fieldData,haveImage);
+  drawLegend(fieldData);
+
+  if(warnMsg){ els.warn.style.display='block'; els.warn.textContent=warnMsg; }
+  else els.warn.style.display='none';
+}
+
+function drawMain(R,hMax,tCenter,C1z,z_obj,z_img,haveImage,fieldData,f0,v){
+  const rect=canvas.parentElement.getBoundingClientRect();
+  const cw=rect.width, ch=rect.height;
+  ctx.clearRect(0,0,cw,ch);
+
+  const maxFieldPlot = Math.max(...fieldData.map(f=>f.yObj), hMax*0.5, 1);
+  let worldZmax = haveImage? Math.max(200,Math.min(1300, z_img*1.25+40)) : Math.max(200, hMax*4);
+  let worldZmin = Math.min(-100, z_obj-30);
+  const yMargin = Math.max(hMax*1.4, maxFieldPlot*1.6);
+
+  const padPx=18;
+  const worldW=worldZmax-worldZmin;
+  const worldH=2*yMargin;
+  const scale=Math.min((cw-2*padPx)/worldW,(ch-2*padPx)/worldH);
+
+  const toPx=(p)=>({x:padPx+(p.z-worldZmin)*scale, y:ch/2-p.y*scale});
+
+  const muted=cssVar('--muted');
+  const lensFill=cssVar('--lens-fill'), lensStroke=cssVar('--lens-stroke');
+  const gridCol=cssVar('--grid');
+
+  ctx.save();
+  ctx.strokeStyle=muted; ctx.setLineDash([2,4]); ctx.lineWidth=1;
+  let p1=toPx({z:worldZmin,y:0}), p2=toPx({z:worldZmax,y:0});
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle=gridCol; ctx.setLineDash([3,3]); ctx.lineWidth=1;
+  let o1=toPx({z:z_obj,y:-yMargin}), o2=toPx({z:z_obj,y:yMargin});
+  ctx.beginPath();ctx.moveTo(o1.x,o1.y);ctx.lineTo(o2.x,o2.y);ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle=muted; ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('object plane', o1.x, Math.min(o1.y,o2.y)-4>10?Math.min(o1.y,o2.y)-4:12);
+
+  if(haveImage){
+    ctx.save();
+    ctx.strokeStyle=gridCol; ctx.setLineDash([3,3]); ctx.lineWidth=1;
+    let i1=toPx({z:z_img,y:-yMargin}), i2=toPx({z:z_img,y:yMargin});
+    ctx.beginPath();ctx.moveTo(i1.x,i1.y);ctx.lineTo(i2.x,i2.y);ctx.stroke();
+    ctx.restore();
+    ctx.fillText('image plane', i1.x, Math.min(i1.y,i2.y)-4>10?Math.min(i1.y,i2.y)-4:12);
+  }
+
+  const N=48;
+  ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const h=hMax-(2*hMax*i)/N;
+    const z=C1z-Math.sqrt(Math.max(R*R-h*h,0));
+    const px=toPx({z,y:h});
+    if(i===0) ctx.moveTo(px.x,px.y); else ctx.lineTo(px.x,px.y);
+  }
+  const C2zActual = tCenter/2-R;
+  for(let i=0;i<=N;i++){
+    const h=-hMax+(2*hMax*i)/N;
+    const z=C2zActual+Math.sqrt(Math.max(R*R-h*h,0));
+    const px=toPx({z,y:h});
+    ctx.lineTo(px.x,px.y);
+  }
+  ctx.closePath();
+  ctx.fillStyle=lensFill; ctx.strokeStyle=lensStroke; ctx.lineWidth=1.5;
+  ctx.fill(); ctx.stroke();
+
+  const maxH=Math.max(...fieldData.map(f=>f.yObj),0);
+  if(maxH>0){
+    const base=toPx({z:z_obj,y:0}), tip=toPx({z:z_obj,y:maxH});
+    ctx.strokeStyle=muted; ctx.fillStyle=muted; ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(base.x,base.y);ctx.lineTo(tip.x,tip.y);ctx.stroke();
+    const ah=6;
+    ctx.beginPath();
+    ctx.moveTo(tip.x,tip.y);
+    ctx.lineTo(tip.x-ah*0.6,tip.y+ah);
+    ctx.lineTo(tip.x+ah*0.6,tip.y+ah);
+    ctx.closePath(); ctx.fill();
+  }
+
+  if(haveImage){
+    const validChief=fieldData.filter(f=>f.chief);
+    if(validChief.length){
+      const outer=validChief.reduce((m,f)=>Math.abs(f.chief.y)>Math.abs(m.chief.y)?f:m,validChief[0]);
+      const base=toPx({z:z_img,y:0}), tip=toPx({z:z_img,y:outer.chief.y});
+      ctx.strokeStyle=muted; ctx.fillStyle=muted; ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.moveTo(base.x,base.y);ctx.lineTo(tip.x,tip.y);ctx.stroke();
+      const dirY=Math.sign(outer.chief.y)||1;
+      const ah=6;
+      ctx.beginPath();
+      ctx.moveTo(tip.x,tip.y);
+      ctx.lineTo(tip.x-ah*0.6,tip.y-dirY*ah);
+      ctx.lineTo(tip.x+ah*0.6,tip.y-dirY*ah);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  fieldData.forEach(fd=>{
+    ctx.strokeStyle=fd.color; ctx.globalAlpha=0.55; ctx.lineWidth=1;
+    fd.fanPaths.forEach(fp=>{
+      ctx.beginPath();
+      fp.pts.forEach((pt,i)=>{
+        const px=toPx(pt);
+        if(i===0) ctx.moveTo(px.x,px.y); else ctx.lineTo(px.x,px.y);
+      });
+      ctx.stroke();
+    });
+    ctx.globalAlpha=1;
+
+    const op=toPx({z:z_obj,y:fd.yObj});
+    ctx.fillStyle=fd.color;
+    ctx.beginPath(); ctx.arc(op.x,op.y,4,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=cssVar('--panel'); ctx.lineWidth=1; ctx.stroke();
+
+    if(fd.spotPts.length){
+      ctx.fillStyle=fd.color; ctx.globalAlpha=0.5;
+      fd.spotPts.forEach(sp=>{
+        const p=toPx({z:z_img,y:sp.y});
+        ctx.beginPath(); ctx.arc(p.x,p.y,1.3,0,Math.PI*2); ctx.fill();
+      });
+      ctx.globalAlpha=1;
+    }
+  });
+}
+
+function drawLegend(fieldData){
+  els.legend.innerHTML = fieldData.map(fd=>
+    `<span><span class="dot" style="background:${fd.color}"></span>h = ${fd.yObj.toFixed(0)} mm</span>`
+  ).join('');
+}
+
+function spotStats(fd){
+  if(!fd.spotPts.length || !fd.chief) return null;
+  let maxR=0, sumDx=0, sumDy=0, n=0, sum2=0;
+  fd.spotPts.forEach(sp=>{
+    const dx=sp.x-fd.chief.x, dy=sp.y-fd.chief.y;
+    const r=Math.sqrt(dx*dx+dy*dy);
+    if(r>maxR) maxR=r;
+    sumDx+=dx; sumDy+=dy; sum2+=dx*dx+dy*dy; n++;
+  });
+  const centroid={x:sumDx/n,y:sumDy/n};
+  const rms=Math.sqrt(sum2/n);
+  const centroidShift=Math.sqrt(centroid.x*centroid.x+centroid.y*centroid.y);
+  return {maxR,rms,centroidShift};
+}
+
+function fmtLen(mm){
+  if(!isFinite(mm)) return '—';
+  if(Math.abs(mm)<0.2) return (mm*1000).toFixed(0)+' µm';
+  return mm.toFixed(3)+' mm';
+}
+
+function drawSpotDiagrams(fieldData,haveImage){
+  els.spotgrid.innerHTML='';
+  if(!haveImage){ els.spotCaption.textContent='No real image to show.'; return; }
+
+  const stats=fieldData.map(spotStats);
+  const commonExtent = Math.max(0.02, ...stats.map(s=>s?s.maxR:0)) * 1.25;
+  els.spotCaption.textContent = `Each panel spans ±${fmtLen(commonExtent)} around its chief ray. Same scale used for every field point, so size differences are real.`;
+
+  fieldData.forEach((fd)=>{
+    const wrap=document.createElement('div');
+    wrap.className='spotitem';
+    const cnv=document.createElement('canvas');
+    wrap.appendChild(cnv);
+    const lbl=document.createElement('div');
+    lbl.className='lbl';
+    lbl.innerHTML=`h=${fd.yObj.toFixed(0)}mm`;
+    wrap.appendChild(lbl);
+    els.spotgrid.appendChild(wrap);
+
+    const dpr=Math.max(1,window.devicePixelRatio||1);
+    const rectSize=cnv.getBoundingClientRect().width || 90;
+    const px = Math.max(60,rectSize);
+    cnv.width=px*dpr; cnv.height=px*dpr;
+    const c=cnv.getContext('2d');
+    c.setTransform(dpr,0,0,dpr,0,0);
+    c.clearRect(0,0,px,px);
+
+    c.strokeStyle=cssVar('--grid');
+    c.lineWidth=1;
+    c.beginPath();
+    c.moveTo(px/2,0); c.lineTo(px/2,px);
+    c.moveTo(0,px/2); c.lineTo(px,px/2);
+    c.stroke();
+
+    if(!fd.chief) return;
+    const s = (px*0.42)/commonExtent;
+    fd.spotPts.forEach(sp=>{
+      const dx=sp.x-fd.chief.x, dy=sp.y-fd.chief.y;
+      const cx=px/2+dx*s, cy=px/2-dy*s;
+      c.fillStyle=fd.color;
+      c.globalAlpha= sp.chief?1:0.65;
+      c.beginPath();
+      c.arc(cx,cy, sp.chief?2.6:1.6, 0, Math.PI*2);
+      c.fill();
+    });
+    c.globalAlpha=1;
+    c.strokeStyle=cssVar('--fg'); c.lineWidth=1;
+    c.beginPath();
+    c.moveTo(px/2-4,px/2); c.lineTo(px/2+4,px/2);
+    c.moveTo(px/2,px/2-4); c.lineTo(px/2,px/2+4);
+    c.stroke();
+  });
+}
+
+function drawStats(fieldData,haveImage){
+  if(!haveImage){ els.statsTable.innerHTML=''; return; }
+  let html='<tr><th>Field height</th><th>Spot size (max)</th><th>RMS spot</th><th>Centroid shift</th></tr>';
+  fieldData.forEach(fd=>{
+    const s=spotStats(fd);
+    html+=`<tr><td><span class="dot" style="background:${fd.color};display:inline-block;margin-right:5px;"></span>${fd.yObj.toFixed(0)} mm</td>`+
+      `<td>${s?fmtLen(s.maxR):'—'}</td><td>${s?fmtLen(s.rms):'—'}</td><td>${s?fmtLen(s.centroidShift):'—'}</td></tr>`;
+  });
+  els.statsTable.innerHTML=html;
+}
+
+function onInput(){
+  state.R=parseFloat(els.R.value);
+  const apMax=apertureMax(state.R);
+  els.ap.max=apMax;
+  if(parseFloat(els.ap.value)>apMax) els.ap.value=apMax;
+  state.ap=parseFloat(els.ap.value);
+  state.n0=parseFloat(els.n0.value);
+  state.objDist=parseFloat(els.objDist.value);
+  state.fieldH=parseFloat(els.fieldH.value);
+  state.npts=parseInt(els.npts.value,10);
+  state.density=parseInt(els.density.value,10);
+  updateLabels();
+  computeAndDraw();
+}
+['R','ap','n0','objDist','fieldH','npts','density'].forEach(id=>{
+  els[id].addEventListener('input',onInput);
+});
+els.resetBtn.addEventListener('click',()=>{
+  state=Object.assign({},defaults);
+  applyStateToInputs();
+  computeAndDraw();
+});
+
+window.addEventListener('resize',resizeMain);
+if(window.ResizeObserver){ new ResizeObserver(resizeMain).observe(canvas.parentElement); }
+
+applyStateToInputs();
+resizeMain();
+})();
+</script>
+</body>
+</html>
