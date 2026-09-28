@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lens Aberration Explorer — FYS.240 Optics</title>
+<title>Lens Spherical Aberration Explorer — FYS.240 Optics</title>
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/fys240-optics.css">
 <style>
   body{padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));
     padding-top:calc(14px + env(safe-area-inset-top,0px));
-    display:flex;flex-direction:column;gap:12px;max-width:760px;margin:0 auto;}
+    display:flex;flex-direction:column;gap:12px;max-width:1100px;margin:0 auto;}
+
+  .layout{display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start;}
+  @media (max-width:860px){ .layout{grid-template-columns:1fr;} }
 
   h1{font-size:1.15rem;margin:2px 0 2px;font-weight:600;letter-spacing:-0.01em;}
   p.sub{margin:0;color:var(--text-dim);font-size:0.85rem;line-height:1.4;}
@@ -80,27 +83,15 @@
 <a class="back" href="index.html">&larr; FYS.240 Optics</a>
 
 <header>
-  <h1>🔬 Lens Aberration Explorer</h1>
+  <h1>🔬 Lens Spherical Aberration Explorer</h1>
   <p class="sub">Real ray-traced (Snell's law, no paraxial shortcut) collimated bundle through a biconvex lens.
   Watch marginal rays miss the paraxial focus as you open the aperture or shorten the radius — that's spherical aberration.
   Toggle red/blue to see chromatic aberration from dispersion.</p>
 </header>
 
-<div class="card">
-  <div class="canvas-wrap">
-    <canvas id="cv"></canvas>
-  </div>
-  <div class="legend">
-    <span><span class="swatch" style="background:var(--green)"></span>rays (n₀)</span>
-    <span><span class="swatch" style="background:var(--red)"></span>red (n − Δn/2)</span>
-    <span><span class="swatch" style="background:var(--blue)"></span>blue (n + Δn/2)</span>
-    <span><span class="swatch dash" style="color:var(--text-dim)"></span>focal marker</span>
-  </div>
-  <dl class="readout" id="readout"></dl>
-  <div id="warn" class="warn" style="display:none;"></div>
-</div>
+<div class="layout">
 
-<div class="card controls">
+<aside class="card controls">
 
   <div class="toggle-row">
     <div>
@@ -141,6 +132,22 @@
   <div class="btnrow">
     <button class="reset" id="resetBtn">Reset to defaults</button>
   </div>
+</aside>
+
+<div class="card">
+  <div class="canvas-wrap">
+    <canvas id="cv"></canvas>
+  </div>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--green)"></span>rays (n₀)</span>
+    <span><span class="swatch" style="background:var(--red)"></span>red (n − Δn/2)</span>
+    <span><span class="swatch" style="background:var(--blue)"></span>blue (n + Δn/2)</span>
+    <span><span class="swatch dash" style="color:var(--text-dim)"></span>focal marker</span>
+  </div>
+  <dl class="readout" id="readout"></dl>
+  <div id="warn" class="warn" style="display:none;"></div>
+</div>
+
 </div>
 
 <script>
