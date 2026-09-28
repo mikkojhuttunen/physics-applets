@@ -14,7 +14,9 @@ Each course has its own folder with an `index.html` listing its applets.
   and AlGaAs composition).
 - `fys501-laser-physics/` — laser gain media absorption/emission spectra, a
   Gaussian beam / ABCD-matrix optical cavity stability explorer, and a
-  3-/4-level (ruby, Nd:YAG) laser rate-equation solver.
+  3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
+  applet (linear vs ring cavity), and a mode-competition applet (homogeneous vs
+  inhomogeneous gain, intracavity etalon, cavity length).
 - `finnmath-app/`
 
 When adding an applet, link it from the course `index.html`, add

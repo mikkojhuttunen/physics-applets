@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spatial hole burning in a standing-wave cavity</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
+  --c1:#1f6feb; --c2:#d9480f; --unused:#f59f00; --depl:#4dabf7; --accent:#1f6feb;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+    --c1:#5c9dff; --c2:#ff8a4c; --unused:#ffb92e; --depl:#4dabf7; --accent:#5c9dff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+  --c1:#5c9dff; --c2:#ff8a4c; --unused:#ffb92e; --depl:#4dabf7; --accent:#5c9dff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:900px;margin:0 auto;padding:16px 16px 28px;}
+h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+.sub{color:var(--muted);margin:0 0 14px;font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 22px;margin-bottom:14px}
+.ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:6px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.85rem;cursor:pointer;border-right:1px solid var(--border)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+.seg button:disabled{opacity:.4;cursor:default}
+.switch{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--fg);cursor:pointer}
+.switch input{width:18px;height:18px;accent-color:var(--c2)}
+.plotbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 8px 4px;margin-bottom:12px}
+canvas{display:block;width:100%}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0}
+.read .k{font-size:.78rem;color:var(--muted)}
+.read .v{font-size:1.5rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.25}
+.read .s{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+#msg{margin:10px 0 0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--card);border-radius:0 8px 8px 0}
+details{margin-top:14px;color:var(--muted);font-size:.88rem}
+summary{cursor:pointer;color:var(--fg)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Spatial hole burning in a standing-wave cavity</h1>
+  <p class="sub">FYS.501 Laser Physics · Ch. 4 · intensity I(z) and saturated inversion N(z) = N₀ / [1 + I(z)/I<sub>sat</sub>]</p>
+
+  <div class="card controls">
+    <div class="ctl">
+      <span class="lab">Cavity</span>
+      <div class="seg" id="segCav">
+        <button data-v="linear" aria-pressed="true">Linear (standing wave)</button>
+        <button data-v="ring" aria-pressed="false">Ring (travelling wave)</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lab">Gain medium position</span>
+      <div class="seg" id="segPos">
+        <button data-v="centre" aria-pressed="true">Centre</button>
+        <button data-v="mirror" aria-pressed="false">Near mirror</button>
+        <button data-v="fill" aria-pressed="false">Fills cavity</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label for="sS">Saturation parameter S = I₀/I<sub>sat</sub> (mode q): <span class="val" id="vS"></span></label>
+      <input id="sS" type="range" min="-1" max="2" step="0.01" value="0.7">
+    </div>
+    <div class="ctl">
+      <label for="sQ">Mode number q: <span class="val" id="vQ"></span></label>
+      <input id="sQ" type="range" min="1" max="40" step="1" value="16">
+    </div>
+    <div class="ctl">
+      <label class="switch"><input type="checkbox" id="cTwo"> Switch on a second mode q + Δq</label>
+      <label for="sDq" style="margin-top:8px">Δq: <span class="val" id="vDq"></span></label>
+      <input id="sDq" type="range" min="1" max="8" step="1" value="1">
+    </div>
+    <div class="ctl">
+      <label for="sS2">Second-mode strength S₂: <span class="val" id="vS2"></span></label>
+      <input id="sS2" type="range" min="-1" max="2" step="0.01" value="0.7" disabled>
+    </div>
+  </div>
+
+  <div class="plotbox"><canvas id="c1"></canvas></div>
+  <div class="plotbox"><canvas id="c2"></canvas></div>
+
+  <div class="reads">
+    <div class="card read"><div class="k">Inversion extracted, η = 1 − ⟨N⟩/N₀</div><div class="v" id="rEta"></div><div class="s" id="rEtaS"></div></div>
+    <div class="card read"><div class="k">Unused inversion, ⟨N⟩/N₀</div><div class="v" id="rUn"></div><div class="s" id="rUnS"></div></div>
+    <div class="card read"><div class="k">Ring cavity, same mean intensity</div><div class="v" id="rRing"></div><div class="s" id="rRingS"></div></div>
+    <div class="card read"><div class="k">Gain seen by mode 2 ÷ mode 1</div><div class="v" id="rG"></div><div class="s" id="rGS"></div></div>
+  </div>
+
+  <div id="msg"></div>
+
+  <details>
+    <summary>Model and conventions</summary>
+    <p>z is measured from the mirror at z = 0 and normalised to the cavity length L. A mode with number q has I<sub>q</sub>(z) = S·I<sub>sat</sub>·sin²(qπz/L), so S is its <em>peak</em> intensity in units of I<sub>sat</sub> and its mean over a full period is S/2. Modes of different frequency add incoherently. Local saturation of the inversion is N(z) = N₀/[1 + I(z)/I<sub>sat</sub>]; the amber area is the inversion left unused, the blue area between N(z) and N₀ is what was extracted.</p>
+    <p>The extracted fraction is η = 1 − ⟨N⟩/N₀ averaged over the gain medium (the stimulated-emission power is proportional to η). The ring cavity is drawn with the same mean intensity over the medium as the standing wave, so the comparison isolates the effect of the intensity pattern. Gain seen by mode i is G<sub>i</sub> = ⟨sin²(q<sub>i</sub>πz/L)·N⟩/⟨sin²(q<sub>i</sub>πz/L)·N₀⟩. When the second mode is off, G₂ is the gain a weak probe at q + Δq would see. Real cavities have q ~ 10⁵–10⁶; small q is used here so that the nodes can be resolved.</p>
+  </details>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const REG = { centre:[0.375,0.625], mirror:[0,0.25], fill:[0,1] };
+const st = { cav:'linear', pos:'centre' };
+
+function seg(id, key){
+  const el = $(id);
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b || b.disabled) return;
+    st[key] = b.dataset.v;
+    el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    update();
+  });
+}
+seg('segCav','cav'); seg('segPos','pos');
+['sS','sQ','cTwo','sDq','sS2'].forEach(id => $(id).addEventListener('input', update));
+
+function frame(c, h, m, xr, yr){
+  const dpr = window.devicePixelRatio || 1, w = c.clientWidth;
+  c.width = Math.round(w*dpr); c.height = Math.round(h*dpr); c.style.height = h+'px';
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.font = '12px system-ui,sans-serif';
+  return { ctx, w, h, m,
+    X: x => m.l + (x-xr[0])/(xr[1]-xr[0])*(w-m.l-m.r),
+    Y: y => h-m.b - (y-yr[0])/(yr[1]-yr[0])*(h-m.t-m.b) };
+}
+function axes(f, xt, yt, xl, yl, fy){
+  const {ctx,w,h,m} = f;
+  ctx.strokeStyle = css('--grid'); ctx.fillStyle = css('--muted'); ctx.lineWidth = 1;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  xt.forEach(x => { const px = f.X(x); ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,h-m.b); ctx.stroke(); ctx.fillText(String(x), px, h-m.b+4); });
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  yt.forEach(y => { const py = f.Y(y); ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(w-m.r,py); ctx.stroke(); ctx.fillText(fy ? fy(y) : String(y), m.l-6, py); });
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText(xl, (m.l+w-m.r)/2, h-2);
+  ctx.save(); ctx.translate(12, (m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.textBaseline = 'top'; ctx.fillText(yl, 0, 0); ctx.restore();
+  ctx.strokeStyle = css('--muted'); ctx.strokeRect(m.l, m.t, w-m.l-m.r, h-m.t-m.b);
+}
+function niceTicks(max){
+  const raw = max/4, p = Math.pow(10, Math.floor(Math.log10(raw))), r = raw/p;
+  const s = (r<1.5?1:r<3.5?2:r<7.5?5:10)*p, t = [];
+  for(let v=0; v<=max*1.0001; v+=s) t.push(+v.toPrecision(6));
+  return t;
+}
+function fmtS(v){ return v>=10 ? v.toFixed(1) : v.toFixed(2); }
+
+function state(){
+  const S1 = Math.pow(10, +$('sS').value), S2 = Math.pow(10, +$('sS2').value);
+  const q = +$('sQ').value, dq = +$('sDq').value, two = $('cTwo').checked;
+  return { S1, S2, q, dq, two, ring: st.cav === 'ring', reg: REG[st.pos] };
+}
+
+function update(){
+  const p = state();
+  $('vS').textContent = fmtS(p.S1);
+  $('vS2').textContent = fmtS(p.S2);
+  $('vQ').textContent = p.q;
+  $('vDq').textContent = p.dq + '  (q₂ = ' + (p.q+p.dq) + ')';
+  $('sS2').disabled = !p.two;
+  draw(p);
+}
+
+function draw(p){
+  const [a,b] = p.reg, M = 3000;
+  let sumN=0, sumI=0, sumN1=0, s1=0, s2=0, s1N=0, s2N=0;
+  for(let i=0;i<M;i++){
+    const z = a + (b-a)*(i+0.5)/M;
+    let I, sn1, sn2 = 0, I1;
+    const c1 = Math.pow(Math.sin(p.q*Math.PI*z),2), c2 = Math.pow(Math.sin((p.q+p.dq)*Math.PI*z),2);
+    if(p.ring){ I1 = p.S1/2; I = I1 + (p.two ? p.S2/2 : 0); }
+    else { I1 = p.S1*c1; I = I1 + (p.two ? p.S2*c2 : 0); }
+    const N = 1/(1+I);
+    sumN += N; sumI += I; sumN1 += 1/(1+I1);
+    const w1 = p.ring ? 1 : c1, w2 = p.ring ? 1 : c2;
+    s1 += w1; s2 += w2; s1N += w1*N; s2N += w2*N;
+  }
+  const Nm = sumN/M, Im = sumI/M, N1m = sumN1/M;
+  const eta = 1-Nm, eta1 = 1-N1m, etaRing = Im/(1+Im);
+  const G1 = s1N/s1, G2 = s2N/s2;
+
+  $('rEta').textContent = (100*eta).toFixed(1)+' %';
+  $('rEtaS').textContent = p.two ? 'mode 1 alone: '+(100*eta1).toFixed(1)+' %  (+'+(100*(eta-eta1)).toFixed(1)+' points from mode 2)' : (p.ring ? 'travelling wave' : 'standing wave, one mode');
+  $('rUn').textContent = (100*Nm).toFixed(1)+' %';
+  $('rUnS').textContent = 'left in the gain medium';
+  $('rRing').textContent = (100*etaRing).toFixed(1)+' %';
+  $('rRingS').textContent = p.ring ? 'this is the ring cavity' : 'linear cavity extracts '+(100*(eta-etaRing)).toFixed(1)+' points less';
+  const ratio = G2/G1;
+  $('rG').textContent = '×'+ratio.toFixed(3);
+  $('rGS').textContent = 'G₁ = '+G1.toFixed(3)+', G₂ = '+G2.toFixed(3)+(p.two ? '' : ' (weak probe)');
+
+  // message
+  let msg;
+  if(p.ring){
+    msg = 'Ring cavity: the travelling wave has a flat intensity, so the inversion is depleted uniformly. There are no nodes and no unused inversion, and G₁ = G₂ exactly. A second mode gains nothing from the pattern, so a homogeneously broadened ring laser runs single-mode.';
+  } else if(ratio > 1.02){
+    msg = 'The antinodes of mode q+Δq fall where mode q has its nodes, so a mode at q+Δq sees '+((ratio-1)*100).toFixed(1)+' % more gain than mode q does itself. It can reach threshold on the inversion mode q leaves unused, which is why a homogeneously broadened laser can still run multimode.'+(p.two ? ' With both modes on, the extracted fraction rises from '+(100*eta1).toFixed(1)+' % to '+(100*eta).toFixed(1)+' %.' : '');
+  } else if(ratio < 0.98){
+    msg = 'Inside this gain region the second mode sits mostly on the nodes-and-antinodes of the first, so it sees less gain than mode q and cannot exploit the leftover inversion.';
+  } else {
+    msg = 'The two mode patterns almost coincide inside this gain region (small Δq, or a medium close to the mirror where every mode has a node). The second mode finds no leftover inversion, so spatial hole burning does not favour multimode operation here.';
+  }
+  if(!p.ring && p.S1 < 0.3 && !p.two) msg += ' At small S the holes are shallow, so the effect is weak; raise S.';
+  $('msg').textContent = msg;
+
+  // ---- plot 1: intensity
+  const NP = 1500, zs = [], Itot = [], I1a = [], I2a = [];
+  let ymax = 0;
+  for(let i=0;i<=NP;i++){
+    const z = i/NP; zs.push(z);
+    let i1, i2 = 0;
+    if(p.ring){ i1 = p.S1/2; if(p.two) i2 = p.S2/2; }
+    else { i1 = p.S1*Math.pow(Math.sin(p.q*Math.PI*z),2); if(p.two) i2 = p.S2*Math.pow(Math.sin((p.q+p.dq)*Math.PI*z),2); }
+    I1a.push(i1); I2a.push(i2); Itot.push(i1+i2); ymax = Math.max(ymax, i1+i2);
+  }
+  ymax = Math.max(ymax*1.08, 1.3);
+  const f1 = frame($('c1'), 210, {l:52,r:12,t:22,b:36}, [0,1], [0,ymax]);
+  axes(f1, [0,0.25,0.5,0.75,1], niceTicks(ymax), 'z / L', 'I(z) / I_sat');
+  const c = f1.ctx;
+  c.fillStyle = css('--muted'); c.globalAlpha = 0.14;
+  c.fillRect(f1.X(a), f1.m.t, f1.X(b)-f1.X(a), f1.h-f1.m.t-f1.m.b); c.globalAlpha = 1;
+  c.fillStyle = css('--muted'); c.textAlign = 'left'; c.textBaseline = 'top';
+  c.fillText('gain medium', Math.min(f1.X(a)+4, f1.w-90), f1.m.t+3);
+  c.setLineDash([5,4]); c.strokeStyle = css('--muted'); c.beginPath(); c.moveTo(f1.m.l, f1.Y(1)); c.lineTo(f1.w-f1.m.r, f1.Y(1)); c.stroke(); c.setLineDash([]);
+  c.textAlign = 'right'; c.textBaseline = 'bottom'; c.fillText('I_sat', f1.w-f1.m.r-4, f1.Y(1)-2);
+  const line = (arr, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); arr.forEach((v,i) => { const x = f1.X(zs[i]), y = f1.Y(v); i ? c.lineTo(x,y) : c.moveTo(x,y); }); c.stroke(); };
+  if(p.two && !p.ring){ line(I1a, css('--c1'), 1.2); line(I2a, css('--c2'), 1.2); line(Itot, css('--fg'), 2); }
+  else if(p.two){ line(Itot, css('--fg'), 2); }
+  else line(I1a, css('--c1'), 2);
+  // legend
+  c.textAlign = 'left'; c.textBaseline = 'middle'; let lx = f1.m.l+8;
+  const leg = (col, txt) => { c.fillStyle = col; c.fillRect(lx, 8, 14, 3); c.fillStyle = css('--muted'); c.fillText(txt, lx+19, 10); lx += 19 + c.measureText(txt).width + 16; };
+  if(p.ring) leg(css('--fg'), 'travelling wave (mean-matched)');
+  else if(p.two){ leg(css('--c1'), 'mode q='+p.q); leg(css('--c2'), 'mode q+Δq='+(p.q+p.dq)); leg(css('--fg'), 'total'); }
+  else leg(css('--c1'), 'mode q='+p.q);
+  // mirrors
+  c.fillStyle = css('--fg'); c.fillRect(f1.m.l-3, f1.m.t, 3, f1.h-f1.m.t-f1.m.b); c.fillRect(f1.w-f1.m.r, f1.m.t, 3, f1.h-f1.m.t-f1.m.b);
+
+  // ---- plot 2: inversion in the gain region
+  const f2 = frame($('c2'), 230, {l:52,r:12,t:22,b:36}, [0,1], [0,1.05]);
+  axes(f2, [0,0.25,0.5,0.75,1], [0,0.25,0.5,0.75,1], 'z / L', 'N(z) / N₀');
+  const d = f2.ctx, Ns = [];
+  for(let i=0;i<=NP;i++){ const z = i/NP; if(z<a-1e-9 || z>b+1e-9){ Ns.push(null); continue; } Ns.push(1/(1+Itot[i])); }
+  d.fillStyle = css('--muted'); d.globalAlpha = 0.10;
+  d.fillRect(f2.m.l, f2.m.t, f2.w-f2.m.l-f2.m.r, f2.h-f2.m.t-f2.m.b); d.globalAlpha = 1;
+  const xa = f2.X(a), xb = f2.X(b), y0 = f2.Y(0), y1 = f2.Y(1);
+  d.fillStyle = css('--bg'); d.fillRect(xa, f2.m.t, xb-xa, f2.h-f2.m.t-f2.m.b);
+  // depleted (between N and N0)
+  d.fillStyle = css('--depl'); d.globalAlpha = 0.35; d.beginPath();
+  let started = false; let lastX = 0;
+  for(let i=0;i<=NP;i++){ if(Ns[i]===null) continue; const x = f2.X(zs[i]); if(!started){ d.moveTo(x,y1); started = true; } d.lineTo(x, f2.Y(Ns[i])); lastX = x; }
+  for(let i=NP;i>=0;i--){ if(Ns[i]===null) continue; d.lineTo(f2.X(zs[i]), y1); break; }
+  d.closePath(); d.fill();
+  // unused (under N)
+  d.fillStyle = css('--unused'); d.globalAlpha = 0.6; d.beginPath(); started = false;
+  let firstX = 0;
+  for(let i=0;i<=NP;i++){ if(Ns[i]===null) continue; const x = f2.X(zs[i]); if(!started){ d.moveTo(x,y0); firstX = x; started = true; } d.lineTo(x, f2.Y(Ns[i])); lastX = x; }
+  d.lineTo(lastX, y0); d.lineTo(firstX, y0); d.closePath(); d.fill(); d.globalAlpha = 1;
+  // N curve
+  d.strokeStyle = css('--fg'); d.lineWidth = 2; d.beginPath(); started = false;
+  for(let i=0;i<=NP;i++){ if(Ns[i]===null) continue; const x = f2.X(zs[i]), y = f2.Y(Ns[i]); started ? d.lineTo(x,y) : d.moveTo(x,y); started = true; }
+  d.stroke();
+  d.setLineDash([5,4]); d.strokeStyle = css('--muted'); d.lineWidth = 1; d.beginPath(); d.moveTo(xa,y1); d.lineTo(xb,y1); d.stroke(); d.setLineDash([]);
+  d.fillStyle = css('--muted'); d.textAlign = 'left'; d.textBaseline = 'bottom'; d.fillText('N₀', Math.min(xb+4, f2.w-30), y1+14);
+  // mean line
+  d.strokeStyle = css('--c2'); d.lineWidth = 1.5; d.setLineDash([2,3]); d.beginPath(); d.moveTo(xa, f2.Y(Nm)); d.lineTo(xb, f2.Y(Nm)); d.stroke(); d.setLineDash([]);
+  d.textBaseline = 'middle'; d.fillStyle = css('--c2'); d.textAlign = 'left';
+  if(b-a < 0.9) d.fillText('⟨N⟩', Math.min(xb+4, f2.w-30), f2.Y(Nm));
+  // legend
+  d.textBaseline = 'middle'; let lx2 = f2.m.l+8;
+  const leg2 = (col, al, txt) => { d.globalAlpha = al; d.fillStyle = col; d.fillRect(lx2, 6, 14, 9); d.globalAlpha = 1; d.fillStyle = css('--muted'); d.textAlign = 'left'; d.fillText(txt, lx2+19, 11); lx2 += 19 + d.measureText(txt).width + 16; };
+  leg2(css('--unused'), 0.6, 'unused inversion (nodes)');
+  leg2(css('--depl'), 0.35, 'extracted');
+  if(b-a < 0.9){ d.fillStyle = css('--muted'); d.textAlign = 'center'; d.textBaseline = 'top'; const cx = a>0.1 ? (0+ (a>0 ? a : 0))/2 : (b+1)/2; d.fillText('no gain medium', f2.X(cx), f2.m.t+30); }
+  d.fillStyle = css('--fg'); d.fillRect(f2.m.l-3, f2.m.t, 3, f2.h-f2.m.t-f2.m.b); d.fillRect(f2.w-f2.m.r, f2.m.t, 3, f2.h-f2.m.t-f2.m.b);
+}
+
+window.addEventListener('resize', update);
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', update);
+new MutationObserver(update).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+update();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mode competition: homogeneous vs inhomogeneous gain</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
+  --c1:#1f6feb; --c2:#d9480f; --c3:#2f9e44; --loss:#e03131; --accent:#1f6feb;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+    --c1:#5c9dff; --c2:#ff8a4c; --c3:#51cf66; --loss:#ff6b6b; --accent:#5c9dff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+  --c1:#5c9dff; --c2:#ff8a4c; --c3:#51cf66; --loss:#ff6b6b; --accent:#5c9dff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:900px;margin:0 auto;padding:16px 16px 28px;}
+h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+.sub{color:var(--muted);margin:0 0 14px;font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px;margin-bottom:14px}
+.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:10px 14px 12px;display:flex;flex-direction:column;gap:11px}
+.grp h2{margin:0;font-size:.8rem;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--gc,var(--accent))}
+.grp.cav{--gc:var(--c3)}
+.grp.gain{--gc:var(--c1)}
+.grp.eta{--gc:var(--c2)}
+.grp.eta.disabled .ctl{opacity:.45}
+.grp.eta .switch input{accent-color:var(--c2)}
+.ctl.tight label{margin-bottom:2px}
+.hint{font-size:.76rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:6px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.85rem;cursor:pointer;border-right:1px solid var(--border)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+.switch{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--fg);cursor:pointer}
+.switch input{width:18px;height:18px;accent-color:var(--c3)}
+.switch.off{opacity:.45;cursor:default}
+.plotbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 8px 4px;margin-bottom:12px}
+canvas{display:block;width:100%}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0}
+.read .k{font-size:.78rem;color:var(--muted)}
+.read .v{font-size:1.5rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.25}
+.read .s{font-size:.78rem;color:var(--muted)}
+#msg{margin:10px 0 0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--card);border-radius:0 8px 8px 0}
+.note{margin:6px 6px 8px;font-size:.85rem;color:var(--muted)}
+details{margin-top:14px;color:var(--muted);font-size:.88rem}
+summary{cursor:pointer;color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mode competition</h1>
+  <p class="sub">FYS.501 Laser Physics · Ch. 2 and 4 · cavity modes spaced c/2L against a gain profile and a loss line; all widths are in GHz</p>
+
+  <div class="groups">
+    <section class="grp cav">
+      <h2>Laser resonator</h2>
+      <div class="ctl">
+        <label for="sL">Cavity length L: <span class="val" id="vL"></span></label>
+        <input id="sL" type="range" min="1" max="50" step="0.5" value="30">
+        <div class="hint" id="hL"></div>
+      </div>
+      <div class="ctl">
+        <label for="sO">Cavity tuning: comb offset from line centre (fraction of mode spacing): <span class="val" id="vO"></span></label>
+        <input id="sO" type="range" min="0" max="0.5" step="0.01" value="0.2">
+      </div>
+    </section>
+
+    <section class="grp gain">
+      <h2>Gain medium and pump</h2>
+      <div class="ctl">
+        <span class="lab">Gain broadening</span>
+        <div class="seg" id="segKind">
+          <button data-v="hom" aria-pressed="true">Homogeneous</button>
+          <button data-v="inh" aria-pressed="false">Inhomogeneous</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="switch" id="lblShb"><input type="checkbox" id="cShb"> Spatial hole burning on</label>
+        <div class="hint" id="shbNote"></div>
+      </div>
+      <div class="ctl">
+        <label for="sP">Pump level P (line-centre gain ÷ loss): <span class="val" id="vP"></span></label>
+        <input id="sP" type="range" min="0.8" max="4" step="0.01" value="2.5">
+      </div>
+      <div class="ctl">
+        <label for="sG">Homogeneous linewidth Γ (FWHM): <span class="val" id="vG"></span></label>
+        <input id="sG" type="range" min="0.5" max="15" step="0.1" value="4">
+        <div class="hint" id="hG"></div>
+      </div>
+      <div class="ctl">
+        <label for="sD">Doppler width (FWHM): <span class="val" id="vD"></span></label>
+        <input id="sD" type="range" min="5" max="60" step="0.5" value="20">
+        <div class="hint" id="hD"></div>
+      </div>
+    </section>
+
+    <section class="grp eta" id="grpEt">
+      <h2>Intracavity Fabry-Perot etalon</h2>
+      <div class="ctl">
+        <label class="switch"><input type="checkbox" id="cEt"> Insert etalon into the cavity</label>
+        <div class="hint">Extra loss 1/T(ν), T = 1/[1 + F sin²(π(ν − ν<sub>e</sub>)/FSR)]</div>
+      </div>
+      <div class="ctl">
+        <label for="sEF">Free spectral range: <span class="val" id="vEF"></span></label>
+        <input id="sEF" type="range" min="1" max="100" step="0.5" value="10">
+        <div class="hint" id="hEF"></div>
+      </div>
+      <div class="ctl">
+        <label for="sEN">Finesse: <span class="val" id="vEN"></span></label>
+        <input id="sEN" type="range" min="1" max="50" step="0.5" value="20">
+        <div class="hint" id="hEN"></div>
+      </div>
+      <div class="ctl">
+        <label for="sET">Peak position ν<sub>e</sub> − ν₀ (tilt / temperature tuning): <span class="val" id="vET"></span></label>
+        <input id="sET" type="range" min="-10" max="10" step="0.05" value="0.1">
+      </div>
+    </section>
+  </div>
+
+  <div class="plotbox"><canvas id="cg"></canvas></div>
+  <div class="plotbox"><canvas id="ci"></canvas></div>
+
+  <div class="reads">
+    <div class="card read"><div class="k">Oscillating modes</div><div class="v" id="rN"></div><div class="s" id="rNS"></div></div>
+    <div class="card read"><div class="k">Total output ΣI<sub>n</sub> / I<sub>sat</sub></div><div class="v" id="rT"></div><div class="s">arbitrary units, sum over modes</div></div>
+    <div class="card read"><div class="k">Mode spacing c/2L</div><div class="v" id="rDN"></div><div class="s" id="rDNS"></div></div>
+    <div class="card read"><div class="k">Etalon peak width (FWHM)</div><div class="v" id="rEW"></div><div class="s" id="rEWS"></div></div>
+    <div class="card read"><div class="k">Threshold pump P<sub>th</sub></div><div class="v" id="rTh"></div><div class="s">first mode reaches g = loss</div></div>
+  </div>
+
+  <div id="msg"></div>
+
+  <div class="plotbox" style="margin-top:12px"><canvas id="cs"></canvas>
+    <div class="note" id="sweepNote">Computing the pump sweep…</div>
+  </div>
+
+  <details>
+    <summary>Model</summary>
+    <p>Mode n oscillates at ν<sub>n</sub> = (n + offset)·c/2L, where c/2L = 15 GHz·(1 cm / L). All widths set in GHz are converted to units of this mode spacing before solving; the comb shown covers ±50 modes and has intensity I<sub>n</sub> in units of I<sub>sat</sub>. Its round-trip loss defines the loss line, normalised to 1. Steady state means every oscillating mode has saturated gain exactly equal to the loss; a mode with I<sub>n</sub> = 0 must have gain below the loss. The solver iterates this condition mode by mode until it converges.</p>
+    <p><b>Homogeneous line.</b> One shared inversion, Lorentzian line ℓ(ν) = 1/[1 + (2ν/Γ)²]. Gain of mode n: g<sub>n</sub> = P ℓ<sub>n</sub> / [1 + ℓ<sub>n</sub>I<sub>n</sub> + θ Σ<sub>m≠n</sub> ℓ<sub>m</sub>I<sub>m</sub>]. Without spatial hole burning θ = 1, every mode saturates the same inversion, all oscillating modes would need the same ℓ, and only the mode closest to line centre survives. With spatial hole burning the standing-wave patterns of different modes overlap only partly, and the cross-saturation coefficient drops to θ = 2/3 (self term ⟨4 sin⁴⟩ = 3/2, cross term ⟨2 sin²⟩² = 1). Since θ &lt; 1, several modes can coexist.</p>
+    <p><b>Etalon.</b> An etalon of free spectral range FSR and finesse 𝓕 has transmission T(ν) = 1/[1 + F sin²(π(ν − ν<sub>e</sub>)/FSR)] with F = (2𝓕/π)². Mode n then sees loss a<sub>n</sub> = 1/T(ν<sub>n</sub>) in place of 1, and the steady-state condition becomes g<sub>n</sub> = a<sub>n</sub>. The peak width is FSR/𝓕. To force a single mode the peak must be narrower than about two mode spacings and the FSR must exceed the width of the region where the gain beats the loss.</p>
+    <p><b>Inhomogeneous line.</b> Gaussian envelope of FWHM equal to the Doppler width, each velocity class with a Lorentzian response of FWHM Γ. Mode m burns a hole of width Γ at ν<sub>m</sub>: the inversion of class ν′ is N₀(ν′)/[1 + Σ<sub>m</sub> I<sub>m</sub> L(ν′ − ν<sub>m</sub>)]. Modes further apart than about Γ do not compete, so many modes oscillate. This is a rate-equation model without mode pulling, and cross-saturation between modes uses the mean standing-wave overlap; the numbers are qualitative.</p>
+  </details>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const st = { kind:'hom' };
+const NM = 101, NMIN = -50, HALF = 52;
+const PS = []; for(let P=0.8; P<=4.0001; P+=0.1) PS.push(+P.toFixed(2));
+
+document.getElementById('segKind').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  st.kind = b.dataset.v;
+  document.querySelectorAll('#segKind button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  update();
+});
+['sL','sP','cShb','sG','sD','sO','cEt','sEF','sEN','sET'].forEach(id => $(id).addEventListener('input', update));
+
+/* ---------- physics ---------- */
+const lor = (x, G) => { const u = 2*x/G; return 1/(1+u*u); };
+
+function solveHom(P, th, Gam, off, I0, a){
+  const I = I0 ? Float64Array.from(I0) : new Float64Array(NM), l = new Float64Array(NM);
+  let S = 0;
+  for(let k=0;k<NM;k++){ l[k] = lor(NMIN+k+off, Gam); S += l[k]*I[k]; }
+  for(let sw=0; sw<4000; sw++){
+    let mx = 0;
+    for(let k=0;k<NM;k++){
+      const T = 1 + th*(S - l[k]*I[k]);
+      let nw = P/a[k] - T/l[k]; if(nw < 0) nw = 0;
+      const d = nw - I[k]; S += l[k]*d; I[k] = nw; if(Math.abs(d) > mx) mx = Math.abs(d);
+    }
+    if(mx < 1e-10) break;
+  }
+  return I;
+}
+
+const inhCache = {};
+function inhSetup(Gam, Dop, off, step){
+  const key = [Gam,Dop,off,step].join('|');
+  if(inhCache[key]) return inhCache[key];
+  const R = Math.min(80, 2.5*Dop + 3*Gam + 2), xs = []; for(let x=-R; x<=R+1e-9; x+=step) xs.push(x);
+  const J = xs.length, G = new Float64Array(J), L = new Float64Array(NM*J);
+  let Z = 0;
+  for(let j=0;j<J;j++){ G[j] = Math.exp(-4*Math.LN2*Math.pow(xs[j]/Dop,2)); Z += G[j]*lor(xs[j],Gam); }
+  for(let k=0;k<NM;k++) for(let j=0;j<J;j++) L[k*J+j] = lor(xs[j]-(NMIN+k+off), Gam);
+  const raw = new Float64Array(NM);
+  for(let k=0;k<NM;k++){ let s = 0; for(let j=0;j<J;j++) s += G[j]*L[k*J+j]; raw[k] = s/Z; }
+  const o = { xs, J, G, L, Z, raw };
+  const keys = Object.keys(inhCache); if(keys.length > 6) delete inhCache[keys[0]];
+  inhCache[key] = o; return o;
+}
+
+function solveInh(P, setup, I0, maxSw, tol, a){
+  const { J, G, L, Z, raw } = setup;
+  const I = I0 ? Float64Array.from(I0) : new Float64Array(NM), D = new Float64Array(J).fill(1);
+  for(let k=0;k<NM;k++) if(I[k] > 0) for(let j=0;j<J;j++) D[j] += I[k]*L[k*J+j];
+  const pz = P/Z;
+  for(let sw=0; sw<maxSw; sw++){
+    let mx = 0;
+    for(let k=0;k<NM;k++){
+      const old = I[k], o = k*J;
+      let nw = 0;
+      if(P*raw[k] > a[k]){
+        for(let it=0; it<40; it++){
+          let g = 0, dg = 0;
+          for(let j=0;j<J;j++){
+            const Lj = L[o+j], den = D[j] + (nw-old)*Lj, t = G[j]*Lj/den;
+            g += t; dg += t*Lj/den;
+          }
+          const f = pz*g - a[k], d = -pz*dg, stp = -f/d;
+          nw += stp;
+          if(Math.abs(stp) < 1e-11*(1+nw)) break;
+        }
+        if(nw < 0) nw = 0;
+      }
+      const dd = nw - old;
+      if(dd !== 0){ for(let j=0;j<J;j++) D[j] += dd*L[o+j]; I[k] = nw; }
+      if(Math.abs(dd) > mx) mx = Math.abs(dd);
+    }
+    if(mx < tol) break;
+  }
+  return I;
+}
+
+function etA(nu, p){
+  if(!p.et) return 1;
+  const F = Math.pow(2*p.fin/Math.PI, 2), s = Math.sin(Math.PI*(nu-p.tun)/p.fsr);
+  return 1 + F*s*s;
+}
+function lossArr(p){ const a = new Float64Array(NM); for(let k=0;k<NM;k++) a[k] = etA(NMIN+k+p.off, p); return a; }
+const count = I => { let c = 0; for(let k=0;k<NM;k++) if(I[k] > 1e-3) c++; return c; };
+
+/* ---------- plotting helpers ---------- */
+function frame(c, h, m, xr, yr){
+  const dpr = window.devicePixelRatio || 1, w = c.clientWidth;
+  c.width = Math.round(w*dpr); c.height = Math.round(h*dpr); c.style.height = h+'px';
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.font = '12px system-ui,sans-serif';
+  return { ctx, w, h, m,
+    X: x => m.l + (x-xr[0])/(xr[1]-xr[0])*(w-m.l-m.r),
+    Y: y => h-m.b - (y-yr[0])/(yr[1]-yr[0])*(h-m.t-m.b) };
+}
+function axes(f, xt, yt, xl, yl, fx){
+  const {ctx,w,h,m} = f;
+  ctx.strokeStyle = css('--grid'); ctx.fillStyle = css('--muted'); ctx.lineWidth = 1;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  xt.forEach(x => { const px = f.X(x); ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,h-m.b); ctx.stroke(); ctx.fillText(fx ? fx(x) : String(+x.toFixed(2)), px, h-m.b+4); });
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  yt.forEach(y => { const py = f.Y(y); ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(w-m.r,py); ctx.stroke(); ctx.fillText(String(+y.toFixed(3)), m.l-6, py); });
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(xl, (m.l+w-m.r)/2, h-2);
+  ctx.save(); ctx.translate(12, (m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.textBaseline = 'top'; ctx.fillText(yl, 0, 0); ctx.restore();
+  ctx.strokeStyle = css('--muted'); ctx.strokeRect(m.l, m.t, w-m.l-m.r, h-m.t-m.b);
+}
+function niceStep(raw){ const p = Math.pow(10, Math.floor(Math.log10(raw))), r = raw/p; return (r<1.5?1:r<3.5?2:r<7.5?5:10)*p; }
+function freqTicks(dn){
+  const step = niceStep(HALF*dn/3), t = [];
+  for(let k=-Math.floor(HALF*dn/step); k<=Math.floor(HALF*dn/step); k++) t.push(k*step/dn);
+  return t;
+}
+function niceTicks(max, n){
+  const raw = max/(n||4), p = Math.pow(10, Math.floor(Math.log10(raw))), r = raw/p;
+  const s = (r<1.5?1:r<3.5?2:r<7.5?5:10)*p, t = [];
+  for(let v=0; v<=max*1.0001; v+=s) t.push(+v.toPrecision(6));
+  return t;
+}
+
+/* ---------- main update ---------- */
+let sweepToken = 0, sweepData = null;
+const sweepCache = {};
+
+function params(){
+  const shbOK = st.kind === 'hom';
+  const Lcm = +$('sL').value, dn = 14.9896/Lcm;
+  const GamG = +$('sG').value, DopG = +$('sD').value, fsrG = +$('sEF').value, tunG = +$('sET').value;
+  return { kind: st.kind, P:+$('sP').value, shb: $('cShb').checked && shbOK, shbOK,
+           Lcm, dn, GamG, DopG, fsrG, tunG,
+           Gam:GamG/dn, Dop:DopG/dn, off:+$('sO').value,
+           et: $('cEt').checked, fsr:fsrG/dn, fin:+$('sEN').value, tun:tunG/dn };
+}
+
+const fmtF = g => g < 1 ? (g*1000).toFixed(0)+' MHz' : g.toFixed(g<10?2:1)+' GHz';
+function update(){
+  const p = params();
+  $('vL').textContent = p.Lcm.toFixed(1)+' cm';
+  $('hL').textContent = 'mode spacing c/2L = '+fmtF(p.dn);
+  $('vP').textContent = p.P.toFixed(2);
+  $('vG').textContent = p.GamG.toFixed(1)+' GHz';
+  $('hG').textContent = '= '+p.Gam.toFixed(2)+' mode spacings';
+  $('vD').textContent = p.DopG.toFixed(1)+' GHz';
+  $('hD').textContent = p.kind === 'inh' ? '= '+p.Dop.toFixed(1)+' mode spacings' : 'only used for inhomogeneous broadening';
+  $('vO').textContent = p.off.toFixed(2);
+  $('vEF').textContent = p.fsrG.toFixed(1)+' GHz';
+  $('hEF').textContent = '= '+p.fsr.toFixed(1)+' mode spacings; solid fused-silica plate d ≈ '+(299.792/(2*1.45*p.fsrG)).toFixed(2)+' mm';
+  $('vEN').textContent = p.fin.toFixed(1);
+  $('hEN').textContent = 'peak FWHM = '+fmtF(p.fsrG/p.fin)+' = '+(p.fsr/p.fin).toFixed(2)+' mode spacings';
+  $('vET').textContent = p.tunG.toFixed(2)+' GHz';
+  ['sEF','sEN','sET'].forEach(id => $(id).disabled = !p.et);
+  $('grpEt').classList.toggle('disabled', !p.et);
+  $('sD').disabled = p.kind !== 'inh';
+  $('cShb').disabled = !p.shbOK;
+  $('lblShb').classList.toggle('off', !p.shbOK);
+  $('shbNote').textContent = p.shbOK ? '' : 'Not applied here: each mode already burns its own spectral hole (the model ignores the extra spatial effect).';
+  drawMain(p);
+  scheduleSweep(p);
+}
+
+function drawMain(p){
+  const th = p.shb ? 2/3 : 1;
+  const aL = lossArr(p);
+  let I, gmode = new Float64Array(NM), probeFn, unsatFn;
+  const nus = []; for(let k=0;k<NM;k++) nus.push(NMIN+k+p.off);
+  if(p.kind === 'hom'){
+    I = solveHom(p.P, th, p.Gam, p.off, null, aL);
+    let S = 0; for(let k=0;k<NM;k++) S += lor(nus[k],p.Gam)*I[k];
+    unsatFn = nu => p.P*lor(nu,p.Gam);
+    probeFn = nu => p.P*lor(nu,p.Gam)/(1+th*S);
+    for(let k=0;k<NM;k++){ const l = lor(nus[k],p.Gam); gmode[k] = p.P*l/(1+(1-th)*l*I[k]+th*S); }
+  } else {
+    const su = inhSetup(p.Gam, p.Dop, p.off, Math.min(0.5, Math.max(0.01, p.Gam/10)));
+    I = solveInh(p.P, su, null, 400, 1e-8, aL);
+    const D = new Float64Array(su.J).fill(1);
+    for(let k=0;k<NM;k++) if(I[k]>0) for(let j=0;j<su.J;j++) D[j] += I[k]*su.L[k*su.J+j];
+    const prof = (nu, sat) => { let s = 0; for(let j=0;j<su.J;j++) s += su.G[j]*lor(su.xs[j]-nu,p.Gam)/(sat?D[j]:1); return p.P*s/su.Z; };
+    unsatFn = nu => prof(nu,false); probeFn = nu => prof(nu,true);
+    for(let k=0;k<NM;k++) gmode[k] = probeFn(nus[k]);
+  }
+  const nOsc = count(I); let tot = 0; for(let k=0;k<NM;k++) tot += I[k];
+  const rawG = p.kind==='hom' ? nus.map(v => lor(v,p.Gam)) : inhSetup(p.Gam,p.Dop,p.off,Math.min(0.5, Math.max(0.01, p.Gam/10))).raw;
+  let Pth = Infinity; for(let k=0;k<NM;k++) Pth = Math.min(Pth, aL[k]/rawG[k]);
+  $('rEW').textContent = p.et ? fmtF(p.fsrG/p.fin) : '—';
+  $('rEWS').textContent = p.et ? '= '+(p.fsr/p.fin).toFixed(2)+' mode spacings (FSR/finesse)' : 'etalon not inserted';
+  $('rN').textContent = nOsc;
+  $('rNS').textContent = p.P < Pth ? 'below threshold' : (p.kind==='hom' ? (p.shb ? 'homogeneous, SHB on' : 'homogeneous, SHB off') : 'inhomogeneous');
+  $('rT').textContent = tot.toFixed(tot<10?2:1);
+  $('rTh').textContent = Pth.toFixed(3);
+  $('rDN').textContent = fmtF(p.dn);
+  $('rDNS').textContent = 'cavity length '+p.Lcm.toFixed(1)+' cm; '+(p.kind==='hom' ? 'linewidth Γ = '+p.Gam.toFixed(1) : 'Doppler width = '+p.Dop.toFixed(1))+' spacings';
+
+  let msg;
+  if(p.P < Pth) msg = 'The pump is below threshold: the unsaturated gain is under the loss line at every mode, so nothing oscillates.';
+  else if(p.kind === 'hom' && !p.shb) msg = 'Homogeneous, no spatial hole burning: the strongest mode clamps the shared inversion at threshold. Every other mode then sees gain below the loss line and dies, however hard you pump. Look at the saturated profile: it touches the loss line at exactly one mode.';
+  else if(p.kind === 'hom') msg = 'Homogeneous with spatial hole burning: a mode saturates the gain of other modes only with weight 2/3 of its own. The saturated profile stays above the loss line at the neighbouring modes, so they also oscillate, ' + nOsc + ' in all. The number grows with pump but stays limited by the line width.';
+  else msg = 'Inhomogeneous: each mode burns its own hole of width Γ into the Doppler envelope. Modes separated by more than about Γ draw on different velocity classes and do not compete, so ' + nOsc + ' modes oscillate, and more as the pump rises. The saturated profile dips to the loss line at every oscillating mode.';
+  if(p.et && p.P >= Pth){
+    const w = p.fsr/p.fin;
+    if(nOsc === 1) msg += ' Etalon: one mode sits under a transmission peak while the neighbours see extra loss, so the laser is single-mode.';
+    else if(w > 2) msg += ' Etalon: the peaks are '+w.toFixed(1)+' mode spacings wide, too broad to discriminate between adjacent modes. Raise the finesse or lower the FSR.';
+    else msg += ' Etalon: several modes are still oscillating. Check that the FSR is larger than the region where the gain exceeds the loss, otherwise a second etalon peak lets another group of modes through.';
+  }
+  $('msg').textContent = msg;
+
+  // gain panel
+  const ymax = Math.max(1.6, p.P*1.08);
+  const f = frame($('cg'), 270, {l:52,r:12,t:24,b:38}, [-HALF,HALF], [0,ymax]);
+  const fx = x => String(+(x*p.dn).toPrecision(3));
+  axes(f, freqTicks(p.dn), niceTicks(ymax,5), 'ν − ν₀  (GHz);  comb spacing c/2L = '+fmtF(p.dn), 'gain / bare-cavity loss', fx);
+  const c = f.ctx, xs = [], dx = Math.max(0.03, Math.min(0.25, p.Gam/8)); for(let x=-HALF; x<=HALF+1e-9; x+=dx) xs.push(x);
+  c.save(); c.beginPath(); c.rect(f.m.l, f.m.t, f.w-f.m.l-f.m.r, f.h-f.m.t-f.m.b); c.clip();
+  // mode ticks
+  for(let k=0;k<NM;k++){
+    const osc = I[k] > 1e-3, top = osc ? aL[k] : Math.min(gmode[k], ymax);
+    c.strokeStyle = osc ? css('--c1') : css('--muted'); c.globalAlpha = osc ? 1 : 0.55; c.lineWidth = osc ? 2.2 : 1;
+    c.beginPath(); c.moveTo(f.X(nus[k]), f.Y(0)); c.lineTo(f.X(nus[k]), f.Y(top)); c.stroke();
+    if(osc){ c.fillStyle = css('--c1'); c.beginPath(); c.arc(f.X(nus[k]), f.Y(aL[k]), 3.5, 0, 2*Math.PI); c.fill(); }
+  }
+  c.globalAlpha = 1;
+  const curve = (fn, col, lw, dash) => { c.setLineDash(dash||[]); c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); xs.forEach((x,i) => { const px = f.X(x), py = f.Y(fn(x)); i ? c.lineTo(px,py) : c.moveTo(px,py); }); c.stroke(); c.setLineDash([]); };
+  curve(unsatFn, css('--muted'), 1.5, [6,4]);
+  curve(probeFn, css('--c2'), 2.2);
+  curve(nu => etA(nu,p), css('--loss'), 2);
+  c.restore();
+  c.textBaseline = 'middle'; c.textAlign = 'left'; let lx = f.m.l+8;
+  const leg = (col, dash, txt) => { c.strokeStyle = col; c.lineWidth = 2; c.setLineDash(dash); c.beginPath(); c.moveTo(lx, 11); c.lineTo(lx+18, 11); c.stroke(); c.setLineDash([]); c.fillStyle = css('--muted'); c.fillText(txt, lx+23, 12); lx += 23 + c.measureText(txt).width + 14; };
+  leg(css('--muted'), [6,4], 'unsaturated gain');
+  leg(css('--c2'), [], 'saturated gain (seen by a new mode)');
+  leg(css('--loss'), [], p.et ? 'loss incl. etalon' : 'loss');
+
+  // intensity panel
+  const Imax = Math.max(1e-6, ...I), Ytop = Math.max(0.5, Imax*1.15);
+  const f2 = frame($('ci'), 190, {l:52,r:12,t:16,b:38}, [-HALF,HALF], [0,Ytop]);
+  axes(f2, freqTicks(p.dn), niceTicks(Ytop,4), 'ν − ν₀  (GHz)', 'I_n / I_sat', fx);
+  const d = f2.ctx, bw = Math.max(2, (f2.w-f2.m.l-f2.m.r)/(2*HALF)*0.6);
+  for(let k=0;k<NM;k++){ if(I[k] <= 1e-3) continue; d.fillStyle = css('--c1'); const x = f2.X(nus[k]), y = f2.Y(I[k]); d.fillRect(x-bw/2, y, bw, f2.Y(0)-y); }
+  if(nOsc === 0){ d.fillStyle = css('--muted'); d.textAlign = 'center'; d.textBaseline = 'middle'; d.fillText('no oscillating modes', (f2.m.l+f2.w-f2.m.r)/2, (f2.m.t+f2.h-f2.m.b)/2); }
+  drawSweep(p, nOsc);
+}
+
+/* ---------- pump sweep ---------- */
+function scheduleSweep(p){
+  const ek = p.et ? [p.fsr.toFixed(4),p.fin,p.tun.toFixed(4)].join(',') : 'off', aS = lossArr(p);
+  const kh = ['h',p.Gam.toFixed(4),p.off,ek].join('|'), ki = ['i',p.Gam.toFixed(4),p.Dop.toFixed(4),p.off,ek].join('|');
+  const need = [];
+  if(!sweepCache[kh]){
+    const h0 = [], h1 = [];
+    PS.forEach(P => { h0.push(count(solveHom(P,1,p.Gam,p.off,null,aS))); h1.push(count(solveHom(P,2/3,p.Gam,p.off,null,aS))); });
+    sweepCache[kh] = { h0, h1 };
+  }
+  if(!(sweepCache[ki] && sweepCache[ki].done)) need.push(ki);
+  const token = ++sweepToken;
+  sweepData = { kh, ki };
+  if(!need.length){ $('sweepNote').textContent = sweepNote(); drawSweep(p); return; }
+  $('sweepNote').textContent = 'Computing the inhomogeneous pump sweep…';
+  drawSweep(p);
+  const su = inhSetup(p.Gam, p.Dop, p.off, Math.min(1, Math.max(0.03, p.Gam/6)));
+  const out = []; let i = 0, prev = null;
+  const step = () => {
+    if(token !== sweepToken) return;
+    const t0 = performance.now();
+    while(i < PS.length && performance.now()-t0 < 30){
+      prev = solveInh(PS[i], su, prev, 80, 1e-5, aS); out.push(count(prev)); i++;
+    }
+    sweepCache[ki] = { partial: out.slice(), done: i >= PS.length };
+    drawSweep(params());
+    if(i < PS.length) setTimeout(step, 0);
+    else $('sweepNote').textContent = sweepNote();
+  };
+  setTimeout(step, 20);
+}
+function sweepNote(){ return 'Ti:sapphire is homogeneously broadened, so without spatial hole burning it would run on one mode, and a few modes with it. Kerr-lens mode-locking does not fight this: the intensity-dependent Kerr lens favours pulsed operation, which locks the phases of many modes across the homogeneous gain bandwidth.'; }
+
+function drawSweep(p, nowCount){
+  if(!sweepData) return;
+  const H = sweepCache[sweepData.kh], Icur = sweepCache[sweepData.ki];
+  if(!H) return;
+  const inh = Icur ? (Icur.partial || Icur) : null;
+  const series = [
+    { key:'h0', label:'homogeneous, SHB off', col:css('--muted'), y:H.h0, on: p.kind==='hom' && !p.shb },
+    { key:'h1', label:'homogeneous, SHB on', col:css('--c3'), y:H.h1, on: p.kind==='hom' && p.shb },
+    { key:'i',  label:'inhomogeneous', col:css('--c2'), y:inh, on: p.kind==='inh' }
+  ];
+  let ymax = 5; series.forEach(s => { if(s.y) s.y.forEach(v => ymax = Math.max(ymax, v)); });
+  ymax = Math.ceil(ymax*1.1);
+  const f = frame($('cs'), 250, {l:52,r:12,t:26,b:38}, [0.8,4], [0,ymax]);
+  axes(f, [1,1.5,2,2.5,3,3.5,4], niceTicks(ymax,5), 'pump level P', 'oscillating modes');
+  const c = f.ctx;
+  series.forEach(s => {
+    if(!s.y || !s.y.length) return;
+    c.strokeStyle = s.col; c.lineWidth = s.on ? 3 : 1.5; c.globalAlpha = s.on ? 1 : 0.7;
+    c.beginPath(); s.y.forEach((v,i) => { const x = f.X(PS[i]), y = f.Y(v); i ? c.lineTo(x,y) : c.moveTo(x,y); }); c.stroke(); c.globalAlpha = 1;
+  });
+  c.setLineDash([4,4]); c.strokeStyle = css('--fg'); c.lineWidth = 1; c.beginPath(); c.moveTo(f.X(p.P), f.m.t); c.lineTo(f.X(p.P), f.h-f.m.b); c.stroke(); c.setLineDash([]);
+  if(nowCount !== undefined){ c.fillStyle = css('--fg'); c.beginPath(); c.arc(f.X(p.P), f.Y(nowCount), 4.5, 0, 2*Math.PI); c.fill(); }
+  c.textBaseline = 'middle'; c.textAlign = 'left'; let lx = f.m.l+8;
+  series.forEach(s => { c.strokeStyle = s.col; c.lineWidth = 3; c.beginPath(); c.moveTo(lx, 12); c.lineTo(lx+16, 12); c.stroke(); c.fillStyle = css('--muted'); c.fillText(s.label, lx+21, 13); lx += 21 + c.measureText(s.label).width + 14; });
+}
+
+window.addEventListener('resize', update);
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', update);
+new MutationObserver(update).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+update();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
