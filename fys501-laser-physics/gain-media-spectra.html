@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laser Gain Media: Absorption &amp; Emission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#14171b;
+    --panel:#1b1f24;
+    --panel-2:#20252b;
+    --edge:#2b3138;
+    --edge-strong:#3a424b;
+    --text:#e7eaee;
+    --text-dim:#8b939c;
+    --text-faint:#5b636c;
+    --accent:#f2c14e;
+    --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --display:'Space Grotesk', system-ui, sans-serif;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ color-scheme: dark; } }
+  :root[data-theme="dark"]{ color-scheme: dark; }
+  html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:var(--display); -webkit-font-smoothing:antialiased; }
+  #app{ max-width:1040px; margin:0 auto; padding:22px 16px 28px; }
+  header{ margin-bottom:16px; }
+  h1{ font-size:clamp(21px,4vw,28px); font-weight:700; letter-spacing:-0.01em; margin:0 0 4px; }
+  .sub{ color:var(--text-dim); font-size:14px; line-height:1.5; max-width:64ch; }
+
+  .tabs{ display:flex; gap:6px; flex-wrap:wrap; margin:18px 0 4px; border-bottom:1px solid var(--edge); padding-bottom:2px; }
+  .tab{ appearance:none; border:none; background:transparent; color:var(--text-dim); font-family:var(--display); font-size:13.5px; font-weight:600;
+        padding:9px 13px 10px; border-radius:3px 3px 0 0; cursor:pointer; border-bottom:2px solid transparent; transition:color .15s ease, border-color .15s ease; white-space:nowrap; }
+  .tab .r{ display:block; font-family:var(--mono); font-weight:400; font-size:10px; color:var(--text-faint); margin-top:2px; }
+  .tab:hover{ color:var(--text); }
+  .tab[aria-pressed="true"]{ color:var(--accent); border-bottom-color:var(--accent); }
+  .tab[aria-pressed="true"] .r{ color:var(--accent); opacity:.75; }
+  .tab:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .group-label{ font-size:11.5px; color:var(--text-faint); margin:14px 2px 6px; }
+  .mols{ display:flex; gap:7px; flex-wrap:wrap; margin-bottom:6px; }
+  .mol{ appearance:none; display:flex; align-items:center; gap:7px; background:var(--panel); border:1px solid var(--edge); color:var(--text);
+        padding:7px 10px; border-radius:3px; cursor:pointer; font-family:var(--display); transition:opacity .15s ease, border-color .15s ease; }
+  .mol .dot{ width:9px; height:9px; border-radius:50%; flex:none; box-shadow:0 0 6px 0 currentColor; }
+  .mol .lbl{ display:flex; flex-direction:column; align-items:flex-start; line-height:1.15; }
+  .mol .f{ font-weight:700; font-size:13px; }
+  .mol .n{ font-size:10px; color:var(--text-dim); }
+  .mol[aria-pressed="false"]{ opacity:.36; }
+  .mol[aria-pressed="false"] .dot{ box-shadow:none; }
+  .mol:hover{ border-color:var(--edge-strong); }
+  .mol:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .preset{ appearance:none; background:var(--panel); border:1px solid var(--edge); color:var(--text-dim); padding:7px 12px;
+           border-radius:3px; cursor:pointer; font-family:var(--display); font-size:12.5px; font-weight:600; transition:color .15s ease, border-color .15s ease; }
+  .preset:hover{ color:var(--text); border-color:var(--edge-strong); }
+  .preset[aria-pressed="true"]{ color:var(--accent); border-color:var(--accent); }
+  .preset:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .panel{ background:var(--panel); border:1px solid var(--edge); border-radius:4px; padding:12px 12px 8px; margin-top:14px; }
+  .plot-head{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+  .zoom-controls{ display:flex; gap:4px; }
+  .icon-btn{ appearance:none; border:1px solid var(--edge); background:var(--panel-2); color:var(--text-dim); width:26px; height:26px; border-radius:3px;
+             cursor:pointer; font-family:var(--mono); font-size:14px; display:flex; align-items:center; justify-content:center; line-height:1; }
+  .icon-btn:hover{ color:var(--text); border-color:var(--edge-strong); }
+  .icon-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
+  .modebar{ display:flex; border:1px solid var(--edge); border-radius:3px; overflow:hidden; }
+  .modebar button{ appearance:none; border:none; background:var(--panel-2); color:var(--text-dim); font-family:var(--mono); font-size:11px; padding:5px 9px; cursor:pointer; }
+  .modebar button[aria-pressed="true"]{ background:var(--accent); color:#20180a; }
+
+  .canvas-wrap{ position:relative; touch-action:none; }
+  canvas{ width:100%; display:block; cursor:crosshair; border-radius:2px; }
+
+  .legend-key{ display:flex; gap:16px; font-size:11px; color:var(--text-faint); margin-top:6px; flex-wrap:wrap; }
+  .legend-key span{ display:inline-flex; align-items:center; gap:5px; }
+  .swatch-line{ width:16px; height:0; border-top:2px solid var(--text-dim); display:inline-block; }
+  .swatch-dash{ width:16px; height:0; border-top:2px dashed var(--text-dim); display:inline-block; }
+  .swatch-pump{ width:0; height:12px; border-left:2px dashed var(--text-dim); display:inline-block; }
+
+  .readout{ margin-top:6px; font-family:var(--mono); font-size:12px; color:var(--text-dim); min-height:34px; display:flex; align-items:center;
+            flex-wrap:wrap; gap:6px 14px; border-top:1px solid var(--edge); padding-top:8px; }
+  .readout b{ color:var(--accent); font-weight:600; }
+  .readout .hint{ color:var(--text-faint); }
+
+  .caption{ font-size:13px; color:var(--text-dim); line-height:1.55; margin:12px 2px 0; max-width:72ch; }
+  .matnote{ font-size:12.5px; color:var(--text-dim); line-height:1.55; margin:8px 2px 0; max-width:72ch; border-left:2px solid var(--edge-strong); padding-left:10px; }
+  .matnote b{ color:var(--text); }
+
+  footer{ margin-top:20px; font-size:11.5px; color:var(--text-faint); line-height:1.6; border-top:1px solid var(--edge); padding-top:12px; }
+  footer a{ color:var(--text-dim); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Laser Gain Media: Absorption &amp; Emission</h1>
+    <div class="sub">Pump absorption and stimulated-emission bands for common laser gain materials, with typical pump wavelengths marked &mdash; for FYS.501 Laser Physics.</div>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Wavelength range"></div>
+
+  <div class="group-label">Quick picks</div>
+  <div class="mols" id="presets" role="group" aria-label="Preset material groups"></div>
+
+  <div class="group-label">Ion-doped crystals &amp; glass</div>
+  <div class="mols" id="molsSolid" role="group" aria-label="Solid-state gain media"></div>
+  <div class="group-label">Gas &amp; excimer lasers (electrically excited &mdash; no optical pump band)</div>
+  <div class="mols" id="molsGas" role="group" aria-label="Gas and excimer gain media"></div>
+
+  <div class="panel">
+    <div class="plot-head">
+      <div class="zoom-controls">
+        <button class="icon-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">&minus;</button>
+        <button class="icon-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+        <button class="icon-btn" id="resetView" title="Reset view" aria-label="Reset view" style="width:auto;padding:0 8px;">Reset</button>
+      </div>
+      <div class="modebar" role="group" aria-label="Show">
+        <button id="mAbs" aria-pressed="false">Absorption</button>
+        <button id="mEm" aria-pressed="false">Emission</button>
+        <button id="mBoth" aria-pressed="true">Both</button>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="plot"></canvas></div>
+    <div class="legend-key">
+      <span><i class="swatch-dash"></i> absorption (pump band)</span>
+      <span><i class="swatch-line"></i> emission (laser output)</span>
+      <span><i class="swatch-pump"></i> typical pump wavelength</span>
+    </div>
+    <div class="readout" id="readout">
+      <span class="hint">Point at the plot to inspect a band or pump line &middot; drag to pan &middot; scroll or +/&minus; to zoom</span>
+    </div>
+  </div>
+
+  <div class="caption" id="caption"></div>
+  <div class="matnote" id="matnote"></div>
+
+  <footer>
+    Illustrative model: band centres and typical pump wavelengths follow standard published values for each material; linewidths and relative peak heights are stylised for legibility, not measured cross-section data. Real gain and absorption cross-sections vary with host, doping density and temperature &mdash; consult the manufacturer's or a spectroscopic reference for design work.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // Small helpers
+  // ---------------------------------------------------------------
+  function gaussian(dx, sigma){ return Math.exp(-0.5*(dx/sigma)*(dx/sigma)); }
+  var C2 = 1.4388; // hc/kB, cm*K — only used for the CO2 rotational comb
+  function popWeight(J,B,T){ return (2*J+1)*Math.exp(-C2*B*J*(J+1)/T); }
+  function branchWeights(B,T){
+    var Pw=[0], Rw=[], wmax=0;
+    var JpeakGuess = Math.max(3, Math.sqrt(T/(2*C2*B)));
+    var maxJ = Math.min(400, Math.max(60, Math.ceil(JpeakGuess*8)));
+    for(var J=0;J<=maxJ;J++){
+      var w=popWeight(J,B,T);
+      var rw=(J+1)*w; Rw[J]=rw;
+      if(J>=1) Pw[J]=J*w;
+      if(rw>wmax) wmax=rw;
+      if(J>=1 && Pw[J]>wmax) wmax=Pw[J];
+      if(J>JpeakGuess+25 && w<0.0006*popWeight(Math.round(JpeakGuess),B,T)+1e-12) break;
+    }
+    return {Pw:Pw, Rw:Rw, wmax:wmax||1};
+  }
+  // Standard visible-wavelength -> RGB approximation (Dan Bruton's method),
+  // used only to render HeNe's own emission lines in their true colours.
+  function wavelengthToRGB(nm){
+    var r,g,b,f;
+    if(nm>=380 && nm<440){ r=-(nm-440)/(440-380); g=0; b=1; }
+    else if(nm<490){ r=0; g=(nm-440)/(490-440); b=1; }
+    else if(nm<510){ r=0; g=1; b=-(nm-510)/(510-490); }
+    else if(nm<580){ r=(nm-510)/(580-510); g=1; b=0; }
+    else if(nm<645){ r=1; g=-(nm-645)/(645-580); b=0; }
+    else if(nm<=780){ r=1; g=0; b=0; }
+    else { r=1; g=0; b=0; }
+    if(nm>=380 && nm<420) f=0.3+0.7*(nm-380)/(420-380);
+    else if(nm>700 && nm<=780) f=0.3+0.7*(780-nm)/(780-700);
+    else f=1;
+    function ch(c){ return Math.round(255*Math.pow(Math.max(0,Math.min(1,c))*f,0.8)); }
+    return 'rgb('+ch(r)+','+ch(g)+','+ch(b)+')';
+  }
+
+  // ---------------------------------------------------------------
+  // Gain-medium database
+  // wavelengths in nm, fwhm in nm, peak in [0,1] (illustrative scale)
+  // ---------------------------------------------------------------
+  var MOL = {
+    ErAlO: {
+      name:'Erbium-doped sapphire', formula:'Er:Al\u2082O\u2083', color:'#2dd4bf', group:'solid',
+      absorption:[
+        {center:800, fwhm:45, peak:0.15, label:'\u2074I15/2\u2192\u2074I9/2'},
+        {center:980, fwhm:28, peak:0.55, label:'\u2074I15/2\u2192\u2074I11/2'},
+        {center:1480, fwhm:45, peak:0.65, label:'\u2074I15/2\u2192\u2074I13/2'}
+      ],
+      emission:[ {center:1550, fwhm:70, peak:0.9, label:'\u2074I13/2\u2192\u2074I15/2, broadband'} ],
+      pumps:[ {nm:980, label:'980 nm diode'}, {nm:1480, label:'1480 nm diode'} ],
+      note:'Broadband erbium amplifier medium: sapphire\u2019s large crystal-field splitting broadens the gain band well beyond Er:YAG, useful for wideband optical amplification.'
+    },
+    ErYAG: {
+      name:'Erbium-doped YAG', formula:'Er:YAG', color:'#0d9488', group:'solid',
+      absorption:[
+        {center:520, fwhm:14, peak:0.08},
+        {center:650, fwhm:18, peak:0.12},
+        {center:800, fwhm:28, peak:0.20},
+        {center:970, fwhm:24, peak:0.75, label:'main diode-pump band'}
+      ],
+      emission:[ {center:2940, fwhm:55, peak:0.95, label:'\u2074I11/2\u2192\u2074I13/2, mid-IR'} ],
+      pumps:[ {nm:970, label:'970 nm diode'} ],
+      note:'The workhorse medical/dental laser. 2.94 \u00B5m lands almost exactly on water\u2019s strongest absorption peak, so the beam is absorbed within microns of tissue.'
+    },
+    YbYAG: {
+      name:'Ytterbium-doped YAG', formula:'Yb:YAG', color:'#eab308', group:'solid',
+      absorption:[
+        {center:900, fwhm:12, peak:0.25},
+        {center:915, fwhm:10, peak:0.30},
+        {center:940, fwhm:18, peak:0.55},
+        {center:969, fwhm:7, peak:0.90, label:'zero-phonon pump line'}
+      ],
+      emission:[
+        {center:1030, fwhm:9, peak:1.0, label:'main laser line'},
+        {center:1050, fwhm:22, peak:0.35, label:'broad phonon sideband'}
+      ],
+      pumps:[ {nm:940, label:'940 nm diode'}, {nm:969, label:'969 nm diode'} ],
+      note:'A simple two-manifold (quasi-three-level) structure and tiny quantum defect (pump-to-laser energy loss) make Yb:YAG the mainstay of high-power thin-disk and fibre-coupled lasers.'
+    },
+    NdYAG: {
+      name:'Neodymium-doped YAG', formula:'Nd:YAG', color:'#f87171', group:'solid',
+      absorption:[
+        {center:730, fwhm:8, peak:0.20},
+        {center:750, fwhm:8, peak:0.25},
+        {center:760, fwhm:6, peak:0.30},
+        {center:808, fwhm:3, peak:1.0, label:'main diode-pump line'},
+        {center:869, fwhm:6, peak:0.15}
+      ],
+      emission:[
+        {center:1064, fwhm:0.9, peak:1.0, label:'\u2074F3/2\u2192\u2074I11/2, dominant line'},
+        {center:1319, fwhm:1.3, peak:0.12, label:'\u2074F3/2\u2192\u2074I13/2'},
+        {center:946, fwhm:1.1, peak:0.08, label:'\u2074F3/2\u2192\u2074I9/2, quasi-four-level'}
+      ],
+      pumps:[ {nm:808, label:'808 nm diode'} ],
+      broadbandPump:true,
+      note:'The most widely deployed solid-state laser crystal. Sharp, narrow absorption and emission lines (crystalline Stark splitting) demand tight diode-wavelength control but give high gain. Flashlamp pumping (broadband) is also common.'
+    },
+    NdGlass: {
+      name:'Neodymium-doped glass', formula:'Nd:glass', color:'#fb923c', group:'solid',
+      absorption:[ {center:805, fwhm:38, peak:0.5, label:'inhomogeneously broadened pump band'} ],
+      emission:[ {center:1053, fwhm:30, peak:1.0, label:'broad gain band (phosphate host)'} ],
+      pumps:[ {nm:805, label:'805 nm diode / flashlamp'} ],
+      broadbandPump:true,
+      note:'Site-to-site disorder in the glass host broadens every Nd\u00B3\u207A line roughly 20\u00D7 wider than in a crystal. Lower gain, but exactly the bandwidth needed to amplify femtosecond pulses \u2014 used in the largest laser systems ever built (e.g. NIF).'
+    },
+    NdYVO: {
+      name:'Neodymium-doped vanadate', formula:'Nd:YVO\u2084', color:'#f43f5e', group:'solid',
+      absorption:[
+        {center:808, fwhm:5, peak:1.0, label:'strong, polarization-dependent pump band'},
+        {center:880, fwhm:10, peak:0.10}
+      ],
+      emission:[
+        {center:1064, fwhm:1.0, peak:1.0},
+        {center:1342, fwhm:1.1, peak:0.40, label:'unusually strong for a Nd\u00B3\u207A host'}
+      ],
+      pumps:[ {nm:808, label:'808 nm diode'} ],
+      note:'Vanadate\u2019s larger, more strongly polarised absorption cross-section than YAG tolerates diode-wavelength drift better \u2014 the default choice in compact diode-pumped modules.'
+    },
+    TiSapph: {
+      name:'Titanium-doped sapphire', formula:'Ti:Sapphire', color:'#60a5fa', group:'solid',
+      absorption:[ {center:490, fwhm:110, peak:1.0, label:'Ti\u00B3\u207A vibronic absorption'} ],
+      emission:[ {center:800, fwhm:230, peak:1.0, label:'tunable 660\u20131180 nm'} ],
+      pumps:[ {nm:532, label:'532 nm (frequency-doubled Nd:YAG/YVO\u2084)'}, {nm:514, label:'514 nm (Ar-ion, historical)'} ],
+      note:'The broadest gain bandwidth of any common laser crystal \u2014 basis of both widely tunable CW lasers and sub-10-fs mode-locked oscillators.'
+    },
+    Alexandrite: {
+      name:'Chromium-doped chrysoberyl', formula:'Alexandrite', color:'#4ade80', group:'solid',
+      absorption:[
+        {center:400, fwhm:40, peak:0.30},
+        {center:590, fwhm:55, peak:1.0, label:'main pump band'}
+      ],
+      emission:[
+        {center:755, fwhm:100, peak:0.9, label:'tunable vibronic band, 700\u2013820 nm'},
+        {center:680.4, fwhm:2, peak:0.25, label:'R-line (zero-phonon), sharp'}
+      ],
+      pumps:[ {nm:600, label:'\u2248600 nm (flashlamp / red diode)'} ],
+      broadbandPump:true,
+      note:'Chromium in a low-symmetry site couples strongly to lattice phonons, giving both a broad tunable vibronic band and, at the band edge, a sharp zero-phonon R-line \u2014 the same physics behind the gemstone\u2019s famous colour change.'
+    },
+    TmYAG: {
+      name:'Thulium-doped YAG', formula:'Tm:YAG', color:'#ec4899', group:'solid',
+      absorption:[
+        {center:785, fwhm:22, peak:0.9, label:'\u00B3H6\u2192\u00B3H4 pump band'},
+        {center:1210, fwhm:30, peak:0.10, label:'weak in-band absorption'}
+      ],
+      emission:[
+        {center:2010, fwhm:140, peak:1.0, label:'\u00B3F4\u2192\u00B3H6, tunable \u22481.85\u20132.1 \u00B5m'},
+        {center:1490, fwhm:40, peak:0.10, label:'\u00B3H4\u2192\u00B3F4 (weak)'},
+        {center:800, fwhm:20, peak:0.05, label:'\u00B3H4\u2192\u00B3H6 (weak, self-quenching path)'}
+      ],
+      pumps:[ {nm:785, label:'785 nm diode (cross-relaxation pump)'} ],
+      note:'Cross-relaxation (\u00B3H4+\u00B3H6\u2192\u00B3F4+\u00B3F4) lets one absorbed 785 nm photon excite two Tm\u00B3\u207A ions, giving a "2-for-1" quantum efficiency and very high slope efficiency at 2 \u00B5m \u2014 the same physics used in Tm-doped fibre lasers.'
+    },
+    HoYAG: {
+      name:'Holmium-doped YAG', formula:'Ho:YAG', color:'#fb7185', group:'solid',
+      absorption:[ {center:1907, fwhm:16, peak:0.8, label:'resonant in-band pump'} ],
+      emission:[
+        {center:2097, fwhm:32, peak:1.0, label:'\u2075I7\u2192\u2075I8, main 2.1 \u00B5m line'},
+        {center:2880, fwhm:60, peak:0.30, label:'\u2075I6\u2192\u2075I7, mid-IR (eye-safe, medical)'}
+      ],
+      pumps:[ {nm:1907, label:'1907 nm (Tm:YAG/Tm-fibre laser, resonant)'} ],
+      broadbandPump:true,
+      note:'Almost always pumped by another laser rather than a diode directly: a Tm:YAG or Tm-fibre laser tuned near 1.9\u20132.0 \u00B5m lands squarely on this resonant absorption \u2014 a two-stage "cascade" that reaches an eye-safer, longer wavelength each step. Flashlamp pumping is also used historically.'
+    },
+    PrZBLAN: {
+      name:'Praseodymium-doped fluoride glass', formula:'Pr:ZBLAN', color:'#a3e635', group:'solid',
+      absorption:[
+        {center:444, fwhm:10, peak:0.9, label:'blue-diode pump band'},
+        {center:480, fwhm:12, peak:0.35, label:'(Ar-ion 476/488 nm, historical)'}
+      ],
+      emission:[
+        {center:491, fwhm:8, peak:0.45, label:'blue, \u00B3P0\u2192\u00B3H4'},
+        {center:520, fwhm:8, peak:0.55, label:'green, \u00B3P1\u2192\u00B3H5'},
+        {center:605, fwhm:8, peak:0.45, label:'orange, \u00B3P0\u2192\u00B3H6'},
+        {center:635, fwhm:8, peak:1.0, label:'red, \u00B3P0\u2192\u00B3F2 (typically strongest)'},
+        {center:1300, fwhm:25, peak:0.25, label:'near-IR, \u00B9G4\u2192\u00B3H5'}
+      ],
+      pumps:[ {nm:444, label:'444 nm blue diode'} ],
+      note:'One of the few rare-earth ions that lases directly across the visible. Its upper levels sit close together in energy, so it needs a low-phonon-energy host \u2014 fluoride glass, not silica \u2014 or non-radiative decay quenches the emission before it can lase.'
+    },
+    CeLiCAF: {
+      name:'Cerium-doped LiCAF', formula:'Ce:LiCAF', color:'#818cf8', group:'solid',
+      absorption:[ {center:266, fwhm:15, peak:1.0, label:'5d\u21904f absorption, allowed & strong'} ],
+      emission:[ {center:305, fwhm:35, peak:1.0, label:'tunable UV, 5d\u21924f, \u224880\u2013330 nm range across the LiCAF/LiSAF/LiLuF/YLF family'} ],
+      pumps:[ {nm:266, label:'266 nm (4\u00D7 Nd:YAG)'}, {nm:248, label:'248 nm (KrF excimer)'} ],
+      note:'Unlike the other ions here, this is a fully parity-allowed 5d\u21924f transition rather than a shielded 4f\u21924f one \u2014 giving a huge gain cross-section and a ~30 ns upper-state lifetime. That makes it a rare directly UV-lasing rare-earth crystal, but it also demands fast pumping (excimer or harmonic-generated pulses) rather than a simple diode.'
+    },
+    HeNe: {
+      name:'Helium\u2013neon', formula:'He\u2013Ne', color:'#ef4444', group:'gas', electricalDischarge:true,
+      emission:[
+        {center:632.8, fwhm:0.02, peak:1.0, label:'main red line', trueColor:true},
+        {center:611.9, fwhm:0.02, peak:0.10, label:'orange (special order)', trueColor:true},
+        {center:594.1, fwhm:0.02, peak:0.08, label:'yellow (special order)', trueColor:true},
+        {center:543.5, fwhm:0.02, peak:0.12, label:'green (special order)', trueColor:true},
+        {center:1152.3, fwhm:0.3, peak:0.30, label:'near-IR line'},
+        {center:3391, fwhm:1.0, peak:0.55, label:'mid-IR line (very high gain)'}
+      ],
+      note:'Population inversion comes from resonant collisional energy transfer between He and Ne atoms in a DC gas discharge \u2014 not from optical pumping. The 632.8 nm line is by far the most common; the others need special mirror coatings.'
+    },
+    CO2: {
+      name:'Carbon dioxide', formula:'CO\u2082', color:'#94a3b8', group:'gas', electricalDischarge:true,
+      rotor:{ B:0.390, bands:[ {nu0:960, peak:0.55, label:'10.6 \u00B5m branch'}, {nu0:1060, peak:0.45, label:'9.6 \u00B5m branch'} ] },
+      note:'A DC or RF discharge vibrationally excites N\u2082, which resonantly transfers energy to CO\u2082\u2019s asymmetric-stretch mode. Zoom into the mid-IR range to resolve the individual P/R rotational lines \u2014 each is a separately selectable laser transition.'
+    },
+    ArF: { name:'Argon fluoride', formula:'ArF', color:'#a78bfa', group:'gas', electricalDischarge:true,
+      emission:[ {center:193, fwhm:1.0, peak:1.0} ], note:'excimer' },
+    KrF: { name:'Krypton fluoride', formula:'KrF', color:'#c084fc', group:'gas', electricalDischarge:true,
+      emission:[ {center:248, fwhm:1.2, peak:1.0} ], note:'excimer' },
+    XeCl: { name:'Xenon chloride', formula:'XeCl', color:'#e879f9', group:'gas', electricalDischarge:true,
+      emission:[ {center:308, fwhm:1.8, peak:1.0} ], note:'excimer' },
+    XeF: { name:'Xenon fluoride', formula:'XeF', color:'#f0abfc', group:'gas', electricalDischarge:true,
+      emission:[ {center:351, fwhm:2.2, peak:1.0} ], note:'excimer' }
+  };
+  var EXCIMER_NOTE = 'Rare-gas halide excimer: a transient molecule (e.g. ArF*) exists only in the electronically excited state and emits on dissociation into unbound ground-state atoms, which repel each other. That unbound lower state is why the line is a smooth, several-nm-wide band rather than a sharp atomic line, and why there is no ground-state absorption band to pump optically \u2014 excitation is by high-voltage electrical discharge (or e-beam) in the gas mixture.';
+  ['ArF','KrF','XeCl','XeF'].forEach(function(k){ MOL[k].note = EXCIMER_NOTE; });
+
+  var SOLID_ORDER = ['ErAlO','ErYAG','YbYAG','NdYAG','NdGlass','NdYVO','TmYAG','HoYAG','PrZBLAN','CeLiCAF','TiSapph','Alexandrite'];
+  var GAS_ORDER = ['HeNe','CO2','ArF','KrF','XeCl','XeF'];
+  var MOL_ORDER = SOLID_ORDER.concat(GAS_ORDER);
+
+  // Quick-pick presets: media commonly used to build each class of laser.
+  // Illustrative groupings (see each material's own note for specifics),
+  // not an exhaustive or authoritative classification.
+  var PRESETS = {
+    modelocked: {
+      label:'Mode-locked lasers',
+      keys:['ErAlO','YbYAG','NdGlass','TmYAG','TiSapph','Alexandrite'],
+      rangeKey:'ML',
+      note:'Media with gain bandwidth broad enough to support short-pulse operation via mode-locking \u2014 from Ti:Sapphire\u2019s sub-10-fs pulses down to the picosecond regime for the narrower-gain crystals. Er:Al\u2082O\u2083 stands in for erbium-fibre mode-locked oscillators (frequency combs).'
+    },
+    highpower: {
+      label:'High-power lasers',
+      keys:['NdYAG','NdGlass','NdYVO','YbYAG','TmYAG','HoYAG','CO2','ArF','KrF','XeCl','XeF'],
+      rangeKey:'FULL',
+      note:'The gain media behind kilowatt-class and higher-power systems: industrial cutting/welding (Nd, Yb, CO\u2082), high-power fibre lasers (Tm, Ho), and high-pulse-energy excimer systems (semiconductor lithography, industrial annealing).'
+    },
+    gaslasers: {
+      label:'Gas & excimer lasers',
+      keys:['HeNe','CO2','ArF','KrF','XeCl','XeF'],
+      rangeKey:'FULL',
+      note:'Every gas-phase system in this applet. None are optically pumped \u2014 all are excited by electrical discharge, spanning HeNe\u2019s milliwatt visible line, CO\u2082\u2019s kilowatt-class industrial output, and the excimers\u2019 high-pulse-energy UV bands.'
+    }
+  };
+
+  var RANGES = {
+    FULL:{ label:'Overview', mode:'log', min:150, max:11200,
+      note:'Full span, log-scaled: 150 nm (excimer UV) to 11.2 \u00B5m (CO\u2082). Use the tabs below to zoom into a linear view of any region.' },
+    UV: { label:'UV', mode:'linear', min:150, max:400,
+      note:'Excimer laser wavelengths live here \u2014 bound-free electronic transitions in noble-gas halide molecules, each only a few nm wide. Ce\u00B3\u207A:fluoride crystals are the rare rare-earth ion that lases directly in the UV, via a fully allowed 5d\u21924f transition rather than a shielded 4f\u21924f one.' },
+    VIS:{ label:'Visible', mode:'linear', min:400, max:750,
+      note:'HeNe\u2019s visible lines, Ti:Sapphire\u2019s blue-green pump absorption, and alexandrite\u2019s pump band and sharp R-line all sit here \u2014 as do praseodymium\u2019s blue/green/orange/red laser lines, one of the few rare-earth ions that lases directly in the visible.' },
+    NIR:{ label:'Near-IR', mode:'linear', min:750, max:1400,
+      note:'The busiest band for diode-pumped solid-state lasers: 785/808/940/970 nm pump absorption on one side, 1030\u20131064 nm laser emission on the other.' },
+    SWIR:{ label:'SWIR', mode:'linear', min:1400, max:3450,
+      note:'Er:Al\u2082O\u2083\u2019s broadband telecom emission, Er:YAG\u2019s 2.94 \u00B5m medical line, HeNe\u2019s 3.39 \u00B5m line, and the thulium/holmium 2 \u00B5m cascade (a Tm:YAG or Tm-fibre laser resonantly pumping Ho:YAG) all sit here.' },
+    MIR:{ label:'Mid-IR', mode:'linear', min:8600, max:11100,
+      note:'CO\u2082\u2019s two rotational-vibrational branches. Zoom in further to resolve individual P/R lines \u2014 the comb of transitions a real CO\u2082 laser can be tuned across.' },
+    ML:{ label:'Mode-locked range', mode:'linear', min:300, max:2500,
+      note:'A common working window for femtosecond/picosecond oscillators and amplifiers \u2014 Ti:Sapphire, Yb:YAG, Nd:glass, Tm:YAG, alexandrite, and erbium-fibre combs all fall inside it.' }
+  };
+  var RANGE_ORDER = ['FULL','UV','VIS','NIR','SWIR','MIR'];
+
+  // ---------------------------------------------------------------
+  // State
+  // ---------------------------------------------------------------
+  var state = {
+    range:'FULL',
+    view:null,
+    active:{NdYAG:true, YbYAG:true, TiSapph:true},
+    mode:'both', // 'abs' | 'em' | 'both'
+    presetActive:null,
+    focus:null
+  };
+
+  var lineCacheCO2 = null;
+  function co2Lines(){
+    if(lineCacheCO2) return lineCacheCO2;
+    var mol = MOL.CO2, lines=[];
+    mol.rotor.bands.forEach(function(band){
+      var bw = branchWeights(mol.rotor.B, 300);
+      for(var J=0;J<bw.Rw.length;J++){
+        if(bw.Rw[J]===undefined) continue;
+        var inten = band.peak*bw.Rw[J]/bw.wmax;
+        if(inten < band.peak*0.003) continue;
+        lines.push({nu:band.nu0+2*mol.rotor.B*(J+1), intensity:inten, branch:'R', J:J, label:band.label});
+      }
+      for(J=1;J<bw.Pw.length;J++){
+        if(bw.Pw[J]===undefined) continue;
+        var intenP = band.peak*bw.Pw[J]/bw.wmax;
+        if(intenP < band.peak*0.003) continue;
+        lines.push({nu:band.nu0-2*mol.rotor.B*J, intensity:intenP, branch:'P', J:J, label:band.label});
+      }
+    });
+    lines.sort(function(a,b){ return a.nu-b.nu; });
+    lineCacheCO2 = lines;
+    return lines;
+  }
+  var GAMMA_REF = 0.09; // cm^-1, reference width the CO2 rotor peaks were tuned at
+  function lorentzianArea(dx, gammaEff){ return GAMMA_REF*gammaEff/(dx*dx+gammaEff*gammaEff); }
+
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  // ---------------------------------------------------------------
+  // x-axis mapping (linear or log10), shared by layout & rendering
+  // ---------------------------------------------------------------
+  function nmAtFrac(t, view){
+    if(view.mode==='log'){
+      var l0=Math.log10(view.min), l1=Math.log10(view.max);
+      return Math.pow(10, l0+t*(l1-l0));
+    }
+    return view.min + t*(view.max-view.min);
+  }
+  function fracAtNm(nm, view){
+    if(view.mode==='log'){
+      var l0=Math.log10(view.min), l1=Math.log10(view.max);
+      return (Math.log10(nm)-l0)/(l1-l0);
+    }
+    return (nm-view.min)/(view.max-view.min);
+  }
+
+  function computeSpectrum(molKey, kind, view, n){
+    var mol = MOL[molKey];
+    var arr = new Float32Array(n);
+    var bands = kind==='abs' ? mol.absorption : mol.emission;
+    var i, t, nm;
+    if(kind==='em' && mol.rotor){
+      var lines = co2Lines();
+      for(i=0;i<n;i++){
+        t = i/(n-1); nm = nmAtFrac(t, view);
+        var nu = 1e7/nm;
+        var t2 = (i+1)/(n-1); var nm2 = nmAtFrac(t2, view);
+        var nuPerStep = Math.abs(1e7/nm2 - 1e7/nm);
+        var gammaEff = Math.max(0.09, 0.6*nuPerStep);
+        var s=0;
+        for(var k=0;k<lines.length;k++){
+          var dnu = nu-lines[k].nu;
+          if(Math.abs(dnu) > Math.max(3,40*gammaEff)) continue;
+          s += lines[k].intensity*lorentzianArea(dnu, gammaEff);
+        }
+        arr[i]=Math.min(s,4);
+      }
+      return arr;
+    }
+    if(!bands) return arr;
+    for(i=0;i<n;i++){
+      t=i/(n-1); nm=nmAtFrac(t, view);
+      var t2b=(i+1)/(n-1); var nm2b=nmAtFrac(Math.min(1,t2b), view);
+      var nmPerStep = Math.abs(nm2b-nm);
+      var s2=0;
+      for(var bIdx=0; bIdx<bands.length; bIdx++){
+        var band=bands[bIdx];
+        var sigma = Math.max(band.fwhm/2.3548, 0.6*nmPerStep);
+        s2 += band.peak*gaussian(nm-band.center, sigma);
+      }
+      arr[i]=s2;
+    }
+    return arr;
+  }
+
+  // ---------------------------------------------------------------
+  // Canvas
+  // ---------------------------------------------------------------
+  var canvas=document.getElementById('plot'), ctx=canvas.getContext('2d');
+  var wrap=document.querySelector('.canvas-wrap');
+  var DPR=Math.max(1, window.devicePixelRatio||1);
+  var PAD={l:44,r:14,t:14,b:28};
+
+  function niceStep(span, targetTicks){
+    var raw=span/targetTicks, mag=Math.pow(10,Math.floor(Math.log10(raw))), norm=raw/mag;
+    return (norm<1.5?1:norm<3.5?2:norm<7.5?5:10)*mag;
+  }
+  function fmtNmAxis(v, stepNm){
+    var unit = v<1000 ? 'nm' : 'um';
+    var displayStep = unit==='um' ? stepNm/1000 : stepNm;
+    var decimals = displayStep>0 ? Math.max(0, Math.min(4, Math.ceil(-Math.log10(displayStep)))) : 0;
+    if(unit==='nm') return v.toFixed(decimals)+' nm';
+    return (v/1000).toFixed(decimals)+' \u00B5m';
+  }
+  function fmtNm(v){
+    if(v<1000) return (v<10? v.toFixed(2) : v<100? v.toFixed(1) : Math.round(v))+' nm';
+    return (v/1000).toFixed(v<3000?3:2)+' \u00B5m';
+  }
+  function resizeCanvas(){
+    var w=wrap.clientWidth, h= window.innerWidth<560?260:400;
+    canvas.style.height=h+'px';
+    canvas.width=Math.round(w*DPR); canvas.height=Math.round(h*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    draw();
+  }
+  function plotWidth(){ return wrap.clientWidth-PAD.l-PAD.r; }
+  function currentView(){
+    var r=RANGES[state.range];
+    return state.view || {min:r.min, max:r.max, mode:r.mode};
+  }
+  function toXPix(nm, view){ return PAD.l + plotWidth()*fracAtNm(nm, view); }
+  function fromXPix(px, view){ var t=(px-PAD.l)/plotWidth(); return nmAtFrac(Math.max(0,Math.min(1,t)), view); }
+  function toYPix(v, h){ return PAD.t + (h-PAD.t-PAD.b)*(1-Math.min(1.05,v)/1.05); }
+
+  function clampView(v){
+    var r=RANGES[state.range];
+    if(r.mode==='log'){
+      var l0=Math.log10(r.min), l1=Math.log10(r.max);
+      var lv0=Math.log10(v.min), lv1=Math.log10(v.max);
+      var full=l1-l0, span=lv1-lv0, minSpan=full*0.03;
+      if(span<minSpan){ var c=(lv0+lv1)/2; lv0=c-minSpan/2; lv1=c+minSpan/2; }
+      if(lv0<l0){ lv1+=(l0-lv0); lv0=l0; }
+      if(lv1>l1){ lv0-=(lv1-l1); lv1=l1; }
+      if(lv0<l0) lv0=l0;
+      return {min:Math.pow(10,lv0), max:Math.pow(10,lv1), mode:'log'};
+    }
+    var full2=r.max-r.min, span2=v.max-v.min, minSpan2=full2*0.01;
+    if(span2<minSpan2){ var c2=(v.min+v.max)/2; v.min=c2-minSpan2/2; v.max=c2+minSpan2/2; span2=minSpan2; }
+    if(v.min<r.min){ v.max+=(r.min-v.min); v.min=r.min; }
+    if(v.max>r.max){ v.min-=(v.max-r.max); v.max=r.max; }
+    if(v.min<r.min) v.min=r.min;
+    return {min:v.min, max:v.max, mode:'linear'};
+  }
+
+  function draw(){
+    var w=wrap.clientWidth, h=parseInt(canvas.style.height,10);
+    ctx.clearRect(0,0,w,h);
+    var view = currentView();
+
+    ctx.strokeStyle=css('--edge'); ctx.fillStyle=css('--text-faint'); ctx.font='11px '+css('--mono'); ctx.lineWidth=1;
+
+    // x gridlines/ticks
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    function drawLinearTicks(view){
+      var xStep=niceStep(view.max-view.min,6);
+      var xStart=Math.ceil(view.min/xStep)*xStep;
+      for(var xt=xStart; xt<=view.max+1e-9; xt+=xStep){
+        var px=toXPix(xt,view);
+        ctx.strokeStyle=css('--edge'); ctx.beginPath(); ctx.moveTo(px,PAD.t); ctx.lineTo(px,h-PAD.b); ctx.stroke();
+        ctx.fillText(fmtNmAxis(xt, xStep), px, h-PAD.b+6);
+      }
+    }
+    if(view.mode==='log' && Math.log10(view.max/view.min) > 1.3){
+      // Wide, multi-decade view: classic 1/2/5 x 10^n log ticks.
+      var l0=Math.log10(view.min), l1=Math.log10(view.max);
+      var decStart=Math.floor(l0), decEnd=Math.ceil(l1);
+      for(var d=decStart; d<=decEnd; d++){
+        [1,2,5].forEach(function(m){
+          var nmv=m*Math.pow(10,d);
+          if(nmv<view.min||nmv>view.max) return;
+          var px=toXPix(nmv,view);
+          ctx.strokeStyle=css('--edge'); ctx.beginPath(); ctx.moveTo(px,PAD.t); ctx.lineTo(px,h-PAD.b); ctx.stroke();
+          ctx.fillText(fmtNm(nmv), px, h-PAD.b+6);
+        });
+      }
+    } else {
+      // Either linear mode, or zoomed far enough into the log view that a
+      // handful of evenly spaced nice round numbers reads much better than
+      // decade multiples (which can otherwise leave just one tick visible).
+      drawLinearTicks(view);
+    }
+    // y gridlines
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    [0,0.25,0.5,0.75,1.0].forEach(function(yt){
+      var py=toYPix(yt,h);
+      ctx.strokeStyle=css('--edge'); ctx.beginPath(); ctx.moveTo(PAD.l,py); ctx.lineTo(w-PAD.r,py); ctx.stroke();
+      ctx.fillText(yt.toFixed(2), PAD.l-8, py);
+    });
+    ctx.strokeStyle=css('--edge-strong'); ctx.strokeRect(PAD.l,PAD.t,w-PAD.l-PAD.r,h-PAD.t-PAD.b);
+
+    ctx.save(); ctx.translate(12,(h-PAD.b+PAD.t)/2); ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=css('--text-dim'); ctx.font='11px '+css('--mono');
+    ctx.fillText('rel. cross-section', 0,0);
+    ctx.restore();
+
+    var n=Math.max(200, Math.min(1800, Math.round(plotWidth())));
+
+    MOL_ORDER.forEach(function(key){
+      if(!state.active[key]) return;
+      var mol = MOL[key];
+      var color = mol.color;
+
+      if((state.mode==='abs'||state.mode==='both') && mol.absorption){
+        var arrA = computeSpectrum(key,'abs',view,n);
+        drawCurve(arrA, view, n, h, color, true, false);
+      }
+      if((state.mode==='em'||state.mode==='both') && (mol.emission||mol.rotor)){
+        var arrE = computeSpectrum(key,'em',view,n);
+        drawCurve(arrE, view, n, h, color, false, key==='HeNe');
+      }
+      if((state.mode==='abs'||state.mode==='both') && !mol.electricalDischarge && mol.pumps){
+        mol.pumps.forEach(function(p){
+          if(p.nm<view.min||p.nm>view.max) return;
+          var px=toXPix(p.nm,view);
+          ctx.strokeStyle=color; ctx.setLineDash([3,3]); ctx.lineWidth=1.4;
+          ctx.beginPath(); ctx.moveTo(px,h-PAD.b); ctx.lineTo(px,PAD.t+6); ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      }
+    });
+
+    function drawCurve(arr, view, n, h, color, dashed, trueColorMode){
+      if(trueColorMode){
+        // HeNe: render each visible line tick in its own physical colour
+        MOL.HeNe.emission.forEach(function(line){
+          if(line.center<view.min || line.center>view.max) return;
+          var px=toXPix(line.center,view);
+          var col = line.trueColor ? wavelengthToRGB(line.center) : color;
+          ctx.strokeStyle=col; ctx.lineWidth=2;
+          var peakY=toYPix(line.peak,h);
+          ctx.beginPath(); ctx.moveTo(px,toYPix(0,h)); ctx.lineTo(px,peakY); ctx.stroke();
+        });
+        return;
+      }
+      ctx.beginPath();
+      for(var i=0;i<n;i++){
+        var t=i/(n-1); var nm=nmAtFrac(t,view);
+        var px=toXPix(nm,view);
+        var py=toYPix(arr[i],h);
+        if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.strokeStyle=color; ctx.lineWidth=1.6;
+      if(dashed) ctx.setLineDash([5,3]); else ctx.setLineDash([]);
+      ctx.stroke();
+      if(!dashed){
+        ctx.lineTo(toXPix(nmAtFrac(1,view),view), toYPix(0,h));
+        ctx.lineTo(toXPix(nmAtFrac(0,view),view), toYPix(0,h));
+        ctx.closePath();
+        ctx.globalAlpha=0.14; ctx.fillStyle=color; ctx.fill(); ctx.globalAlpha=1;
+      }
+      ctx.setLineDash([]);
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // UI: range tabs
+  // ---------------------------------------------------------------
+  var tabsEl=document.getElementById('tabs');
+  RANGE_ORDER.forEach(function(key){
+    var r=RANGES[key];
+    var b=document.createElement('button');
+    b.className='tab'; b.type='button'; b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', key===state.range?'true':'false');
+    var span = r.mode==='log' ? (fmtNm(r.min)+'\u2013'+fmtNm(r.max)) : (fmtNm(r.min)+'\u2013'+fmtNm(r.max));
+    b.innerHTML = r.label+'<span class="r">'+span+'</span>';
+    b.addEventListener('click', function(){
+      state.range=key; state.view={min:r.min,max:r.max,mode:r.mode};
+      Array.prototype.forEach.call(tabsEl.children, function(el){ el.setAttribute('aria-pressed', el===b?'true':'false'); });
+      updateCaption(); draw();
+    });
+    tabsEl.appendChild(b);
+  });
+
+  // ---------------------------------------------------------------
+  // UI: molecule toggles
+  // ---------------------------------------------------------------
+  function makeMolButton(key){
+    var mol=MOL[key];
+    var b=document.createElement('button');
+    b.className='mol'; b.type='button';
+    b.setAttribute('aria-pressed', state.active[key]?'true':'false');
+    b.innerHTML='<span class="dot" style="background:'+mol.color+';color:'+mol.color+'"></span>'+
+                '<span class="lbl"><span class="f">'+mol.formula+'</span><span class="n">'+mol.name+'</span></span>';
+    b.addEventListener('click', function(){
+      state.active[key]=!state.active[key];
+      state.focus = key;
+      state.presetActive = null;
+      Array.prototype.forEach.call(presetsEl.children, function(pb){ pb.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed', state.active[key]?'true':'false');
+      updateMatNote();
+      draw();
+    });
+    return b;
+  }
+  var molsSolidEl=document.getElementById('molsSolid'), molsGasEl=document.getElementById('molsGas');
+  SOLID_ORDER.forEach(function(k){ molsSolidEl.appendChild(makeMolButton(k)); });
+  GAS_ORDER.forEach(function(k){ molsGasEl.appendChild(makeMolButton(k)); });
+
+  var presetsEl=document.getElementById('presets');
+  var allMolButtons = {};
+  Array.prototype.forEach.call(molsSolidEl.children, function(b,i){ allMolButtons[SOLID_ORDER[i]]=b; });
+  Array.prototype.forEach.call(molsGasEl.children, function(b,i){ allMolButtons[GAS_ORDER[i]]=b; });
+
+  function applyPreset(presetKey){
+    var preset = PRESETS[presetKey];
+    MOL_ORDER.forEach(function(k){
+      state.active[k] = preset.keys.indexOf(k)>=0;
+      if(allMolButtons[k]) allMolButtons[k].setAttribute('aria-pressed', state.active[k]?'true':'false');
+    });
+    state.presetActive = presetKey;
+    state.focus = null;
+    Array.prototype.forEach.call(presetsEl.children, function(pb){ pb.setAttribute('aria-pressed', pb.dataset.preset===presetKey?'true':'false'); });
+    matnoteEl.innerHTML = '<b>'+preset.label+'</b> \u2014 '+preset.note;
+    if(preset.rangeKey && RANGES[preset.rangeKey]){
+      var r = RANGES[preset.rangeKey];
+      state.range = preset.rangeKey;
+      state.view = {min:r.min, max:r.max, mode:r.mode};
+      Array.prototype.forEach.call(tabsEl.children, function(el, idx){
+        el.setAttribute('aria-pressed', RANGE_ORDER[idx]===preset.rangeKey ? 'true':'false');
+      });
+      updateCaption();
+    }
+    draw();
+  }
+  Object.keys(PRESETS).forEach(function(pk){
+    var preset = PRESETS[pk];
+    var b = document.createElement('button');
+    b.className='preset'; b.type='button'; b.dataset.preset=pk;
+    b.setAttribute('aria-pressed','false');
+    b.textContent = preset.label;
+    b.addEventListener('click', function(){ applyPreset(pk); });
+    presetsEl.appendChild(b);
+  });
+
+  // ---------------------------------------------------------------
+  // UI: mode bar
+  // ---------------------------------------------------------------
+  var mAbs=document.getElementById('mAbs'), mEm=document.getElementById('mEm'), mBoth=document.getElementById('mBoth');
+  function setMode(m){
+    state.mode=m;
+    mAbs.setAttribute('aria-pressed', m==='abs'?'true':'false');
+    mEm.setAttribute('aria-pressed', m==='em'?'true':'false');
+    mBoth.setAttribute('aria-pressed', m==='both'?'true':'false');
+    draw();
+  }
+  mAbs.addEventListener('click', function(){ setMode('abs'); });
+  mEm.addEventListener('click', function(){ setMode('em'); });
+  mBoth.addEventListener('click', function(){ setMode('both'); });
+
+  // ---------------------------------------------------------------
+  // caption + per-material note
+  // ---------------------------------------------------------------
+  var captionEl=document.getElementById('caption');
+  var matnoteEl=document.getElementById('matnote');
+  function updateCaption(){ captionEl.textContent = RANGES[state.range].note; }
+  function updateMatNote(){
+    var active = MOL_ORDER.filter(function(k){ return state.active[k]; });
+    if(active.length===0){ matnoteEl.innerHTML=''; return; }
+    var last = (state.focus && state.active[state.focus]) ? state.focus : active[active.length-1];
+    var mol = MOL[last];
+    var pumpTxt = mol.electricalDischarge ? 'Electrically excited (gas discharge) &mdash; no optical pump wavelength.'
+                : (mol.pumps ? ('Typical pump: '+mol.pumps.map(function(p){return p.label;}).join(', ')+(mol.broadbandPump?' (also flashlamp-pumped)':'')+'.') : '');
+    matnoteEl.innerHTML = '<b>'+mol.formula+'</b> \u2014 '+mol.note+(pumpTxt?' '+pumpTxt:'');
+  }
+
+  // ---------------------------------------------------------------
+  // zoom / pan / readout
+  // ---------------------------------------------------------------
+  function zoomAt(factor, anchorNm){
+    var v=currentView(); var r=RANGES[state.range];
+    var nv;
+    if(r.mode==='log'){
+      var la=Math.log10(anchorNm!==undefined?anchorNm:Math.sqrt(v.min*v.max));
+      var l0=Math.log10(v.min), l1=Math.log10(v.max);
+      nv={min:Math.pow(10, la-(la-l0)*factor), max:Math.pow(10, la+(l1-la)*factor), mode:'log'};
+    } else {
+      var a=anchorNm!==undefined?anchorNm:(v.min+v.max)/2;
+      nv={min:a-(a-v.min)*factor, max:a+(v.max-a)*factor, mode:'linear'};
+    }
+    state.view=clampView(nv); draw();
+  }
+  document.getElementById('zoomIn').addEventListener('click', function(){ zoomAt(0.7); });
+  document.getElementById('zoomOut').addEventListener('click', function(){ zoomAt(1.4); });
+  document.getElementById('resetView').addEventListener('click', function(){
+    var r=RANGES[state.range]; state.view={min:r.min,max:r.max,mode:r.mode}; draw();
+  });
+  canvas.addEventListener('wheel', function(e){
+    e.preventDefault();
+    var rect=canvas.getBoundingClientRect();
+    var v=currentView(); var nmv=fromXPix(e.clientX-rect.left, v);
+    zoomAt(e.deltaY>0?1.15:0.87, nmv);
+  }, {passive:false});
+
+  var dragging=false, dragStartPx=0, dragStartView=null;
+  var readoutEl=document.getElementById('readout');
+
+  function allPeaksInView(view){
+    var out=[];
+    MOL_ORDER.forEach(function(key){
+      if(!state.active[key]) return;
+      var mol=MOL[key];
+      if((state.mode==='abs'||state.mode==='both') && mol.absorption){
+        mol.absorption.forEach(function(b){ out.push({nm:b.center, label:mol.formula+' \u00B7 abs '+(b.label||b.center+' nm')}); });
+      }
+      if((state.mode==='abs'||state.mode==='both') && mol.pumps){
+        mol.pumps.forEach(function(p){ out.push({nm:p.nm, label:mol.formula+' \u00B7 pump '+p.label}); });
+      }
+      if((state.mode==='em'||state.mode==='both')){
+        if(mol.emission) mol.emission.forEach(function(b){ out.push({nm:b.center, label:mol.formula+' \u00B7 emission '+(b.label||b.center+' nm')}); });
+        if(mol.rotor){
+          co2Lines().forEach(function(l){
+            out.push({nm:1e7/l.nu, label:'CO\u2082 \u00B7 '+l.branch+'('+l.J+') '+l.label});
+          });
+        }
+      }
+    });
+    return out;
+  }
+  function updateReadout(clientX){
+    var rect=canvas.getBoundingClientRect();
+    var view=currentView();
+    var nmv=fromXPix(clientX-rect.left, view);
+    var peaks=allPeaksInView(view);
+    var best=null, bestD=Infinity;
+    var tol = view.mode==='log' ? nmv*0.03 : (view.max-view.min)*0.02;
+    peaks.forEach(function(p){ var d=Math.abs(p.nm-nmv); if(d<bestD){bestD=d;best=p;} });
+    var html='<span>'+fmtNm(nmv)+'</span>';
+    if(best && bestD<tol) html+='<b>'+best.label+'</b>';
+    else html+='<span class="hint">no band or pump line nearby</span>';
+    readoutEl.innerHTML=html;
+  }
+  canvas.addEventListener('pointerdown', function(e){
+    dragging=true; dragStartPx=e.clientX; dragStartView=Object.assign({}, currentView());
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e){
+    if(dragging){
+      var view=dragStartView;
+      var rect=canvas.getBoundingClientRect();
+      if(view.mode==='log'){
+        var l0=Math.log10(view.min), l1=Math.log10(view.max);
+        var dl = -(e.clientX-dragStartPx)/plotWidth()*(l1-l0);
+        state.view=clampView({min:Math.pow(10,l0+dl), max:Math.pow(10,l1+dl), mode:'log'});
+      } else {
+        var span=view.max-view.min;
+        var d=-(e.clientX-dragStartPx)/plotWidth()*span;
+        state.view=clampView({min:view.min+d, max:view.max+d, mode:'linear'});
+      }
+      draw();
+    }
+    updateReadout(e.clientX);
+  });
+  canvas.addEventListener('pointerup', function(e){ dragging=false; try{canvas.releasePointerCapture(e.pointerId);}catch(err){} });
+  canvas.addEventListener('pointerleave', function(){
+    if(!dragging) readoutEl.innerHTML='<span class="hint">Point at the plot to inspect a band or pump line &middot; drag to pan &middot; scroll or +/&minus; to zoom</span>';
+  });
+  canvas.addEventListener('dblclick', function(){
+    var r=RANGES[state.range]; state.view={min:r.min,max:r.max,mode:r.mode}; draw();
+  });
+  window.addEventListener('resize', resizeCanvas);
+
+  // init
+  setMode('both');
+  updateCaption(); updateMatNote();
+  state.view={min:RANGES[state.range].min, max:RANGES[state.range].max, mode:RANGES[state.range].mode};
+  resizeCanvas();
+})();
+</script>
+</body>
+</html>
