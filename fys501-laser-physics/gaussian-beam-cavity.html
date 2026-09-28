@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gaussian Beam Cavity Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#14171a;
+    --panel:#1c2126;
+    --panel-2:#22282e;
+    --edge:#2b3138;
+    --edge-strong:#3a424b;
+    --text:#e9edee;
+    --text-dim:#93a1a6;
+    --text-faint:#5b636c;
+    --accent:#ff6a58;
+    --accent-fill: rgba(255,106,88,0.16);
+    --mirror:#aebac0;
+    --accent-2:#5fc4d6;
+    --accent-2-fill: rgba(95,196,214,0.14);
+    --ok:#5cbd85;
+    --bad:#ff7a6b;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --display:'Space Grotesk', system-ui, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ color-scheme: dark; } }
+  :root[data-theme="dark"]{ color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--display);
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  body { min-height: 100%; }
+  #app {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 20px 16px 28px;
+  }
+  header {
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: clamp(21px, 4vw, 28px);
+    line-height: 1.15;
+    margin: 0 0 4px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    max-width: 34ch;
+  }
+  header .sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin: 0;
+    max-width: 64ch;
+    line-height: 1.5;
+  }
+  header .sub a { color: var(--accent-2); }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .panel h2 {
+    font-size: 13px;
+    text-transform: none;
+    margin: 0 0 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel h2 .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent-2);
+    display: inline-block;
+    flex: none;
+  }
+  .panel h2 .config-label {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .presets {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .presets::-webkit-scrollbar { height: 5px; }
+  .presets::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
+  .preset-btn {
+    flex: none;
+    font-family: var(--display);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 8px;
+    padding: 9px 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, transform 0.05s;
+  }
+  .preset-btn:hover { border-color: var(--accent-2); }
+  .preset-btn:active { transform: scale(0.97); }
+  .preset-btn.active {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+    color: #fff;
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+  @media (max-width: 560px) {
+    .controls-grid { grid-template-columns: 1fr; }
+  }
+  .ctrl { display: flex; flex-direction: column; gap: 6px; }
+  .ctrl.wide { grid-column: 1 / -1; }
+  .ctrl .row1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13.5px;
+  }
+  .ctrl .row1 .name { color: var(--text); font-weight: 500; }
+  .ctrl .row1 .val {
+    font-family: var(--mono);
+    color: var(--accent-2);
+    font-size: 13px;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 26px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    background: var(--edge);
+    border-radius: 2px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    margin-top: -6px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 4px; background: var(--edge); border-radius: 2px;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--panel);
+  }
+  input[type="range"]:disabled { opacity: 0.35; }
+
+  label.flat {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; color: var(--text-dim);
+    margin-top: 2px;
+    cursor: pointer;
+    user-select: none;
+  }
+  label.flat input { accent-color: var(--accent-2); }
+
+  svg.diagram { width: 100%; height: auto; display: block; }
+  .cavity-caption {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  .status-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--panel-2);
+    margin-bottom: 14px;
+  }
+  .status-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .status-dot.ok { background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 20%, transparent); }
+  .status-dot.bad { background: var(--bad); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bad) 20%, transparent); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 700px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  table.readout {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  table.readout tr { border-bottom: 1px solid var(--edge); }
+  table.readout tr:last-child { border-bottom: none; }
+  table.readout td { padding: 6px 2px; }
+  table.readout td.k { color: var(--text-dim); white-space: nowrap; padding-right: 10px; }
+  table.readout td.v { text-align: right; color: var(--text); font-weight: 500; }
+  table.readout tr.hl td.v { color: var(--accent-2); }
+
+  .matrix-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    font-family: var(--mono);
+    font-size: 14px;
+    margin: 8px 0 4px;
+  }
+  .matrix-brackets {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 16px;
+    padding: 8px 14px;
+    border-top: 2px solid var(--text-dim);
+    border-bottom: 2px solid var(--text-dim);
+  }
+  .matrix-brackets span { text-align: center; min-width: 2.2ch; }
+  .matrix-eq { align-self: center; color: var(--text-dim); }
+
+  footer {
+    margin-top: 20px;
+    font-size: 11.5px;
+    color: var(--text-faint);
+    line-height: 1.6;
+    border-top: 1px solid var(--edge);
+    padding-top: 12px;
+  }
+  footer a { color: var(--text-dim); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>Gaussian beam propagation in optical cavities</h1>
+    <div class="sub">Round-trip <strong>ABCD</strong> matrices build the propagator; the self-consistent complex beam parameter <em>q</em> is solved from it directly, the way you'd do it for a real resonator &mdash; for FYS.501 Laser Physics. Configurations follow the standard types on <a href="https://en.wikipedia.org/wiki/Optical_cavity" target="_blank" rel="noopener">Wikipedia's optical cavity page</a>.</div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="dot"></span>Cavity type</h2>
+    <div class="presets" id="presets"></div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="dot"></span>Mirrors &amp; spacing</h2>
+    <div class="controls-grid">
+      <div class="ctrl">
+        <div class="row1"><span class="name">Mirror 1 curvature R₁</span><span class="val" id="r1val"></span></div>
+        <input type="range" id="r1" min="-3" max="3" step="0.01" value="1">
+        <label class="flat"><input type="checkbox" id="flat1"> Flat mirror (R₁ = ∞)</label>
+      </div>
+      <div class="ctrl">
+        <div class="row1"><span class="name">Mirror 2 curvature R₂</span><span class="val" id="r2val"></span></div>
+        <input type="range" id="r2" min="-3" max="3" step="0.01" value="1">
+        <label class="flat"><input type="checkbox" id="flat2"> Flat mirror (R₂ = ∞)</label>
+      </div>
+      <div class="ctrl wide">
+        <div class="row1"><span class="name">Mirror separation L</span><span class="val" id="lval"></span></div>
+        <input type="range" id="lslide" min="0.05" max="3" step="0.01" value="1">
+      </div>
+    </div>
+    <p class="cavity-caption">Sign convention: R &gt; 0 means the mirror's centre of curvature lies inside the cavity (concave, focusing); R &lt; 0 is convex (defocusing). g<sub>i</sub> = 1 − L/R<sub>i</sub>. Wavelength is fixed at 632.8 nm (He‑Ne) — it sets the absolute scale of w₀ but never affects stability or the shape of the profile.</p>
+  </div>
+
+  <div class="panel">
+    <h2><span class="dot"></span>Cavity &amp; beam envelope <span id="configLabel" class="config-label"></span></h2>
+    <div class="status-line"><span class="status-dot" id="statusDot"></span><span id="statusText"></span></div>
+    <svg class="diagram" id="cavitySvg" viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg"></svg>
+    <p class="cavity-caption">Mirror bow is schematic (not to geometric scale) — it only signals concave / convex / flat. The shaded envelope is the 1/e² beam radius w(z); the dashed line marks the waist.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <h2><span class="dot"></span>Stability diagram</h2>
+      <svg class="diagram" id="stabSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="cavity-caption">Stable region: 0 ≤ g₁g₂ ≤ 1 (shaded). Drag the point to set R₁ and R₂ directly (L stays fixed) and watch the cavity above update. Marked points: plane‑parallel (1,1), confocal (0,0), concentric (−1,−1).</p>
+    </div>
+
+    <div class="panel">
+      <h2><span class="dot"></span>Resonator mode</h2>
+      <div class="matrix-row" id="matrixRow"></div>
+      <table class="readout" id="readoutTable"></table>
+    </div>
+  </div>
+
+  <footer>
+    Method: the round trip M = R₁·P(L)·R₂·P(L) is built from mirror matrices R = [[1,0],[−2/R,1]] and propagation matrices P(L) = [[1,L],[0,1]]. Self-consistency q = (Aq+B)/(Cq+D) gives q(z) = (z − z<sub>waist</sub>) + i·z<sub>R</sub>, with z<sub>R</sub> = √(1−m²)/|C| and m = (A+D)/2 — the standard resonator eigenmode construction (Kogelnik &amp; Li).
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- element refs ----------
+  const r1s = document.getElementById('r1'), r2s = document.getElementById('r2');
+  const flat1 = document.getElementById('flat1'), flat2 = document.getElementById('flat2');
+  const ls = document.getElementById('lslide');
+  const r1val = document.getElementById('r1val'), r2val = document.getElementById('r2val');
+  const lval = document.getElementById('lval');
+  const presetsEl = document.getElementById('presets');
+  const statusDot = document.getElementById('statusDot'), statusText = document.getElementById('statusText');
+  const configLabel = document.getElementById('configLabel');
+  const cavitySvg = document.getElementById('cavitySvg');
+  const stabSvg = document.getElementById('stabSvg');
+  const readoutTable = document.getElementById('readoutTable');
+  const matrixRow = document.getElementById('matrixRow');
+
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs){
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function fmt(x, d){
+    if (x === Infinity) return "∞";
+    if (x === -Infinity) return "−∞";
+    if (!isFinite(x)) return "—";
+    d = (d===undefined)?3:d;
+    return x.toLocaleString('en-US',{minimumFractionDigits:d, maximumFractionDigits:d});
+  }
+  function fmtSI(x, unit){
+    // pick a sane engineering-ish unit for lengths given in meters
+    if (!isFinite(x)) return (x===Infinity?"∞":(x===-Infinity?"−∞":"—"));
+    const ax = Math.abs(x);
+    if (ax !== 0 && ax < 1e-3) return (x*1e6).toFixed(2) + " µm";
+    if (ax !== 0 && ax < 1) return (x*1e3).toFixed(2) + " mm";
+    return x.toFixed(4) + " m";
+  }
+
+  // ---------- presets ----------
+  const presets = [
+    { id:'plane',    label:'Plane‑parallel',      R1:Infinity, R2:Infinity, L:1.0 },
+    { id:'confocal', label:'Confocal (symmetric)', R1:1.0,      R2:1.0,      L:1.0 },
+    { id:'concentric', label:'Concentric (spherical)', R1:0.5,  R2:0.5,      L:1.0 },
+    { id:'hemi',     label:'Hemispherical',        R1:Infinity, R2:1.5,      L:1.0 },
+    { id:'planoconcave', label:'Plano‑concave (He‑Ne)', R1:Infinity, R2:1.0, L:0.3 },
+    { id:'concaveconvex', label:'Concave–convex',  R1:1.0,      R2:-1.0,     L:0.5 },
+    { id:'unstable', label:'Unstable example',     R1:0.5,      R2:0.5,      L:2.0 },
+  ];
+  presets.forEach(p=>{
+    const b = document.createElement('button');
+    b.className = 'preset-btn';
+    b.textContent = p.label;
+    b.dataset.id = p.id;
+    b.addEventListener('click', ()=> applyPreset(p));
+    presetsEl.appendChild(b);
+  });
+  function markActivePreset(id){
+    [...presetsEl.children].forEach(b=> b.classList.toggle('active', b.dataset.id===id));
+  }
+  function applyPreset(p){
+    flat1.checked = (p.R1===Infinity);
+    flat2.checked = (p.R2===Infinity);
+    if (p.R1!==Infinity) r1s.value = clampSlider(p.R1);
+    if (p.R2!==Infinity) r2s.value = clampSlider(p.R2);
+    ls.value = p.L;
+    markActivePreset(p.id);
+    update();
+  }
+  function clampSlider(v){ return Math.max(-3, Math.min(3, v)); }
+
+  // ---------- matrix helpers ----------
+  function matMul(A,B){
+    return [
+      [A[0][0]*B[0][0]+A[0][1]*B[1][0], A[0][0]*B[0][1]+A[0][1]*B[1][1]],
+      [A[1][0]*B[0][0]+A[1][1]*B[1][0], A[1][0]*B[0][1]+A[1][1]*B[1][1]]
+    ];
+  }
+  function mirrorM(R){
+    if (R===Infinity || R===-Infinity) return [[1,0],[0,1]];
+    return [[1,0],[-2/R,1]];
+  }
+  function propM(d){ return [[1,d],[0,1]]; }
+
+  function effectiveR(raw){
+    // avoid literal zero curvature radius (unphysical / divide by zero)
+    if (Math.abs(raw) < 0.02) return Math.sign(raw||1)*0.02;
+    return raw;
+  }
+
+  // ---------- core computation ----------
+  function compute(){
+    const R1raw = flat1.checked ? Infinity : effectiveR(parseFloat(r1s.value));
+    const R2raw = flat2.checked ? Infinity : effectiveR(parseFloat(r2s.value));
+    const L = parseFloat(ls.value);
+    const LAMBDA_NM = 632.8; // He-Ne, fixed — only sets the absolute scale of w0
+    const lambda = LAMBDA_NM * 1e-9;
+
+    const g1 = (R1raw===Infinity) ? 1 : (1 - L/R1raw);
+    const g2 = (R2raw===Infinity) ? 1 : (1 - L/R2raw);
+
+    function roundTrip(Lval){
+      const P2 = propM(Lval);
+      const Mrt = matMul(M1, matMul(P2, matMul(M2, P2)));
+      return { A: Mrt[0][0], B: Mrt[0][1], C: Mrt[1][0], D: Mrt[1][1] };
+    }
+    const M1 = mirrorM(R1raw), M2 = mirrorM(R2raw);
+    const { A, B, C, D } = roundTrip(L);
+    const m = (A+D)/2;
+    // 0 <= g1g2 <= 1  <=>  |m| <= 1 (using m = 2 g1 g2 - 1); include the boundary
+    // (confocal g1g2=0, concentric g1g2=1) as "stable" rather than unstable.
+    const stable = Math.abs(m) < 1 + 1e-9;
+    const atBoundary = Math.abs(Math.abs(m) - 1) < 1e-6;
+
+    let zR=null, zWaist=null, w0=null, marginal=false;
+    if (stable){
+      let AA=A, CC=C, DD=D, mm=m;
+      if (Math.abs(C) < 1e-9){
+        // At an exact confocal/concentric preset, C and (1-m^2) vanish together
+        // (a removable singularity, not a real divergence): evaluate the limit by
+        // nudging L by a negligible amount rather than dividing 0/0.
+        const rt2 = roundTrip(L*(1+1e-6) + 1e-9);
+        AA=rt2.A; CC=rt2.C; DD=rt2.D; mm=(AA+DD)/2;
+      }
+      if (Math.abs(CC) < 1e-9){
+        // Still zero after nudging (e.g. two flat mirrors): genuinely undetermined
+        // by ray optics alone — any q is self-consistent.
+        marginal = true;
+      } else {
+        const disc = Math.max(0, 1-mm*mm);
+        zR = Math.sqrt(disc)/Math.abs(CC);
+        zWaist = (DD-AA)/(2*CC);
+        w0 = Math.sqrt(zR*lambda/Math.PI);
+      }
+    }
+    // Exact concentric spacing: ray optics collapses the waist to a point
+    // (zR -> 0). That's a real, named degeneracy — not a rendering error —
+    // but w(z) = w0*sqrt(1+((z-zWaist)/zR)^2) is 0/0 away from the waist, so
+    // treat it the same way as "marginal" for plotting/readout purposes.
+    const pointFocus = (w0 !== null && w0 < 1e-9);
+    if (pointFocus) marginal = true;
+
+    function w(z){
+      if (!stable || marginal) return null;
+      return w0*Math.sqrt(1+Math.pow((z-zWaist)/zR,2));
+    }
+
+    return { R1:R1raw, R2:R2raw, L, lambda, g1, g2, A,B,C,D,m, stable, marginal, atBoundary, pointFocus, zR, zWaist, w0, w };
+  }
+
+  // ---------- drawing: cavity + beam ----------
+  function drawCavity(st){
+    while (cavitySvg.firstChild) cavitySvg.removeChild(cavitySvg.firstChild);
+    const W=680, H=260, xL=55, xR=625, cy=132, halfH=92;
+    const L = st.L;
+    const sx = (xR-xL)/L;
+
+    // sample beam
+    const N = 140;
+    const zs = []; for(let i=0;i<=N;i++) zs.push(i*L/N);
+
+    let maxW = 0;
+    if (st.stable && !st.marginal){
+      zs.forEach(z=> maxW = Math.max(maxW, st.w(z)));
+    }
+    const sy = maxW>0 ? (halfH*0.85)/maxW : 1;
+
+    // background axis
+    cavitySvg.appendChild(el('line',{x1:xL,y1:cy,x2:xR,y2:cy,stroke:'var(--edge)','stroke-width':1,'stroke-dasharray':'3,4'}));
+
+    if (st.stable && !st.marginal){
+      let top = 'M', bot = [];
+      zs.forEach((z,i)=>{
+        const x = xL + z*sx;
+        const wv = st.w(z)*sy;
+        top += ` ${i===0?'':'L'} ${x.toFixed(2)} ${(cy-wv).toFixed(2)}`;
+        bot.push(`${x.toFixed(2)} ${(cy+wv).toFixed(2)}`);
+      });
+      const path = top + ' L ' + bot.reverse().join(' L ') + ' Z';
+      cavitySvg.appendChild(el('path',{d:path, fill:'var(--accent-fill)', stroke:'var(--accent)', 'stroke-width':1.4}));
+
+      // waist marker
+      if (st.zWaist >= 0 && st.zWaist <= L){
+        const xw = xL + st.zWaist*sx;
+        cavitySvg.appendChild(el('line',{x1:xw,y1:cy-halfH*0.92,x2:xw,y2:cy+halfH*0.92,stroke:'var(--text-dim)','stroke-width':1,'stroke-dasharray':'2,3'}));
+        const t = el('text',{x:xw, y:cy-halfH*0.92-8, 'text-anchor':'middle', 'font-size':'11', 'font-family':"'IBM Plex Mono',monospace", fill:'var(--text-dim)'});
+        t.textContent = 'w₀ = ' + fmtSI(st.w0);
+        cavitySvg.appendChild(t);
+      }
+    } else if (!st.stable) {
+      // schematic diverging cone
+      const grow = 46;
+      const path = `M ${xL} ${cy-8} L ${xR} ${cy-8-grow} L ${xR} ${cy+8+grow} L ${xL} ${cy+8} Z`;
+      cavitySvg.appendChild(el('path',{d:path, fill:'var(--accent-fill)', stroke:'var(--accent)','stroke-width':1.2,'stroke-dasharray':'4,3'}));
+      const t = el('text',{x:(xL+xR)/2, y:cy-halfH-4, 'text-anchor':'middle','font-size':'12','font-family':"'IBM Plex Mono',monospace",fill:'var(--bad)'});
+      t.textContent = 'unstable — diverges each round trip';
+      cavitySvg.appendChild(t);
+    } else if (st.marginal) {
+      if (st.pointFocus){
+        cavitySvg.appendChild(el('circle',{cx:(xL+xR)/2, cy:cy, r:4, fill:'var(--accent)'}));
+      } else {
+        cavitySvg.appendChild(el('line',{x1:xL,y1:cy-40,x2:xR,y2:cy-40,stroke:'var(--accent)','stroke-width':1.4}));
+        cavitySvg.appendChild(el('line',{x1:xL,y1:cy+40,x2:xR,y2:cy+40,stroke:'var(--accent)','stroke-width':1.4}));
+      }
+      const t = el('text',{x:(xL+xR)/2, y:cy-halfH-4, 'text-anchor':'middle','font-size':'12','font-family':"'IBM Plex Mono',monospace",fill:'var(--text-dim)'});
+      t.textContent = st.pointFocus ? 'ray-optics point focus at cavity centre (diffraction sets the real size)' : 'marginal (C≈0) — mode size not fixed by the resonator alone';
+      cavitySvg.appendChild(t);
+    }
+
+    // mirrors
+    drawMirror(xL, cy, halfH, st.R1, +1);
+    drawMirror(xR, cy, halfH, st.R2, -1);
+
+    // labels
+    const lab1 = el('text',{x:xL, y:cy+halfH+22, 'text-anchor':'middle','font-size':'12','font-family':"'IBM Plex Mono',monospace",fill:'var(--mirror)'});
+    lab1.textContent = 'M1  R₁=' + (st.R1===Infinity?'∞':fmt(st.R1,2)+' m');
+    cavitySvg.appendChild(lab1);
+    const lab2 = el('text',{x:xR, y:cy+halfH+22, 'text-anchor':'middle','font-size':'12','font-family':"'IBM Plex Mono',monospace",fill:'var(--mirror)'});
+    lab2.textContent = 'M2  R₂=' + (st.R2===Infinity?'∞':fmt(st.R2,2)+' m');
+    cavitySvg.appendChild(lab2);
+    const labL = el('text',{x:(xL+xR)/2, y:cy+halfH+22, 'text-anchor':'middle','font-size':'12','font-family':"'IBM Plex Mono',monospace",fill:'var(--text-dim)'});
+    labL.textContent = 'L=' + fmtSI(st.L);
+    cavitySvg.appendChild(labL);
+  }
+
+  function drawMirror(x, cy, halfH, R, facing){
+    // facing: +1 mirror faces +x direction (M1, cavity to the right)
+    //          -1 mirror faces -x direction (M2, cavity to the left)
+    let bow;
+    if (R===Infinity || R===-Infinity) bow = 0;
+    else {
+      const mag = Math.min(22, 6 + 60/Math.max(Math.abs(R),0.2));
+      bow = Math.sign(R) * mag; // sign(R): concave (R>0) vertex recedes away from cavity
+    }
+    const dx = -facing * bow;
+    const y1 = cy-halfH, y2 = cy+halfH;
+    const path = `M ${x} ${y1} Q ${x+dx} ${cy} ${x} ${y2}`;
+    cavitySvg.appendChild(el('path',{d:path, fill:'none', stroke:'var(--mirror)','stroke-width':4,'stroke-linecap':'round'}));
+    // mirror backing hatch (small tick marks) to read as a solid substrate
+    for (let i=-1;i<=1;i++){
+      const yy = cy + i*halfH*0.5;
+      const xx = x + dx*(1-(i*i)/4) ;
+      const bx = xx - facing*7;
+      cavitySvg.appendChild(el('line',{x1:xx,y1:yy,x2:bx,y2:yy+ (facing*6),stroke:'var(--mirror)','stroke-width':2,opacity:0.55}));
+    }
+  }
+
+  // ---------- drawing: stability diagram ----------
+  const STAB_W=300, STAB_H=300, STAB_PAD=26, STAB_LO=-3, STAB_HI=3;
+  const NAMED_POINTS = [
+    { g1:1,  g2:1,  label:'Plane-parallel cavity' },
+    { g1:0,  g2:0,  label:'Confocal cavity (symmetric)' },
+    { g1:-1, g2:-1, label:'Concentric (spherical) cavity' },
+    { g1:1,  g2:0,  label:'Hemispherical cavity' },
+    { g1:0,  g2:1,  label:'Hemispherical cavity' },
+  ];
+  const SNAP_TOL = 0.18; // in g-units
+  function stabMapX(g){ return STAB_PAD + (g-STAB_LO)/(STAB_HI-STAB_LO)*(STAB_W-2*STAB_PAD); }
+  function stabMapY(g){ return STAB_H-STAB_PAD - (g-STAB_LO)/(STAB_HI-STAB_LO)*(STAB_H-2*STAB_PAD); }
+  function stabGFromEvent(evt){
+    const rect = stabSvg.getBoundingClientRect();
+    const px = (evt.clientX-rect.left)/rect.width*STAB_W;
+    const py = (evt.clientY-rect.top)/rect.height*STAB_H;
+    let g1 = STAB_LO + (px-STAB_PAD)/(STAB_W-2*STAB_PAD)*(STAB_HI-STAB_LO);
+    let g2 = STAB_LO + (STAB_H-STAB_PAD-py)/(STAB_H-2*STAB_PAD)*(STAB_HI-STAB_LO);
+    g1 = Math.max(STAB_LO, Math.min(STAB_HI, g1));
+    g2 = Math.max(STAB_LO, Math.min(STAB_HI, g2));
+    return {g1,g2};
+  }
+  function applyGPoint(g1, g2){
+    // snap to a well-known configuration if the cursor is close to one
+    let best=null, bestD=Infinity;
+    NAMED_POINTS.forEach(p=>{
+      const d = Math.hypot(g1-p.g1, g2-p.g2);
+      if (d < bestD){ bestD=d; best=p; }
+    });
+    if (best && bestD < SNAP_TOL){ g1 = best.g1; g2 = best.g2; }
+
+    const L = parseFloat(ls.value);
+    function gToR(g){
+      if (Math.abs(1-g) < 0.005) return Infinity; // essentially flat
+      let R = L/(1-g);
+      return Math.max(-3, Math.min(3, R)); // saturate at slider range near the asymptote
+    }
+    const R1new = gToR(g1), R2new = gToR(g2);
+    if (R1new===Infinity){ flat1.checked = true; } else { flat1.checked = false; r1s.value = R1new; }
+    if (R2new===Infinity){ flat2.checked = true; } else { flat2.checked = false; r2s.value = R2new; }
+    markActivePreset(null);
+    update();
+  }
+  let stabDragging = false;
+  stabSvg.style.touchAction = 'none';
+  stabSvg.style.cursor = 'grab';
+  stabSvg.addEventListener('pointerdown', (e)=>{
+    stabDragging = true;
+    stabSvg.setPointerCapture(e.pointerId);
+    stabSvg.style.cursor = 'grabbing';
+    const {g1,g2} = stabGFromEvent(e);
+    applyGPoint(g1,g2);
+  });
+  stabSvg.addEventListener('pointermove', (e)=>{
+    if (!stabDragging) return;
+    const {g1,g2} = stabGFromEvent(e);
+    applyGPoint(g1,g2);
+  });
+  function stopStabDrag(){ stabDragging = false; stabSvg.style.cursor = 'grab'; }
+  stabSvg.addEventListener('pointerup', stopStabDrag);
+  stabSvg.addEventListener('pointercancel', stopStabDrag);
+
+  function drawStability(st){
+    while (stabSvg.firstChild) stabSvg.removeChild(stabSvg.firstChild);
+    const W=STAB_W,H=STAB_H, pad=STAB_PAD;
+    const lo=STAB_LO, hi=STAB_HI;
+    const mapX = stabMapX, mapY = stabMapY;
+
+    // grid
+    for (let g=-3; g<=3; g++){
+      stabSvg.appendChild(el('line',{x1:mapX(g),y1:pad,x2:mapX(g),y2:H-pad,stroke:'var(--edge)','stroke-width': (g===0?1.2:0.6)}));
+      stabSvg.appendChild(el('line',{x1:pad,y1:mapY(g),x2:W-pad,y2:mapY(g),stroke:'var(--edge)','stroke-width': (g===0?1.2:0.6)}));
+    }
+
+    // stable region: quadrant I (0<=g1g2<=1) and quadrant III (mirror image)
+    function hyperbolaPath(sign){
+      // sign=+1 -> quadrant I, sign=-1 -> quadrant III
+      const pts = [];
+      const g1min = 0.02, g1max = 3;
+      const N=60;
+      pts.push([sign*0.0001, 0]);
+      pts.push([sign*g1max, 0]);
+      for (let i=0;i<=N;i++){
+        const g1 = sign*(g1min + (g1max-g1min)*(1-i/N)); // from g1max down to g1min, signed
+        let g2 = 1/g1; // hyperbola boundary g1*g2 = 1
+        g2 = Math.max(lo, Math.min(hi, g2)); // clamp to plot bounds
+        pts.push([g1, g2]);
+      }
+      pts.push([0, sign*hi]);
+      return 'M ' + pts.map(p=>`${mapX(p[0]).toFixed(2)} ${mapY(p[1]).toFixed(2)}`).join(' L ') + ' Z';
+    }
+    stabSvg.appendChild(el('path',{d:hyperbolaPath(1), fill:'var(--accent-2-fill)', stroke:'var(--accent-2)','stroke-width':1.3}));
+    stabSvg.appendChild(el('path',{d:hyperbolaPath(-1), fill:'var(--accent-2-fill)', stroke:'var(--accent-2)','stroke-width':1.3}));
+
+    // axis labels
+    const g1lab = el('text',{x:W-pad+2,y:mapY(0)-6,'font-size':'11','font-family':"'IBM Plex Mono',monospace",fill:'var(--text-dim)','text-anchor':'end'});
+    g1lab.textContent='g₁'; stabSvg.appendChild(g1lab);
+    const g2lab = el('text',{x:mapX(0)+6,y:pad+2,'font-size':'11','font-family':"'IBM Plex Mono',monospace",fill:'var(--text-dim)'});
+    g2lab.textContent='g₂'; stabSvg.appendChild(g2lab);
+
+    // reference points (named configurations) — with a faint ring showing the snap zone
+    NAMED_POINTS.forEach(mk=>{
+      const cx=mapX(mk.g1), cy=mapY(mk.g2);
+      const ringPx = SNAP_TOL/(hi-lo)*(W-2*pad);
+      stabSvg.appendChild(el('circle',{cx,cy,r:ringPx,fill:'none',stroke:'var(--text-dim)','stroke-width':0.6,'stroke-dasharray':'2,3',opacity:0.5}));
+      stabSvg.appendChild(el('circle',{cx,cy,r:3,fill:'var(--text-dim)'}));
+    });
+
+    // current point (draggable — the whole diagram responds to pointer drag)
+    const g1c = Math.max(lo,Math.min(hi,st.g1)), g2c = Math.max(lo,Math.min(hi,st.g2));
+    const cx = mapX(g1c), cy2 = mapY(g2c);
+    stabSvg.appendChild(el('circle',{cx,cy:cy2,r:11,fill:'none',stroke:'var(--accent)','stroke-width':1,opacity:0.4}));
+    stabSvg.appendChild(el('circle',{cx,cy:cy2,r:6,fill:'var(--accent)', stroke:'var(--panel)','stroke-width':1.5}));
+  }
+
+  // ---------- readout ----------
+  function updateReadout(st){
+    matrixRow.innerHTML = '';
+    const box = document.createElement('div'); box.className='matrix-brackets';
+    [st.A, st.B, st.C, st.D].forEach((v,i)=>{
+      const s = document.createElement('span');
+      s.textContent = (Math.abs(v)<1e-9?0:v).toFixed(3);
+      box.appendChild(s);
+    });
+    const label = document.createElement('div'); label.textContent = 'round trip M ='; label.style.alignSelf='center'; label.style.color='var(--text-dim)';
+    matrixRow.appendChild(label);
+    matrixRow.appendChild(box);
+
+    const rows = [];
+    rows.push(['g₁ · g₂', fmt(st.g1*st.g2,3), true]);
+    rows.push(['g₁, g₂', fmt(st.g1,3)+',  '+fmt(st.g2,3), false]);
+    rows.push(['m = (A+D)/2', fmt(st.m,4), false]);
+    if (st.stable && !st.marginal){
+      rows.push(['Rayleigh range z_R', fmtSI(st.zR), true]);
+      rows.push(['waist w₀', fmtSI(st.w0), true]);
+      rows.push(['waist position (from M1)', fmtSI(st.zWaist), false]);
+      rows.push(['spot size at M1', fmtSI(st.w(0)), false]);
+      rows.push(['spot size at M2', fmtSI(st.w(st.L)), false]);
+    } else if (st.marginal) {
+      rows.push(['mode size', st.pointFocus ? 'point focus at centre (ray optics)' : 'undetermined (C≈0)', false]);
+    } else {
+      rows.push(['mode size', 'no bounded mode — unstable', false]);
+    }
+    rows.push(['free spectral range c/2L', (299792458/(2*st.L)/1e6).toFixed(1)+' MHz', false]);
+
+    readoutTable.innerHTML = '';
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      if (r[2]) tr.className='hl';
+      const td1 = document.createElement('td'); td1.className='k'; td1.textContent=r[0];
+      const td2 = document.createElement('td'); td2.className='v'; td2.textContent=r[1];
+      tr.appendChild(td1); tr.appendChild(td2);
+      readoutTable.appendChild(tr);
+    });
+  }
+
+  // ---------- main update ----------
+  // ---------- configuration naming ----------
+  function classifyConfig(st){
+    for (const p of NAMED_POINTS){
+      if (Math.abs(st.g1-p.g1) < SNAP_TOL && Math.abs(st.g2-p.g2) < SNAP_TOL) return p.label;
+    }
+    function kind(R){ if (R===Infinity) return 'flat'; return R>0 ? 'concave' : 'convex'; }
+    const k1 = kind(st.R1), k2 = kind(st.R2);
+    const pair = [k1,k2].sort().join('-');
+    let base;
+    if (pair === 'flat-flat') base = 'plane-parallel cavity';
+    else if (pair === 'concave-flat') base = 'hemispherical (plano-concave) cavity';
+    else if (pair === 'convex-flat') base = 'plano-convex cavity';
+    else if (pair === 'concave-concave') base = 'concave–concave cavity';
+    else if (pair === 'convex-convex') base = 'convex–convex cavity';
+    else base = 'concave–convex cavity';
+    return st.stable ? base.charAt(0).toUpperCase()+base.slice(1) : 'Unstable '+base;
+  }
+
+  function update(){
+    r1s.disabled = flat1.checked;
+    r2s.disabled = flat2.checked;
+
+    r1val.textContent = flat1.checked ? '∞' : parseFloat(r1s.value).toFixed(2)+' m';
+    r2val.textContent = flat2.checked ? '∞' : parseFloat(r2s.value).toFixed(2)+' m';
+    lval.textContent = parseFloat(ls.value).toFixed(2)+' m';
+
+    const st = compute();
+
+    statusDot.className = 'status-dot ' + (st.stable ? 'ok':'bad');
+    statusText.textContent = st.stable
+      ? (st.pointFocus
+          ? 'Concentric point focus — ray optics collapses the waist to a point'
+          : (st.marginal
+              ? 'At the stability boundary (marginal) — mode size undetermined by ray optics alone'
+              : (st.atBoundary
+                  ? 'Stable, right at the confocal/concentric boundary — very sensitive to misalignment'
+                  : 'Stable resonator — confined Gaussian mode exists')))
+      : 'Unstable resonator — no confined Gaussian mode';
+    configLabel.textContent = classifyConfig(st);
+
+    drawCavity(st);
+    drawStability(st);
+    updateReadout(st);
+  }
+
+  [r1s,r2s,ls].forEach(i=> i.addEventListener('input', ()=>{ markActivePreset(null); update(); }));
+  [flat1,flat2].forEach(i=> i.addEventListener('change', ()=>{ markActivePreset(null); update(); }));
+
+  applyPreset(presets[1]); // start on confocal, a classic textbook case
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

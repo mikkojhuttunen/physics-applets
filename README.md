@@ -12,7 +12,8 @@ Each course has its own folder with an `index.html` listing its applets.
 - `fys310-solid-state-physics/` — 3D lattice viewer, Van Hove and DOS explorer,
   band structure explorer (empty lattice, weak potential, Al/Si/Ge/GaAs/diamond
   and AlGaAs composition).
-- `fys501-laser-physics/`
+- `fys501-laser-physics/` — laser gain media absorption/emission spectra, and a
+  Gaussian beam / ABCD-matrix optical cavity stability explorer.
 - `finnmath-app/`
 
 When adding an applet, link it from the course `index.html`, add
