@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" data-course="optics">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grating Bench — FYS.240 Optics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef1ef;
+    --panel: #ffffff;
+    --panel-border: #d7ddd9;
+    --ink: #12201c;
+    --ink-dim: #5b6a64;
+    --accent: #0e7c66;
+    --accent-soft: #cfe9e1;
+    --rail: #d2d9d5;
+    --thumb: #0e7c66;
+    --danger: #b5482f;
+    --grating-line: #12201c;
+    --canvas-bg: #f7f9f7;
+    --canvas-grid: #dfe6e2;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1412;
+      --panel: #141e1b;
+      --panel-border: #263531;
+      --ink: #e8f0ed;
+      --ink-dim: #8ea89f;
+      --accent: #4fd8b8;
+      --accent-soft: #1c3b34;
+      --rail: #2a3a35;
+      --thumb: #4fd8b8;
+      --danger: #ff8563;
+      --grating-line: #e8f0ed;
+      --canvas-bg: #0f1917;
+      --canvas-grid: #1c2925;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1412;
+    --panel: #141e1b;
+    --panel-border: #263531;
+    --ink: #e8f0ed;
+    --ink-dim: #8ea89f;
+    --accent: #4fd8b8;
+    --accent-soft: #1c3b34;
+    --rail: #2a3a35;
+    --thumb: #4fd8b8;
+    --danger: #ff8563;
+    --grating-line: #e8f0ed;
+    --canvas-bg: #0f1917;
+    --canvas-grid: #1c2925;
+  }
+  html, body {
+    height: 100%;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  .app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 20px 40px;
+  }
+  header {
+    margin-bottom: 20px;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 2.6vw, 2rem);
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: 0.95rem;
+    max-width: 62ch;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .controls .group {
+    margin-bottom: 20px;
+  }
+  .controls .group:last-child { margin-bottom: 0; }
+  .controls label.field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.82rem;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+  .controls .field-label b {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--rail);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--thumb);
+    cursor: pointer;
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 0 1px var(--thumb);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--thumb);
+    cursor: pointer;
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 0 1px var(--thumb);
+  }
+  .seg {
+    display: flex;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .seg button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 8px 6px;
+    cursor: pointer;
+    border-right: 1px solid var(--panel-border);
+    transition: background 0.15s, color 0.15s;
+  }
+  .seg button:last-child { border-right: none; }
+  .seg button.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .seg.stack { flex-direction: column; }
+  .seg.stack button { border-right: none; border-bottom: 1px solid var(--panel-border); text-align: left; padding: 9px 12px; }
+  .seg.stack button:last-child { border-bottom: none; }
+
+  .swatch-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .swatch {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+  .swatch-row span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--ink-dim);
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .canvas-wrap {
+    background: var(--canvas-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 6px;
+    position: relative;
+  }
+  canvas#scene {
+    display: block;
+    width: 100%;
+    height: 460px;
+    border-radius: 6px;
+  }
+  .readout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 560px) {
+    .readout { grid-template-columns: 1fr; }
+  }
+  .readout .panel h2 {
+    font-size: 0.78rem;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    color: var(--ink-dim);
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+  .eq {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.95rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin: 0 0 12px;
+    overflow-x: auto;
+  }
+  table.orders {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+  }
+  table.orders th, table.orders td {
+    text-align: left;
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  table.orders th { color: var(--ink-dim); font-weight: 500; }
+  table.orders td.m { font-weight: 600; }
+  .eff-bar {
+    display: inline-block;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  .orders-scroll { max-height: 210px; overflow-y: auto; }
+  .note {
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    line-height: 1.5;
+    margin-top: 10px;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--rail); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Grating Bench</h1>
+    <p>A transmission diffraction grating, on a virtual optical bench. Set the groove period and the incidence angle, choose a light source and a groove profile, and watch the diffracted orders fan out.</p>
+  </header>
+
+  <div class="layout">
+    <div class="panel controls">
+      <div class="group">
+        <label class="field-label">Grating period, d <b id="dVal">2.00 µm</b></label>
+        <input type="range" id="dSlider" min="0.5" max="5" step="0.01" value="2.0">
+      </div>
+
+      <div class="group">
+        <label class="field-label">Angle of incidence, θᵢ <b id="thetaVal">0°</b></label>
+        <input type="range" id="thetaSlider" min="-60" max="60" step="1" value="0">
+      </div>
+
+      <div class="group">
+        <label class="field-label">Light source</label>
+        <div class="seg" id="lightSeg">
+          <button data-val="mono" class="active">Single colour</button>
+          <button data-val="two">Two colours</button>
+          <button data-val="broad">Broadband</button>
+        </div>
+      </div>
+
+      <div class="group" id="lambdaGroup">
+        <label class="field-label"><span id="lambdaLabel">Wavelength, λ</span> <b id="lambdaVal">550 nm</b></label>
+        <input type="range" id="lambdaSlider" min="400" max="700" step="5" value="550">
+        <div class="swatch-row"><span id="swatch" class="swatch"></span><span id="lambdaHint">visible, green</span></div>
+      </div>
+
+      <div class="group" id="lambda2Group" style="display:none;">
+        <label class="field-label">Wavelength 2, λ₂ <b id="lambda2Val">450 nm</b></label>
+        <input type="range" id="lambda2Slider" min="400" max="700" step="5" value="450">
+        <div class="swatch-row"><span id="swatch2" class="swatch"></span><span id="lambda2Hint">visible, blue</span></div>
+      </div>
+
+      <div class="group">
+        <label class="field-label">Groove profile</label>
+        <div class="seg stack" id="profileSeg">
+          <button data-val="sine" class="active">Sinusoidal (holographic)</button>
+          <button data-val="binary">Binary (Ronchi)</button>
+          <button data-val="blaze">Blazed (echelette)</button>
+        </div>
+      </div>
+
+      <div class="group" id="blazeGroup" style="display:none;">
+        <label class="field-label">Blaze angle, θ_B <b id="blazeVal">15°</b></label>
+        <input type="range" id="blazeSlider" min="0" max="35" step="1" value="15">
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="canvas-wrap">
+        <canvas id="scene"></canvas>
+      </div>
+
+      <div class="readout">
+        <div class="panel">
+          <h2>Grating equation</h2>
+          <div class="eq" id="eqLine">sin θ_m = sin θᵢ + m·λ/d</div>
+          <div class="orders-scroll">
+            <table class="orders">
+              <thead><tr><th>m</th><th>θ_m</th><th>rel. efficiency</th></tr></thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Profile note</h2>
+          <div id="profileNote" class="note"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const dSlider = document.getElementById('dSlider');
+  const thetaSlider = document.getElementById('thetaSlider');
+  const lambdaSlider = document.getElementById('lambdaSlider');
+  const lambda2Slider = document.getElementById('lambda2Slider');
+  const blazeSlider = document.getElementById('blazeSlider');
+  const dVal = document.getElementById('dVal');
+  const thetaVal = document.getElementById('thetaVal');
+  const lambdaVal = document.getElementById('lambdaVal');
+  const lambda2Val = document.getElementById('lambda2Val');
+  const blazeVal = document.getElementById('blazeVal');
+  const lambdaGroup = document.getElementById('lambdaGroup');
+  const lambda2Group = document.getElementById('lambda2Group');
+  const blazeGroup = document.getElementById('blazeGroup');
+  const swatch = document.getElementById('swatch');
+  const swatch2 = document.getElementById('swatch2');
+  const lambdaLabel = document.getElementById('lambdaLabel');
+  const lambdaHint = document.getElementById('lambdaHint');
+  const lambda2Hint = document.getElementById('lambda2Hint');
+  const eqLine = document.getElementById('eqLine');
+  const ordersBody = document.getElementById('ordersBody');
+  const profileNote = document.getElementById('profileNote');
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+
+  let state = {
+    d: 2.0,          // microns
+    thetai: 0,       // degrees
+    light: 'mono',   // mono | two | broad
+    lambda: 550,     // nm
+    lambda2: 450,    // nm, used in two-colour mode
+    profile: 'sine', // sine | binary | blaze
+    blaze: 15         // degrees
+  };
+
+  // ---------- helpers ----------
+  function deg2rad(x){ return x*Math.PI/180; }
+  function rad2deg(x){ return x*180/Math.PI; }
+
+  // Approximate visible-spectrum wavelength -> RGB
+  function wavelengthToRGB(nm){
+    let r,g,b;
+    if(nm>=380 && nm<440){ r=-(nm-440)/(440-380); g=0; b=1; }
+    else if(nm>=440 && nm<490){ r=0; g=(nm-440)/(490-440); b=1; }
+    else if(nm>=490 && nm<510){ r=0; g=1; b=-(nm-510)/(510-490); }
+    else if(nm>=510 && nm<580){ r=(nm-510)/(580-510); g=1; b=0; }
+    else if(nm>=580 && nm<645){ r=1; g=-(nm-645)/(645-580); b=0; }
+    else if(nm>=645 && nm<=780){ r=1; g=0; b=0; }
+    else { r=0; g=0; b=0; }
+    let factor;
+    if(nm>=380 && nm<420) factor = 0.3 + 0.7*(nm-380)/(420-380);
+    else if(nm>=420 && nm<701) factor = 1.0;
+    else if(nm>=701 && nm<=780) factor = 0.3 + 0.7*(780-nm)/(780-700);
+    else factor = 0.0;
+    const gamma = 0.8;
+    function adj(c){ return c===0 ? 0 : Math.round(255*Math.pow(c*factor, gamma)); }
+    return [adj(r), adj(g), adj(b)];
+  }
+  function rgbToCss(rgb, a){ return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a===undefined?1:a})`; }
+  function labelFor(nm){
+    if(nm<450) return 'violet';
+    if(nm<485) return 'blue';
+    if(nm<500) return 'cyan';
+    if(nm<565) return 'green';
+    if(nm<590) return 'yellow';
+    if(nm<625) return 'orange';
+    return 'red';
+  }
+
+  // Bessel-derived weights for a modest-depth sinusoidal PHASE grating (phase depth ~2 rad)
+  const SINE_WEIGHTS = {0:0.0501, 1:0.3326, 2:0.1245, 3:0.0166, 4:0.0012};
+  function sineWeight(m){
+    const am = Math.abs(m);
+    return SINE_WEIGHTS[am] !== undefined ? SINE_WEIGHTS[am] : 0.0002;
+  }
+  // 50% duty-cycle amplitude (Ronchi) grating: even orders vanish
+  function binaryWeight(m){
+    if(m===0) return 0.25;
+    if(m % 2 === 0) return 0;
+    return Math.pow(1/(Math.abs(m)*Math.PI), 2);
+  }
+  function blazeWeight(m, thetam_deg, thetai_deg, blaze_deg){
+    const target = 2*blaze_deg - thetai_deg; // specular condition off the tilted facet
+    const spread = 11; // degrees, qualitative width of the blaze envelope
+    const main = Math.exp(-Math.pow((thetam_deg-target)/spread, 2));
+    return 0.03 + 0.97*main;
+  }
+  function weightFor(m, thetam_deg){
+    if(state.profile==='sine') return sineWeight(m);
+    if(state.profile==='binary') return binaryWeight(m);
+    return blazeWeight(m, thetam_deg, state.thetai, state.blaze);
+  }
+
+  function computeOrders(lambda_nm, thetai_deg, d_um){
+    const lambda_um = lambda_nm/1000;
+    const thetai = deg2rad(thetai_deg);
+    const sinI = Math.sin(thetai);
+    const out = [];
+    for(let m=-12; m<=12; m++){
+      const s = sinI + m*lambda_um/d_um;
+      if(Math.abs(s) <= 1){
+        out.push({ m, thetam_deg: rad2deg(Math.asin(s)) });
+      }
+    }
+    return out;
+  }
+
+  // ---------- UI wiring ----------
+  function fmt(n, d){ return Number(n).toFixed(d===undefined?2:d); }
+
+  function updateReadouts(){
+    dVal.textContent = fmt(state.d,2) + ' µm';
+    thetaVal.textContent = fmt(state.thetai,0) + '°';
+    lambdaVal.textContent = fmt(state.lambda,0) + ' nm';
+    blazeVal.textContent = fmt(state.blaze,0) + '°';
+    lambda2Val.textContent = fmt(state.lambda2,0) + ' nm';
+    const rgb = wavelengthToRGB(state.lambda);
+    swatch.style.background = rgbToCss(rgb);
+    lambdaHint.textContent = 'visible, ' + labelFor(state.lambda);
+    const rgb2 = wavelengthToRGB(state.lambda2);
+    swatch2.style.background = rgbToCss(rgb2);
+    lambda2Hint.textContent = 'visible, ' + labelFor(state.lambda2);
+    lambdaLabel.textContent = state.light==='two' ? 'Wavelength 1, λ₁' : 'Wavelength, λ';
+    lambdaGroup.style.display = state.light==='broad' ? 'none' : '';
+    lambda2Group.style.display = state.light==='two' ? '' : 'none';
+    blazeGroup.style.display = state.profile==='blaze' ? '' : 'none';
+
+    const notes = {
+      sine: 'A shallow sinusoidal phase profile (holographic grating) puts most of the light into the zero and first orders, with higher orders fading quickly. Efficiency shown for a fixed, moderate groove depth.',
+      binary: 'A 50%-duty binary (Ronchi) amplitude grating cancels every even order except m = 0. Only the zero order and the odd orders (±1, ±3, …) survive, growing weaker as 1/m.',
+      blaze: 'Tilting each groove facet by the blaze angle concentrates light near the direction of specular reflection off that facet. Sweep θ_B to steer which order is brightest — the working principle of echelette (ruled) gratings and spectrometer optics.'
+    };
+    let noteText = notes[state.profile];
+    if(state.light==='two'){
+      noteText += ' Two wavelengths are incident together, at the same angle. Each obeys the grating equation independently, so every diffraction order m splits into two spots — one per colour — except m = 0, where all colours stay overlapped.';
+    }
+    profileNote.textContent = noteText;
+  }
+
+  function setActiveSeg(container, val){
+    [...container.children].forEach(b=>{
+      b.classList.toggle('active', b.dataset.val===val);
+    });
+  }
+
+  dSlider.addEventListener('input', e=>{ state.d = parseFloat(e.target.value); refresh(); });
+  thetaSlider.addEventListener('input', e=>{ state.thetai = parseFloat(e.target.value); refresh(); });
+  lambdaSlider.addEventListener('input', e=>{ state.lambda = parseFloat(e.target.value); refresh(); });
+  lambda2Slider.addEventListener('input', e=>{ state.lambda2 = parseFloat(e.target.value); refresh(); });
+  blazeSlider.addEventListener('input', e=>{ state.blaze = parseFloat(e.target.value); refresh(); });
+
+  document.getElementById('lightSeg').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    state.light = b.dataset.val;
+    setActiveSeg(document.getElementById('lightSeg'), state.light);
+    refresh();
+  });
+  document.getElementById('profileSeg').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    state.profile = b.dataset.val;
+    setActiveSeg(document.getElementById('profileSeg'), state.profile);
+    refresh();
+  });
+
+  // ---------- drawing ----------
+  function resizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(rect.width*dpr);
+    canvas.height = Math.round(rect.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function cssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function pointAt(cx, cy, L, thetaDeg){
+    const t = deg2rad(thetaDeg);
+    return [cx + L*Math.cos(t), cy - L*Math.sin(t)];
+  }
+
+  function drawProfileInset(x, y, w, h, profile){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.strokeStyle = cssVar('--panel-border');
+    ctx.strokeRect(0,0,w,h);
+    ctx.beginPath();
+    ctx.rect(0,0,w,h);
+    ctx.clip();
+    const mid = h*0.6;
+    const amp = h*0.22;
+    const periods = 4.2;
+    const lineColor = cssVar('--grating-line');
+    ctx.strokeStyle = lineColor;
+    ctx.fillStyle = lineColor;
+    ctx.lineWidth = 2;
+
+    if(profile==='sine'){
+      ctx.beginPath();
+      for(let px=0; px<=w; px++){
+        const phase = (px/w)*periods*2*Math.PI;
+        const py = mid - amp*Math.sin(phase);
+        if(px===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+    } else if(profile==='binary'){
+      const period = w/periods;
+      ctx.beginPath();
+      let px=0;
+      let up = true;
+      let py = up? mid-amp : mid+amp;
+      ctx.moveTo(0, mid-amp);
+      for(let i=0;i<Math.ceil(periods)+1;i++){
+        const x0 = i*period;
+        const x1 = x0+period/2;
+        const x2 = x0+period;
+        ctx.lineTo(Math.min(x0,w), mid-amp);
+        ctx.lineTo(Math.min(x0,w), mid+amp);
+        ctx.lineTo(Math.min(x1,w), mid+amp);
+        ctx.lineTo(Math.min(x1,w), mid-amp);
+        ctx.lineTo(Math.min(x2,w), mid-amp);
+      }
+      ctx.stroke();
+    } else { // blaze / sawtooth
+      const period = w/periods;
+      ctx.beginPath();
+      ctx.moveTo(0, mid+amp);
+      for(let i=0;i<Math.ceil(periods)+1;i++){
+        const x0 = i*period;
+        const x1 = x0+period;
+        ctx.lineTo(Math.min(x1,w), mid-amp);
+        ctx.lineTo(Math.min(x1,w), mid+amp);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // period arrow + label
+    ctx.save();
+    ctx.translate(x,y);
+    const period = w/periods;
+    const ay = h + 14;
+    ctx.strokeStyle = cssVar('--ink-dim');
+    ctx.fillStyle = cssVar('--ink-dim');
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.beginPath();
+    ctx.moveTo(0, ay); ctx.lineTo(period, ay);
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,ay-3); ctx.lineTo(0,ay+3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(period,ay-3); ctx.lineTo(period,ay+3); ctx.stroke();
+    ctx.fillText('d', period/2-3, ay+14);
+    ctx.restore();
+  }
+
+  function draw(){
+    resizeCanvas();
+    const rect = canvas.getBoundingClientRect();
+    const W = rect.width, H = rect.height;
+    ctx.clearRect(0,0,W,H);
+
+    const inkDim = cssVar('--ink-dim');
+    const gratingColor = cssVar('--grating-line');
+    const gridColor = cssVar('--canvas-grid');
+
+    // subtle background grid
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    for(let gx=0; gx<W; gx+=40){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
+    for(let gy=0; gy<H; gy+=40){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
+
+    // profile inset
+    const insetW = Math.min(180, W*0.28), insetH = 70;
+    drawProfileInset(16, 16, insetW, insetH, state.profile);
+    ctx.fillStyle = inkDim;
+    ctx.font = '11px "Space Grotesk", sans-serif';
+    ctx.fillText('groove profile', 16, 16+insetH+30);
+
+    // main ray diagram
+    const cx = W*0.42, cy = H*0.55;
+    const Lin = Math.min(W,H)*0.35;
+    const Lout = Math.min(W,H)*0.52;
+
+    // grating plane (vertical segment) + normal (dashed)
+    ctx.strokeStyle = gratingColor;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy-70); ctx.lineTo(cx, cy+70);
+    ctx.stroke();
+
+    ctx.setLineDash([4,5]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = inkDim;
+    ctx.beginPath();
+    ctx.moveTo(cx-40, cy); ctx.lineTo(cx+Lout+10, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = inkDim;
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillText('normal', cx+Lout-40, cy-8);
+
+    const orders = computeOrders(state.light==='mono'? state.lambda : 550, state.thetai, state.d);
+    const maxW = Math.max(...orders.map(o=>weightFor(o.m, o.thetam_deg)), 0.001);
+
+    // incident ray(s)
+    function perpOffset(x,y,thetaDeg,px){
+      const t = deg2rad(thetaDeg);
+      return [x + px*Math.sin(t), y + px*Math.cos(t)];
+    }
+    if(state.light==='two'){
+      [ {lambda: state.lambda, off: -2.5}, {lambda: state.lambda2, off: 2.5} ].forEach(src=>{
+        const [ix0,iy0] = pointAt(cx,cy,-Lin,state.thetai);
+        const [ix,iy] = perpOffset(ix0,iy0,state.thetai,src.off);
+        const [px,py] = perpOffset(cx,cy,state.thetai,src.off);
+        const col = rgbToCss(wavelengthToRGB(src.lambda));
+        ctx.strokeStyle = col; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.moveTo(ix,iy); ctx.lineTo(px,py); ctx.stroke();
+        drawArrow(ix,iy,px,py,col);
+      });
+    } else {
+      const [ix,iy] = pointAt(cx,cy,-Lin,state.thetai);
+      let incidentColor;
+      if(state.light==='mono'){
+        incidentColor = rgbToCss(wavelengthToRGB(state.lambda));
+      } else {
+        incidentColor = cssVar('--ink');
+      }
+      ctx.strokeStyle = incidentColor;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(ix,iy); ctx.lineTo(cx,cy);
+      ctx.stroke();
+      drawArrow(ix,iy,cx,cy,incidentColor);
+    }
+
+    // theta_i arc
+    drawAngleArc(cx,cy, -Lin*0.3, state.thetai, inkDim, 'θᵢ');
+
+    // diffracted orders
+    const wavelengths = [];
+    if(state.light==='broad'){
+      for(let w=400; w<=700; w+=15) wavelengths.push(w);
+    }
+
+    if(state.light==='two'){
+      const o1 = computeOrders(state.lambda, state.thetai, state.d).map(o=>({...o, lambda:state.lambda, off:-2.5}));
+      const o2 = computeOrders(state.lambda2, state.thetai, state.d).map(o=>({...o, lambda:state.lambda2, off:2.5}));
+      const combined = o1.concat(o2);
+      const maxW2 = Math.max(...combined.map(o=>weightFor(o.m,o.thetam_deg)), 0.001);
+      const labelled = new Set();
+      combined.forEach(o=>{
+        const weight = weightFor(o.m, o.thetam_deg);
+        const norm = weight/maxW2;
+        const alpha = 0.15 + 0.85*norm;
+        const width = 1.2 + 3.0*norm;
+        const [ex0,ey0] = pointAt(cx,cy,Lout,o.thetam_deg);
+        const [px,py] = perpOffset(cx,cy,o.thetam_deg,o.off);
+        const [ex,ey] = perpOffset(ex0,ey0,o.thetam_deg,o.off);
+        const col = rgbToCss(wavelengthToRGB(o.lambda), alpha);
+        ctx.strokeStyle = col; ctx.lineWidth = width;
+        ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(ex,ey); ctx.stroke();
+        drawArrow(px,py,ex,ey,col);
+        if(!labelled.has(o.m)){
+          labelled.add(o.m);
+          const [lx,ly] = pointAt(cx,cy,Lout+14,o.thetam_deg);
+          ctx.fillStyle = inkDim;
+          ctx.font = '11px "IBM Plex Mono", monospace';
+          ctx.fillText('m='+o.m, lx-12, ly+4);
+        }
+      });
+    } else {
+      orders.forEach(o=>{
+        const weight = weightFor(o.m, o.thetam_deg);
+        const norm = weight/maxW;
+        const alpha = 0.12 + 0.88*norm;
+        const width = 1.2 + 3.2*norm;
+
+        if(state.light==='mono'){
+          const [ex,ey] = pointAt(cx,cy,Lout,o.thetam_deg);
+          ctx.strokeStyle = rgbToCss(wavelengthToRGB(state.lambda), alpha);
+          ctx.lineWidth = width;
+          ctx.beginPath();
+          ctx.moveTo(cx,cy); ctx.lineTo(ex,ey);
+          ctx.stroke();
+          drawArrow(cx,cy,ex,ey, rgbToCss(wavelengthToRGB(state.lambda), alpha));
+        } else {
+          // broadband: fan of wavelengths for this order
+          wavelengths.forEach(wl=>{
+            const lambda_um = wl/1000;
+            const s = Math.sin(deg2rad(state.thetai)) + o.m*lambda_um/state.d;
+            if(Math.abs(s)>1) return;
+            const th = rad2deg(Math.asin(s));
+            const [ex,ey] = pointAt(cx,cy,Lout,th);
+            ctx.strokeStyle = rgbToCss(wavelengthToRGB(wl), alpha*0.9);
+            ctx.lineWidth = Math.max(1, width*0.6);
+            ctx.beginPath();
+            ctx.moveTo(cx,cy); ctx.lineTo(ex,ey);
+            ctx.stroke();
+          });
+        }
+
+        // label
+        const [lx,ly] = pointAt(cx,cy,Lout+14,o.thetam_deg);
+        ctx.fillStyle = inkDim;
+        ctx.font = '11px "IBM Plex Mono", monospace';
+        ctx.fillText('m='+o.m, lx-12, ly+4);
+      });
+    }
+
+    // grating point marker
+    ctx.fillStyle = gratingColor;
+    ctx.beginPath(); ctx.arc(cx,cy,3,0,7); ctx.fill();
+  }
+
+  function drawArrow(x1,y1,x2,y2,color){
+    const ang = Math.atan2(y2-y1, x2-x1);
+    const len = 8;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-len*Math.cos(ang-0.4), y2-len*Math.sin(ang-0.4));
+    ctx.lineTo(x2-len*Math.cos(ang+0.4), y2-len*Math.sin(ang+0.4));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawAngleArc(cx,cy,rSigned,thetaDeg,color,label){
+    const r = Math.abs(rSigned)*0.9;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const a0 = 0, a1 = -deg2rad(thetaDeg);
+    ctx.arc(cx,cy, r, Math.PI - 0, Math.PI - a1, thetaDeg<0);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    const [lx,ly] = pointAt(cx,cy,-r-14, thetaDeg/2);
+    ctx.fillText(label, lx-8, ly+4);
+  }
+
+  function updateTable(){
+    ordersBody.innerHTML = '';
+    const thead = document.querySelector('table.orders thead tr');
+
+    if(state.light==='two'){
+      thead.innerHTML = '<th>m</th><th>λ</th><th>θ_m</th><th>rel. eff.</th>';
+      const o1 = computeOrders(state.lambda, state.thetai, state.d).map(o=>({...o, lambda:state.lambda}));
+      const o2 = computeOrders(state.lambda2, state.thetai, state.d).map(o=>({...o, lambda:state.lambda2}));
+      const combined = o1.concat(o2);
+      const maxW = Math.max(...combined.map(o=>weightFor(o.m,o.thetam_deg)), 0.001);
+      combined.sort((a,b)=> a.m-b.m || a.lambda-b.lambda).forEach(o=>{
+        const weight = weightFor(o.m, o.thetam_deg);
+        const pct = Math.round(100*weight/maxW);
+        const rgb = wavelengthToRGB(o.lambda);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="m">${o.m}</td>` +
+          `<td><span class="swatch" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:5px;background:${rgbToCss(rgb)}"></span>${fmt(o.lambda,0)}nm</td>` +
+          `<td>${fmt(o.thetam_deg,1)}°</td>` +
+          `<td>${pct}%<span class="eff-bar" style="width:${Math.max(4,pct*0.5)}px"></span></td>`;
+        ordersBody.appendChild(tr);
+      });
+      eqLine.textContent = `sin θ_m = sin(${fmt(state.thetai,0)}°) + m·λ₁,₂/(${fmt(state.d,2)}µm),  λ₁=${fmt(state.lambda,0)}nm, λ₂=${fmt(state.lambda2,0)}nm`;
+    } else {
+      thead.innerHTML = '<th>m</th><th>θ_m</th><th>rel. efficiency</th>';
+      const orders = computeOrders(state.light==='mono'? state.lambda : 550, state.thetai, state.d);
+      const maxW = Math.max(...orders.map(o=>weightFor(o.m, o.thetam_deg)), 0.001);
+      orders.sort((a,b)=>a.m-b.m).forEach(o=>{
+        const weight = weightFor(o.m, o.thetam_deg);
+        const pct = Math.round(100*weight/maxW);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="m">${o.m}</td><td>${fmt(o.thetam_deg,1)}°</td>` +
+          `<td>${pct}%<span class="eff-bar" style="width:${Math.max(4,pct*0.5)}px"></span></td>`;
+        ordersBody.appendChild(tr);
+      });
+      eqLine.textContent = `sin θ_m = sin(${fmt(state.thetai,0)}°) + m·(${state.light==='mono'?fmt(state.lambda,0):'λ'}/${fmt(state.d,2)}µm)`;
+    }
+  }
+
+  function refresh(){
+    updateReadouts();
+    updateTable();
+    draw();
+  }
+
+  window.addEventListener('resize', ()=>draw());
+
+  // init
+  updateReadouts();
+  refresh();
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

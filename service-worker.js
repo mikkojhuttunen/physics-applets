@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v7";
+const CACHE_NAME = "physics-applets-v8";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -9,6 +9,7 @@ const APP_SHELL = [
   "fys232-structure-of-matter/index.html",
   "fys240-optics/index.html",
   "fys240-optics/anaglyph-3d-viewer.html",
+  "fys240-optics/diffraction-grating-explorer.html",
   "fys310-solid-state-physics/index.html",
   "fys310-solid-state-physics/FYS310_lattice_viewer.html",
   "fys310-solid-state-physics/van-hove-dos-explorer.html",
