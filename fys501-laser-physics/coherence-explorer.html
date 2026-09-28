@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Temporal and spatial coherence: Michelson and Young</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
+  --tc:#1f6feb; --sc:#d9480f; --tot:#1b1f24; --good:#2f9e44; --accent:#1f6feb;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+    --tc:#5c9dff; --sc:#ff8a4c; --tot:#e6e9ec; --good:#51cf66; --accent:#5c9dff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+  --tc:#5c9dff; --sc:#ff8a4c; --tot:#e6e9ec; --good:#51cf66; --accent:#5c9dff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:960px;margin:0 auto;padding:16px 16px 28px;}
+h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+.sub{color:var(--muted);margin:0 0 12px;font-size:.9rem}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 14px;overflow-x:auto;white-space:nowrap}
+.switches{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.sw{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--c);border-radius:0 10px 10px 0;padding:8px 14px;cursor:pointer;font-size:.9rem;flex:1 1 300px}
+.sw input{width:18px;height:18px;accent-color:var(--c)}
+.sw.t{--c:var(--tc)} .sw.s{--c:var(--sc)}
+.sw small{display:block;color:var(--muted);font-size:.76rem}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+.presets .lab{font-size:.82rem;color:var(--muted);margin-right:2px}
+.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.84rem;padding:5px 10px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px}
+.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:10px 14px 12px;display:flex;flex-direction:column;gap:11px}
+.grp h2{margin:0;font-size:.95rem;font-weight:650;color:var(--gc,var(--accent))}
+.grp.t{--gc:var(--tc)} .grp.s{--gc:var(--sc)}
+.ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+.hint{font-size:.76rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--gc,var(--accent))}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{flex:1;padding:6px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.82rem;cursor:pointer;border-right:1px solid var(--border);white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--tc);color:#fff}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 0 12px}
+.read{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.read .k{font-size:.76rem;color:var(--muted)}
+.read .v{font-size:1.2rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+.read .s{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.read.t .v{color:var(--tc)} .read.s .v{color:var(--sc)}
+.exp{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px 14px;margin-bottom:14px}
+.exp h2{margin:0 0 2px;font-size:1.05rem;font-weight:650}
+.exp .desc{margin:0 0 10px;font-size:.84rem;color:var(--muted)}
+.exp .ctls{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:10px}
+.exp .reads{margin-bottom:10px}
+.exp .read{background:var(--bg)}
+.plot{margin-top:8px}
+.plot h3{margin:0 2px 2px;font-size:.88rem;font-weight:650}
+.plot .cap{margin:0 2px 4px;font-size:.78rem;color:var(--muted)}
+canvas{display:block;width:100%}
+canvas.strip{border-radius:6px;border:1px solid var(--border);height:64px}
+.verdict{margin:10px 0 0;padding:9px 12px;border-left:3px solid var(--accent);background:var(--bg);border-radius:0 8px 8px 0;font-size:.88rem}
+details{margin-top:14px;color:var(--muted);font-size:.88rem}
+summary{cursor:pointer;color:var(--fg)}
+details p,details li{margin:6px 0}
+details ul{padding-left:1.2rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Temporal and spatial coherence: Michelson and Young</h1>
+  <p class="sub">FYS.501 Laser Physics · Ch. 1, Sect. 1.4 · the same source is put into both experiments, and each kind of coherence can be switched off</p>
+  <div class="eq">V = V<sub>t</sub> · V<sub>s</sub> &nbsp; V<sub>t</sub> = |γ(τ)|, τ = δ/c (spectrum) &nbsp; V<sub>s</sub> = |γ<sub>12</sub>| (source size)</div>
+
+  <div class="switches">
+    <label class="sw t"><input type="checkbox" id="swT" checked><span>Temporal coherence: real source<small>untick for a perfectly monochromatic source (infinite coherence time)</small></span></label>
+    <label class="sw s"><input type="checkbox" id="swS" checked><span>Spatial coherence: real source size<small>untick for an ideal point source (perfect spatial coherence)</small></span></label>
+  </div>
+
+  <div class="presets" id="presets"><span class="lab">Source:</span></div>
+
+  <div class="groups">
+    <section class="grp t">
+      <h2>Spectrum (sets temporal coherence)</h2>
+      <div class="ctl">
+        <label for="sLam">Centre wavelength λ₀: <span class="val" id="vLam"></span></label>
+        <input id="sLam" type="range" min="400" max="1100" step="1" value="633">
+      </div>
+      <div class="ctl">
+        <label for="sDnu" id="lDnu">Spectral width Δν (FWHM): <span class="val" id="vDnu"></span></label>
+        <input id="sDnu" type="range" min="5" max="14.5" step="0.01" value="6">
+        <div class="hint" id="hDnu"></div>
+      </div>
+      <div class="ctl">
+        <span class="lab">Line shape</span>
+        <div class="seg" id="shape" role="group" aria-label="Line shape">
+          <button data-v="lor">Lorentzian</button><button data-v="gau">Gaussian</button><button data-v="top">Top-hat</button><button data-v="comb">Mode comb</button>
+        </div>
+      </div>
+      <div id="combCtl" hidden>
+        <div class="ctl">
+          <label for="sN">Number of longitudinal modes N: <span class="val" id="vN"></span></label>
+          <input id="sN" type="range" min="2" max="8" step="1" value="3">
+        </div>
+        <div class="ctl" style="margin-top:10px">
+          <label for="sLc">Laser cavity length: <span class="val" id="vLc"></span></label>
+          <input id="sLc" type="range" min="10" max="150" step="1" value="30">
+          <div class="hint" id="hLc"></div>
+        </div>
+      </div>
+    </section>
+    <section class="grp s">
+      <h2>Source size (sets spatial coherence)</h2>
+      <div class="ctl">
+        <label for="sW">Source diameter w: <span class="val" id="vW"></span></label>
+        <input id="sW" type="range" min="0" max="4" step="0.01" value="0">
+        <div class="hint">1 µm is effectively a point source</div>
+      </div>
+      <div class="ctl">
+        <label for="sD">Distance D to slits (or collimator focal length): <span class="val" id="vD"></span></label>
+        <input id="sD" type="range" min="0.05" max="5" step="0.05" value="1">
+        <div class="hint" id="hD"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="reads" id="srcReads"></div>
+
+  <section class="exp">
+    <h2>Michelson interferometer</h2>
+    <p class="desc">A photodetector collects all light from the source while the path difference δ = 2·(arm difference) is scanned. Bandwidth limits the contrast through τ = δ/c; a finite source size limits it through the spread of ray angles θ.</p>
+    <div class="ctls">
+      <div class="ctl" style="--gc:var(--accent)">
+        <label for="sDel">Path difference δ: <span class="val" id="vDel"></span></label>
+        <input id="sDel" type="range" min="-7" max="3" step="0.01" value="-4.5">
+        <div class="hint" id="hDel"></div>
+      </div>
+    </div>
+    <div class="reads" id="michReads"></div>
+    <div class="plot">
+      <h3>Fringe contrast against path difference</h3>
+      <p class="cap"><b style="color:var(--tc)">Blue dashed: temporal factor V<sub>t</sub>.</b> <b style="color:var(--sc)">Orange dotted: spatial factor V<sub>s</sub>.</b> <b>Black: their product, which is what you measure.</b></p>
+      <canvas id="cMV" role="img" aria-label="Michelson fringe visibility against path difference on a logarithmic axis"></canvas>
+    </div>
+    <div class="plot">
+      <h3>Detector signal while the mirror moves through ±5 fringes at this δ</h3>
+      <p class="cap">Dashed lines are the fringe envelope 1 ± V.</p>
+      <canvas id="cMI" role="img" aria-label="Michelson detector signal near the chosen path difference"></canvas>
+    </div>
+    <div class="verdict" id="vMich"></div>
+  </section>
+
+  <section class="exp">
+    <h2>Young's double slit</h2>
+    <p class="desc">Two slits separated by s sample the field at two points. Contrast at the centre of the screen (δ = 0) is set by spatial coherence alone; away from the centre the path difference δ = s·y/R grows and bandwidth washes the fringes out.</p>
+    <div class="ctls">
+      <div class="ctl" style="--gc:var(--accent)">
+        <label for="sS">Slit separation s: <span class="val" id="vS"></span></label>
+        <input id="sS" type="range" min="-5" max="-2.5" step="0.01" value="-3.3">
+        <div class="hint" id="hS"></div>
+      </div>
+      <div class="ctl" style="--gc:var(--accent)">
+        <label for="sR">Screen distance R: <span class="val" id="vR"></span></label>
+        <input id="sR" type="range" min="0.2" max="5" step="0.05" value="1">
+      </div>
+      <div class="ctl" style="--gc:var(--accent)">
+        <label for="sNf">Fringe spacings shown on each side: <span class="val" id="vNf"></span></label>
+        <input id="sNf" type="range" min="3" max="60" step="1" value="12">
+      </div>
+    </div>
+    <div class="reads" id="youngReads"></div>
+    <div class="plot">
+      <h3>Pattern on the screen</h3>
+      <canvas id="cYS" class="strip" role="img" aria-label="Simulated double-slit fringe pattern"></canvas>
+      <canvas id="cYI" role="img" aria-label="Double-slit intensity against screen position" style="margin-top:6px"></canvas>
+    </div>
+    <div class="verdict" id="vYoung"></div>
+  </section>
+
+  <details>
+    <summary>Formulas used</summary>
+    <p><b>Temporal.</b> With τ = δ/c and FWHM Δν: Lorentzian exp(−πΔν|τ|), Gaussian exp(−(πΔντ)²/(4 ln 2)), top-hat |sinc(πΔντ)|. A multimode laser with N equal modes spaced c/2L<sub>cav</sub> and per-mode width Δν multiplies the Lorentzian by |sin(Nπτc/2L<sub>cav</sub>) / (N sin(πτc/2L<sub>cav</sub>))|, which revives the fringes at δ = 2L<sub>cav</sub>, 4L<sub>cav</sub>, ... The coherence time is quoted as τ<sub>c</sub> = 1/Δν and the coherence length as L<sub>c</sub> = cτ<sub>c</sub>.</p>
+    <p><b>Spatial, Young.</b> A uniform circular source of angular diameter α = w/D gives |γ<sub>12</sub>| = |2J₁(x)/x| with x = π s α/λ (van Cittert–Zernike). The first zero and the coherence width are at s ≈ 1.22 λD/w.</p>
+    <p><b>Spatial, Michelson.</b> Rays at angle θ have path difference δ cos θ ≈ δ(1 − θ²/2). Averaging over a disc of half-angle θ<sub>m</sub> = w/2D gives |sinc(πδθ<sub>m</sub>²/2λ)|. This is for a detector that collects the whole source; it is the reason an extended source limits the resolution of a Fourier-transform spectrometer.</p>
+    <p><b>Combining.</b> The two factors are multiplied. This is exact only for narrow lines, but is a good guide for the broad sources here. Curves beyond the sinc envelope are drawn as the envelope to avoid aliasing on the log axis.</p>
+    <p><b>Things to try.</b></p>
+    <ul>
+      <li>Lamp preset, untick spatial: Michelson contrast is now set by bandwidth only, and the fringes vanish within a few µm. Then untick temporal instead and tighten the source size.</li>
+      <li>Single-mode laser: Michelson contrast stays near 1 up to hundreds of metres, and Young fringes fill the screen at any s.</li>
+      <li>Lamp in Young: only a few fringes around the centre are visible even with a point source (temporal). Now enlarge the slit separation with a wide source and the contrast collapses everywhere (spatial).</li>
+      <li>Mode comb: scan δ over 2L<sub>cav</sub> and watch the fringes come back.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+(function(){
+  var C=299792458, LN2=Math.LN2;
+  var $=function(id){return document.getElementById(id);};
+
+  var S={
+    tOn:true, sOn:true, preset:'laser1',
+    lam:633, logDnu:6, shape:'lor', N:3, Lcav:30,
+    logW:0, D:1,
+    logDel:-4.5, logS:-3.3, R:1, Nf:12
+  };
+
+  var PRESETS=[
+    {id:'lamp',   name:'Incandescent lamp', lam:600, logDnu:Math.log10(1.5e14), shape:'gau', logW:Math.log10(200), D:0.5},
+    {id:'led',    name:'LED',               lam:630, logDnu:Math.log10(1.5e13), shape:'gau', logW:Math.log10(100),  D:0.3},
+    {id:'filt',   name:'Lamp + 1 nm filter',lam:546, logDnu:12,                 shape:'gau', logW:Math.log10(200), D:0.5},
+    {id:'multi',  name:'Multimode He–Ne',   lam:632.8, logDnu:6,                 shape:'comb',logW:0, D:1, N:3, Lcav:30},
+    {id:'laser1', name:'Single-mode laser', lam:632.8, logDnu:6,                 shape:'lor', logW:0, D:1}
+  ];
+
+  function sinc(u){ u=Math.abs(u); return u<1e-9?1:Math.sin(u)/u; }
+  function sincAbsEnv(u,env){ u=Math.abs(u); if(u<1e-9) return 1; if(env&&u>20) return 1/u; return Math.abs(Math.sin(u))/u; }
+  function J1(x){
+    var n=Math.min(6000,Math.max(64,Math.ceil(Math.abs(x)*3)+64)), s=0;
+    for(var k=0;k<n;k++){ var t=Math.PI*(k+0.5)/n; s+=Math.cos(t-x*Math.sin(t)); }
+    return s/n;
+  }
+  function dnu(){ return Math.pow(10,S.logDnu); }
+  function lamM(){ return S.lam*1e-9; }
+  function wM(){ return Math.pow(10,S.logW)*1e-6; }
+  function fmtLen(m){
+    if(m===Infinity) return '∞';
+    if(m<1e-3) return (m*1e6).toPrecision(3)+' µm';
+    if(m<1) return (m*1e3).toPrecision(3)+' mm';
+    if(m<1000) return m.toPrecision(3)+' m';
+    return (m/1000).toPrecision(3)+' km';
+  }
+  function fmtLenShort(m){
+    if(m<1e-3) return +(m*1e6).toPrecision(3)+' µm';
+    if(m<1) return +(m*1e3).toPrecision(3)+' mm';
+    if(m<1000) return +m.toPrecision(3)+' m';
+    return +(m/1000).toPrecision(3)+' km';
+  }
+  function fmtHz(f){
+    if(f>=1e12) return (f/1e12).toPrecision(3)+' THz';
+    if(f>=1e9) return (f/1e9).toPrecision(3)+' GHz';
+    if(f>=1e6) return (f/1e6).toPrecision(3)+' MHz';
+    if(f>=1e3) return (f/1e3).toPrecision(3)+' kHz';
+    return f.toPrecision(3)+' Hz';
+  }
+
+  function VtRaw(delta){
+    var tau=Math.abs(delta)/C, D=dnu(), a=Math.PI*D*tau, v;
+    if(S.shape==='lor') v=Math.exp(-a);
+    else if(S.shape==='gau') v=Math.exp(-a*a/(4*LN2));
+    else if(S.shape==='top') v=sincAbsEnv(a,true);
+    else {
+      var dm=C/(2*S.Lcav*0.01), b=Math.PI*dm*tau, sb=Math.sin(b);
+      var comb=Math.abs(sb)<1e-9?1:Math.abs(Math.sin(S.N*b)/(S.N*sb));
+      v=Math.exp(-a)*comb;
+    }
+    return v;
+  }
+  function Vt(delta){ return S.tOn?VtRaw(delta):1; }
+  function thetaM(){ return wM()/(2*S.D); }
+  function VsM(delta,env){ if(!S.sOn) return 1; var u=Math.PI*Math.abs(delta)*thetaM()*thetaM()/(2*lamM()); return sincAbsEnv(u,env); }
+  function VsY(s){ if(!S.sOn) return 1; var al=wM()/S.D, x=Math.PI*s*al/lamM(); if(x<1e-6) return 1; return Math.abs(2*J1(x)/x); }
+
+  function halfFringes(){
+    if(!S.tOn) return null;
+    for(var lg=-8;lg<=5;lg+=0.005){
+      var d=Math.pow(10,lg); if(VtRaw(d)<0.5) return d;
+    }
+    return null;
+  }
+
+  function css(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function prep(cv,aspect,fixedH){
+    var dpr=window.devicePixelRatio||1, w=cv.clientWidth||600, h=fixedH||Math.round(w*aspect);
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); cv.style.height=h+'px';
+    var c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+    return {c:c,w:w,h:h};
+  }
+  function font(c,px,wt){ c.font=(wt||400)+' '+px+'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'; }
+  function niceStep(span,target){ var raw=span/target,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p; return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p; }
+  function frame(c,box,xr,yr,o){
+    o=o||{};
+    var col=css('--muted'), grid=css('--grid');
+    c.save(); c.strokeStyle=grid; c.fillStyle=col; font(c,11); c.lineWidth=1;
+    var ys=o.yticks||(function(){var s=niceStep(yr[1]-yr[0],5),a=[],v=Math.ceil(yr[0]/s)*s;for(;v<=yr[1]+1e-9;v+=s)a.push(v);return a;})();
+    ys.forEach(function(v){
+      var y=box.y+box.h*(1-(v-yr[0])/(yr[1]-yr[0]));
+      c.beginPath(); c.moveTo(box.x,y); c.lineTo(box.x+box.w,y); c.stroke();
+      c.textAlign='right'; c.textBaseline='middle'; c.fillText(o.yfmt?o.yfmt(v):String(+v.toPrecision(3)),box.x-6,y);
+    });
+    var xs=o.xticks||(function(){var s=niceStep(xr[1]-xr[0],6),a=[],v=Math.ceil(xr[0]/s)*s;for(;v<=xr[1]+1e-9;v+=s)a.push(v);return a;})();
+    xs.forEach(function(v){
+      var x=box.x+box.w*(v-xr[0])/(xr[1]-xr[0]);
+      c.beginPath(); c.moveTo(x,box.y); c.lineTo(x,box.y+box.h); c.stroke();
+      c.textAlign='center'; c.textBaseline='top'; c.fillText(o.xfmt?o.xfmt(v):String(+v.toPrecision(3)),x,box.y+box.h+5);
+    });
+    c.strokeStyle=css('--border'); c.strokeRect(box.x,box.y,box.w,box.h);
+    if(o.xlabel){ c.fillStyle=col; c.textAlign='center'; c.textBaseline='bottom'; c.fillText(o.xlabel,box.x+box.w/2,box.y+box.h+box.bottomPad-2); }
+    if(o.ylabel){ c.save(); c.translate(12,box.y+box.h/2); c.rotate(-Math.PI/2); c.fillStyle=col; c.textAlign='center'; c.textBaseline='top'; c.fillText(o.ylabel,0,0); c.restore(); }
+    c.restore();
+  }
+  function mapper(box,xr,yr){ return {x:function(v){return box.x+box.w*(v-xr[0])/(xr[1]-xr[0]);}, y:function(v){return box.y+box.h*(1-(v-yr[0])/(yr[1]-yr[0]));}}; }
+
+  function wl2rgb(l){
+    var r=0,g=0,b=0;
+    if(l>=380&&l<440){r=-(l-440)/60;b=1;} else if(l<490){g=(l-440)/50;b=1;} else if(l<510){g=1;b=-(l-510)/20;}
+    else if(l<580){r=(l-510)/70;g=1;} else if(l<645){r=1;g=-(l-645)/65;} else if(l<=780){r=1;}
+    else {r=0.55;}
+    var f;
+    if(l<420) f=0.3+0.7*(l-380)/40; else if(l>700) f=Math.max(0.3,0.3+0.7*(780-l)/80); else f=1;
+    return [r*f,g*f,b*f];
+  }
+
+  var LOGX=[-7,-6,-5,-4,-3,-2,-1,0,1,2,3];
+  var LOGXT={'-7':'0.1 µm','-6':'1 µm','-5':'10 µm','-4':'100 µm','-3':'1 mm','-2':'1 cm','-1':'10 cm','0':'1 m','1':'10 m','2':'100 m','3':'1 km'};
+
+  function drawMV(){
+    var p=prep($('cMV'),0.44), c=p.c, w=p.w, h=p.h;
+    var xmaxLog=S.shape==='comb'?Math.min(3,Math.log10(12*2*S.Lcav*0.01)):3;
+    var xr=[-7,xmaxLog], yr=[0,1.06];
+    var box={x:44,y:10,w:w-56,h:h-52,bottomPad:40};
+    frame(c,box,xr,yr,{xticks:LOGX.filter(function(v){return v<=xmaxLog;}),xfmt:function(v){return LOGXT[v];},xlabel:'path difference δ',ylabel:'contrast V',yticks:[0,0.25,0.5,0.75,1]});
+    var m=mapper(box,xr,yr), n=1600;
+    function curve(fn,color,dash,lw){
+      c.save(); c.beginPath(); c.rect(box.x,box.y,box.w,box.h); c.clip();
+      c.strokeStyle=color; c.lineWidth=lw; c.setLineDash(dash||[]); c.beginPath();
+      for(var i=0;i<=n;i++){ var lg=xr[0]+(xr[1]-xr[0])*i/n, v=fn(Math.pow(10,lg)); if(i===0)c.moveTo(m.x(lg),m.y(v)); else c.lineTo(m.x(lg),m.y(v)); }
+      c.stroke(); c.restore();
+    }
+    curve(function(d){return Vt(d);},css('--tc'),[7,4],2);
+    curve(function(d){return VsM(d,true);},css('--sc'),[2,3],2.2);
+    curve(function(d){return Vt(d)*VsM(d,true);},css('--tot'),[],2.6);
+    var d0=Math.pow(10,S.logDel), x0=m.x(S.logDel);
+    c.strokeStyle=css('--muted'); c.lineWidth=1; c.setLineDash([3,3]); c.beginPath(); c.moveTo(x0,box.y); c.lineTo(x0,box.y+box.h); c.stroke(); c.setLineDash([]);
+    [[Vt(d0),css('--tc')],[VsM(d0,false),css('--sc')],[Vt(d0)*VsM(d0,false),css('--tot')]].forEach(function(q){
+      c.fillStyle=q[1]; c.strokeStyle=css('--card'); c.lineWidth=2; c.beginPath(); c.arc(x0,m.y(q[0]),5,0,7); c.fill(); c.stroke();
+    });
+  }
+
+  function drawMI(){
+    var p=prep($('cMI'),0.34), c=p.c, w=p.w, h=p.h;
+    var box={x:44,y:10,w:w-56,h:h-48,bottomPad:34};
+    var xr=[-5,5], yr=[0,2.1];
+    frame(c,box,xr,yr,{xlabel:'mirror displacement (fringes)',ylabel:'I / mean',yticks:[0,0.5,1,1.5,2],xticks:[-5,-4,-3,-2,-1,0,1,2,3,4,5]});
+    var m=mapper(box,xr,yr), d0=Math.pow(10,S.logDel), lam=lamM(), n=1000;
+    function V(dd){ dd=Math.abs(dd); return Vt(dd)*VsM(dd,false); }
+    c.save(); c.beginPath(); c.rect(box.x,box.y,box.w,box.h); c.clip();
+    c.strokeStyle=css('--muted'); c.setLineDash([5,4]); c.lineWidth=1.2;
+    [1,-1].forEach(function(sg){ c.beginPath(); for(var i=0;i<=200;i++){ var x=xr[0]+(xr[1]-xr[0])*i/200; var e=1+sg*V(d0+x*lam); if(i===0)c.moveTo(m.x(x),m.y(e)); else c.lineTo(m.x(x),m.y(e)); } c.stroke(); });
+    c.setLineDash([]); c.strokeStyle=css('--tot'); c.lineWidth=2.2; c.beginPath();
+    for(var i=0;i<=n;i++){ var x=xr[0]+(xr[1]-xr[0])*i/n, dd=d0+x*lam, I=1+V(dd)*Math.cos(2*Math.PI*dd/lam);
+      if(i===0)c.moveTo(m.x(x),m.y(I)); else c.lineTo(m.x(x),m.y(I)); }
+    c.stroke(); c.restore();
+  }
+
+  function drawY(){
+    var s=Math.pow(10,S.logS), lam=lamM(), R=S.R, sp=lam*R/s, ymax=S.Nf*sp;
+    var Vs=VsY(s);
+    function I(y){ var d=s*y/R; return 1+Vs*Vt(d)*Math.cos(2*Math.PI*d/lam); }
+    var ps=prep($('cYS'),0,64), c1=ps.c, w1=ps.w, h1=ps.h;
+    var img=c1.createImageData(Math.max(1,Math.round(w1*(window.devicePixelRatio||1))),Math.max(1,Math.round(h1*(window.devicePixelRatio||1))));
+    var rgb=wl2rgb(S.lam), W=img.width, H=img.height;
+    for(var x=0;x<W;x++){
+      var y=-ymax+2*ymax*(x+0.5)/W, v=Math.max(0,Math.min(1,I(y)/2));
+      var r=Math.round(255*Math.pow(v,0.8)*rgb[0]), g=Math.round(255*Math.pow(v,0.8)*rgb[1]), b=Math.round(255*Math.pow(v,0.8)*rgb[2]);
+      for(var yy=0;yy<H;yy++){ var k=(yy*W+x)*4; img.data[k]=r; img.data[k+1]=g; img.data[k+2]=b; img.data[k+3]=255; }
+    }
+    c1.setTransform(1,0,0,1,0,0); c1.putImageData(img,0,0);
+
+    var p=prep($('cYI'),0.3), c=p.c, w=p.w, h=p.h;
+    var box={x:44,y:10,w:w-56,h:h-48,bottomPad:34};
+    var xr=[-ymax*1e3,ymax*1e3], yr=[0,2.1];
+    frame(c,box,xr,yr,{xlabel:'position on screen y (mm)',ylabel:'I / mean',yticks:[0,0.5,1,1.5,2],xfmt:function(v){return (+v.toPrecision(3)).toString();}});
+    var m=mapper(box,xr,yr), n=Math.min(2400,Math.max(600,S.Nf*60));
+    c.save(); c.beginPath(); c.rect(box.x,box.y,box.w,box.h); c.clip();
+    c.strokeStyle=css('--muted'); c.setLineDash([5,4]); c.lineWidth=1.2;
+    [1,-1].forEach(function(sg){ c.beginPath(); for(var i=0;i<=240;i++){ var y=-ymax+2*ymax*i/240, e=1+sg*Vs*Vt(s*y/R); if(i===0)c.moveTo(m.x(y*1e3),m.y(e)); else c.lineTo(m.x(y*1e3),m.y(e)); } c.stroke(); });
+    c.setLineDash([]); c.strokeStyle=css('--tot'); c.lineWidth=2; c.beginPath();
+    for(var j=0;j<=n;j++){ var yv=-ymax+2*ymax*j/n; if(j===0)c.moveTo(m.x(yv*1e3),m.y(I(yv))); else c.lineTo(m.x(yv*1e3),m.y(I(yv))); }
+    c.stroke(); c.restore();
+  }
+
+  function card(cls,k,v,s){ return '<div class="read '+cls+'"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'; }
+
+  function labels(){
+    var D=dnu(), lam=lamM(), dl=lam*lam*D/C, tc=1/D, Lc=C*tc;
+    $('vLam').textContent=S.lam.toFixed(S.lam%1?1:0)+' nm';
+    $('lDnu').firstChild.textContent=S.shape==='comb'?'Width of each mode Δν: ':'Spectral width Δν (FWHM): ';
+    $('vDnu').textContent=fmtHz(D);
+    $('hDnu').textContent='Δλ = '+(dl>=1e-9?(dl*1e9).toPrecision(3)+' nm':(dl*1e12).toPrecision(3)+' pm')+'  ·  Δν/ν₀ = '+(D/(C/lam)).toExponential(1);
+    $('vN').textContent=S.N; $('vLc').textContent=S.Lcav+' cm';
+    $('hLc').textContent='mode spacing c/2L = '+fmtHz(C/(2*S.Lcav*0.01))+'  ·  fringes revive every δ = 2L = '+fmtLen(2*S.Lcav*0.01);
+    var w=wM(); $('vW').textContent=w<1e-3?(w*1e6).toPrecision(3)+' µm':(w*1e3).toPrecision(3)+' mm';
+    $('vD').textContent=S.D.toFixed(2)+' m';
+    var al=w/S.D; $('hD').textContent='angular diameter α = '+(al*1e3).toPrecision(3)+' mrad';
+    $('shape').querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed',b.getAttribute('data-v')===S.shape?'true':'false'); });
+    $('combCtl').hidden=S.shape!=='comb';
+    var lc=1.22*lam*S.D/w;
+    $('srcReads').innerHTML=
+      card('t','coherence time τ<sub>c</sub> = 1/Δν',(tc<1e-9?(tc*1e12).toPrecision(3)+' ps':tc<1e-6?(tc*1e9).toPrecision(3)+' ns':(tc*1e6).toPrecision(3)+' µs'),S.shape==='comb'?'per mode':'temporal')+
+      card('t','coherence length L<sub>c</sub> = cτ<sub>c</sub>',fmtLen(Lc),S.shape==='comb'?'revival at '+fmtLen(2*S.Lcav*0.01):'temporal')+
+      card('s','coherence width at slits',fmtLen(lc),'1.22 λD/w · spatial')+
+      card('s','source angular size α',(al*1e3).toPrecision(3)+' mrad','w/D · spatial');
+    document.querySelectorAll('#presets .btn').forEach(function(b){ b.setAttribute('aria-pressed',b.getAttribute('data-id')===S.preset?'true':'false'); });
+    var d0=Math.pow(10,S.logDel); $('vDel').textContent=fmtLenShort(d0);
+    $('hDel').textContent='δ / λ₀ = '+(d0/lam).toPrecision(3)+'  ·  δ / L_c = '+(d0/Lc).toPrecision(3);
+    var s=Math.pow(10,S.logS); $('vS').textContent=(s*1e3).toPrecision(3)+' mm';
+    $('hS').textContent='fringe spacing λR/s = '+(lam*S.R/s*1e3).toPrecision(3)+' mm';
+    $('vR').textContent=S.R.toFixed(2)+' m'; $('vNf').textContent='±'+S.Nf;
+  }
+
+  function verdicts(){
+    var d0=Math.pow(10,S.logDel), vt=Vt(d0), vs=VsM(d0,false), v=vt*vs;
+    $('michReads').innerHTML=card('t','temporal factor V_t',vt.toFixed(3),'from bandwidth at this δ')+card('s','spatial factor V_s',vs.toFixed(3),'from source size at this δ')+card('','measured contrast V',v.toFixed(3),'V_t × V_s');
+    var t;
+    if(v>=0.8) t='Fringes are sharp: the field is coherent enough at this path difference.';
+    else if(vt<0.8&&vs<0.8) t='Both effects reduce the contrast: bandwidth (temporal) and source size (spatial).';
+    else if(vt<0.8) t='Contrast is limited by finite bandwidth: δ is a sizeable fraction of the coherence length (temporal coherence).';
+    else t='Contrast is limited by the finite source size: rays at different angles have different path differences (spatial coherence).';
+    $('vMich').textContent=t;
+
+    var s=Math.pow(10,S.logS), lam=lamM(), Vs=VsY(s), hf=halfFringes(), Nh=hf?hf/lam:null;
+    var sp=lam*S.R/s;
+    $('youngReads').innerHTML=
+      card('s','contrast at screen centre',Vs.toFixed(3),'spatial only: s / coherence width = '+(s/(1.22*lam*S.D/wM())).toPrecision(2))+
+      card('','fringe spacing',(sp*1e3).toPrecision(3)+' mm','λR/s')+
+      card('t','fringes until V_t = ½',Nh?'±'+(Nh<1?Nh.toFixed(2):Nh<100?Nh.toFixed(1):Math.round(Nh).toLocaleString('en')):'> 10⁵','from bandwidth only (δ = s·y/R)')+
+      card('t','δ at screen edge',fmtLenShort(S.Nf*lam),'±'+S.Nf+' fringes × λ');
+    var yt;
+    if(Vs<0.3) yt='Spatial coherence is too low at this slit separation: even the central fringes are washed out. Narrow the source or bring the slits closer.';
+    else if(Nh&&Nh<S.Nf) yt='Central fringes have contrast '+Vs.toFixed(2)+', but the fringes fade towards the edge: the path difference there exceeds the coherence length (temporal coherence).';
+    else yt='High contrast across the whole pattern: source is coherent enough in both senses.';
+    $('vYoung').textContent=yt;
+  }
+
+  function render(){ labels(); verdicts(); drawMV(); drawMI(); drawY(); }
+
+  function markCustom(){ S.preset='custom'; }
+  function bind(id,key,cb){ $(id).addEventListener('input',function(e){ S[key]=parseFloat(e.target.value); if(cb)cb(); render(); }); }
+  bind('sLam','lam',markCustom); bind('sDnu','logDnu',markCustom); bind('sN','N',markCustom); bind('sLc','Lcav',markCustom);
+  bind('sW','logW',markCustom); bind('sD','D',markCustom);
+  bind('sDel','logDel'); bind('sS','logS'); bind('sR','R'); bind('sNf','Nf');
+  $('swT').addEventListener('change',function(e){ S.tOn=e.target.checked; render(); });
+  $('swS').addEventListener('change',function(e){ S.sOn=e.target.checked; render(); });
+  $('shape').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; S.shape=b.getAttribute('data-v'); markCustom(); render(); });
+
+  function sync(){
+    $('sLam').value=S.lam; $('sDnu').value=S.logDnu; $('sN').value=S.N; $('sLc').value=S.Lcav;
+    $('sW').value=S.logW; $('sD').value=S.D; $('sDel').value=S.logDel; $('sS').value=S.logS; $('sR').value=S.R; $('sNf').value=S.Nf;
+  }
+  var pr=$('presets');
+  PRESETS.forEach(function(p){
+    var b=document.createElement('button'); b.className='btn'; b.textContent=p.name; b.setAttribute('data-id',p.id); b.setAttribute('aria-pressed','false');
+    b.addEventListener('click',function(){
+      S.preset=p.id; S.lam=p.lam; S.logDnu=p.logDnu; S.shape=p.shape; S.logW=p.logW; S.D=p.D;
+      if(p.N) S.N=p.N; if(p.Lcav) S.Lcav=p.Lcav;
+      var Lc=C/Math.pow(10,p.logDnu);
+      S.logDel=Math.max(-7,Math.min(3,Math.log10(0.3*Lc)));
+      if(p.shape==='comb') S.logDel=Math.log10(S.Lcav*0.01);
+      sync(); render();
+    });
+    pr.appendChild(b);
+  });
+  document.querySelector('#presets [data-id="lamp"]').click();
+
+  var rt; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(render,80); });
+  if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

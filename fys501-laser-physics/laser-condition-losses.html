@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laser condition and logarithmic losses</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
+  --gain:#2f9e44; --loss:#e03131; --net:#1f6feb; --warn:#d9480f; --accent:#1f6feb;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+    --gain:#51cf66; --loss:#ff6b6b; --net:#5c9dff; --warn:#ff8a4c; --accent:#5c9dff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+  --gain:#51cf66; --loss:#ff6b6b; --net:#5c9dff; --warn:#ff8a4c; --accent:#5c9dff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:940px;margin:0 auto;padding:16px 16px 28px;}
+h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+.sub{color:var(--muted);margin:0 0 14px;font-size:.9rem}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 14px;overflow-x:auto;white-space:nowrap}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-bottom:12px}
+.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:10px 14px 12px;display:flex;flex-direction:column;gap:11px}
+.grp h2{margin:0;font-size:.95rem;font-weight:650;color:var(--gc,var(--accent))}
+.grp.mir{--gc:var(--loss)}
+.grp.med{--gc:var(--gain)}
+.ctl label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+.hint{font-size:.76rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+.presets .lab{font-size:.82rem;color:var(--muted);margin-right:2px}
+.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.84rem;padding:5px 10px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--sc,var(--muted));border-radius:0 10px 10px 0}
+.status .pill{font-weight:650;color:var(--sc,var(--muted))}
+.status .txt{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums}
+.plotbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 10px 6px;margin-bottom:12px}
+.plotbox h3{margin:0 4px 2px;font-size:.92rem;font-weight:650}
+.plotbox .cap{margin:0 4px 6px;font-size:.8rem;color:var(--muted)}
+canvas{display:block;width:100%}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 12px}
+.read{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.read .k{font-size:.76rem;color:var(--muted)}
+.read .v{font-size:1.25rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+.read .s{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.two .plotbox{margin-bottom:0}
+details{margin-top:14px;color:var(--muted);font-size:.88rem}
+summary{cursor:pointer;color:var(--fg)}
+details p{margin:8px 0}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Laser condition and logarithmic losses</h1>
+  <p class="sub">FYS.501 Laser Physics · Ch. 1, Sect. 1.2 · photon flux over one round trip of a two-mirror cavity</p>
+  <div class="eq">F = F₀ (1 − L<sub>i</sub>)² R₁ R₂ e<sup>2σLΔN</sup> &nbsp;⇒&nbsp; ΔN<sub>c</sub> = γ / (2σL), &nbsp; γ = γ₁ + γ₂ + 2γ<sub>i</sub></div>
+
+  <div class="presets" id="presets"><span class="lab">Presets:</span></div>
+
+  <div class="groups">
+    <section class="grp mir">
+      <h2>Mirrors and internal loss</h2>
+      <div class="ctl">
+        <label for="sR1">Mirror 1 reflectivity R₁: <span class="val" id="vR1"></span></label>
+        <input id="sR1" type="range" min="10" max="99.99" step="0.01" value="99.9">
+        <div class="hint" id="hR1"></div>
+      </div>
+      <div class="ctl">
+        <label for="sR2">Mirror 2 reflectivity R₂ (output coupler): <span class="val" id="vR2"></span></label>
+        <input id="sR2" type="range" min="10" max="99.99" step="0.01" value="95">
+        <div class="hint" id="hR2"></div>
+      </div>
+      <div class="ctl">
+        <label for="sLi">Internal loss per pass L<sub>i</sub> (scattering, absorption): <span class="val" id="vLi"></span></label>
+        <input id="sLi" type="range" min="0" max="40" step="0.05" value="0.5">
+        <div class="hint" id="hLi"></div>
+      </div>
+    </section>
+    <section class="grp med">
+      <h2>Active medium</h2>
+      <div class="ctl">
+        <label for="sL">Medium length L: <span class="val" id="vL"></span></label>
+        <input id="sL" type="range" min="0.1" max="50" step="0.1" value="10">
+      </div>
+      <div class="ctl">
+        <label for="sSig">Cross-section σ: <span class="val" id="vSig"></span></label>
+        <input id="sSig" type="range" min="-20" max="-16" step="0.01" value="-18.553">
+        <div class="hint">Nd:YAG at 1064 nm has σ ≈ 2.8 × 10⁻¹⁹ cm²</div>
+      </div>
+      <div class="ctl">
+        <label for="sN">Population inversion ΔN = N₂ − (g₂/g₁)N₁: <span class="val" id="vN"></span></label>
+        <input id="sN" type="range" min="14" max="19" step="0.005" value="16.15">
+        <div class="hint" id="hN"></div>
+      </div>
+      <div class="presets" style="margin:0">
+        <span class="lab">Set ΔN to</span>
+        <button class="btn" data-mult="0.5">0.5 ΔN<sub>c</sub></button>
+        <button class="btn" data-mult="1">1 ΔN<sub>c</sub></button>
+        <button class="btn" data-mult="1.5">1.5 ΔN<sub>c</sub></button>
+        <button class="btn" data-mult="3">3 ΔN<sub>c</sub></button>
+      </div>
+    </section>
+  </div>
+
+  <div class="status" id="status"><span class="pill" id="pill"></span><span class="txt" id="stxt"></span></div>
+
+  <div class="reads" id="reads"></div>
+
+  <div class="plotbox">
+    <h3>One round trip in logarithmic units</h3>
+    <p class="cap">Each element multiplies the flux, so its ln-factor simply adds. The final bar is ln(F/F₀); it must reach zero (dashed line) for laser action.</p>
+    <canvas id="cWater" role="img" aria-label="Waterfall of logarithmic gains and losses over one round trip"></canvas>
+  </div>
+
+  <div class="two">
+    <div class="plotbox">
+      <h3>Flux after n round trips</h3>
+      <p class="cap">F<sub>n</sub>/F₀ = e<sup>n·net</sup>, drawn on a log axis, so it is a straight line.</p>
+      <canvas id="cFlux" role="img" aria-label="Photon flux after n round trips on a logarithmic axis"></canvas>
+    </div>
+    <div class="plotbox">
+      <h3>Net round-trip gain against inversion</h3>
+      <p class="cap">Intercept −γ, slope 2σL, zero crossing at ΔN<sub>c</sub>.</p>
+      <canvas id="cThr" role="img" aria-label="Net logarithmic round-trip gain as a function of population inversion"></canvas>
+    </div>
+  </div>
+
+  <div class="plotbox" style="margin-top:12px">
+    <h3>Why logarithmic losses? The small-loss approximation</h3>
+    <p class="cap">Exact γ = −ln(1 − x) against the approximation γ ≈ x. Markers show your T₁, T₂ and L<sub>i</sub>. The approximation is good only while x stays well below 1.</p>
+    <canvas id="cLog" role="img" aria-label="Exact logarithmic loss compared with the linear approximation"></canvas>
+  </div>
+
+  <details>
+    <summary>Notation and derivation</summary>
+    <p>After one round trip starting at P in the cavity (Eq. 1.21–1.23) the flux is F = F₀ (1 − L<sub>i</sub>)² R₁ R₂ G², with single-pass gain G = e<sup>σLΔN</sup>. Laser action needs F ≥ F₀, so the condition is (1 − L<sub>i</sub>)² R₁R₂ e<sup>2σLΔN</sup> ≥ 1.</p>
+    <p>Taking the logarithm, with γ₁,₂ = −ln R₁,₂ and γ<sub>i</sub> = −ln(1 − L<sub>i</sub>), gives 2σLΔN ≥ γ₁ + γ₂ + 2γ<sub>i</sub> ≡ γ, i.e. ΔN ≥ ΔN<sub>c</sub> = γ/(2σL). Independent loss factors multiply, so their logarithmic losses add.</p>
+    <p>For R = 1 − T with T ≪ 1 and L<sub>i</sub> ≪ 1, ln(1 − x) ≈ −x, so γ ≈ T₁ + T₂ + 2L<sub>i</sub> (Eq. 1.28).</p>
+    <p>This model has no gain saturation: above threshold the flux grows without bound. Saturation is what fixes the steady-state output power and is treated in the rate-equation applet.</p>
+  </details>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var S = {R1:99.9, R2:95, Li:0.5, L:10, logSig:-18.553, logN:16.15};
+
+  var PRESETS = [
+    {name:'Nd:YAG rod',        R1:99.9, R2:95,   Li:0.5, L:10, logSig:Math.log10(2.8e-19), mult:1.3},
+    {name:'Low-loss cavity',   R1:99.99,R2:99.5, Li:0.05,L:10, logSig:Math.log10(2.8e-19), mult:1.3},
+    {name:'Strong output coupling', R1:99.9, R2:50, Li:0.5, L:10, logSig:Math.log10(2.8e-19), mult:1.3},
+    {name:'Lossy cavity',      R1:90,   R2:80,   Li:15,  L:10, logSig:Math.log10(2.8e-19), mult:1.3}
+  ];
+
+  function derive(){
+    var R1=S.R1/100, R2=S.R2/100, Li=S.Li/100, L=S.L, sig=Math.pow(10,S.logSig), dN=Math.pow(10,S.logN);
+    var g1=-Math.log(R1), g2=-Math.log(R2), gi=-Math.log(1-Li);
+    var gam=g1+g2+2*gi;
+    var gamApprox=(1-R1)+(1-R2)+2*Li;
+    var dNc=gam/(2*sig*L), dNcApprox=gamApprox/(2*sig*L);
+    var sL=sig*L*dN;
+    var net=2*sL-gam;
+    return {R1:R1,R2:R2,Li:Li,L:L,sig:sig,dN:dN,g1:g1,g2:g2,gi:gi,gam:gam,gamApprox:gamApprox,
+            dNc:dNc,dNcApprox:dNcApprox,sL:sL,net:net,T1:1-R1,T2:1-R2};
+  }
+  function sci(x,d){ if(!isFinite(x)) return '—'; var s=x.toExponential(d==null?2:d).replace('e+','e'); var m=s.split('e'); return m[0]+' × 10<sup>'+m[1]+'</sup>'; }
+  function sciTxt(x,d){ var s=x.toExponential(d==null?2:d).split('e'); var e=parseInt(s[1],10); var sup='⁰¹²³⁴⁵⁶⁷⁸⁹', t=''; String(Math.abs(e)).split('').forEach(function(c){t+=sup[+c];}); return s[0]+' × 10'+(e<0?'⁻':'')+t; }
+  function pct(x,d){ return (x*100).toFixed(d==null?2:d)+' %'; }
+
+  function css(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function prep(cv, aspect){
+    var dpr=window.devicePixelRatio||1, w=cv.clientWidth||600, h=Math.round(w*aspect);
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); cv.style.height=h+'px';
+    var c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+    return {c:c,w:w,h:h};
+  }
+  function font(c,px,wt){ c.font=(wt||400)+' '+px+'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'; }
+  function niceStep(span,target){
+    var raw=span/target, p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p;
+    return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;
+  }
+  function frame(c,box,xr,yr,o){
+    o=o||{};
+    var col=css('--muted'), grid=css('--grid'), fg=css('--fg');
+    c.save();
+    c.strokeStyle=grid; c.fillStyle=col; font(c,11); c.lineWidth=1;
+    var ys=o.yticks || (function(){var s=niceStep(yr[1]-yr[0],5),a=[],v=Math.ceil(yr[0]/s)*s;for(;v<=yr[1]+1e-9;v+=s)a.push(v);return a;})();
+    ys.forEach(function(v){
+      var y=box.y+box.h*(1-(v-yr[0])/(yr[1]-yr[0]));
+      c.beginPath(); c.moveTo(box.x,y); c.lineTo(box.x+box.w,y); c.stroke();
+      c.textAlign='right'; c.textBaseline='middle';
+      c.fillText(o.yfmt?o.yfmt(v):String(+v.toPrecision(3)),box.x-6,y);
+    });
+    if(xr){
+      var xs=o.xticks || (function(){var s=niceStep(xr[1]-xr[0],6),a=[],v=Math.ceil(xr[0]/s)*s;for(;v<=xr[1]+1e-9;v+=s)a.push(v);return a;})();
+      xs.forEach(function(v){
+        var x=box.x+box.w*(v-xr[0])/(xr[1]-xr[0]);
+        c.beginPath(); c.moveTo(x,box.y); c.lineTo(x,box.y+box.h); c.stroke();
+        c.textAlign='center'; c.textBaseline='top';
+        c.fillText(o.xfmt?o.xfmt(v):String(+v.toPrecision(3)),x,box.y+box.h+5);
+      });
+    }
+    c.strokeStyle=css('--border'); c.strokeRect(box.x,box.y,box.w,box.h);
+    if(o.xlabel){ c.fillStyle=col; c.textAlign='center'; c.textBaseline='bottom'; c.fillText(o.xlabel,box.x+box.w/2,box.y+box.h+box.bottomPad-2); }
+    if(o.ylabel){ c.save(); c.translate(12,box.y+box.h/2); c.rotate(-Math.PI/2); c.fillStyle=col; c.textAlign='center'; c.textBaseline='top'; c.fillText(o.ylabel,0,0); c.restore(); }
+    c.restore();
+  }
+  function mapper(box,xr,yr){
+    return {
+      x:function(v){ return box.x+box.w*(v-xr[0])/(xr[1]-xr[0]); },
+      y:function(v){ return box.y+box.h*(1-(v-yr[0])/(yr[1]-yr[0])); }
+    };
+  }
+  function fac(x){ return '×'+(x>=100||x<0.01?x.toExponential(1).replace('e+','e'):x.toFixed(x>=10?1:3)); }
+
+  function drawWater(d){
+    var p=prep($('cWater'), 0.44), c=p.c, w=p.w, h=p.h;
+    var steps=[
+      {t:'1 − L\u1d62',   v:-d.gi,  f:1-d.Li, kind:'loss'},
+      {t:'gain G',        v:d.sL,   f:Math.exp(d.sL), kind:'gain'},
+      {t:'R\u2082',       v:-d.g2,  f:d.R2, kind:'loss'},
+      {t:'gain G',        v:d.sL,   f:Math.exp(d.sL), kind:'gain'},
+      {t:'1 − L\u1d62',   v:-d.gi,  f:1-d.Li, kind:'loss'},
+      {t:'R\u2081',       v:-d.g1,  f:d.R1, kind:'loss'}
+    ];
+    var cum=[0], run=0; steps.forEach(function(s){ run+=s.v; cum.push(run); });
+    var lo=Math.min.apply(null,cum.concat([0,d.net])), hi=Math.max.apply(null,cum.concat([0,d.net]));
+    var pad=Math.max(0.05*(hi-lo),0.02); lo-=pad*2.2; hi+=pad*1.6;
+    var box={x:56,y:12,w:w-70,h:h-64,bottomPad:60};
+    var xr=[0,steps.length+1];
+    frame(c,box,null,[lo,hi],{ylabel:'ln(F / F₀)',yfmt:function(v){return (+v.toFixed(3)).toString();}});
+    var m=mapper(box,xr,[lo,hi]);
+    var slot=box.w/(steps.length+1), bw=slot*0.62;
+    function bar(i,y0,y1,color,label,sub,valTxt){
+      var x=box.x+slot*(i+0.5)-bw/2, ya=m.y(Math.max(y0,y1)), yb=m.y(Math.min(y0,y1));
+      c.fillStyle=color; c.globalAlpha=0.85; c.fillRect(x,ya,bw,Math.max(yb-ya,1.5)); c.globalAlpha=1;
+      c.fillStyle=css('--fg'); font(c,11.5,600); c.textAlign='center'; c.textBaseline='top';
+      c.fillText(label,x+bw/2,box.y+box.h+6);
+      font(c,10.5); c.fillStyle=css('--muted'); c.fillText(sub,x+bw/2,box.y+box.h+21);
+      var top=Math.max(y0,y1)>=0 || y1>y0;
+      font(c,10.5,600); c.fillStyle=css('--fg'); c.textBaseline=(y1>=y0)?'bottom':'top';
+      c.fillText(valTxt,x+bw/2,(y1>=y0)?ya-3:yb+3);
+    }
+    var zeroY=m.y(0);
+    c.save(); c.strokeStyle=css('--fg'); c.globalAlpha=0.55; c.setLineDash([5,4]); c.beginPath(); c.moveTo(box.x,zeroY); c.lineTo(box.x+box.w,zeroY); c.stroke(); c.restore();
+        steps.forEach(function(s,i){
+      bar(i,cum[i],cum[i+1],s.kind==='gain'?css('--gain'):css('--loss'),s.t,fac(s.f),(s.v>=0?'+':'−')+Math.abs(s.v).toFixed(3));
+      var x1=box.x+slot*(i+0.5)+bw/2, x2=box.x+slot*(i+1.5)-bw/2;
+      c.strokeStyle=css('--muted'); c.lineWidth=1; c.beginPath(); c.moveTo(x1,m.y(cum[i+1])); c.lineTo(x2,m.y(cum[i+1])); c.stroke();
+    });
+    var ni=steps.length+0.5;
+    var netCol=d.net>=0?css('--gain'):css('--warn');
+    var x=box.x+slot*steps.length+(slot-bw)/2;
+    var ya=m.y(Math.max(0,d.net)), yb=m.y(Math.min(0,d.net));
+    c.fillStyle=css('--net'); c.globalAlpha=0.9; c.fillRect(x,ya,bw,Math.max(yb-ya,2)); c.globalAlpha=1;
+    c.fillStyle=css('--fg'); font(c,11.5,600); c.textAlign='center'; c.textBaseline='top'; c.fillText('net',x+bw/2,box.y+box.h+6);
+    font(c,10.5); c.fillStyle=css('--muted'); c.fillText(fac(Math.exp(d.net)),x+bw/2,box.y+box.h+21);
+    font(c,10.5,600); c.fillStyle=netCol; c.textBaseline=d.net>=0?'bottom':'top'; c.fillText((d.net>=0?'+':'−')+Math.abs(d.net).toFixed(3),x+bw/2,d.net>=0?ya-3:yb+3);
+        c.strokeStyle=css('--muted'); c.setLineDash([2,3]); c.beginPath(); c.moveTo(box.x+slot*(steps.length-0.5)+bw/2,m.y(cum[steps.length])); c.lineTo(x,m.y(cum[steps.length])); c.stroke(); c.setLineDash([]);
+    font(c,10.5); c.fillStyle=css('--muted'); c.textAlign='center'; c.textBaseline='top';
+    c.fillText('γ = '+d.gam.toFixed(4)+',  2σLΔN = '+(2*d.sL).toFixed(4),box.x+box.w/2,box.y+box.h+38);
+  }
+
+  function drawFlux(d){
+    var p=prep($('cFlux'), 0.72), c=p.c, w=p.w, h=p.h;
+    var N=60, dec=d.net/Math.LN10, yMax=Math.max(1,Math.min(10,Math.ceil(Math.abs(dec)*N)));
+    var box={x:46,y:10,w:w-58,h:h-50,bottomPad:38};
+    var xr=[0,N], yr=[-yMax,yMax];
+    frame(c,box,xr,yr,{xlabel:'round trips n',ylabel:'F / F₀',yfmt:function(v){return '10'+(v<0?'⁻':'')+String(Math.abs(Math.round(v))).replace(/\d/g,function(k){return '⁰¹²³⁴⁵⁶⁷⁸⁹'[k];});},
+      yticks:(function(){var s=Math.max(1,Math.ceil(yMax/4)),a=[];for(var v=-Math.floor(yMax/s)*s;v<=yMax;v+=s)a.push(v);return a;})()});
+    var m=mapper(box,xr,yr);
+    c.save(); c.beginPath(); c.rect(box.x,box.y,box.w,box.h); c.clip();
+    c.strokeStyle=css('--fg'); c.globalAlpha=0.5; c.setLineDash([5,4]); c.beginPath(); c.moveTo(box.x,m.y(0)); c.lineTo(box.x+box.w,m.y(0)); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+    var col=Math.abs(d.net)<1e-4?css('--fg'):(d.net>0?css('--gain'):css('--loss'));
+    c.strokeStyle=col; c.lineWidth=2.5; c.beginPath(); c.moveTo(m.x(0),m.y(0)); c.lineTo(m.x(N),m.y(dec*N)); c.stroke();
+    c.restore();
+    font(c,11); c.fillStyle=css('--muted'); c.textAlign='left'; c.textBaseline='bottom';
+    c.fillText('F = F₀',box.x+6,m.y(0)-3);
+    var msg;
+    if(Math.abs(d.net)<1e-4) msg='flux stays constant';
+    else { var n2=Math.LN2/Math.abs(d.net); msg=(d.net>0?'doubles':'halves')+' every '+(n2<10?n2.toFixed(1):Math.round(n2))+' round trips'; }
+    c.textAlign='right'; c.textBaseline='top'; c.fillStyle=col; font(c,11.5,600);
+    c.fillText(msg,box.x+box.w-8,box.y+7);
+  }
+
+  function drawThr(d){
+    var p=prep($('cThr'), 0.72), c=p.c, w=p.w, h=p.h;
+    var xmax=Math.max(2.5*d.dNc,1.15*d.dN);
+    var ymax=2*d.sig*d.L*xmax-d.gam, ymin=-d.gam;
+    var padY=0.12*(ymax-ymin);
+    var xr=[0,xmax], yr=[ymin-padY,ymax+padY];
+    var box={x:52,y:10,w:w-64,h:h-50,bottomPad:38};
+    frame(c,box,xr,yr,{xlabel:'ΔN (cm⁻³)',ylabel:'ln(F / F₀) per round trip',
+      xfmt:function(v){ if(v===0) return '0'; var e=Math.floor(Math.log10(Math.abs(v))); return (v/Math.pow(10,e)).toFixed(1)+'e'+e; },
+      yfmt:function(v){return (+v.toFixed(3)).toString();}});
+    var m=mapper(box,xr,yr);
+    c.save(); c.beginPath(); c.rect(box.x,box.y,box.w,box.h); c.clip();
+    c.strokeStyle=css('--fg'); c.globalAlpha=0.5; c.setLineDash([5,4]); c.beginPath(); c.moveTo(box.x,m.y(0)); c.lineTo(box.x+box.w,m.y(0)); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+    c.strokeStyle=css('--net'); c.lineWidth=2.5; c.beginPath(); c.moveTo(m.x(0),m.y(-d.gam)); c.lineTo(m.x(xmax),m.y(ymax)); c.stroke();
+    c.restore();
+    c.fillStyle=css('--loss'); c.beginPath(); c.arc(m.x(0),m.y(-d.gam),4,0,7); c.fill();
+    font(c,11); c.fillStyle=css('--loss'); c.textAlign='left'; c.textBaseline='top'; c.fillText('−γ',m.x(0)+7,m.y(-d.gam)+3);
+    c.fillStyle=css('--gain'); c.beginPath(); c.arc(m.x(d.dNc),m.y(0),5,0,7); c.fill();
+    c.fillStyle=css('--fg'); font(c,11,600); c.textAlign='center'; c.textBaseline='bottom'; c.fillText('ΔN_c',m.x(d.dNc),m.y(0)-8);
+    var col=d.net>=0?css('--gain'):css('--warn');
+    c.fillStyle=col; c.strokeStyle=css('--bg'); c.lineWidth=2; c.beginPath(); c.arc(m.x(d.dN),m.y(d.net),6,0,7); c.fill(); c.stroke();
+    font(c,11,600); c.textAlign=d.dN>xmax*0.7?'right':'left'; c.textBaseline='bottom';
+    c.fillText('your ΔN',m.x(d.dN)+(d.dN>xmax*0.7?-9:9),m.y(d.net)-6);
+  }
+
+  function drawLog(d){
+    var p=prep($('cLog'), 0.4), c=p.c, w=p.w, h=p.h;
+    var xmax=0.6, xr=[0,xmax], yr=[0,-Math.log(1-xmax)*1.06];
+    var box={x:46,y:10,w:w-58,h:h-50,bottomPad:38};
+    frame(c,box,xr,yr,{xlabel:'x = T₁, T₂ or L\u1d62',ylabel:'γ',yfmt:function(v){return (+v.toFixed(2)).toString();}});
+    var m=mapper(box,xr,yr);
+    c.save(); c.beginPath(); c.rect(box.x,box.y,box.w,box.h); c.clip();
+    c.fillStyle=css('--loss'); c.globalAlpha=0.12; c.beginPath(); c.moveTo(m.x(0),m.y(0));
+    for(var i=0;i<=120;i++){ var x=xmax*i/120; c.lineTo(m.x(x),m.y(-Math.log(1-x))); }
+    for(var j=120;j>=0;j--){ var x2=xmax*j/120; c.lineTo(m.x(x2),m.y(x2)); }
+    c.closePath(); c.fill(); c.globalAlpha=1;
+    c.strokeStyle=css('--muted'); c.lineWidth=2; c.setLineDash([6,4]); c.beginPath(); c.moveTo(m.x(0),m.y(0)); c.lineTo(m.x(xmax),m.y(xmax)); c.stroke(); c.setLineDash([]);
+    c.strokeStyle=css('--net'); c.lineWidth=2.5; c.beginPath();
+    for(var k=0;k<=160;k++){ var xx=xmax*k/160; var yy=-Math.log(1-xx); if(k===0) c.moveTo(m.x(xx),m.y(yy)); else c.lineTo(m.x(xx),m.y(yy)); }
+    c.stroke(); c.restore();
+    font(c,11.5,600); c.textAlign='left'; c.textBaseline='bottom';
+    c.fillStyle=css('--net'); c.fillText('exact  γ = −ln(1 − x)',m.x(0.02),m.y(0.53));
+    c.fillStyle=css('--muted'); c.textBaseline='top'; c.fillText('approximation  γ ≈ x',m.x(0.30),m.y(0.245));
+    var pts=[{v:d.T1,t:'T₁'},{v:d.T2,t:'T₂'},{v:d.Li,t:'L\u1d62'}];
+    pts.forEach(function(q,i){
+      if(q.v<=0||q.v>=xmax) return;
+      c.strokeStyle=css('--loss'); c.lineWidth=1; c.setLineDash([2,3]); c.beginPath(); c.moveTo(m.x(q.v),m.y(0)); c.lineTo(m.x(q.v),m.y(-Math.log(1-q.v))); c.stroke(); c.setLineDash([]);
+      c.fillStyle=css('--loss'); c.beginPath(); c.arc(m.x(q.v),m.y(-Math.log(1-q.v)),4.5,0,7); c.fill();
+      c.fillStyle=css('--fg'); font(c,11,600); c.textAlign='center'; c.textBaseline='bottom'; c.textAlign='left'; c.fillText(q.t,m.x(q.v)+5,m.y(0)-(4+i*13));
+    });
+    if(d.T1>=xmax||d.T2>=xmax||d.Li>=xmax){
+      font(c,10.5); c.fillStyle=css('--warn'); c.textAlign='right'; c.textBaseline='top'; c.fillText('some values lie beyond x = 0.6',box.x+box.w-6,box.y+6);
+    }
+  }
+
+  function reads(d){
+    var items=[
+      ['γ₁ = −ln R₁', d.g1.toFixed(4), 'T₁ = '+pct(d.T1)],
+      ['γ₂ = −ln R₂', d.g2.toFixed(4), 'T₂ = '+pct(d.T2)],
+      ['γ\u1d62 = −ln(1 − L\u1d62)', d.gi.toFixed(4), 'L\u1d62 = '+pct(d.Li)],
+      ['γ = γ₁ + γ₂ + 2γ\u1d62', d.gam.toFixed(4), 'approx. T₁+T₂+2L\u1d62 = '+d.gamApprox.toFixed(4)],
+      ['ΔN_c (exact)', sciTxt(d.dNc,3), 'cm⁻³; approximation gives '+sciTxt(d.dNcApprox,3)],
+      ['approximation error', ((d.gamApprox/d.gam-1)*100).toFixed(1)+' %', 'in γ, and so in ΔN_c'],
+      ['ΔN / ΔN_c', (d.dN/d.dNc).toFixed(2), 'ΔN = '+sciTxt(d.dN,2)+' cm⁻³'],
+      ['single-pass gain G', d.sL>0? (Math.exp(d.sL)).toFixed(4):'1.0000', 'round-trip net: '+fac(Math.exp(d.net)).slice(1)]
+    ];
+    $('reads').innerHTML=items.map(function(a){return '<div class="read"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+'</div><div class="s">'+a[2]+'</div></div>';}).join('');
+  }
+
+  function status(d){
+    var r=d.dN/d.dNc, st=$('status'), pill=$('pill'), tx=$('stxt');
+    var tol=0.005;
+    if(Math.abs(r-1)<tol){ st.style.setProperty('--sc',css('--net')); pill.textContent='At threshold'; tx.textContent='gain exactly balances the round-trip loss'; }
+    else if(r<1){ st.style.setProperty('--sc',css('--warn')); pill.textContent='Below threshold'; tx.textContent='net round-trip gain '+d.net.toFixed(3)+' (flux decays); pump harder or cut losses'; }
+    else { st.style.setProperty('--sc',css('--gain')); pill.textContent='Above threshold'; tx.textContent='net round-trip gain +'+d.net.toFixed(3)+' (flux grows ×'+Math.exp(d.net).toFixed(3)+' per round trip)'; }
+  }
+
+  function labels(d){
+    $('vR1').textContent=S.R1.toFixed(2)+' %';
+    $('hR1').innerHTML='T₁ = '+pct(d.T1)+', γ₁ = '+d.g1.toFixed(4);
+    $('vR2').textContent=S.R2.toFixed(2)+' %';
+    $('hR2').innerHTML='T₂ = '+pct(d.T2)+', γ₂ = '+d.g2.toFixed(4);
+    $('vLi').textContent=S.Li.toFixed(2)+' %';
+    $('hLi').innerHTML='γ\u1d62 = '+d.gi.toFixed(4)+' (round trip crosses the loss twice)';
+    $('vL').textContent=S.L.toFixed(1)+' cm';
+    $('vSig').textContent=sciTxt(d.sig,2)+' cm²';
+    $('vN').textContent=sciTxt(d.dN,2)+' cm⁻³';
+    $('hN').textContent='ΔN / ΔN_c = '+(d.dN/d.dNc).toFixed(2);
+  }
+
+  function render(){
+    var d=derive();
+    labels(d); reads(d); status(d);
+    drawWater(d); drawFlux(d); drawThr(d); drawLog(d);
+  }
+
+  function bind(id,key){
+    $(id).addEventListener('input',function(e){ S[key]=parseFloat(e.target.value); render(); });
+  }
+  bind('sR1','R1'); bind('sR2','R2'); bind('sLi','Li'); bind('sL','L'); bind('sSig','logSig'); bind('sN','logN');
+
+  function sync(){
+    $('sR1').value=S.R1; $('sR2').value=S.R2; $('sLi').value=S.Li; $('sL').value=S.L; $('sSig').value=S.logSig; $('sN').value=S.logN;
+  }
+  var pr=$('presets');
+  PRESETS.forEach(function(p){
+    var b=document.createElement('button'); b.className='btn'; b.textContent=p.name;
+    b.addEventListener('click',function(){
+      S.R1=p.R1; S.R2=p.R2; S.Li=p.Li; S.L=p.L; S.logSig=p.logSig;
+      var d=derive(); S.logN=Math.log10(d.dNc*p.mult);
+      sync(); render();
+    });
+    pr.appendChild(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-mult]'),function(b){
+    b.addEventListener('click',function(){
+      var d=derive(); var v=Math.log10(d.dNc*parseFloat(b.getAttribute('data-mult')));
+      S.logN=Math.min(19,Math.max(14,v)); sync(); render();
+    });
+  });
+
+  var first=PRESETS[0]; S.R1=first.R1; S.R2=first.R2; S.Li=first.Li; S.L=first.L; S.logSig=first.logSig;
+  S.logN=Math.log10(derive().dNc*first.mult); sync(); render();
+
+  var rt; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(render,80); });
+  if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

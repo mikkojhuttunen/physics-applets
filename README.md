@@ -16,7 +16,9 @@ Each course has its own folder with an `index.html` listing its applets.
   Gaussian beam / ABCD-matrix optical cavity stability explorer, and a
   3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
   applet (linear vs ring cavity), and a mode-competition applet (homogeneous vs
-  inhomogeneous gain, intracavity etalon, cavity length).
+  inhomogeneous gain, intracavity etalon, cavity length), a laser-condition and
+  logarithmic-losses applet (threshold inversion, round-trip gain waterfall), and
+  a coherence explorer (Michelson and Young, temporal vs spatial coherence).
 - `finnmath-app/`
 
 When adding an applet, link it from the course `index.html`, add
