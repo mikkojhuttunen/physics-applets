@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reflection · Refraction · TIR · FTIR Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef1f3;
+    --panel: #ffffff;
+    --panel-border: #d7dde2;
+    --ink: #1b232b;
+    --ink-muted: #5a6773;
+    --bench: #20262d;
+    --bench-2: #2a323a;
+    --glass1: rgba(120, 170, 220, 0.28);
+    --glass2: rgba(230, 210, 140, 0.22);
+    --glass3: rgba(120, 200, 160, 0.24);
+    --incident: #e08a2b;
+    --reflected: #46b8c9;
+    --transmitted: #4caf7d;
+    --evan: #e08a2b;
+    --accent: #2f7d95;
+    --readout-bg: #14181c;
+    --readout-ink: #d8f3df;
+    --readout-dim: #6f8f78;
+    --danger: #c1543a;
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171a;
+      --panel: #1c2126;
+      --panel-border: #333c43;
+      --ink: #e7ecef;
+      --ink-muted: #9aa7b0;
+      --bench: #0e1114;
+      --bench-2: #171b1f;
+      --glass1: rgba(120, 170, 220, 0.22);
+      --glass2: rgba(230, 210, 140, 0.16);
+      --glass3: rgba(120, 200, 160, 0.18);
+      --accent: #5fb8d6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171a;
+    --panel: #1c2126;
+    --panel-border: #333c43;
+    --ink: #e7ecef;
+    --ink-muted: #9aa7b0;
+    --bench: #0e1114;
+    --bench-2: #171b1f;
+    --glass1: rgba(120, 170, 220, 0.22);
+    --glass2: rgba(230, 210, 140, 0.16);
+    --glass3: rgba(120, 200, 160, 0.18);
+    --accent: #5fb8d6;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  html {
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 18px 16px 40px;
+  }
+  header h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 4px 0 4px;
+  }
+  header p {
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin: 0 0 18px;
+    max-width: 68ch;
+  }
+  .bench {
+    background: transparent;
+    border-radius: 14px;
+    padding: 0;
+  }
+  svg#scene {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 10px 4px 2px;
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .swatch {
+    width: 16px; height: 3px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-top: 14px;
+  }
+  .panel h2 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .preset-btn {
+    border: 1px solid var(--panel-border);
+    background: transparent;
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .preset-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .preset-btn:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .row label {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    min-width: 108px;
+  }
+  .row .val {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.85rem;
+    min-width: 64px;
+    text-align: right;
+  }
+  input[type="range"] {
+    flex: 1;
+    min-width: 140px;
+    accent-color: var(--accent);
+  }
+  input[type="number"] {
+    width: 68px;
+    padding: 6px 7px;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.85rem;
+  }
+  .n-inputs {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .n-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .n-field label {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 14px;
+  }
+  .toggle-row input { accent-color: var(--accent); width: 18px; height: 18px; }
+  .toggle-row label { font-size: 0.88rem; }
+
+  .segmented {
+    display: inline-flex;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .segmented button {
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .segmented button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .gap-controls { display: none; }
+  .gap-controls.show { display: block; }
+
+  .readout {
+    background: var(--readout-bg);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    color: var(--readout-ink);
+  }
+  .readout h2 {
+    color: #8fb89c;
+    margin: 0 0 10px;
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px 18px;
+  }
+  @media (min-width: 620px) {
+    .grid2 { grid-template-columns: 1fr 1fr; }
+  }
+  .readout .line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.86rem;
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.06);
+  }
+  .readout .line .k { color: var(--readout-dim); }
+  .readout .line .v { color: var(--readout-ink); font-weight: 500; }
+  .readout .flag {
+    color: #f0c069;
+  }
+  .readout .big {
+    font-size: 1.15rem;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .note {
+    color: var(--ink-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+  .note b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Reflection, refraction &amp; frustrated total internal reflection</h1>
+    <p>Drag the incidence angle past the critical angle at a glass&nbsp;→&nbsp;air interface and the ray reflects entirely — but bring a second glass block close enough and light tunnels across the gap as an evanescent wave. That's frustrated total internal reflection (FTIR).</p>
+  </header>
+
+  <div class="bench">
+    <svg id="scene" viewBox="0 0 700 440" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--incident)"></i>incident</span>
+      <span><i class="swatch" style="background:var(--reflected)"></i>reflected</span>
+      <span><i class="swatch" style="background:var(--transmitted)"></i>transmitted / refracted</span>
+      <span><i class="swatch" style="background:#8a97a1"></i>normal</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Configuration</h2>
+    <div class="presets">
+      <button class="preset-btn" data-preset="air-glass">Air → Glass</button>
+      <button class="preset-btn" data-preset="glass-air">Glass → Air</button>
+      <button class="preset-btn" data-preset="ftir">Glass → Air → Glass (FTIR)</button>
+    </div>
+
+    <div class="n-inputs">
+      <div class="n-field"><label for="n1">n₁ (incident)</label><input type="number" id="n1" step="0.01" min="1" max="3"></div>
+      <div class="n-field"><label for="n2">n₂ (gap / 2nd medium)</label><input type="number" id="n2" step="0.01" min="1" max="3"></div>
+      <div class="n-field" id="n3field"><label for="n3">n₃ (far medium)</label><input type="number" id="n3" step="0.01" min="1" max="3"></div>
+      <div class="n-field"><label for="wl">wavelength (nm)</label><input type="number" id="wl" step="1" min="300" max="1500"></div>
+    </div>
+
+    <div class="gap-controls" id="gapControls">
+      <div class="row">
+        <label for="gap">Gap thickness</label>
+        <input type="range" id="gap" min="0" max="1000" step="5">
+        <span class="val" id="gapVal">– nm</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Polarization</label>
+      <div class="segmented" id="polSeg">
+        <button data-pol="s" class="active">s (TE)</button>
+        <button data-pol="p">p (TM)</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <label for="theta">Incidence angle θ₁</label>
+      <input type="range" id="theta" min="0" max="89.5" step="0.1">
+      <span class="val" id="thetaVal">– °</span>
+    </div>
+  </div>
+
+  <div class="readout panel" style="border:none;">
+    <h2>Bench readout</h2>
+    <div class="grid2" id="readoutGrid"></div>
+    <div class="note" id="statusNote"></div>
+  </div>
+
+  <p class="note">Amplitudes r, t follow the Fresnel/Airy characteristic-matrix formulation, so the gap case already accounts for multiple internal reflections inside the layer, not just a single pass. R and T are the corresponding reflected and transmitted power fractions; R + T = 1 to within rounding.</p>
+</div>
+
+<script>
+(function(){
+  // ---------- complex arithmetic ----------
+  const C = (re, im=0) => ({re, im});
+  const cadd = (a,b) => C(a.re+b.re, a.im+b.im);
+  const csub = (a,b) => C(a.re-b.re, a.im-b.im);
+  const cmul = (a,b) => C(a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re);
+  const cdiv = (a,b) => { const d = b.re*b.re + b.im*b.im; return C((a.re*b.re + a.im*b.im)/d, (a.im*b.re - a.re*b.im)/d); };
+  const cabs2 = a => a.re*a.re + a.im*a.im;
+  const cabs = a => Math.sqrt(cabs2(a));
+  const cphaseDeg = a => Math.atan2(a.im, a.re) * 180/Math.PI;
+  const ccos = a => C(Math.cos(a.re)*Math.cosh(a.im), -Math.sin(a.re)*Math.sinh(a.im));
+  const csin = a => C(Math.sin(a.re)*Math.cosh(a.im), Math.cos(a.re)*Math.sinh(a.im));
+
+  function cosThetaFor(n, sinInv){
+    const s = sinInv / n;
+    const val = 1 - s*s;
+    if (val >= 0) return { cosC: C(Math.sqrt(val), 0), sinTheta: s, real: true };
+    return { cosC: C(0, Math.sqrt(-val)), sinTheta: s, real: false };
+  }
+
+  function layerMatrix(n, d_nm, cosC, lambda_nm, pol){
+    const k0 = 2*Math.PI / lambda_nm;
+    const delta = cmul(C(k0*n*d_nm, 0), cosC);
+    const cosD = ccos(delta), sinD = csin(delta);
+    const Y = (pol === 's') ? cmul(C(n,0), cosC) : cdiv(C(n,0), cosC);
+    const i = C(0,1);
+    const M12 = cdiv(cmul(i, sinD), Y);
+    const M21 = cmul(cmul(i, Y), sinD);
+    return [[cosD, M12],[M21, cosD]];
+  }
+
+  // ---------- state ----------
+  const state = {
+    n1: 1.50, n2: 1.00, n3: 1.50,
+    wl: 633,
+    gapEnabled: true,
+    gap: 200,
+    pol: 's',
+    theta1: 30
+  };
+
+  const els = {
+    n1: document.getElementById('n1'),
+    n2: document.getElementById('n2'),
+    n3: document.getElementById('n3'),
+    n3field: document.getElementById('n3field'),
+    wl: document.getElementById('wl'),
+    gapControls: document.getElementById('gapControls'),
+    gap: document.getElementById('gap'),
+    gapVal: document.getElementById('gapVal'),
+    theta: document.getElementById('theta'),
+    thetaVal: document.getElementById('thetaVal'),
+    polSeg: document.getElementById('polSeg'),
+    scene: document.getElementById('scene'),
+    readoutGrid: document.getElementById('readoutGrid'),
+    statusNote: document.getElementById('statusNote'),
+    presetBtns: document.querySelectorAll('.preset-btn')
+  };
+
+  function applyPreset(name){
+    if (name === 'air-glass'){ state.n1=1.00; state.n2=1.50; state.n3=1.50; state.gapEnabled=false; state.theta1=30; }
+    else if (name === 'glass-air'){ state.n1=1.50; state.n2=1.00; state.n3=1.00; state.gapEnabled=false; state.theta1=30; }
+    else if (name === 'ftir'){ state.n1=1.50; state.n2=1.00; state.n3=1.50; state.gapEnabled=true; state.gap=200; state.theta1=50; }
+    syncInputsFromState();
+    update();
+    els.presetBtns.forEach(b => b.classList.toggle('active', b.dataset.preset === name));
+  }
+
+  function syncInputsFromState(){
+    els.n1.value = state.n1;
+    els.n2.value = state.n2;
+    els.n3.value = state.n3;
+    els.wl.value = state.wl;
+    els.gapControls.classList.toggle('show', state.gapEnabled);
+    els.n3field.style.opacity = state.gapEnabled ? '1' : '0.45';
+    els.gap.value = state.gap;
+    els.theta.value = state.theta1;
+    els.thetaVal.textContent = state.theta1.toFixed(1) + '°';
+    els.gapVal.textContent = state.gap + ' nm';
+  }
+
+  // ---------- physics ----------
+  function compute(){
+    const theta1 = state.theta1 * Math.PI/180;
+    const n1 = state.n1, n2 = state.n2, n3 = state.n3;
+    const sinInv = n1 * Math.sin(theta1);
+    const cos1 = Math.cos(theta1);
+    const Y0 = (state.pol === 's') ? n1*cos1 : n1/cos1;
+
+    let M = [[C(1,0), C(0,0)], [C(0,0), C(1,0)]];
+    let gapInfo = null;
+    if (state.gapEnabled){
+      gapInfo = cosThetaFor(n2, sinInv);
+      M = layerMatrix(n2, state.gap, gapInfo.cosC, state.wl, state.pol);
+    }
+    const nSub = state.gapEnabled ? n3 : n2;
+    const subInfo = cosThetaFor(nSub, sinInv);
+    const Ysub = (state.pol === 's') ? cmul(C(nSub,0), subInfo.cosC) : cdiv(C(nSub,0), subInfo.cosC);
+
+    const vec0 = C(1,0), vec1 = Ysub;
+    const B = cadd(cmul(M[0][0], vec0), cmul(M[0][1], vec1));
+    const Cc = cadd(cmul(M[1][0], vec0), cmul(M[1][1], vec1));
+
+    const Y0c = C(Y0,0);
+    const r = cdiv(csub(cmul(Y0c,B), Cc), cadd(cmul(Y0c,B), Cc));
+    const t = cdiv(C(2*Y0,0), cadd(cmul(Y0c,B), Cc));
+
+    const R = cabs2(r);
+    const T = (Ysub.re / Y0) * cabs2(t);
+
+    const thetaC = (n1 > n2) ? Math.asin(Math.min(1, n2/n1)) * 180/Math.PI : null;
+    const brewster = Math.atan(n2/n1) * 180/Math.PI;
+
+    let penetration = null;
+    if (gapInfo && !gapInfo.real){
+      const k0 = 2*Math.PI/state.wl;
+      const q = gapInfo.cosC.im;
+      const kappa = k0 * n2 * q;
+      penetration = 1/kappa;
+    } else if (!state.gapEnabled && !subInfo.real){
+      const k0 = 2*Math.PI/state.wl;
+      const q = subInfo.cosC.im;
+      const kappa = k0 * n2 * q;
+      penetration = 1/kappa;
+    }
+
+    return { theta1deg: state.theta1, cos1, R, T, r, t, gapInfo, subInfo, thetaC, brewster, penetration, Y0, Ysub };
+  }
+
+  // ---------- rendering: diagram ----------
+  function arcPath(ox, oy, radius, angleDeg, sx, sy){
+    const steps = 16, pts = [];
+    for (let i=0;i<=steps;i++){
+      const a = (angleDeg*i/steps) * Math.PI/180;
+      pts.push(`${(ox+sx*radius*Math.sin(a)).toFixed(1)},${(oy+sy*radius*Math.cos(a)).toFixed(1)}`);
+    }
+    return 'M' + pts.join(' L');
+  }
+
+  function svgEl(tag, attrs){
+    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function render(){
+    const p = compute();
+    const scene = els.scene;
+    scene.innerHTML = '';
+    const W = 700, H = 440;
+    const cx = 350;
+    const y1 = 170;
+    const gapPxHeight = 56;
+    const y2 = state.gapEnabled ? y1 + gapPxHeight : y1;
+
+    // media bands — fill the full canvas edge-to-edge
+    const topBandY = 0;
+    const bottomBandEnd = H;
+
+    scene.appendChild(svgEl('rect', {x:0,y:topBandY,width:W,height:y1-topBandY,fill:'var(--glass1)'}));
+    if (state.gapEnabled){
+      scene.appendChild(svgEl('rect', {x:0,y:y1,width:W,height:gapPxHeight,fill:'var(--glass2)'}));
+      scene.appendChild(svgEl('rect', {x:0,y:y2,width:W,height:bottomBandEnd-y2,fill:'var(--glass3)'}));
+    } else {
+      scene.appendChild(svgEl('rect', {x:0,y:y1,width:W,height:bottomBandEnd-y1,fill:'var(--glass3)'}));
+    }
+
+    // labels for media
+    const labelStyle = {fill:'var(--ink)', 'font-size':'16px', 'font-family':'IBM Plex Mono, monospace'};
+    scene.appendChild(Object.assign(svgEl('text', {x:16,y:30,...labelStyle}), {textContent:`n₁ = ${state.n1.toFixed(2)}`}));
+    if (state.gapEnabled){
+      scene.appendChild(Object.assign(svgEl('text', {x:16,y:y1+gapPxHeight/2+5,...labelStyle}), {textContent:`n₂=${state.n2.toFixed(2)} (${state.gap} nm)`}));
+      scene.appendChild(Object.assign(svgEl('text', {x:16,y:y2+26,...labelStyle}), {textContent:`n₃ = ${state.n3.toFixed(2)}`}));
+    } else {
+      scene.appendChild(Object.assign(svgEl('text', {x:16,y:y1+26,...labelStyle}), {textContent:`n₂ = ${state.n2.toFixed(2)}`}));
+    }
+
+    // normal (dashed)
+    scene.appendChild(svgEl('line', {x1:cx,y1:6,x2:cx,y2:H-6,stroke:'#8a97a1','stroke-width':1,'stroke-dasharray':'4,4'}));
+
+    const theta1 = state.theta1 * Math.PI/180;
+    const L1 = 150, L2 = 150;
+
+    // incident ray
+    const ix = cx - L1*Math.sin(theta1), iy = y1 - L1*Math.cos(theta1);
+    scene.appendChild(svgEl('line', {x1:ix,y1:iy,x2:cx,y2:y1,stroke:'var(--incident)','stroke-width':2.5,'marker-end':'url(#arrowInc)'}));
+
+    // reflected ray
+    const rx = cx + L1*Math.sin(theta1), ry = y1 - L1*Math.cos(theta1);
+    const reflOpacity = 0.25 + 0.75*p.R;
+    scene.appendChild(svgEl('line', {x1:cx,y1:y1,x2:rx,y2:ry,stroke:'var(--reflected)','stroke-width':2.5,opacity:reflOpacity,'marker-end':'url(#arrowRefl)'}));
+
+    // arrow markers
+    const defs = svgEl('defs', {});
+    [['arrowInc','var(--incident)'],['arrowRefl','var(--reflected)'],['arrowTrans','var(--transmitted)']].forEach(([id,color])=>{
+      const marker = svgEl('marker', {id, markerWidth:8, markerHeight:8, refX:6, refY:3, orient:'auto'});
+      marker.appendChild(svgEl('path', {d:'M0,0 L7,3 L0,6 Z', fill:color}));
+      defs.appendChild(marker);
+    });
+    scene.appendChild(defs);
+
+    // angle arc + label for theta1 (incident side)
+    scene.appendChild(svgEl('path', {d:arcPath(cx,y1,38,state.theta1,-1,-1), fill:'none', stroke:'var(--incident)', 'stroke-width':1.3}));
+    const midInc = theta1/2;
+    scene.appendChild(Object.assign(svgEl('text', {x:cx-54*Math.sin(midInc)-10, y:y1-54*Math.cos(midInc), fill:'var(--incident)', 'font-size':'16px','font-weight':'500','font-family':'IBM Plex Mono, monospace'}), {textContent:`θ₁=${state.theta1.toFixed(1)}°`}));
+
+    let statusLines = [];
+
+    if (!state.gapEnabled){
+      if (p.subInfo.real){
+        const theta2 = Math.asin(p.subInfo.sinTheta);
+        const tx = cx + L2*Math.sin(theta2), ty = y1 + L2*Math.cos(theta2);
+        const transOpacity = 0.35 + 0.65*p.T;
+        scene.appendChild(svgEl('line', {x1:cx,y1:y1,x2:tx,y2:ty,stroke:'var(--transmitted)','stroke-width':2.5,opacity:transOpacity,'marker-end':'url(#arrowTrans)'}));
+        const theta2deg = theta2*180/Math.PI;
+        scene.appendChild(svgEl('path', {d:arcPath(cx,y1,38,theta2deg,1,1), fill:'none', stroke:'var(--transmitted)', 'stroke-width':1.3}));
+        const midT = theta2/2;
+        scene.appendChild(Object.assign(svgEl('text', {x:cx+50*Math.sin(midT)+6, y:y1+50*Math.cos(midT)+14, fill:'var(--transmitted)', 'font-size':'16px','font-weight':'500','font-family':'IBM Plex Mono, monospace'}), {textContent:`θ₂=${theta2deg.toFixed(1)}°`}));
+      } else {
+        // evanescent glow, no transmission
+        const glowH = 90;
+        const grad = svgEl('linearGradient', {id:'glow1', x1:'0', y1:'0', x2:'0', y2:'1'});
+        grad.appendChild(svgEl('stop', {offset:'0%','stop-color':'var(--evan)','stop-opacity':'0.45'}));
+        grad.appendChild(svgEl('stop', {offset:'100%','stop-color':'var(--evan)','stop-opacity':'0'}));
+        const defs2 = svgEl('defs', {}); defs2.appendChild(grad); scene.appendChild(defs2);
+        scene.appendChild(svgEl('rect', {x:cx-60,y:y1,width:120,height:glowH, fill:'url(#glow1)'}));
+        scene.appendChild(Object.assign(svgEl('text', {x:cx-70,y:y1+glowH+20, fill:'var(--evan)', 'font-size':'15px','font-family':'IBM Plex Mono, monospace'}), {textContent:'evanescent wave — decays, T = 0'}));
+        statusLines.push('Total internal reflection: all power returns as the reflected ray (R = 1, T = 0).');
+      }
+    } else {
+      if (p.gapInfo.real){
+        const thetaGap = Math.asin(p.gapInfo.sinTheta);
+        const midx = cx + gapPxHeight*Math.tan(thetaGap);
+        scene.appendChild(svgEl('line', {x1:cx,y1:y1,x2:midx,y2:y2,stroke:'var(--transmitted)','stroke-width':2, opacity:0.85}));
+        const theta3 = Math.asin(p.subInfo.sinTheta);
+        const tx = midx + L2*Math.sin(theta3), ty = y2 + L2*Math.cos(theta3);
+        const transOpacity = 0.35 + 0.65*p.T;
+        scene.appendChild(svgEl('line', {x1:midx,y1:y2,x2:tx,y2:ty,stroke:'var(--transmitted)','stroke-width':2.5, opacity:transOpacity,'marker-end':'url(#arrowTrans)'}));
+        statusLines.push('Below the critical angle the gap behaves as an ordinary thin film (partial reflections inside it are included in R and T, but not drawn).');
+      } else {
+        // evanescent within gap
+        const grad = svgEl('linearGradient', {id:'glow2', x1:'0', y1:'0', x2:'0', y2:'1'});
+        grad.appendChild(svgEl('stop', {offset:'0%','stop-color':'var(--evan)','stop-opacity':'0.5'}));
+        grad.appendChild(svgEl('stop', {offset:'100%','stop-color':'var(--evan)','stop-opacity':'0.02'}));
+        const defs2 = svgEl('defs', {}); defs2.appendChild(grad); scene.appendChild(defs2);
+        scene.appendChild(svgEl('rect', {x:cx-70,y:y1,width:140,height:gapPxHeight, fill:'url(#glow2)'}));
+
+        const theta3 = Math.asin(p.subInfo.sinTheta);
+        const tx = cx + L2*Math.sin(theta3), ty = y2 + L2*Math.cos(theta3);
+        const transOpacity = 0.15 + 0.85*p.T;
+        scene.appendChild(svgEl('line', {x1:cx,y1:y2,x2:tx,y2:ty,stroke:'var(--transmitted)','stroke-width':2.5, opacity:transOpacity,'marker-end':'url(#arrowTrans)'}));
+        scene.appendChild(Object.assign(svgEl('text', {x:cx-4,y:y2-10, fill:'var(--transmitted)', 'font-size':'17px','font-weight':'500','font-family':'IBM Plex Mono, monospace','text-anchor':'middle'}), {textContent:`T = ${(p.T*100).toFixed(2)}%`}));
+        statusLines.push(`Beyond the critical angle, the field in the gap decays exponentially (penetration depth ≈ ${p.penetration ? p.penetration.toFixed(0) : '–'} nm). A fraction T of the power still tunnels through to the third medium — frustrated TIR.`);
+      }
+    }
+
+    renderReadout(p, statusLines);
+  }
+
+  function fmtC(z){
+    return `${cabs(z).toFixed(3)} ∠ ${cphaseDeg(z).toFixed(1)}°`;
+  }
+
+  function renderReadout(p, statusLines){
+    const rows = [];
+    rows.push(['θ₁ (incidence)', p.theta1deg.toFixed(1) + '°']);
+    rows.push(['θ_c (critical angle)', p.thetaC !== null ? p.thetaC.toFixed(1) + '°' : 'n/a (n₁ ≤ n₂)']);
+    rows.push(['Brewster angle', p.brewster.toFixed(1) + '° (r_p = 0)']);
+
+    if (state.gapEnabled){
+      rows.push(['angle in gap', p.gapInfo.real ? (Math.asin(p.gapInfo.sinTheta)*180/Math.PI).toFixed(1)+'°' : 'evanescent']);
+      rows.push(['exit angle θ₃', (Math.asin(p.subInfo.sinTheta)*180/Math.PI).toFixed(1) + '°']);
+      if (p.penetration) rows.push(['penetration depth', p.penetration.toFixed(0) + ' nm']);
+    } else {
+      rows.push(['θ₂ (transmission)', p.subInfo.real ? (Math.asin(p.subInfo.sinTheta)*180/Math.PI).toFixed(1)+'°' : 'evanescent']);
+      if (p.penetration) rows.push(['penetration depth', p.penetration.toFixed(0) + ' nm']);
+    }
+
+    rows.push([`r (${state.pol}-pol)`, fmtC(p.r)]);
+    rows.push([`t (${state.pol}-pol)`, fmtC(p.t)]);
+    rows.push(['R (reflectance)', p.R.toFixed(4)]);
+    rows.push(['T (transmittance)', p.T.toFixed(4)]);
+    rows.push(['R + T', (p.R+p.T).toFixed(4)]);
+
+    els.readoutGrid.innerHTML = rows.map(([k,v]) => `<div class="line"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+    els.statusNote.innerHTML = statusLines.map(s => `<div>${s}</div>`).join('');
+  }
+
+  function update(){
+    render();
+  }
+
+  // ---------- events ----------
+  els.n1.addEventListener('input', e => { state.n1 = parseFloat(e.target.value)||1; update(); });
+  els.n2.addEventListener('input', e => { state.n2 = parseFloat(e.target.value)||1; update(); });
+  els.n3.addEventListener('input', e => { state.n3 = parseFloat(e.target.value)||1; update(); });
+  els.wl.addEventListener('input', e => { state.wl = parseFloat(e.target.value)||633; update(); });
+  els.gap.addEventListener('input', e => { state.gap = parseFloat(e.target.value); els.gapVal.textContent = state.gap + ' nm'; update(); });
+  els.theta.addEventListener('input', e => { state.theta1 = parseFloat(e.target.value); els.thetaVal.textContent = state.theta1.toFixed(1)+'°'; update(); });
+  els.polSeg.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.pol = btn.dataset.pol;
+      els.polSeg.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+      update();
+    });
+  });
+  els.presetBtns.forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
+
+  // ---------- init ----------
+  applyPreset('glass-air');
+})();
+</script>
+</body>
+</html>
