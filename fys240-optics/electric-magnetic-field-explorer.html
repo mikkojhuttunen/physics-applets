@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Electric &amp; Magnetic Field Explorer — FYS.240 Optics</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #101a2e;
+    --panel-line: #223055;
+    --text: #e7ecf7;
+    --muted: #8b9bc2;
+    --pos: #f2a65a;
+    --neg: #5aa9e6;
+    --field: #33c9c9;
+    --curl: #e85aad;
+    --grid-line: rgba(139,155,194,0.14);
+    --accent-btn: #1a2744;
+    --accent-btn-active: #2d4470;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f3f5fa;
+      --panel: #ffffff;
+      --panel-line: #dbe1ef;
+      --text: #16213e;
+      --muted: #5b6788;
+      --pos: #d97a1f;
+      --neg: #2f6fc4;
+      --field: #1a9797;
+      --curl: #c23e8c;
+      --grid-line: rgba(22,33,62,0.08);
+      --accent-btn: #eaeef7;
+      --accent-btn-active: #d7e0f5;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b1220; --panel: #101a2e; --panel-line: #223055; --text: #e7ecf7; --muted: #8b9bc2;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+    -webkit-tap-highlight-color: transparent;
+  }
+  #app { min-height: 100%; display: flex; flex-direction: column; }
+  header { padding: 14px 16px 10px; border-bottom: 1px solid var(--panel-line); }
+  header h1 { margin: 0 0 2px; font-size: 18px; font-weight: 650; letter-spacing: 0.2px; }
+  header p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+  main { flex: 1; display: flex; flex-direction: column; gap: 0; }
+  @media (min-width: 780px) {
+    main { flex-direction: row; }
+    #stageWrap { flex: 1 1 62%; }
+    #panel { flex: 1 1 38%; max-width: 430px; border-left: 1px solid var(--panel-line); }
+  }
+  #stageWrap { position: relative; background: var(--panel); min-height: 320px; flex: 1 1 56vh; }
+  canvas.field { display: block; width: 100%; height: 100%; touch-action: none; }
+  #panel { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .seg { display: inline-flex; border: 1px solid var(--panel-line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: none; background: var(--accent-btn); color: var(--text); padding: 8px 12px; font-size: 13px; cursor: pointer; }
+  .seg button.active { background: var(--accent-btn-active); font-weight: 600; }
+  button.pill, button.icon-btn {
+    border: 1px solid var(--panel-line); background: var(--accent-btn); color: var(--text);
+    border-radius: 8px; padding: 7px 11px; font-size: 13px; cursor: pointer;
+  }
+  button.pill.small { padding: 5px 9px; font-size: 12px; }
+  button.pill:active, button.icon-btn:active, .seg button:active { transform: translateY(1px); }
+  label.chk { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); user-select: none; }
+  h2 { font-size: 12px; color: var(--muted); margin: 0 0 6px; font-weight: 600; letter-spacing: 0.2px; }
+  .section { padding-top: 10px; border-top: 1px solid var(--panel-line); }
+  .section:first-child { border-top: none; padding-top: 0; }
+  #probeReadout { font-size: 13px; line-height: 1.55; color: var(--text); }
+  #probeReadout .num { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; color: var(--muted); }
+  #probeReadout .big { font-size: 13.5px; font-weight: 600; }
+  .sliderRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .sliderRow input[type=range] { flex: 1; }
+  .sliderRow span { font-size: 12px; color: var(--muted); width: 34px; text-align: right; }
+  .indicatorRow { display: flex; gap: 18px; align-items: center; margin-top: 10px; }
+  .indicatorBox { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+  .legend { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .legend b { color: var(--text); font-weight: 600; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  footer.hint { font-size: 11.5px; color: var(--muted); padding-top: 4px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="../index.html" style="font-size:12.5px;color:var(--muted);text-decoration:none;">&larr; Back to course</a>
+    <h1 style="margin-top:6px;">Electric &amp; Magnetic Field Explorer</h1>
+    <p>Drag a charge to move it, tap it to flip sign/current. Tap empty space to drop a probe loop — drag its middle to move it, drag its edge to resize it.</p>
+  </header>
+  <main>
+    <div id="stageWrap">
+      <canvas id="stage" class="field" aria-label="Field visualization canvas"></canvas>
+    </div>
+    <div id="panel">
+      <div class="section">
+        <h2>Field type</h2>
+        <div class="seg" id="modeSeg">
+          <button data-mode="E" class="active">Electric (charges)</button>
+          <button data-mode="B">Magnetic (wires)</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Sources</h2>
+        <div class="row">
+          <button class="pill" id="addPosBtn">add (+)</button>
+          <button class="pill" id="addNegBtn">add (−)</button>
+        </div>
+        <div class="row" style="margin-top:6px;">
+          <button class="pill" id="removePosBtn">remove (+)</button>
+          <button class="pill" id="removeNegBtn">remove (−)</button>
+          <button class="pill" id="resetBtn">reset</button>
+        </div>
+        <div id="sourceWarning" style="font-size:12px;color:var(--pos);margin-top:6px;min-height:1.2em;"></div>
+      </div>
+
+      <div class="section">
+        <h2>Display</h2>
+        <div class="row">
+          <label class="chk"><input type="checkbox" id="chkArrows" checked> Vector arrows</label>
+          <label class="chk"><input type="checkbox" id="chkLines" checked> Field lines</label>
+          <label class="chk"><input type="checkbox" id="chkHeat"> Heat map</label>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Probe loop — flux &amp; circulation</h2>
+        <div class="row" id="snapRow"></div>
+        <div class="sliderRow">
+          <label for="probeRadius" style="font-size:12px;color:var(--muted);">radius</label>
+          <input type="range" id="probeRadius" min="14" max="160" value="42">
+          <span id="radiusVal">42</span>
+        </div>
+        <div id="probeReadout" style="margin-top:8px;">Tap the canvas to drop a probe loop, or use a "center on" button above.</div>
+        <div class="indicatorRow">
+          <div class="indicatorBox">
+            <canvas id="divIcon" width="64" height="64" style="width:56px;height:56px;"></canvas>
+            div
+          </div>
+          <div class="indicatorBox">
+            <canvas id="curlIcon" width="64" height="64" style="width:56px;height:56px;"></canvas>
+            curl
+          </div>
+        </div>
+      </div>
+
+      <div class="section legend" id="legendBox">
+        <h2>Reading the picture</h2>
+        <div id="legendText"></div>
+      </div>
+
+      <footer class="hint">Units are arbitrary — this is a conceptual teaching tool, not a calibrated field solver.</footer>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const divIcon = document.getElementById('divIcon');
+  const divCtx = divIcon.getContext('2d');
+  const curlIcon = document.getElementById('curlIcon');
+  const curlCtx = curlIcon.getContext('2d');
+  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  let W = 300, H = 300, DPR = window.devicePixelRatio || 1;
+
+  let mode = 'E';
+  let charges = [
+    { x: 0.36, y: 0.5, q: 1 },
+    { x: 0.64, y: 0.5, q: -1 }
+  ]; // fractions of canvas size, so layout survives resize
+
+  // probeLoop stored as fractions too: x,y center, r relative to min(W,H)
+  let probeLoop = null;
+  let dragMode = null;   // 'charge' | 'moveLoop' | 'resizeLoop'
+  let dragChargeIndex = -1;
+  let dragMoved = false;
+  let downPt = null;
+
+  const K = 6000;
+  const MIN_R2 = 110;
+
+  function toPx(c) { return { x: c.x * W, y: c.y * H }; }
+  function loopPx() {
+    if (!probeLoop) return null;
+    return { x: probeLoop.x * W, y: probeLoop.y * H, r: probeLoop.r * Math.min(W, H) };
+  }
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    DPR = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(W * DPR));
+    canvas.height = Math.max(1, Math.round(H * DPR));
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+
+  // ---------- physics ----------
+  // Both source types are treated as infinite wires perpendicular to the page —
+  // a charged wire for E, a current-carrying wire for B — so both fields fall
+  // off as 1/r. This is what makes a closed-loop line integral in this 2D plane
+  // give a radius-independent answer (Gauss's/Ampère's law) whenever the loop
+  // encloses a source. A true 3D point-charge 1/r^2 field would NOT do this:
+  // ∮E·n̂dl around it scales as 1/R, which is the bug this fixes.
+  function fieldE(x, y) {
+    let Ex = 0, Ey = 0;
+    for (const c0 of charges) {
+      const c = toPx(c0);
+      let dx = x - c.x, dy = y - c.y;
+      let r2 = dx * dx + dy * dy; if (r2 < MIN_R2) r2 = MIN_R2;
+      const f = K * c0.q / r2;      // |E| = K q / r, radial
+      Ex += f * dx; Ey += f * dy;
+    }
+    return [Ex, Ey];
+  }
+  function potentialE(x, y) {
+    // V = -K q ln(r): the correct 2D ("line charge") potential, whose
+    // gradient reproduces the 1/r radial field above.
+    let V = 0;
+    for (const c0 of charges) {
+      const c = toPx(c0);
+      let dx = x - c.x, dy = y - c.y;
+      let r2 = dx * dx + dy * dy; if (r2 < MIN_R2) r2 = MIN_R2;
+      V += -K * c0.q * Math.log(Math.sqrt(r2));
+    }
+    return V;
+  }
+  function fieldB(x, y) {
+    let Bx = 0, By = 0;
+    for (const c0 of charges) {
+      const c = toPx(c0);
+      let dx = x - c.x, dy = y - c.y;
+      let r2 = dx * dx + dy * dy; if (r2 < MIN_R2) r2 = MIN_R2;
+      const f = K * c0.q / r2;
+      Bx += f * (-dy); By += f * dx;
+    }
+    return [Bx, By];
+  }
+  function field(x, y) { return mode === 'E' ? fieldE(x, y) : fieldB(x, y); }
+
+  // ---------- circular-integral divergence & curl ----------
+  // Flux  = ∮ F·n̂ dl  (n̂ = outward normal)   -> ∬ (div F) dA   by the divergence theorem
+  // Circ  = ∮ F·dl     (dl = tangential, CCW)  -> ∬ (curl F) dA  by Green's theorem
+  // Sampling on the *boundary* circle, never at its center, means we can center the
+  // loop exactly on a point charge / wire without ever evaluating the singularity.
+  function loopIntegrals(cx, cy, r, N) {
+    N = N || 96;
+    let flux = 0, circ = 0;
+    const dl = (2 * Math.PI * r) / N;
+    for (let i = 0; i < N; i++) {
+      const th = (i / N) * Math.PI * 2;
+      const nx = Math.cos(th), ny = Math.sin(th);      // outward normal
+      const tx = -Math.sin(th), ty = Math.cos(th);     // CCW tangent
+      const x = cx + r * nx, y = cy + r * ny;
+      const [fx, fy] = field(x, y);
+      flux += (fx * nx + fy * ny) * dl;
+      circ += (fx * tx + fy * ty) * dl;
+    }
+    const area = Math.PI * r * r;
+    return { flux, circ, area, avgDiv: flux / area, avgCurl: circ / area };
+  }
+
+  // ---------- drawing helpers ----------
+  function drawArrow(x, y, dx, dy, color, width) {
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width || 1.5;
+    const x2 = x + dx, y2 = y + dy;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke();
+    const ang = Math.atan2(dy, dx);
+    const ah = 4 + width;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - ah * Math.cos(ang - 0.4), y2 - ah * Math.sin(ang - 0.4));
+    ctx.lineTo(x2 - ah * Math.cos(ang + 0.4), y2 - ah * Math.sin(ang + 0.4));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function drawGrid() {
+    ctx.strokeStyle = cssVar('--grid-line'); ctx.lineWidth = 1;
+    const step = 32;
+    for (let x = 0; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  }
+
+  function heatColor(v, maxAbs, sequential) {
+    const t = Math.max(-1, Math.min(1, v / maxAbs));
+    if (sequential) { const a = Math.abs(t) * 0.55; return `rgba(51,201,201,${a})`; }
+    if (t >= 0) return `rgba(232,90,90,${Math.abs(t) * 0.45})`;
+    return `rgba(74,127,232,${Math.abs(t) * 0.45})`;
+  }
+
+  // Auto-normalizing scalar grid: values vary hugely with source strength/count,
+  // so scale color by the actual max seen this frame rather than a fixed constant.
+  function computeGrid(cell, valueFn) {
+    const cols = Math.ceil(W / cell), rows = Math.ceil(H / cell);
+    const vals = new Float32Array(cols * rows);
+    let maxAbs = 1e-6;
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        const v = valueFn(i * cell + cell / 2, j * cell + cell / 2);
+        vals[j * cols + i] = v;
+        const a = Math.abs(v); if (a > maxAbs) maxAbs = a;
+      }
+    }
+    return { vals, cols, rows, maxAbs };
+  }
+
+  function drawHeat() {
+    const cell = 14;
+    if (mode === 'E') {
+      const { vals, cols, rows, maxAbs } = computeGrid(cell, (x, y) => potentialE(x, y));
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        ctx.fillStyle = heatColor(vals[j * cols + i], maxAbs, false);
+        ctx.fillRect(i * cell, j * cell, cell, cell);
+      }
+    } else {
+      const { vals, cols, rows, maxAbs } = computeGrid(cell, (x, y) => {
+        const [bx, by] = fieldB(x, y); return Math.hypot(bx, by);
+      });
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        ctx.fillStyle = heatColor(vals[j * cols + i], maxAbs, true);
+        ctx.fillRect(i * cell, j * cell, cell, cell);
+      }
+    }
+  }
+
+  function drawArrowsGrid() {
+    const spacing = Math.max(34, Math.min(W, H) / 12);
+    const color = cssVar('--field');
+    for (let y = spacing / 2; y < H; y += spacing) {
+      for (let x = spacing / 2; x < W; x += spacing) {
+        let tooClose = false;
+        for (const c0 of charges) { const c = toPx(c0); if (Math.hypot(x - c.x, y - c.y) < 22) { tooClose = true; break; } }
+        if (tooClose) continue;
+        const [fx, fy] = field(x, y);
+        const mag = Math.hypot(fx, fy);
+        if (mag < 1e-6) continue;
+        const len = Math.min(16, 4 + 5 * Math.log(1 + mag / 30));
+        drawArrow(x, y, (fx / mag) * len, (fy / mag) * len, color, 1.4);
+      }
+    }
+  }
+
+  function traceLine(startX, startY, dir, stopAtSources) {
+    const pts = [[startX, startY]];
+    let x = startX, y = startY;
+    const step = 4.5;
+    const maxSteps = mode === 'E' ? 500 : 900;
+    for (let i = 0; i < maxSteps; i++) {
+      const [fx, fy] = field(x, y);
+      const mag = Math.hypot(fx, fy) || 1e-9;
+      x += dir * step * fx / mag; y += dir * step * fy / mag;
+      pts.push([x, y]);
+      if (x < -20 || x > W + 20 || y < -20 || y > H + 20) break;
+      if (stopAtSources && i > 4) {
+        let hit = false;
+        for (const c0 of charges) { const c = toPx(c0); if (Math.hypot(x - c.x, y - c.y) < 13) { hit = true; break; } }
+        if (hit) break;
+      }
+      if (!stopAtSources && i > 30 && Math.hypot(x - startX, y - startY) < 5) break;
+    }
+    return pts;
+  }
+
+  function drawPolyline(pts, color) {
+    if (pts.length < 2) return;
+    ctx.strokeStyle = color; ctx.lineWidth = 1.3; ctx.globalAlpha = 0.85;
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  function drawFieldLines() {
+    const color = cssVar('--field');
+    if (mode === 'E') {
+      for (const c0 of charges) {
+        const c = toPx(c0); const n = 14; const dir = c0.q > 0 ? 1 : -1;
+        for (let i = 0; i < n; i++) {
+          const ang = (i / n) * Math.PI * 2;
+          drawPolyline(traceLine(c.x + 15 * Math.cos(ang), c.y + 15 * Math.sin(ang), dir, true), color);
+        }
+      }
+    } else {
+      for (const c0 of charges) {
+        const c = toPx(c0); const n = 10;
+        for (let i = 0; i < n; i++) {
+          const ang = (i / n) * Math.PI * 2;
+          drawPolyline(traceLine(c.x + 22 * Math.cos(ang), c.y + 22 * Math.sin(ang), 1, false), color);
+        }
+      }
+    }
+  }
+
+  function drawSources() {
+    for (const c0 of charges) {
+      const c = toPx(c0); const r = 12;
+      ctx.fillStyle = c0.q > 0 ? cssVar('--pos') : cssVar('--neg');
+      ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1; ctx.stroke();
+      if (mode === 'E') {
+        ctx.fillStyle = '#fff'; ctx.font = '600 14px ui-sans-serif, system-ui, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(c0.q > 0 ? '+' : '−', c.x, c.y + 1);
+      } else {
+        ctx.strokeStyle = '#0b1220'; ctx.lineWidth = 1.5;
+        if (c0.q > 0) { ctx.beginPath(); ctx.arc(c.x, c.y, 3, 0, Math.PI * 2); ctx.fillStyle = '#0b1220'; ctx.fill(); }
+        else {
+          ctx.beginPath();
+          ctx.moveTo(c.x - 5, c.y - 5); ctx.lineTo(c.x + 5, c.y + 5);
+          ctx.moveTo(c.x + 5, c.y - 5); ctx.lineTo(c.x - 5, c.y + 5);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function drawProbeLoop(t) {
+    const L = loopPx();
+    if (!L) { drawDivIcon(0, t); drawCurlIcon(0, t); return; }
+    const { flux, circ, avgDiv, avgCurl } = loopIntegrals(L.x, L.y, L.r);
+
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = cssVar('--curl'); ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(L.x, L.y, L.r, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // center handle
+    ctx.fillStyle = cssVar('--curl');
+    ctx.beginPath(); ctx.arc(L.x, L.y, 4, 0, Math.PI * 2); ctx.fill();
+    // edge (resize) handle, fixed at the top of the loop
+    const hx = L.x, hy = L.y - L.r;
+    ctx.beginPath(); ctx.arc(hx, hy, 5.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+
+    updateProbeUI(flux, circ, avgDiv, avgCurl, t);
+  }
+
+  function clearIcon(c) { c.clearRect(0, 0, 64, 64); }
+
+  function drawDivIcon(div, t) {
+    clearIcon(divCtx);
+    const cx = 32, cy = 32;
+    const mag = Math.min(1, Math.abs(div) / 12);
+    const phase = (Math.sin(t * 0.004) + 1) / 2;
+    const grow = mag * (div >= 0 ? 1 : -1) * (6 + 10 * phase);
+    const size = 14 + grow;
+    divCtx.strokeStyle = div >= 0 ? '#5ec98a' : '#e2635f';
+    divCtx.lineWidth = 2;
+    divCtx.strokeRect(cx - size / 2, cy - size / 2, size, size);
+    divCtx.strokeStyle = cssVar('--muted'); divCtx.lineWidth = 1;
+    divCtx.strokeRect(cx - 14, cy - 14, 28, 28);
+  }
+
+  function drawCurlIcon(curl, t) {
+    clearIcon(curlCtx);
+    const cx = 32, cy = 32, r = 16;
+    curlCtx.strokeStyle = cssVar('--muted'); curlCtx.lineWidth = 1;
+    curlCtx.beginPath(); curlCtx.arc(cx, cy, r, 0, Math.PI * 2); curlCtx.stroke();
+    const mag = Math.min(1, Math.abs(curl) / 12);
+    const speed = 0.002 + mag * 0.006;
+    const sign = curl >= 0 ? 1 : -1;
+    const ang = t * speed * sign;
+    curlCtx.save(); curlCtx.translate(cx, cy); curlCtx.rotate(ang);
+    curlCtx.strokeStyle = cssVar('--curl'); curlCtx.lineWidth = 2.4;
+    curlCtx.beginPath(); curlCtx.arc(0, 0, r, -0.3, Math.PI * 1.1); curlCtx.stroke();
+    const ex = r * Math.cos(Math.PI * 1.1), ey = r * Math.sin(Math.PI * 1.1);
+    const tangent = Math.PI * 1.1 + Math.PI / 2;
+    curlCtx.beginPath(); curlCtx.moveTo(ex, ey);
+    curlCtx.lineTo(ex - 6 * Math.cos(tangent - 0.5), ey - 6 * Math.sin(tangent - 0.5));
+    curlCtx.lineTo(ex - 6 * Math.cos(tangent + 0.5), ey - 6 * Math.sin(tangent + 0.5));
+    curlCtx.closePath(); curlCtx.fillStyle = cssVar('--curl'); curlCtx.fill();
+    curlCtx.restore();
+  }
+
+  function fmt(v) {
+    const a = Math.abs(v);
+    if (a >= 1000 || (a > 0 && a < 0.01)) return v.toExponential(2);
+    return v.toFixed(2);
+  }
+
+  function updateProbeUI(flux, circ, avgDiv, avgCurl, t) {
+    const el = document.getElementById('probeReadout');
+    const label = mode === 'E' ? 'E' : 'B';
+    el.innerHTML =
+      `<div class="big">∮ ${label}·n̂ dl (flux) = <span class="num">${fmt(flux)}</span></div>` +
+      `<div class="num">≈ average div = flux / area = ${fmt(avgDiv)}</div>` +
+      `<div class="big" style="margin-top:6px;">∮ ${label}·dl (circulation) = <span class="num">${fmt(circ)}</span></div>` +
+      `<div class="num">≈ average curl = circ / area = ${fmt(avgCurl)}</div>`;
+    drawDivIcon(avgDiv, t);
+    drawCurlIcon(avgCurl, t);
+  }
+
+  function updateLegend() {
+    const el = document.getElementById('legendText');
+    if (mode === 'E') {
+      el.innerHTML = 'Center the loop exactly on a <span class="dot" style="background:var(--pos)"></span>charge (treated as a charged wire through the page, so E ∝ 1/r) and grow or shrink it: the <b>flux</b> stays constant no matter the radius — that\'s Gauss\'s law, ∮E·n̂dl depends only on enclosed charge. Move the loop to empty space (no charge inside) and both flux and circulation drop to ~0: away from a charge, E is divergence- and curl-free.';
+    } else {
+      el.innerHTML = 'Center the loop on a wire (dot/cross) and the <b>circulation</b> stays roughly constant as you resize it — that\'s Ampère\'s law, ∮B·dl depends only on enclosed current. Flux is ~0 everywhere, even around a wire: B never diverges (no magnetic monopoles). Move the loop off the wires into open space and circulation also drops to ~0, even where the field is strong — curl is local to the source, not to field strength.';
+    }
+  }
+
+  function refreshSnapButtons() {
+    const row = document.getElementById('snapRow');
+    row.innerHTML = '';
+    charges.forEach((c0, i) => {
+      const b = document.createElement('button');
+      b.className = 'pill small';
+      b.textContent = 'center on ' + (mode === 'E' ? 'charge ' : 'wire ') + (i + 1);
+      b.addEventListener('click', () => {
+        const r = probeLoop ? probeLoop.r : parseFloat(document.getElementById('probeRadius').value) / Math.min(W, H);
+        probeLoop = { x: c0.x, y: c0.y, r };
+      });
+      row.appendChild(b);
+    });
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'pill small';
+    clearBtn.textContent = 'remove probe';
+    clearBtn.addEventListener('click', () => { probeLoop = null; });
+    row.appendChild(clearBtn);
+  }
+
+  // ---------- main loop ----------
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    drawGrid();
+    if (document.getElementById('chkHeat').checked) drawHeat();
+    if (document.getElementById('chkLines').checked) drawFieldLines();
+    if (document.getElementById('chkArrows').checked) drawArrowsGrid();
+    drawSources();
+    drawProbeLoop(t);
+    requestAnimationFrame(draw);
+  }
+
+  // ---------- interaction ----------
+  function localPt(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+    const cy = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+    return { x: cx, y: cy };
+  }
+  function nearestChargeIndex(x, y) {
+    let best = -1, bestD = 26;
+    charges.forEach((c0, i) => {
+      const c = toPx(c0); const d = Math.hypot(x - c.x, y - c.y);
+      if (d < bestD) { bestD = d; best = i; }
+    });
+    return best;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    const p = localPt(e);
+    downPt = p; dragMoved = false;
+    const ci = nearestChargeIndex(p.x, p.y);
+    if (ci !== -1) { dragMode = 'charge'; dragChargeIndex = ci; return; }
+    const L = loopPx();
+    if (L) {
+      const hx = L.x, hy = L.y - L.r;
+      if (Math.hypot(p.x - hx, p.y - hy) < 14) { dragMode = 'resizeLoop'; return; }
+      const dCenter = Math.hypot(p.x - L.x, p.y - L.y);
+      if (dCenter < 16) { dragMode = 'moveLoop'; return; }
+      if (Math.abs(dCenter - L.r) < 10) { dragMode = 'resizeLoop'; return; }
+    }
+    dragMode = 'newLoop';
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragMode) return;
+    const p = localPt(e);
+    if (Math.hypot(p.x - downPt.x, p.y - downPt.y) > 4) dragMoved = true;
+    if (dragMode === 'charge') {
+      if (dragMoved) {
+        charges[dragChargeIndex].x = Math.min(0.97, Math.max(0.03, p.x / W));
+        charges[dragChargeIndex].y = Math.min(0.97, Math.max(0.03, p.y / H));
+      }
+    } else if (dragMode === 'moveLoop' && probeLoop) {
+      probeLoop.x = Math.min(0.98, Math.max(0.02, p.x / W));
+      probeLoop.y = Math.min(0.98, Math.max(0.02, p.y / H));
+    } else if (dragMode === 'resizeLoop' && probeLoop) {
+      const L = loopPx();
+      const rad = Math.hypot(p.x - L.x, p.y - L.y);
+      const clamped = Math.min(Math.min(W, H) / 2 - 4, Math.max(14, rad));
+      probeLoop.r = clamped / Math.min(W, H);
+      const slider = document.getElementById('probeRadius');
+      slider.value = Math.round(clamped);
+      document.getElementById('radiusVal').textContent = Math.round(clamped);
+    }
+  });
+
+  canvas.addEventListener('pointerup', (e) => {
+    const p = localPt(e);
+    if (dragMode === 'charge') {
+      if (!dragMoved) charges[dragChargeIndex].q *= -1;
+    } else if (dragMode === 'newLoop') {
+      const rFrac = parseFloat(document.getElementById('probeRadius').value) / Math.min(W, H);
+      probeLoop = { x: p.x / W, y: p.y / H, r: rFrac };
+    }
+    dragMode = null; dragChargeIndex = -1;
+  });
+
+  document.getElementById('probeRadius').addEventListener('input', (e) => {
+    document.getElementById('radiusVal').textContent = e.target.value;
+    if (probeLoop) probeLoop.r = parseFloat(e.target.value) / Math.min(W, H);
+  });
+
+  // ---------- controls ----------
+  document.getElementById('modeSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    mode = btn.dataset.mode;
+    [...document.getElementById('modeSeg').children].forEach(b => b.classList.toggle('active', b === btn));
+    updateLegend(); refreshSnapButtons();
+  });
+  const MAX_SOURCES = 8;
+
+  function addCharge(sign) {
+    const warn = document.getElementById('sourceWarning');
+    if (charges.length >= MAX_SOURCES) {
+      warn.textContent = `Maximum of ${MAX_SOURCES} sources reached — remove one to add another.`;
+      return;
+    }
+    warn.textContent = '';
+    const angle = charges.length * 2.4; // golden-angle spacing avoids overlapping placements
+    charges.push({
+      x: Math.min(0.9, Math.max(0.1, 0.5 + 0.22 * Math.cos(angle))),
+      y: Math.min(0.9, Math.max(0.1, 0.5 + 0.22 * Math.sin(angle))),
+      q: sign
+    });
+    refreshSnapButtons();
+  }
+  function removeCharge(sign) {
+    const warn = document.getElementById('sourceWarning');
+    for (let i = charges.length - 1; i >= 0; i--) {
+      if (charges[i].q === sign) {
+        charges.splice(i, 1);
+        warn.textContent = '';
+        refreshSnapButtons();
+        return;
+      }
+    }
+    warn.textContent = `No ${sign > 0 ? '+' : '−'} source left to remove.`;
+  }
+
+  document.getElementById('addPosBtn').addEventListener('click', () => addCharge(1));
+  document.getElementById('addNegBtn').addEventListener('click', () => addCharge(-1));
+  document.getElementById('removePosBtn').addEventListener('click', () => removeCharge(1));
+  document.getElementById('removeNegBtn').addEventListener('click', () => removeCharge(-1));
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    charges = [{ x: 0.36, y: 0.5, q: 1 }, { x: 0.64, y: 0.5, q: -1 }];
+    probeLoop = null;
+    document.getElementById('sourceWarning').textContent = '';
+    refreshSnapButtons();
+  });
+
+  updateLegend();
+  refreshSnapButtons();
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
