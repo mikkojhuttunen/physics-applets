@@ -1,0 +1,198 @@
+diff --git a/fys501-laser-physics/coherence-explorer.html b/fys501-laser-physics/coherence-explorer.html
+index acee6f6..cfc41e6 100644
+--- a/fys501-laser-physics/coherence-explorer.html
++++ b/fys501-laser-physics/coherence-explorer.html
+@@ -24,23 +24,23 @@
+ html{scroll-padding-top:env(safe-area-inset-top,0px);}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+-.wrap{max-width:960px;margin:0 auto;padding:16px 16px 28px;}
+-h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+-.sub{color:var(--muted);margin:0 0 12px;font-size:.9rem}
+-.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 14px;overflow-x:auto;white-space:nowrap}
+-.switches{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+-.sw{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--c);border-radius:0 10px 10px 0;padding:8px 14px;cursor:pointer;font-size:.9rem;flex:1 1 300px}
+-.sw input{width:18px;height:18px;accent-color:var(--c)}
++.wrap{max-width:960px;margin:0 auto;padding:12px 16px 20px;}
++h1{font-size:1.15rem;margin:0 0 2px;font-weight:650}
++.sub{color:var(--muted);margin:0 0 8px;font-size:.82rem}
++.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;margin:0 0 10px;overflow-x:auto;white-space:nowrap}
++.switches{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
++.sw{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--c);border-radius:0 10px 10px 0;padding:6px 12px;cursor:pointer;font-size:.84rem;flex:1 1 300px}
++.sw input{width:16px;height:16px;accent-color:var(--c)}
+ .sw.t{--c:var(--tc)} .sw.s{--c:var(--sc)}
+-.sw small{display:block;color:var(--muted);font-size:.76rem}
+-.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+-.presets .lab{font-size:.82rem;color:var(--muted);margin-right:2px}
+-.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.84rem;padding:5px 10px;border-radius:8px;cursor:pointer}
++.sw small{display:block;color:var(--muted);font-size:.72rem}
++.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center}
++.presets .lab{font-size:.78rem;color:var(--muted);margin-right:2px}
++.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.8rem;padding:4px 9px;border-radius:8px;cursor:pointer}
+ .btn:hover{border-color:var(--accent)}
+ .btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+ .btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+-.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px}
+-.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:10px 14px 12px;display:flex;flex-direction:column;gap:11px}
++.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px;margin-bottom:8px}
++.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:8px 12px 10px;display:flex;flex-direction:column;gap:8px}
+ .grp h2{margin:0;font-size:.95rem;font-weight:650;color:var(--gc,var(--accent))}
+ .grp.t{--gc:var(--tc)} .grp.s{--gc:var(--sc)}
+ .ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+@@ -51,23 +51,28 @@ input[type=range]{width:100%;accent-color:var(--gc,var(--accent))}
+ .seg button{flex:1;padding:6px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.82rem;cursor:pointer;border-right:1px solid var(--border);white-space:nowrap}
+ .seg button:last-child{border-right:0}
+ .seg button[aria-pressed=true]{background:var(--tc);color:#fff}
+-.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 0 12px}
+-.read{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+-.read .k{font-size:.76rem;color:var(--muted)}
+-.read .v{font-size:1.2rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+-.read .s{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
++.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:0 0 8px}
++.read{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:6px 10px}
++.read .k{font-size:.72rem;color:var(--muted)}
++.read .v{font-size:1.05rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.25}
++.read .s{font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
+ .read.t .v{color:var(--tc)} .read.s .v{color:var(--sc)}
+-.exp{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px 14px;margin-bottom:14px}
+-.exp h2{margin:0 0 2px;font-size:1.05rem;font-weight:650}
+-.exp .desc{margin:0 0 10px;font-size:.84rem;color:var(--muted)}
+-.exp .ctls{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:10px}
+-.exp .reads{margin-bottom:10px}
+-.exp .read{background:var(--bg)}
+-.plot{margin-top:8px}
+-.plot h3{margin:0 2px 2px;font-size:.88rem;font-weight:650}
+-.plot .cap{margin:0 2px 4px;font-size:.78rem;color:var(--muted)}
++.expSwitch{display:flex;justify-content:flex-start;margin-bottom:8px}
++.toggleBtn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.86rem;font-weight:600;padding:7px 14px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
++.toggleBtn:hover{border-color:var(--accent)}
++.toggleBtn .dot{width:8px;height:8px;border-radius:50%;background:var(--good)}
++.exp{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 12px 12px;margin-bottom:10px}
++.exp h2{margin:0 0 2px;font-size:.98rem;font-weight:650}
++.exp .desc{margin:0 0 8px;font-size:.78rem;color:var(--muted)}
++.exp .ctls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:8px}
++.exp .reads{margin-bottom:8px;gap:6px}
++.exp .read{background:var(--bg);padding:6px 10px}
++.exp .read .v{font-size:1.02rem}
++.plot{margin-top:6px}
++.plot h3{margin:0 2px 1px;font-size:.8rem;font-weight:650}
++.plot .cap{margin:0 2px 3px;font-size:.72rem;color:var(--muted)}
+ canvas{display:block;width:100%}
+-canvas.strip{border-radius:6px;border:1px solid var(--border);height:64px}
++canvas.strip{border-radius:6px;border:1px solid var(--border);height:36px}
+ .verdict{margin:10px 0 0;padding:9px 12px;border-left:3px solid var(--accent);background:var(--bg);border-radius:0 8px 8px 0;font-size:.88rem}
+ details{margin-top:14px;color:var(--muted);font-size:.88rem}
+ summary{cursor:pointer;color:var(--fg)}
+@@ -135,7 +140,13 @@ details ul{padding-left:1.2rem}
+ 
+   <div class="reads" id="srcReads"></div>
+ 
+-  <section class="exp">
++  <div class="expSwitch">
++    <button id="btnExpToggle" class="toggleBtn" type="button" aria-pressed="false">
++      <span class="dot"></span><span id="btnExpToggleLabel">Showing: Michelson &mdash; switch to Young's double slit</span>
++    </button>
++  </div>
++
++  <section class="exp" id="expMichelson">
+     <h2>Michelson interferometer</h2>
+     <p class="desc">A photodetector collects all light from the source while the path difference δ = 2·(arm difference) is scanned. Bandwidth limits the contrast through τ = δ/c; a finite source size limits it through the spread of ray angles θ.</p>
+     <div class="ctls">
+@@ -159,7 +170,7 @@ details ul{padding-left:1.2rem}
+     <div class="verdict" id="vMich"></div>
+   </section>
+ 
+-  <section class="exp">
++  <section class="exp" id="expYoung" hidden>
+     <h2>Young's double slit</h2>
+     <p class="desc">Two slits separated by s sample the field at two points. Contrast at the centre of the screen (δ = 0) is set by spatial coherence alone; away from the centre the path difference δ = s·y/R grows and bandwidth washes the fringes out.</p>
+     <div class="ctls">
+@@ -211,7 +222,8 @@ details ul{padding-left:1.2rem}
+     tOn:true, sOn:true, preset:'laser1',
+     lam:633, logDnu:6, shape:'lor', N:3, Lcav:30,
+     logW:0, D:1,
+-    logDel:-4.5, logS:-3.3, R:1, Nf:12
++    logDel:-4.5, logS:-3.3, R:1, Nf:12,
++    exp:'mich'
+   };
+ 
+   var PRESETS=[
+@@ -324,10 +336,10 @@ details ul{padding-left:1.2rem}
+   var LOGXT={'-7':'0.1 µm','-6':'1 µm','-5':'10 µm','-4':'100 µm','-3':'1 mm','-2':'1 cm','-1':'10 cm','0':'1 m','1':'10 m','2':'100 m','3':'1 km'};
+ 
+   function drawMV(){
+-    var p=prep($('cMV'),0.44), c=p.c, w=p.w, h=p.h;
++    var p=prep($('cMV'),0.28), c=p.c, w=p.w, h=p.h;
+     var xmaxLog=S.shape==='comb'?Math.min(3,Math.log10(12*2*S.Lcav*0.01)):3;
+     var xr=[-7,xmaxLog], yr=[0,1.06];
+-    var box={x:44,y:10,w:w-56,h:h-52,bottomPad:40};
++    var box={x:40,y:8,w:w-50,h:h-44,bottomPad:34};
+     frame(c,box,xr,yr,{xticks:LOGX.filter(function(v){return v<=xmaxLog;}),xfmt:function(v){return LOGXT[v];},xlabel:'path difference δ',ylabel:'contrast V',yticks:[0,0.25,0.5,0.75,1]});
+     var m=mapper(box,xr,yr), n=1600;
+     function curve(fn,color,dash,lw){
+@@ -347,8 +359,8 @@ details ul{padding-left:1.2rem}
+   }
+ 
+   function drawMI(){
+-    var p=prep($('cMI'),0.34), c=p.c, w=p.w, h=p.h;
+-    var box={x:44,y:10,w:w-56,h:h-48,bottomPad:34};
++    var p=prep($('cMI'),0.22), c=p.c, w=p.w, h=p.h;
++    var box={x:40,y:8,w:w-50,h:h-40,bottomPad:30};
+     var xr=[-5,5], yr=[0,2.1];
+     frame(c,box,xr,yr,{xlabel:'mirror displacement (fringes)',ylabel:'I / mean',yticks:[0,0.5,1,1.5,2],xticks:[-5,-4,-3,-2,-1,0,1,2,3,4,5]});
+     var m=mapper(box,xr,yr), d0=Math.pow(10,S.logDel), lam=lamM(), n=1000;
+@@ -366,7 +378,7 @@ details ul{padding-left:1.2rem}
+     var s=Math.pow(10,S.logS), lam=lamM(), R=S.R, sp=lam*R/s, ymax=S.Nf*sp;
+     var Vs=VsY(s);
+     function I(y){ var d=s*y/R; return 1+Vs*Vt(d)*Math.cos(2*Math.PI*d/lam); }
+-    var ps=prep($('cYS'),0,64), c1=ps.c, w1=ps.w, h1=ps.h;
++    var ps=prep($('cYS'),0,36), c1=ps.c, w1=ps.w, h1=ps.h;
+     var img=c1.createImageData(Math.max(1,Math.round(w1*(window.devicePixelRatio||1))),Math.max(1,Math.round(h1*(window.devicePixelRatio||1))));
+     var rgb=wl2rgb(S.lam), W=img.width, H=img.height;
+     for(var x=0;x<W;x++){
+@@ -376,8 +388,8 @@ details ul{padding-left:1.2rem}
+     }
+     c1.setTransform(1,0,0,1,0,0); c1.putImageData(img,0,0);
+ 
+-    var p=prep($('cYI'),0.3), c=p.c, w=p.w, h=p.h;
+-    var box={x:44,y:10,w:w-56,h:h-48,bottomPad:34};
++    var p=prep($('cYI'),0.22), c=p.c, w=p.w, h=p.h;
++    var box={x:40,y:8,w:w-50,h:h-40,bottomPad:30};
+     var xr=[-ymax*1e3,ymax*1e3], yr=[0,2.1];
+     frame(c,box,xr,yr,{xlabel:'position on screen y (mm)',ylabel:'I / mean',yticks:[0,0.5,1,1.5,2],xfmt:function(v){return (+v.toPrecision(3)).toString();}});
+     var m=mapper(box,xr,yr), n=Math.min(2400,Math.max(600,S.Nf*60));
+@@ -442,7 +454,25 @@ details ul{padding-left:1.2rem}
+     $('vYoung').textContent=yt;
+   }
+ 
+-  function render(){ labels(); verdicts(); drawMV(); drawMI(); drawY(); }
++  function render(){
++    labels(); verdicts();
++    if(S.exp==='mich'){ drawMV(); drawMI(); } else { drawY(); }
++  }
++
++  function updateExpView(){
++    var mich=S.exp==='mich';
++    $('expMichelson').hidden=!mich;
++    $('expYoung').hidden=mich;
++    $('btnExpToggle').setAttribute('aria-pressed', mich?'false':'true');
++    $('btnExpToggleLabel').textContent = mich
++      ? "Showing: Michelson \u2014 switch to Young's double slit"
++      : "Showing: Young's double slit \u2014 switch to Michelson";
++  }
++  $('btnExpToggle').addEventListener('click',function(){
++    S.exp = S.exp==='mich' ? 'young' : 'mich';
++    updateExpView();
++    render();
++  });
+ 
+   function markCustom(){ S.preset='custom'; }
+   function bind(id,key,cb){ $(id).addEventListener('input',function(e){ S[key]=parseFloat(e.target.value); if(cb)cb(); render(); }); }
+@@ -470,6 +500,7 @@ details ul{padding-left:1.2rem}
+     });
+     pr.appendChild(b);
+   });
++  updateExpView();
+   document.querySelector('#presets [data-id="lamp"]').click();
+ 
+   var rt; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(render,80); });
