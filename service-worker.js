@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v2";
+const CACHE_NAME = "physics-applets-v3";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -8,6 +8,9 @@ const APP_SHELL = [
   "fys232-structure-of-matter/index.html",
   "fys240-optics/index.html",
   "fys310-solid-state-physics/index.html",
+  "fys310-solid-state-physics/FYS310_lattice_viewer.html",
+  "fys310-solid-state-physics/van-hove-dos-explorer.html",
+  "fys310-solid-state-physics/band-structure-explorer.html",
   "fys501-laser-physics/index.html",
   "finnmath-app/index.html"
 ];
@@ -30,8 +33,10 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const sameOrigin = new URL(event.request.url).origin === self.location.origin;
+  const request = sameOrigin ? new Request(event.request, { cache: "no-cache" }) : event.request;
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));

@@ -5,8 +5,18 @@ dependencies (no CDN, no build step) and runs directly in a browser.
 
 ## Applets
 
-- `applets/integral-speed-distance.html` — Riemann sums converging to a definite
-  integral, framed as computing distance travelled from a velocity curve.
+Each course has its own folder with an `index.html` listing its applets.
+
+- `fys232-structure-of-matter/`
+- `fys240-optics/`
+- `fys310-solid-state-physics/` — 3D lattice viewer, Van Hove and DOS explorer,
+  band structure explorer (empty lattice, weak potential, Al/Si/Ge/GaAs/diamond
+  and AlGaAs composition).
+- `fys501-laser-physics/`
+- `finnmath-app/`
+
+When adding an applet, link it from the course `index.html` and add its path to
+`APP_SHELL` in `service-worker.js`, then bump `CACHE_NAME` so installed copies update.
 
 ## Deploying with GitHub Pages
 
