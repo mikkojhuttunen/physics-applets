@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Red-Blue Anaglyph 3D Viewer — FYS.240 Optics</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --panel: rgba(255,255,255,0.94);
+    --border: #d5d9e2;
+    --text: #1b1f29;
+    --muted: #5d6675;
+    --accent: #2f6df0;
+    --field: #eef1f6;
+    --active: #dfe8ff;
+    box-sizing: border-box;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115;
+      --panel: rgba(24,27,34,0.94);
+      --border: #2a2f3a;
+      --text: #e6e8ee;
+      --muted: #9aa3b2;
+      --accent: #4f8cff;
+      --field: #232733;
+      --active: #1d2740;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115;
+    --panel: rgba(24,27,34,0.94);
+    --border: #2a2f3a;
+    --text: #e6e8ee;
+    --muted: #9aa3b2;
+    --accent: #4f8cff;
+    --field: #232733;
+    --active: #1d2740;
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+  #viewport { position: fixed; inset: 0; }
+  #viewport canvas { display: block; width: 100%; height: 100%; }
+
+  body a.course-back {
+    position: fixed;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: 10px;
+    left: auto;
+    z-index: 8;
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 13px;
+    line-height: 1.3;
+    opacity: 1;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    text-decoration: none;
+  }
+  body a.course-back:hover { border-color: var(--accent); text-decoration: none; }
+
+  #toggle {
+    position: fixed;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    left: 10px;
+    z-index: 5;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  #panel {
+    position: fixed;
+    top: calc(52px + env(safe-area-inset-top, 0px));
+    left: 10px;
+    z-index: 4;
+    width: min(300px, calc(100vw - 20px));
+    max-height: calc(100% - 64px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+  #panel.hidden { display: none; }
+  #panel h1 { font-size: 14px; margin: 0 0 4px 0; font-weight: 600; }
+  #panel h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 14px 0 6px 0;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0; }
+  .row label { color: var(--muted); flex: 1; }
+  .row output { width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+  input[type="range"] { flex: 2; accent-color: var(--accent); }
+  input[type="color"] {
+    width: 44px; height: 26px; padding: 0; cursor: pointer;
+    border: 1px solid var(--border); background: none; border-radius: 4px;
+  }
+  select, button, input[type="file"]::file-selector-button {
+    background: var(--field); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: 12px; cursor: pointer;
+  }
+  select { width: 100%; }
+  #panel button { width: 100%; margin-top: 6px; }
+  button:hover, input[type="file"]::file-selector-button:hover { border-color: var(--accent); }
+  input[type="file"] { width: 100%; font-size: 12px; color: var(--muted); }
+  .toggle-row { display: flex; gap: 6px; }
+  .toggle-row button { flex: 1; margin-top: 0 !important; }
+  .toggle-row button.active { border-color: var(--accent); background: var(--active); }
+  #status { margin-top: 8px; font-size: 11px; color: var(--muted); min-height: 14px; }
+
+  #figure {
+    position: fixed;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 3;
+    width: min(700px, calc(100vw - 20px));
+    box-sizing: border-box;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  #figure .fig-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  #figure .fig-head button { padding: 3px 10px; }
+  #figure.collapsed .fig-body { display: none; }
+  .fig-row { display: flex; gap: 8px; }
+  .fig-row figure { flex: 1; margin: 0; min-width: 0; text-align: center; }
+  .fig-row canvas {
+    width: 100%; display: block;
+    border: 1px solid var(--border); border-radius: 4px; background: #000;
+    image-rendering: pixelated;
+  }
+  .fig-row figcaption { margin-top: 3px; color: var(--muted); font-size: 11px; }
+  #figCaption { margin: 8px 0 0 0; color: var(--muted); line-height: 1.4; }
+  #figure {
+    max-height: calc(100% - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+  }
+  @media (min-width: 701px) {
+    body.panel-open #figure:not(.zoomed) { width: min(700px, calc(100vw - 330px)); }
+  }
+  .fig-body { cursor: zoom-in; -webkit-tap-highlight-color: transparent; }
+  #figure.zoomed .fig-body { cursor: zoom-out; }
+  #figure.zoomed {
+    left: 10px; right: 10px; width: auto; max-width: 1100px; margin: 0 auto;
+    z-index: 6; max-height: calc(100% - 64px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+  }
+  @media (max-width: 700px) {
+    #figure.zoomed .fig-row { flex-direction: column; }
+  }
+
+  #panel, #panel > *, #figure { transition: opacity .15s, background-color .15s, border-color .15s; }
+  .hint { font-size: 11px; color: var(--muted); margin: 0 0 6px 0; line-height: 1.35; }
+  .padblock { margin: 8px 0; padding: 6px; border-radius: 8px; }
+  .padblock.active { background: var(--panel); box-shadow: 0 0 0 1px var(--border); }
+  .pad-title { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .pad-title code { color: var(--text); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .pad {
+    position: relative; height: 130px; overflow: hidden;
+    border: 1px solid var(--border); border-radius: 6px;
+    touch-action: none; cursor: crosshair; user-select: none; -webkit-user-select: none;
+  }
+  .pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .pad .cursor {
+    position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px;
+    border: 2px solid #fff; border-radius: 50%; pointer-events: none;
+    box-shadow: 0 0 0 1.5px #000, inset 0 0 0 1.5px #000;
+  }
+  .pad-axes { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  body.adjusting #panel { background: transparent; border-color: transparent; }
+  body.adjusting #panel > * { opacity: 0; pointer-events: none; }
+  body.adjusting #panel > .padblock.active { opacity: 1; pointer-events: auto; }
+  body.adjusting #figure { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div id="viewport"></div>
+
+<button id="toggle">Controls</button>
+
+<div id="panel">
+  <h1>Anaglyph 3D Viewer</h1>
+
+  <h2>Model</h2>
+  <input type="file" id="fileInput" accept=".dae,.obj,.glb,.gltf">
+  <div id="status">Load a .dae, .obj, .glb or .gltf file, or try a demo.</div>
+
+  <h2>Demos</h2>
+  <div class="toggle-row">
+    <button id="demoCube">Cube</button>
+    <button id="demoText">"ANAGLYPH" block</button>
+  </div>
+  <button id="demoDepth">In front of / behind the screen</button>
+  <button id="demoCircle">Disc and square in noise</button>
+  <button id="demoNoise">Hidden code in noise</button>
+  <div class="row">
+    <label for="camo">Red/cyan speckle in background</label>
+    <input type="range" id="camo" min="0" max="1" step="0.05" value="0">
+    <output id="camoOut">0%</output>
+  </div>
+
+  <h2>Stereo Geometry</h2>
+  <div class="row">
+    <label for="eyeSep">Eye separation</label>
+    <input type="range" id="eyeSep" min="0" max="0.3" step="0.001" value="0.064">
+    <output id="eyeSepOut">0.064</output>
+  </div>
+  <div class="row">
+    <label for="convergence">Convergence dist.</label>
+    <input type="range" id="convergence" min="0.5" max="50" step="0.1" value="6">
+    <output id="convergenceOut">6.0</output>
+  </div>
+
+  <h2>Lens Colors</h2>
+  <p class="hint">Drag on a map to pick the lens color. The panel fades while you drag so you can see the image.</p>
+  <div class="padblock" id="blockR">
+    <div class="pad-title"><span>Right lens: blue &harr; cyan</span><code>rgb(0, 255, 255)</code></div>
+    <div class="pad" id="padR"><canvas></canvas><div class="cursor"></div></div>
+    <div class="pad-axes"><span>blue</span><span>cyan</span></div>
+  </div>
+  <div class="padblock" id="blockL">
+    <div class="pad-title"><span>Left lens: red &harr; orange</span><code>rgb(255, 0, 0)</code></div>
+    <div class="pad" id="padL"><canvas></canvas><div class="cursor"></div></div>
+    <div class="pad-axes"><span>red</span><span>orange</span></div>
+  </div>
+  <div class="toggle-row">
+    <button id="presetTrue">True</button>
+    <button id="presetHalf">Half</button>
+    <button id="presetColor" class="active">Color</button>
+    <button id="presetOptim">Optim.</button>
+  </div>
+  <div class="row" style="margin-top:10px;"><label for="mixMode">Blend basis</label></div>
+  <select id="mixMode">
+    <option value="luminance">Per-eye luminance (less fringing)</option>
+    <option value="fullcolor" selected>Full per-eye color (more color)</option>
+  </select>
+  <div class="row">
+    <label for="saturation">Right-eye saturation</label>
+    <input type="range" id="saturation" min="0" max="1" step="0.01" value="1">
+    <output id="saturationOut">1.00</output>
+  </div>
+
+  <h2>View</h2>
+  <div class="row">
+    <label for="bgColor">Background</label>
+    <input type="color" id="bgColor" value="#ffffff">
+  </div>
+  <button id="autoRotate">Auto-rotate: off</button>
+  <button id="resetView">Reset view / re-center model</button>
+</div>
+
+<div id="figure" class="collapsed">
+  <div class="fig-head">
+    <strong>Figure 1: Anaglyphs explained</strong>
+    <button id="figToggle">Show</button>
+  </div>
+  <div class="fig-body">
+    <div class="fig-row">
+      <figure><canvas id="figL"></canvas><figcaption>(a) Left-eye image</figcaption></figure>
+      <figure><canvas id="figR"></canvas><figcaption>(b) Right-eye image</figcaption></figure>
+      <figure><canvas id="figA"></canvas><figcaption>(c) Anaglyph composite</figcaption></figure>
+    </div>
+    <p id="figCaption"></p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/ColladaLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/OBJLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const viewportEl = $("viewport");
+  const statusEl = $("status");
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xffffff);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 1.0));
+  const dir1 = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir1.position.set(5, 10, 7);
+  scene.add(dir1);
+  const dir2 = new THREE.DirectionalLight(0xffffff, 0.35);
+  dir2.position.set(-5, -3, -7);
+  scene.add(dir2);
+
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 5000);
+  camera.position.set(0, 0, 6);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  viewportEl.appendChild(renderer.domElement);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+
+  let currentModel = null;
+  let autoRotating = false;
+  let stereogramActive = false;
+  let stereoCanvases = null;
+  let stereogramShift = 0;
+  let stereoToken = 0;
+  let stereoKind = "shapes";
+  let stereoCamo = 0;
+  let stereoTex = null;
+  let stereoW = 0;
+  let stereoH = 0;
+  let resizeTimer = null;
+
+  const stereoCamera = new THREE.StereoCamera();
+
+  function makeRenderTarget() {
+    return new THREE.WebGLRenderTarget(2, 2, {
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      format: THREE.RGBAFormat
+    });
+  }
+  const targetL = makeRenderTarget();
+  const targetR = makeRenderTarget();
+
+  const anaglyphMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      texL: { value: targetL.texture },
+      texR: { value: targetR.texture },
+      colorL: { value: new THREE.Vector3(1, 0, 0) },
+      colorR: { value: new THREE.Vector3(0, 1, 1) },
+      saturationR: { value: 1.0 },
+      useLuminance: { value: 0.0 }
+    },
+    vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
+    fragmentShader: [
+      "uniform sampler2D texL;",
+      "uniform sampler2D texR;",
+      "uniform vec3 colorL;",
+      "uniform vec3 colorR;",
+      "uniform float saturationR;",
+      "uniform float useLuminance;",
+      "varying vec2 vUv;",
+      "vec3 desaturate(vec3 c, float a){ float l = dot(c, vec3(0.299,0.587,0.114)); return mix(vec3(l), c, a); }",
+      "void main(){",
+      "  vec3 tL = texture2D(texL, vUv).rgb;",
+      "  vec3 tR = desaturate(texture2D(texR, vUv).rgb, saturationR);",
+      "  float lL = dot(tL, vec3(0.299,0.587,0.114));",
+      "  float lR = dot(tR, vec3(0.299,0.587,0.114));",
+      "  vec3 fromL = mix(colorL * tL, colorL * lL, useLuminance);",
+      "  vec3 fromR = mix(colorR * tR, colorR * lR, useLuminance);",
+      "  gl_FragColor = vec4(fromL + fromR, 1.0);",
+      "}"
+    ].join("\n")
+  });
+
+  const quadScene = new THREE.Scene();
+  const quadCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  quadScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), anaglyphMaterial));
+
+  function hexToVec3(hex) {
+    const c = new THREE.Color(hex);
+    return new THREE.Vector3(c.r, c.g, c.b);
+  }
+
+  function resize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    renderer.setSize(w, h);
+    targetL.setSize(w, h);
+    targetR.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", () => {
+    resize();
+    if (!stereogramActive) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stereogramActive && (Math.abs(window.innerWidth - stereoW) > 40 || Math.abs(window.innerHeight - stereoH) > 150)) {
+        showStereogram();
+      }
+    }, 250);
+  });
+  resize();
+
+  function frameObject(object) {
+    object.position.set(0, 0, 0);
+    object.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(object);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    object.position.sub(center);
+
+    const radius = (size.length() / 2) || 1;
+    const vHalf = (camera.fov * Math.PI / 180) / 2;
+    const hHalf = Math.atan(Math.tan(vHalf) * camera.aspect);
+    const dist = (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.25;
+
+    camera.position.set(0, 0, dist);
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    const conv = Math.min(50, Math.max(0.5, dist));
+    $("convergence").max = Math.max(50, dist * 2);
+    $("convergence").value = conv.toFixed(1);
+    $("convergenceOut").textContent = conv.toFixed(1);
+    const sep = Math.min(0.3, Math.max(0.005, dist * 0.011));
+    $("eyeSep").max = Math.max(0.3, sep * 3);
+    $("eyeSep").value = sep.toFixed(3);
+    $("eyeSepOut").textContent = sep.toFixed(3);
+    stereoCamera.eyeSep = sep;
+  }
+
+  function clearModel() {
+    stereoToken++;
+    if (!currentModel) return;
+    scene.remove(currentModel);
+    currentModel.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        mats.forEach((m) => m.dispose());
+      }
+    });
+    currentModel = null;
+  }
+
+  function exitStereogramMode() {
+    if (!stereogramActive) return;
+    stereogramActive = false;
+    stereoCanvases = null;
+    disposeStereoTextures();
+    anaglyphMaterial.uniforms.texL.value = targetL.texture;
+    anaglyphMaterial.uniforms.texR.value = targetR.texture;
+  }
+
+  function makeTextTexture(text) {
+    const cv = document.createElement("canvas");
+    cv.width = 512;
+    cv.height = 256;
+    const ctx = cv.getContext("2d");
+    ctx.fillStyle = "#1c2230";
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = "#e8ecf7";
+    ctx.font = "bold 66px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, cv.width / 2, cv.height / 2);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function loadDemoCube() {
+    clearModel();
+    exitStereogramMode();
+    const geo = new THREE.BoxGeometry(2, 2, 2);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x6f9bff, roughness: 0.4, metalness: 0.1 }));
+    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0x1b1f29 })));
+    mesh.rotation.set(0.45, 0.65, 0);
+    scene.add(mesh);
+    currentModel = mesh;
+    frameObject(mesh);
+    statusEl.textContent = "Demo: cube";
+    setFigureCaption();
+  }
+
+  function loadDemoTextBlock() {
+    clearModel();
+    exitStereogramMode();
+    const side = new THREE.MeshStandardMaterial({ color: 0x2a3040, roughness: 0.6 });
+    const front = new THREE.MeshStandardMaterial({ map: makeTextTexture("ANAGLYPH"), roughness: 0.5 });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(4, 2, 0.6), [side, side, side, side, front, side]);
+    scene.add(mesh);
+    currentModel = mesh;
+    frameObject(mesh);
+    statusEl.textContent = 'Demo: text block "ANAGLYPH"';
+    setFigureCaption();
+  }
+
+  function loadDemoDepth() {
+    clearModel();
+    exitStereogramMode();
+    const g = new THREE.Group();
+
+    const planeGeo = new THREE.PlaneGeometry(5.2, 3.2);
+    const plane = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({
+      color: 0x8892a6, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false
+    }));
+    plane.add(new THREE.LineSegments(new THREE.EdgesGeometry(planeGeo), new THREE.LineBasicMaterial({ color: 0x1b1f29 })));
+    g.add(plane);
+
+    const near = new THREE.Mesh(
+      new THREE.SphereGeometry(0.7, 40, 28),
+      new THREE.MeshStandardMaterial({ color: 0xffb040, roughness: 0.35, metalness: 0.1 })
+    );
+    near.position.set(-1.3, 0, 1.6);
+    g.add(near);
+
+    const far = new THREE.Mesh(
+      new THREE.BoxGeometry(1.4, 1.4, 1.4),
+      new THREE.MeshStandardMaterial({ color: 0x6f9bff, roughness: 0.4, metalness: 0.1 })
+    );
+    far.position.set(1.3, 0, -1.6);
+    far.rotation.set(0.45, 0.65, 0);
+    g.add(far);
+
+    scene.add(g);
+    currentModel = g;
+    frameObject(g);
+
+    const sep = Math.min(0.5, camera.position.z * 0.03);
+    $("eyeSep").max = Math.max(0.3, sep * 2);
+    $("eyeSep").value = sep.toFixed(3);
+    $("eyeSepOut").textContent = sep.toFixed(3);
+    stereoCamera.eyeSep = sep;
+
+    statusEl.textContent = "Demo: the orange sphere pops out in front of the screen, the blue cube sits behind it. The grey frame is the screen plane (zero parallax).";
+    setFigureCaption();
+  }
+
+  function buildStereogram(kind) {
+    const DOT = 4;
+    const k = Math.min(1, 1400 / Math.max(window.innerWidth, window.innerHeight));
+    const W = Math.max(64, Math.round(window.innerWidth * k));
+    const H = Math.max(64, Math.round(window.innerHeight * k));
+    stereoW = window.innerWidth;
+    stereoH = window.innerHeight;
+    const gridW = Math.ceil(W / DOT), gridH = Math.ceil(H / DOT);
+
+    const mc = document.createElement("canvas");
+    mc.width = gridW;
+    mc.height = gridH;
+    const mctx = mc.getContext("2d");
+    mctx.fillStyle = "#000";
+    mctx.fillRect(0, 0, gridW, gridH);
+    mctx.fillStyle = "#fff";
+    mctx.strokeStyle = "#fff";
+    mctx.lineJoin = "round";
+
+    const u = Math.min(gridW, gridH);
+    if (kind === "shapes") {
+      const d = Math.min(gridW * 0.4, gridH * 0.6);
+      const cy = gridH / 2;
+      mctx.fillStyle = "#ff0000";
+      mctx.beginPath();
+      mctx.arc(gridW * 0.27, cy, d / 2, 0, Math.PI * 2);
+      mctx.fill();
+      mctx.fillStyle = "#00ff00";
+      const side = d * 0.88;
+      mctx.fillRect(gridW * 0.73 - side / 2, cy - side / 2, side, side);
+    } else {
+      const digitH = 0.36 * u;
+      const gap = 0.09 * u;
+      const fontSize = digitH / 0.716;
+      const spacing = 0.38 * digitH;
+      mctx.font = "400 " + fontSize + "px 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif";
+      mctx.textAlign = "left";
+      mctx.textBaseline = "alphabetic";
+      mctx.lineWidth = Math.max(1, digitH * 0.03);
+
+      const drawRow = (text, cy) => {
+        const both = mctx.measureText(text);
+        const y = cy + (both.actualBoundingBoxAscent - both.actualBoundingBoxDescent) / 2;
+        const ms = text.split("").map((ch) => mctx.measureText(ch));
+        const inkW = ms.map((m) => m.actualBoundingBoxLeft + m.actualBoundingBoxRight);
+        const total = inkW.reduce((a, w) => a + w, 0) + spacing * (text.length - 1);
+        let cursor = gridW / 2 - total / 2;
+        text.split("").forEach((ch, i) => {
+          const x = cursor + ms[i].actualBoundingBoxLeft;
+          mctx.fillText(ch, x, y);
+          mctx.strokeText(ch, x, y);
+          cursor += inkW[i] + spacing;
+        });
+      };
+      drawRow("19", gridH / 2 - (digitH + gap) / 2);
+      drawRow("84", gridH / 2 + (digitH + gap) / 2);
+    }
+    const mask = mctx.getImageData(0, 0, gridW, gridH).data;
+
+    const base = new Uint8Array(gridW * gridH);
+    for (let i = 0; i < base.length; i++) base[i] = Math.random() < 0.5 ? 0 : 1;
+    const shift = Math.max(2, Math.min(5, Math.round(gridW * 0.02)));
+    stereogramShift = shift;
+
+    const lc = document.createElement("canvas");
+    lc.width = W; lc.height = H;
+    const rc = document.createElement("canvas");
+    rc.width = W; rc.height = H;
+    const lctx = lc.getContext("2d");
+    const rctx = rc.getContext("2d");
+    const lImg = lctx.createImageData(W, H);
+    const rImg = rctx.createImageData(W, H);
+
+    for (let gy = 0; gy < gridH; gy++) {
+      for (let gx = 0; gx < gridW; gx++) {
+        const idx = gy * gridW + gx;
+        const lv = base[idx] ? 255 : 0;
+        let dsp = 0;
+        let inShape = false;
+        if (kind === "shapes") {
+          if (mask[idx * 4] > 128) { dsp = -shift; inShape = true; }
+          else if (mask[idx * 4 + 1] > 128) { dsp = shift; inShape = true; }
+        } else if (mask[idx * 4] > 128) {
+          dsp = -shift;
+          inShape = true;
+        }
+        let rv;
+        if (!inShape && Math.random() < stereoCamo) {
+          rv = Math.random() < 0.5 ? 0 : 255;
+        } else {
+          const sx = Math.min(gridW - 1, Math.max(0, gx - dsp));
+          rv = base[gy * gridW + sx] ? 255 : 0;
+        }
+        for (let dy = 0; dy < DOT; dy++) {
+          for (let dx = 0; dx < DOT; dx++) {
+            const px = gx * DOT + dx, py = gy * DOT + dy;
+            if (px >= W || py >= H) continue;
+            const q = (py * W + px) * 4;
+            lImg.data[q] = lImg.data[q + 1] = lImg.data[q + 2] = lv;
+            lImg.data[q + 3] = 255;
+            rImg.data[q] = rImg.data[q + 1] = rImg.data[q + 2] = rv;
+            rImg.data[q + 3] = 255;
+          }
+        }
+      }
+    }
+    lctx.putImageData(lImg, 0, 0);
+    rctx.putImageData(rImg, 0, 0);
+
+    const left = new THREE.CanvasTexture(lc);
+    const right = new THREE.CanvasTexture(rc);
+    [left, right].forEach((t) => {
+      t.generateMipmaps = false;
+      t.minFilter = THREE.NearestFilter;
+      t.magFilter = THREE.NearestFilter;
+    });
+    return { left, right, canvases: { left: lc, right: rc } };
+  }
+
+  function disposeStereoTextures() {
+    if (stereoTex) {
+      stereoTex.left.dispose();
+      stereoTex.right.dispose();
+      stereoTex = null;
+    }
+  }
+
+  function showStereogram(kind) {
+    if (kind) stereoKind = kind;
+    clearModel();
+    const s = buildStereogram(stereoKind);
+    disposeStereoTextures();
+    stereoTex = s;
+    anaglyphMaterial.uniforms.texL.value = s.left;
+    anaglyphMaterial.uniforms.texR.value = s.right;
+    stereoCanvases = s.canvases;
+    stereogramActive = true;
+    statusEl.textContent = stereoKind === "shapes"
+      ? "Demo: disc and square in noise. Wear red/cyan glasses: the disc (left) floats in front of the screen, the square (right) sits behind it."
+      : 'Demo: hidden code in noise. Wear red/cyan glasses: "19" over "84" floats in front of the screen.';
+    setFigureCaption();
+  }
+
+  function setCamo(v) {
+    stereoCamo = v;
+    $("camo").value = v;
+    $("camoOut").textContent = Math.round(v * 100) + "%";
+  }
+
+  $("camo").addEventListener("input", (e) => {
+    $("camoOut").textContent = Math.round(parseFloat(e.target.value) * 100) + "%";
+  });
+  $("camo").addEventListener("change", (e) => {
+    stereoCamo = parseFloat(e.target.value);
+    if (stereogramActive) showStereogram();
+  });
+
+  function loadDemoCircle() {
+    setCamo(0);
+    showStereogram("shapes");
+  }
+
+  function loadDemoStereogram() {
+    const token = ++stereoToken;
+    if (token === stereoToken) {
+      setCamo(0.8);
+      showStereogram("text");
+    }
+  }
+
+  function loadFile(file) {
+    const name = file.name.toLowerCase();
+    const url = URL.createObjectURL(file);
+    statusEl.textContent = "Loading " + file.name + "...";
+    const onError = (err) => {
+      console.error(err);
+      statusEl.textContent = "Failed to load " + file.name + ".";
+      URL.revokeObjectURL(url);
+    };
+    const onLoaded = (obj) => {
+      clearModel();
+      exitStereogramMode();
+      currentModel = obj;
+      scene.add(obj);
+      frameObject(obj);
+      statusEl.textContent = "Loaded " + file.name;
+      URL.revokeObjectURL(url);
+      setFigureCaption();
+    };
+    if (name.endsWith(".dae")) {
+      new THREE.ColladaLoader().load(url, (c) => onLoaded(c.scene), undefined, onError);
+    } else if (name.endsWith(".obj")) {
+      new THREE.OBJLoader().load(url, onLoaded, undefined, onError);
+    } else if (name.endsWith(".glb") || name.endsWith(".gltf")) {
+      new THREE.GLTFLoader().load(url, (g) => onLoaded(g.scene), undefined, onError);
+    } else {
+      statusEl.textContent = "Unsupported file type.";
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  $("fileInput").addEventListener("change", (e) => {
+    if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+  });
+  $("demoCube").addEventListener("click", loadDemoCube);
+  $("demoText").addEventListener("click", loadDemoTextBlock);
+  $("demoDepth").addEventListener("click", loadDemoDepth);
+  $("demoCircle").addEventListener("click", loadDemoCircle);
+  $("demoNoise").addEventListener("click", loadDemoStereogram);
+
+  function bindSlider(id, outId, cb, digits) {
+    const el = $(id), out = $(outId);
+    const update = () => { out.textContent = parseFloat(el.value).toFixed(digits); cb(parseFloat(el.value)); };
+    el.addEventListener("input", update);
+    update();
+  }
+  bindSlider("eyeSep", "eyeSepOut", (v) => { stereoCamera.eyeSep = v; setFigureCaption(); }, 3);
+  bindSlider("convergence", "convergenceOut", () => {}, 1);
+  bindSlider("saturation", "saturationOut", (v) => { anaglyphMaterial.uniforms.saturationR.value = v; }, 2);
+
+  const presets = {
+    presetTrue:  { left: "#ff0000", right: "#00ffff", mode: "luminance", sat: 0.0 },
+    presetHalf:  { left: "#ff0000", right: "#00ffff", mode: "luminance", sat: 1.0 },
+    presetColor: { left: "#ff0000", right: "#00ffff", mode: "fullcolor", sat: 1.0 },
+    presetOptim: { left: "#ff0000", right: "#00c8dc", mode: "fullcolor", sat: 0.85 }
+  };
+  function clearPresetActive() {
+    Object.keys(presets).forEach((id) => $(id).classList.remove("active"));
+  }
+  function makePad(rootId, toColor, fromColor, onChange) {
+    const root = $(rootId);
+    const block = root.parentElement;
+    const cv = root.querySelector("canvas");
+    const cur = root.querySelector(".cursor");
+    const readout = block.querySelector("code");
+    const PW = 96, PH = 64;
+    cv.width = PW;
+    cv.height = PH;
+    const ctx = cv.getContext("2d");
+    const img = ctx.createImageData(PW, PH);
+    for (let y = 0; y < PH; y++) {
+      for (let x = 0; x < PW; x++) {
+        const c = toColor(x / (PW - 1), 1 - y / (PH - 1));
+        const p = (y * PW + x) * 4;
+        img.data[p] = c[0] * 255;
+        img.data[p + 1] = c[1] * 255;
+        img.data[p + 2] = c[2] * 255;
+        img.data[p + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+
+    let dragging = false;
+    function place(nx, ny, fire) {
+      nx = Math.min(1, Math.max(0, nx));
+      ny = Math.min(1, Math.max(0, ny));
+      cur.style.left = (nx * 100) + "%";
+      cur.style.top = ((1 - ny) * 100) + "%";
+      const c = toColor(nx, ny);
+      readout.textContent = "rgb(" + c.map((v) => Math.round(v * 255)).join(", ") + ")";
+      if (fire) onChange(new THREE.Vector3(c[0], c[1], c[2]));
+    }
+    function fromEvent(e) {
+      const r = root.getBoundingClientRect();
+      place((e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height, true);
+    }
+    function end() {
+      dragging = false;
+      block.classList.remove("active");
+      document.body.classList.remove("adjusting");
+    }
+    root.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      dragging = true;
+      try { root.setPointerCapture(e.pointerId); } catch (err) {}
+      block.classList.add("active");
+      document.body.classList.add("adjusting");
+      fromEvent(e);
+    });
+    root.addEventListener("pointermove", (e) => { if (dragging) fromEvent(e); });
+    root.addEventListener("pointerup", end);
+    root.addEventListener("pointercancel", end);
+    root.addEventListener("lostpointercapture", end);
+
+    return {
+      set(v) {
+        const n = fromColor(v);
+        place(n[0], n[1], false);
+      }
+    };
+  }
+
+  const padR = makePad(
+    "padR",
+    (nx, ny) => [0, nx, 0.4 + 0.6 * ny],
+    (v) => [v.y, (v.z - 0.4) / 0.6],
+    (v) => { anaglyphMaterial.uniforms.colorR.value = v; clearPresetActive(); }
+  );
+  const padL = makePad(
+    "padL",
+    (nx, ny) => [0.5 + 0.5 * ny, 0.6 * nx, 0],
+    (v) => [v.y / 0.6, (v.x - 0.5) / 0.5],
+    (v) => { anaglyphMaterial.uniforms.colorL.value = v; clearPresetActive(); }
+  );
+  padR.set(new THREE.Vector3(0, 1, 1));
+  padL.set(new THREE.Vector3(1, 0, 0));
+  $("mixMode").addEventListener("change", (e) => {
+    anaglyphMaterial.uniforms.useLuminance.value = e.target.value === "luminance" ? 1.0 : 0.0;
+  });
+  $("bgColor").addEventListener("input", (e) => { scene.background = new THREE.Color(e.target.value); });
+
+  Object.keys(presets).forEach((id) => {
+    $(id).addEventListener("click", () => {
+      const p = presets[id];
+      padL.set(hexToVec3(p.left));
+      padR.set(hexToVec3(p.right));
+      $("mixMode").value = p.mode;
+      $("saturation").value = p.sat;
+      $("saturationOut").textContent = p.sat.toFixed(2);
+      const u = anaglyphMaterial.uniforms;
+      u.colorL.value = hexToVec3(p.left);
+      u.colorR.value = hexToVec3(p.right);
+      u.useLuminance.value = p.mode === "luminance" ? 1.0 : 0.0;
+      u.saturationR.value = p.sat;
+      clearPresetActive();
+      $(id).classList.add("active");
+    });
+  });
+
+  $("autoRotate").addEventListener("click", (e) => {
+    autoRotating = !autoRotating;
+    e.target.textContent = "Auto-rotate: " + (autoRotating ? "on" : "off");
+  });
+  $("resetView").addEventListener("click", () => { if (currentModel) frameObject(currentModel); });
+
+  function syncPanelClass() {
+    document.body.classList.toggle("panel-open", !$("panel").classList.contains("hidden"));
+  }
+  $("toggle").addEventListener("click", () => { $("panel").classList.toggle("hidden"); syncPanelClass(); });
+  $("figToggle").addEventListener("click", () => {
+    const fig = $("figure");
+    fig.classList.toggle("collapsed");
+    fig.classList.remove("zoomed");
+    $("figToggle").textContent = fig.classList.contains("collapsed") ? "Show" : "Hide";
+  });
+  function toggleZoom() {
+    $("figure").classList.toggle("zoomed");
+    try { updateFigure(); } catch (e) { console.error(e); }
+  }
+  $("figure").querySelector(".fig-body").addEventListener("click", toggleZoom);
+  if (window.innerWidth < 700) {
+    $("panel").classList.add("hidden");
+  }
+  syncPanelClass();
+
+  const figL = $("figL"), figR = $("figR"), figA = $("figA");
+  const readCanvas = document.createElement("canvas");
+
+  function setFigureCaption() {
+    if (stereogramActive) {
+      $("figCaption").textContent =
+        (stereoKind === "shapes"
+          ? "Random-dot stereogram. Both eye images use the same random dot pattern; the right image is shifted sideways by " +
+            stereogramShift + " dots, to the left inside the disc and to the right inside the square. Each image alone looks like noise, and so does the composite without glasses. With red/cyan glasses the two images fuse: the disc (left) appears in front of the screen and the square (right) behind it."
+          : "Random-dot stereogram. Both eye images use the same random dot pattern; inside the digits (\u201C19\u201D on the top row, \u201C84\u201D below) the right image is shifted sideways by " +
+            stereogramShift + " dots. Each image alone looks like noise, and so does the composite without glasses. With red/cyan glasses the two images fuse and the digits appear in front of the screen.");
+      if (stereoCamo > 0) {
+        $("figCaption").textContent += " " + Math.round(stereoCamo * 100) + "% of the background dots also get independent left and right values, which show up as red and cyan speckles and hide the pattern without glasses.";
+      }
+    } else {
+      $("figCaption").textContent =
+        "Left- and right-eye views rendered from two cameras separated by " + parseFloat($("eyeSep").value).toFixed(3) +
+        " scene units, and their red/cyan composite using the current lens colors. Horizontal offsets between (a) and (b) become depth.";
+    }
+  }
+
+  function drawScaled(source, dest, flip) {
+    const ctx = dest.getContext("2d");
+    ctx.save();
+    if (flip) { ctx.translate(0, dest.height); ctx.scale(1, -1); }
+    ctx.imageSmoothingEnabled = !stereogramActive;
+    ctx.drawImage(source, 0, 0, dest.width, dest.height);
+    ctx.restore();
+  }
+
+  function grabTarget(target, dest) {
+    const w = target.width, h = target.height;
+    const buf = new Uint8Array(w * h * 4);
+    renderer.readRenderTargetPixels(target, 0, 0, w, h, buf);
+    readCanvas.width = w;
+    readCanvas.height = h;
+    readCanvas.getContext("2d").putImageData(new ImageData(new Uint8ClampedArray(buf), w, h), 0, 0);
+    drawScaled(readCanvas, dest, true);
+  }
+
+  function updateFigure() {
+    if ($("figure").classList.contains("collapsed")) return;
+    const FW = $("figure").classList.contains("zoomed") ? 480 : 240;
+    let aspect;
+    if (stereogramActive && stereoCanvases) {
+      aspect = stereoCanvases.left.height / stereoCanvases.left.width;
+    } else {
+      aspect = targetL.height / targetL.width;
+    }
+    const FH = Math.max(1, Math.round(FW * aspect));
+    [figL, figR, figA].forEach((c) => {
+      if (c.width !== FW || c.height !== FH) { c.width = FW; c.height = FH; }
+    });
+
+    if (stereogramActive && stereoCanvases) {
+      drawScaled(stereoCanvases.left, figL, false);
+      drawScaled(stereoCanvases.right, figR, false);
+    } else {
+      grabTarget(targetL, figL);
+      grabTarget(targetR, figR);
+    }
+
+    const dL = figL.getContext("2d").getImageData(0, 0, FW, FH);
+    const dR = figR.getContext("2d").getImageData(0, 0, FW, FH);
+    const actx = figA.getContext("2d");
+    const out = actx.createImageData(FW, FH);
+    const u = anaglyphMaterial.uniforms;
+    const cl = u.colorL.value, cr = u.colorR.value;
+    const sat = u.saturationR.value;
+    const useLum = u.useLuminance.value > 0.5;
+    const a = dL.data, b = dR.data, o = out.data;
+    for (let i = 0; i < a.length; i += 4) {
+      const lr = a[i], lg = a[i + 1], lb = a[i + 2];
+      let rr = b[i], rg = b[i + 1], rb = b[i + 2];
+      let lumR = 0.299 * rr + 0.587 * rg + 0.114 * rb;
+      rr = lumR + (rr - lumR) * sat;
+      rg = lumR + (rg - lumR) * sat;
+      rb = lumR + (rb - lumR) * sat;
+      lumR = 0.299 * rr + 0.587 * rg + 0.114 * rb;
+      const lumL = 0.299 * lr + 0.587 * lg + 0.114 * lb;
+      let r, g, bl;
+      if (useLum) {
+        r = cl.x * lumL + cr.x * lumR;
+        g = cl.y * lumL + cr.y * lumR;
+        bl = cl.z * lumL + cr.z * lumR;
+      } else {
+        r = cl.x * lr + cr.x * rr;
+        g = cl.y * lg + cr.y * rg;
+        bl = cl.z * lb + cr.z * rb;
+      }
+      o[i] = Math.min(255, r);
+      o[i + 1] = Math.min(255, g);
+      o[i + 2] = Math.min(255, bl);
+      o[i + 3] = 255;
+    }
+    actx.putImageData(out, 0, 0);
+  }
+
+  loadDemoCircle();
+
+  let lastFigure = 0;
+  function animate(now) {
+    requestAnimationFrame(animate);
+    if (autoRotating && currentModel) currentModel.rotation.y += 0.006;
+    controls.update();
+
+    if (!stereogramActive) {
+      camera.focus = parseFloat($("convergence").value);
+      camera.updateProjectionMatrix();
+      stereoCamera.update(camera);
+      renderer.setRenderTarget(targetL);
+      renderer.render(scene, stereoCamera.cameraL);
+      renderer.setRenderTarget(targetR);
+      renderer.render(scene, stereoCamera.cameraR);
+    }
+    renderer.setRenderTarget(null);
+    renderer.render(quadScene, quadCamera);
+
+    if (now - lastFigure > 400) {
+      lastFigure = now;
+      try { updateFigure(); } catch (e) { console.error(e); }
+    }
+  }
+  requestAnimationFrame(animate);
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
