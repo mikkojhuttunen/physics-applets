@@ -1,0 +1,1389 @@
+diff --git a/finnmath-app/Vector_addition.html b/finnmath-app/Vector_addition.html
+index aa48aca..5bbf7c7 100644
+--- a/finnmath-app/Vector_addition.html
++++ b/finnmath-app/Vector_addition.html
+@@ -147,6 +147,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div id="app">
+   <header>
+     <h1>Vector Lab</h1>
+diff --git a/finnmath-app/complex-plane-explorer.html b/finnmath-app/complex-plane-explorer.html
+index 062d2c5..2ec3174 100644
+--- a/finnmath-app/complex-plane-explorer.html
++++ b/finnmath-app/complex-plane-explorer.html
+@@ -287,6 +287,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="app">
+   <header>
+     <h1>Complex Plane Explorer</h1>
+diff --git a/finnmath-app/derivative_visualizer.html b/finnmath-app/derivative_visualizer.html
+index 874097c..51cba68 100644
+--- a/finnmath-app/derivative_visualizer.html
++++ b/finnmath-app/derivative_visualizer.html
+@@ -160,6 +160,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div id="app">
+   <header>
+     <h1>Derivatives, visualized</h1>
+diff --git a/finnmath-app/fraction_addition_applet.html b/finnmath-app/fraction_addition_applet.html
+index 6e16df7..8e50690 100644
+--- a/finnmath-app/fraction_addition_applet.html
++++ b/finnmath-app/fraction_addition_applet.html
+@@ -260,6 +260,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="sheet">
+   <h1>Adding fractions with different denominators</h1>
+   <p class="sub">Enter two fractions to see why you need a common denominator before adding &mdash; and watch the pieces get re-cut and combined.</p>
+diff --git a/finnmath-app/heita-sikaa.html b/finnmath-app/heita-sikaa.html
+index 7e735b0..5246e7d 100644
+--- a/finnmath-app/heita-sikaa.html
++++ b/finnmath-app/heita-sikaa.html
+@@ -148,6 +148,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index_statistics.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Todennäköisyyssovellukset</a>
++
+ <div class="page">
+ 
+   <header>
+diff --git a/finnmath-app/index.html b/finnmath-app/index.html
+index 437bb9a..210880d 100644
+--- a/finnmath-app/index.html
++++ b/finnmath-app/index.html
+@@ -3,7 +3,7 @@
+ <head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+-<title>FinnMath-app — Applets</title>
++<title>Miscellaneous math-related test applets — Applets</title>
+ <link rel="stylesheet" href="../assets/css/base.css">
+ <link rel="stylesheet" href="../assets/css/finnmath-app.css">
+ <style>
+@@ -17,7 +17,7 @@
+ </head>
+ <body>
+   <a class="back" href="../index.html">&larr; All courses</a>
+-  <h1>FinnMath-app</h1>
++  <h1>Miscellaneous math-related test applets</h1>
+   <ul>
+     <li><a href="index_statistics.html">Todennäköisyyssovellukset (probability apps)</a></li>
+     <li><a href="fraction_addition_applet.html">Adding Fractions with Different Denominators</a></li>
+diff --git a/finnmath-app/index_statistics.html b/finnmath-app/index_statistics.html
+index ecdee26..804782c 100644
+--- a/finnmath-app/index_statistics.html
++++ b/finnmath-app/index_statistics.html
+@@ -52,6 +52,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="page">
+   <header>
+     <h1>Todennäköisyyssovellukset</h1>
+diff --git a/finnmath-app/integral-speed-distance.html b/finnmath-app/integral-speed-distance.html
+index 2c86b35..3916088 100644
+--- a/finnmath-app/integral-speed-distance.html
++++ b/finnmath-app/integral-speed-distance.html
+@@ -181,6 +181,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="wrap">
+   <h1>From Speed to Distance: the Integral as Accumulation</h1>
+   <p class="subtitle">A car's speedometer reads v(t) in m/s. The integral of v(t) over time answers a very practical question: <b>how far did the car travel?</b> Drag the sliders to see how the sum of many thin rectangles (Riemann sum) converges to the exact distance — the definite integral.</p>
+diff --git a/finnmath-app/kolikko-ja-noppa.html b/finnmath-app/kolikko-ja-noppa.html
+index 5126d1f..eab0f74 100644
+--- a/finnmath-app/kolikko-ja-noppa.html
++++ b/finnmath-app/kolikko-ja-noppa.html
+@@ -265,6 +265,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index_statistics.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Todennäköisyyssovellukset</a>
++
+ <div class="page">
+ 
+   <header>
+diff --git a/finnmath-app/kustannusvertailu.html b/finnmath-app/kustannusvertailu.html
+index 7f91e8e..5503218 100644
+--- a/finnmath-app/kustannusvertailu.html
++++ b/finnmath-app/kustannusvertailu.html
+@@ -103,6 +103,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="wrap">
+   <header>
+     <h1>Kumpi kannattaa? Kaksi tulostuspalvelun hinnastoa</h1>
+diff --git a/finnmath-app/makeishinnoittelu.html b/finnmath-app/makeishinnoittelu.html
+index b52dc55..da0982d 100644
+--- a/finnmath-app/makeishinnoittelu.html
++++ b/finnmath-app/makeishinnoittelu.html
+@@ -103,6 +103,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="wrap">
+   <header>
+     <h1>Makeisten hinnoittelu: kun kalliimpi tuote myy vähemmän</h1>
+diff --git a/finnmath-app/pokerikasien-todennakoisyydet.html b/finnmath-app/pokerikasien-todennakoisyydet.html
+index dc45946..eddb3d2 100644
+--- a/finnmath-app/pokerikasien-todennakoisyydet.html
++++ b/finnmath-app/pokerikasien-todennakoisyydet.html
+@@ -179,6 +179,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index_statistics.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Todennäköisyyssovellukset</a>
++
+ <div class="page">
+ 
+   <header>
+diff --git a/finnmath-app/prosenttimuutos.html b/finnmath-app/prosenttimuutos.html
+index f384ef1..0c25c7b 100644
+--- a/finnmath-app/prosenttimuutos.html
++++ b/finnmath-app/prosenttimuutos.html
+@@ -380,6 +380,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="app">
+ 
+   <header>
+diff --git a/finnmath-app/sekoitusongelma.html b/finnmath-app/sekoitusongelma.html
+index 63a1c13..95521cd 100644
+--- a/finnmath-app/sekoitusongelma.html
++++ b/finnmath-app/sekoitusongelma.html
+@@ -203,6 +203,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="wrap">
+   <header class="top">
+     <h1>Sekoitusongelma: kaksi liuosta, yksi tavoite</h1>
+diff --git a/finnmath-app/trig-explorer.html b/finnmath-app/trig-explorer.html
+index 7f86f4e..154550f 100644
+--- a/finnmath-app/trig-explorer.html
++++ b/finnmath-app/trig-explorer.html
+@@ -343,6 +343,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; Miscellaneous math-related test applets</a>
++
+ <div class="wrap">
+   <header>
+     <p class="eyebrow">∠ construction / 01</p>
+diff --git a/fys232-structure-of-matter/chained_decay.html b/fys232-structure-of-matter/chained_decay.html
+index e1a2156..b6e9285 100644
+--- a/fys232-structure-of-matter/chained_decay.html
++++ b/fys232-structure-of-matter/chained_decay.html
+@@ -138,6 +138,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.232 Structure of Matter</a>
++
+ <div id="app">
+   <header>
+     <h1>Chained radioactive decay</h1>
+diff --git a/fys240-optics/anaglyph-3d-viewer.html b/fys240-optics/anaglyph-3d-viewer.html
+index 7f44afc..75fbf5b 100644
+--- a/fys240-optics/anaglyph-3d-viewer.html
++++ b/fys240-optics/anaglyph-3d-viewer.html
+@@ -198,6 +198,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.240 Optics</a>
++
+ 
+ <div id="viewport"></div>
+ 
+diff --git a/fys240-optics/diffraction-grating-explorer.html b/fys240-optics/diffraction-grating-explorer.html
+index 1f99961..e2ed7f7 100644
+--- a/fys240-optics/diffraction-grating-explorer.html
++++ b/fys240-optics/diffraction-grating-explorer.html
+@@ -266,6 +266,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.240 Optics</a>
++
+ <div class="app">
+   <header>
+     <h1>Grating Bench</h1>
+diff --git a/fys240-optics/electric-magnetic-field-explorer.html b/fys240-optics/electric-magnetic-field-explorer.html
+index b1828ce..f0f74ba 100644
+--- a/fys240-optics/electric-magnetic-field-explorer.html
++++ b/fys240-optics/electric-magnetic-field-explorer.html
+@@ -95,7 +95,7 @@
+ <body>
+ <div id="app">
+   <header>
+-    <a href="../index.html" style="font-size:12.5px;color:var(--muted);text-decoration:none;">&larr; Back to course</a>
++    <a href="index.html" style="font-size:12.5px;color:var(--muted);text-decoration:none;">&larr; Back to course</a>
+     <h1 style="margin-top:6px;">Electric &amp; Magnetic Field Explorer</h1>
+     <p>Drag a charge to move it, tap it to flip sign/current. Tap empty space to drop a probe loop — drag its middle to move it, drag its edge to resize it.</p>
+   </header>
+diff --git a/fys240-optics/ftir_explorer.html b/fys240-optics/ftir_explorer.html
+index a0ce7c3..9b66ea4 100644
+--- a/fys240-optics/ftir_explorer.html
++++ b/fys240-optics/ftir_explorer.html
+@@ -288,6 +288,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.240 Optics</a>
++
+ <div class="wrap">
+   <header>
+     <h1>Reflection, refraction &amp; frustrated total internal reflection</h1>
+diff --git a/fys240-optics/index.html b/fys240-optics/index.html
+index d98aea3..5313423 100644
+--- a/fys240-optics/index.html
++++ b/fys240-optics/index.html
+@@ -24,6 +24,8 @@
+     <li><a href="lens_aberration_explorer.html">Lens Spherical Aberration Explorer</a></li>
+     <li><a href="coma_explorer.html">Lens Coma Aberration Explorer</a></li>
+     <li><a href="diffraction-grating-explorer.html">Grating Bench (Diffraction Grating Explorer)</a></li>
++    <li><a href="electric-magnetic-field-explorer.html">Electric &amp; Magnetic Field Explorer</a></li>
++    <li><a href="ftir_explorer.html">Reflection, Refraction &amp; FTIR Bench</a></li>
+     <li><a href="spectral-synthesizer.html">Spectral Synthesizer: Continuous vs. Frequency-Comb Superposition</a></li>
+   </ul>
+ </body>
+diff --git a/fys240-optics/refractive_index_explorer.html b/fys240-optics/refractive_index_explorer.html
+index c3e3021..de62b5b 100644
+--- a/fys240-optics/refractive_index_explorer.html
++++ b/fys240-optics/refractive_index_explorer.html
+@@ -129,6 +129,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.240 Optics</a>
++
+ 
+ <header>
+   <h1>Refractive Index Explorer</h1>
+diff --git a/fys240-optics/spectral-synthesizer.html b/fys240-optics/spectral-synthesizer.html
+index ae1a3d7..a038011 100644
+--- a/fys240-optics/spectral-synthesizer.html
++++ b/fys240-optics/spectral-synthesizer.html
+@@ -109,6 +109,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.240 Optics</a>
++
+ <header>
+   <h1>Spectral Synthesizer</h1>
+   <p>Add up many time-harmonic waves of different color and watch them interfere — a smooth (continuous) spectrum builds one localized pulse; a frequency comb (discrete, evenly-spaced modes) builds a repeating pulse train.</p>
+diff --git a/fys310-solid-state-physics/FYS310_lattice_viewer.html b/fys310-solid-state-physics/FYS310_lattice_viewer.html
+index 9785be5..8a5c621 100644
+--- a/fys310-solid-state-physics/FYS310_lattice_viewer.html
++++ b/fys310-solid-state-physics/FYS310_lattice_viewer.html
+@@ -224,6 +224,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.310 Solid-State Physics</a>
++
+ <div id="app">
+   <header>
+     <h1>3D Lattice Viewer</h1>
+diff --git a/fys310-solid-state-physics/band-structure-explorer.html b/fys310-solid-state-physics/band-structure-explorer.html
+index bcb85f0..a2ae01c 100644
+--- a/fys310-solid-state-physics/band-structure-explorer.html
++++ b/fys310-solid-state-physics/band-structure-explorer.html
+@@ -116,6 +116,8 @@ footer{margin-top:28px; font-size:12px; color:var(--muted); line-height:1.6;}
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.310 Solid-State Physics</a>
++
+ <div class="wrap">
+   <header class="top">
+     <h1>Band Structure Explorer</h1>
+diff --git a/fys310-solid-state-physics/van-hove-dos-explorer.html b/fys310-solid-state-physics/van-hove-dos-explorer.html
+index 153ae67..a491a99 100644
+--- a/fys310-solid-state-physics/van-hove-dos-explorer.html
++++ b/fys310-solid-state-physics/van-hove-dos-explorer.html
+@@ -74,6 +74,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.310 Solid-State Physics</a>
++
+ <div class="wrap">
+   <h1>Density of States, Van&nbsp;Hove Singularities &amp; Transition Probability</h1>
+   <p class="sub">Parabolic 1D subbands (quantum-wire / CNT-like). All three panels share one vertical energy scale: each flat band extremum gives a DOS spike at the same height, and an absorption peak appears when ħω = 2E matches a subband pair.</p>
+diff --git a/fys501-laser-physics/gain-media-spectra.html b/fys501-laser-physics/gain-media-spectra.html
+index db667f4..2e25673 100644
+--- a/fys501-laser-physics/gain-media-spectra.html
++++ b/fys501-laser-physics/gain-media-spectra.html
+@@ -96,6 +96,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.501 Laser Physics</a>
++
+ <div id="app">
+   <header>
+     <h1>Laser Gain Media: Absorption &amp; Emission</h1>
+diff --git a/fys501-laser-physics/gaussian-beam-cavity.html b/fys501-laser-physics/gaussian-beam-cavity.html
+index ff467eb..9c80b60 100644
+--- a/fys501-laser-physics/gaussian-beam-cavity.html
++++ b/fys501-laser-physics/gaussian-beam-cavity.html
+@@ -274,6 +274,8 @@
+ </style>
+ </head>
+ <body>
++<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.501 Laser Physics</a>
++
+ <div id="app">
+ 
+   <header>
+diff --git a/index.html b/index.html
+index c4836da..297647d 100644
+--- a/index.html
++++ b/index.html
+@@ -24,7 +24,7 @@
+     <li><a href="fys240-optics/index.html">FYS.240 Optics</a></li>
+     <li><a href="fys310-solid-state-physics/index.html">FYS.310 Solid-State Physics</a></li>
+     <li><a href="fys501-laser-physics/index.html">FYS.501 Laser Physics</a></li>
+-    <li><a href="finnmath-app/index.html">FinnMath-app</a></li>
++    <li><a href="finnmath-app/index.html">Miscellaneous math-related test applets</a></li>
+   </ul>
+ <script>
+ if ('serviceWorker' in navigator) {
+diff --git a/spectral-synthesizer.html b/spectral-synthesizer.html
+deleted file mode 100644
+index ae1a3d7..0000000
+--- a/spectral-synthesizer.html
++++ /dev/null
+@@ -1,997 +0,0 @@
+-<!DOCTYPE html>
+-<html lang="en" data-course="laser">
+-<head>
+-<meta charset="UTF-8">
+-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+-<title>Spectral Synthesizer: Wave Superposition — FYS.501 Laser Physics</title>
+-<link rel="preconnect" href="https://fonts.googleapis.com">
+-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+-<style>
+-  :root{
+-    --bg:#f3f4f7; --panel:#ffffff; --scope:#ffffff; --border:#dde0e8; --text:#171923; --muted:#5a6072; --accent:#c94f3f; --accent2:#5fc4d6;
+-    padding-top: env(safe-area-inset-top, 0px);
+-    padding-bottom: env(safe-area-inset-bottom, 0px);
+-  }
+-  @media (prefers-color-scheme: dark){
+-    :root:not([data-theme="light"]){
+-      --bg:#0a0b10; --panel:#14161f; --scope:#050609; --border:#262a36; --text:#e6e8ef; --muted:#868da0; --accent:#ff6a58; --accent2:#5fc4d6;
+-    }
+-  }
+-  :root[data-theme="dark"]{
+-    --bg:#0a0b10; --panel:#14161f; --scope:#050609; --border:#262a36; --text:#e6e8ef; --muted:#868da0; --accent:#ff6a58; --accent2:#5fc4d6;
+-  }
+-  html{ scroll-padding-top: env(safe-area-inset-top, 0px); }
+-  *{ box-sizing:border-box; }
+-  body{
+-    margin:0; background:var(--bg); color:var(--text);
+-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+-    font-size:14px; line-height:1.45;
+-  }
+-  .display, h1,h2,h3, .btn, .seg button, .readout-label{ font-family:"Space Grotesk", system-ui, sans-serif; }
+-  .mono, .readout-val, .tick, input[type=range]::after{ font-family:"IBM Plex Mono", ui-monospace, Menlo, monospace; }
+-
+-  header{
+-    padding: 18px 20px 14px; border-bottom:1px solid var(--border);
+-    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+-  }
+-  header h1{ margin:0; font-size:20px; font-weight:700; letter-spacing:.2px; }
+-  header p{ margin:0; color:var(--muted); font-size:12.5px; max-width:640px; }
+-
+-  .layout{ display:flex; align-items:flex-start; gap:16px; padding:16px; max-width:1400px; margin:0 auto; }
+-  @media (max-width: 880px){ .layout{ flex-direction:column; } .console{ width:100% !important; position:static !important; } }
+-
+-  .console{
+-    width:330px; flex:0 0 330px; background:var(--panel); border:1px solid var(--border);
+-    border-radius:10px; padding:14px 14px 18px; position:sticky; top:16px;
+-    max-height: calc(100vh - 32px); overflow-y:auto;
+-  }
+-  .console::before{ /* bezel dots */
+-    content:""; display:block; height:0;
+-  }
+-  .group{ border-top:1px solid var(--border); padding-top:12px; margin-top:12px; }
+-  .group:first-child{ border-top:none; margin-top:0; padding-top:0; }
+-  .group h3{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin:0 0 8px; font-weight:600; }
+-
+-  .seg{ display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:3px; gap:3px; }
+-  .seg button{ flex:1; border:none; background:transparent; color:var(--muted); padding:7px 6px; border-radius:6px; font-size:12.5px; cursor:pointer; font-weight:600; }
+-  .seg button.active{ background:var(--accent); color:#06110f; }
+-  .seg.vertical{ flex-direction:column; }
+-
+-  .presets{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+-  .btn{ background:var(--bg); border:1px solid var(--border); color:var(--text); padding:8px 8px; border-radius:7px; font-size:11.5px; cursor:pointer; text-align:left; font-weight:600; line-height:1.25; }
+-  .btn:hover{ border-color:var(--accent); }
+-  .btn.wide{ grid-column:1 / -1; }
+-  .btn.small{ font-size:11px; padding:6px 8px; }
+-  .btn[disabled]{ opacity:.4; cursor:not-allowed; }
+-
+-  .row{ margin-bottom:10px; }
+-  .row-label{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+-  .row-label span.name{ color:var(--text); font-size:12.5px; font-weight:500; }
+-  .row-label span.val{ color:var(--accent); font-size:12px; }
+-  input[type=range]{ width:100%; accent-color:var(--accent); }
+-  select{
+-    width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border);
+-    border-radius:6px; padding:6px 8px; font-size:12.5px;
+-  }
+-
+-  .readout{ display:grid; grid-template-columns:1fr auto; gap:3px 8px; font-size:11.5px; }
+-  .readout-label{ color:var(--muted); font-weight:500;}
+-  .readout-val{ color:var(--text); text-align:right; }
+-  .note{ color:var(--muted); font-size:11px; margin-top:8px; }
+-
+-  .figures{ flex:1; min-width:0; display:flex; flex-direction:column; gap:16px; }
+-  .card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px 14px; }
+-  .card-head{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+-  .card-head h2{ font-size:14px; margin:0; font-weight:700; }
+-  .card-head .sub{ color:var(--muted); font-size:11.5px; }
+-  .scope{
+-    background:var(--scope); border:1px solid var(--border); border-radius:8px; position:relative; overflow:hidden;
+-  }
+-  canvas{ display:block; width:100%; height:220px; }
+-  #wavesCanvas{ height:260px; }
+-  #supCanvas{ height:240px; }
+-
+-  .view-toggle{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+-  .view-toggle button{
+-    background:var(--bg); border:1px solid var(--border); color:var(--muted); font-size:11px; font-weight:600;
+-    padding:6px 10px; border-radius:6px; cursor:pointer;
+-  }
+-  .view-toggle button.active{ color:var(--accent); border-color:var(--accent); }
+-
+-  .roundtrip-row{ display:flex; align-items:center; gap:8px; margin-top:8px; }
+-  .roundtrip-row label{ font-size:11.5px; color:var(--muted); white-space:nowrap; }
+-
+-  details{ border-top:1px solid var(--border); margin-top:14px; padding-top:10px; }
+-  summary{ cursor:pointer; font-size:12px; color:var(--muted); font-weight:600; }
+-  details p, details li{ font-size:12px; color:var(--muted); }
+-  footer{ text-align:center; color:var(--muted); font-size:11px; padding:22px 10px 30px; }
+-</style>
+-</head>
+-<body>
+-<header>
+-  <h1>Spectral Synthesizer</h1>
+-  <p>Add up many time-harmonic waves of different color and watch them interfere — a smooth (continuous) spectrum builds one localized pulse; a frequency comb (discrete, evenly-spaced modes) builds a repeating pulse train.</p>
+-</header>
+-
+-<div class="layout">
+-  <aside class="console">
+-
+-    <div class="group">
+-      <h3>Spectrum type</h3>
+-      <div class="seg" id="modeSeg">
+-        <button data-mode="continuous">Continuous</button>
+-        <button data-mode="discrete">Discrete (comb)</button>
+-      </div>
+-    </div>
+-
+-    <div class="group">
+-      <h3>Quick scenarios</h3>
+-      <div class="presets">
+-        <button class="btn" data-preset="pulse">Single ultrafast pulse</button>
+-        <button class="btn" data-preset="thermal">Incoherent light</button>
+-        <button class="btn" data-preset="tisapph">Ti:Sapphire comb (1 m)</button>
+-        <button class="btn" data-preset="multimode">Un-locked multimode</button>
+-      </div>
+-    </div>
+-
+-    <div class="group" id="continuousControls">
+-      <h3>Continuous spectrum</h3>
+-      <div class="row">
+-        <div class="row-label"><span class="name">Center wavelength</span><span class="val mono" id="cLambda0Val">650 nm</span></div>
+-        <input type="range" id="cLambda0" min="380" max="1100" step="1" value="650">
+-      </div>
+-      <div class="row">
+-        <div class="row-label"><span class="name">Bandwidth (FWHM)</span><span class="val mono" id="cBandwidthVal">60 nm</span></div>
+-        <input type="range" id="cBandwidth" min="2" max="400" step="1" value="60">
+-      </div>
+-      <div class="row">
+-        <div class="row-label"><span class="name">Sampling resolution</span><span class="val mono" id="cSamplesVal">260</span></div>
+-        <input type="range" id="cSamples" min="60" max="500" step="10" value="260">
+-      </div>
+-    </div>
+-
+-    <div class="group" id="discreteControls">
+-      <h3>Frequency comb / cavity</h3>
+-      <div class="row">
+-        <div class="row-label"><span class="name">Center wavelength</span><span class="val mono" id="dLambda0Val">850 nm</span></div>
+-        <input type="range" id="dLambda0" min="380" max="1100" step="1" value="850">
+-      </div>
+-      <div class="row">
+-        <div class="row-label"><span class="name">Cavity length L</span><span class="val mono" id="cavityLenVal">1.00 m</span></div>
+-        <input type="range" id="cavityLen" min="0.05" max="2" step="0.01" value="1.00">
+-      </div>
+-      <div class="row">
+-        <div class="row-label"><span class="name">Number of comb lines N</span><span class="val mono" id="numLinesVal">201</span></div>
+-        <input type="range" id="numLines" min="0" max="1000" step="1" value="500">
+-      </div>
+-      <div class="row">
+-        <div class="row-label"><span class="name">Bandwidth (FWHM)</span><span class="val mono" id="dBandwidthVal">0.040 nm</span></div>
+-        <input type="range" id="dBandwidth" min="0" max="1000" step="1" value="500">
+-        <p class="note" id="dBandwidthWarn" style="display:none;"></p>
+-      </div>
+-    </div>
+-
+-    <div class="group">
+-      <h3>Spectral envelope shape</h3>
+-      <select id="shapeSel">
+-        <option value="gauss">Gaussian</option>
+-        <option value="sech2">Sech² (typical mode-locked)</option>
+-        <option value="flat">Flat-top (rectangular)</option>
+-      </select>
+-    </div>
+-
+-    <div class="group">
+-      <h3>Phase coherence</h3>
+-      <div class="seg" id="phaseSeg">
+-        <button data-phase="locked">Locked (coherent)</button>
+-        <button data-phase="random">Random</button>
+-      </div>
+-      <button class="btn wide" id="randomizeBtn" style="margin-top:8px;">↻ Re-draw random phases</button>
+-      <p class="note">Locked phase = every wave crests together at t = 0 (transform-limited). Random phase = each wave starts at an unrelated point in its cycle.</p>
+-    </div>
+-
+-    <div class="group">
+-      <h3>Readout</h3>
+-      <div class="readout" id="readoutBox"></div>
+-    </div>
+-
+-    <details>
+-      <summary>Model notes</summary>
+-      <p>Each spectral component is a scalar field A·cos(2πf·t + φ). Amplitude A = √(spectral envelope). Continuous case: f sampled quasi-continuously over the chosen FWHM bandwidth. Discrete case: f<sub>n</sub> = f₀ + n·Δf with comb spacing Δf = c/2L (cavity free spectral range), so the round-trip period is T = 1/Δf = 2L/c.</p>
+-      <p>A real 1 m Ti:Sapphire cavity comb spans the full ~800–900 nm gain bandwidth with roughly a quarter-million modes 150 MHz apart. This applet can simulate up to ~200,000 comb lines at the exact physical spacing (computed via FFT, so it stays fast even at high N) — enough headroom to dial in realistic 20–50 nm bandwidths and see genuinely short, few-cycle pulses. If N isn't large enough to reach the requested bandwidth, a note appears below the slider.</p>
+-      <p>Transform-limited pulse duration is estimated from τ·Δν ≈ 0.44 (Gaussian), 0.32 (sech²), or 0.89 (flat-top).</p>
+-    </details>
+-  </aside>
+-
+-  <main class="figures">
+-
+-    <section class="card">
+-      <div class="card-head">
+-        <h2>1 · Input spectrum</h2>
+-        <span class="sub" id="specSub">wavelength range 380–1100 nm</span>
+-      </div>
+-      <div class="scope"><canvas id="specCanvas"></canvas></div>
+-      <div class="roundtrip-row" id="specZoomRow" style="display:none;">
+-        <span class="mono" id="specZoomInfo" style="white-space:nowrap;"></span>
+-      </div>
+-    </section>
+-
+-    <section class="card">
+-      <div class="card-head">
+-        <h2>2 · Time-harmonic component waves</h2>
+-        <span class="sub" id="wavesSub">stacked, vertically offset, colored by wavelength</span>
+-      </div>
+-      <div class="scope"><canvas id="wavesCanvas"></canvas></div>
+-    </section>
+-
+-    <section class="card">
+-      <div class="card-head">
+-        <h2>3 · Superposition field</h2>
+-        <span class="sub" id="supSub"></span>
+-      </div>
+-      <div class="scope"><canvas id="supCanvas"></canvas></div>
+-      <div class="view-toggle" id="viewToggle"></div>
+-      <div class="roundtrip-row" id="roundtripRow" style="display:none;">
+-        <label>Round trips shown</label>
+-        <input type="range" id="roundTrips" min="1" max="8" step="1" value="3" style="flex:1;">
+-        <span class="mono" id="roundTripsVal">3</span>
+-      </div>
+-    </section>
+-
+-  </main>
+-</div>
+-
+-<footer>Educational visualization — scalar 1-D field model, not a full electromagnetic simulation.</footer>
+-
+-<script>
+-(function(){
+-"use strict";
+-const C = 2.998e8;
+-
+-/* ---------------- state ---------------- */
+-const state = {
+-  mode: 'discrete',
+-  shape: 'gauss',
+-  phaseMode: 'locked',
+-  cLambda0: 650, cBandwidth: 60, cSamples: 260,
+-  dLambda0: 850, cavityLen: 1.00, numLines: 201, dBandwidth: 0.04,
+-  discreteView: 'train', // 'train' | 'single'
+-  roundTrips: 3
+-};
+-const phaseCache = { key:null, arr:null };
+-
+-/* ---------------- color ---------------- */
+-function wavelengthToColor(w){
+-  let r,g,b;
+-  if (w>=380 && w<440){ r=-(w-440)/(440-380); g=0; b=1; }
+-  else if (w<490){ r=0; g=(w-440)/(490-440); b=1; }
+-  else if (w<510){ r=0; g=1; b=-(w-510)/(510-490); }
+-  else if (w<580){ r=(w-510)/(580-510); g=1; b=0; }
+-  else if (w<645){ r=1; g=-(w-645)/(645-580); b=0; }
+-  else { r=1; g=0; b=0; }
+-  let factor;
+-  if (w<420) factor = 0.3 + 0.7*(w-380)/(420-380);
+-  else if (w<701) factor = 1.0;
+-  else if (w<=780) factor = 0.3 + 0.7*(780-w)/(780-700);
+-  else { const t = Math.min((w-780)/(1100-780),1); factor = 0.3*(1-t*0.85); }
+-  const gamma=0.8;
+-  function adj(v){ return v<=0?0:Math.round(255*Math.pow(v*factor,gamma)); }
+-  return `rgb(${adj(r)},${adj(g)},${adj(b)})`;
+-}
+-
+-/* ---------------- envelope shapes ---------------- */
+-const SECH_K = 1.76275;
+-function specWeight(delta, bw, shape){
+-  const x = delta/bw;
+-  if (shape==='flat') return Math.abs(x)<=0.5 ? 1 : 0;
+-  if (shape==='sech2') return 1/Math.pow(Math.cosh(SECH_K*x),2);
+-  return Math.exp(-4*Math.LN2*x*x); // gauss
+-}
+-const TBP = { gauss:0.441, sech2:0.315, flat:0.886 };
+-
+-/* ---------------- component computation ---------------- */
+-function computeComponents(){
+-  const shape = state.shape;
+-  let lambda=[], freq=[], amp=[], meta={}, iIndex=null;
+-
+-  if (state.mode==='continuous'){
+-    const lam0=state.cLambda0, bw=state.cBandwidth, N=state.cSamples;
+-    const halfSpan = (shape==='flat') ? bw*0.6 : bw*1.6;
+-    for (let k=0;k<N;k++){
+-      const u = N===1?0:(k/(N-1))*2-1;
+-      const lam = lam0 + u*halfSpan;
+-      if (lam<380||lam>1100) continue;
+-      const w = specWeight(lam-lam0, bw, shape);
+-      if (w < 1e-6) continue;
+-      lambda.push(lam);
+-      freq.push(C/(lam*1e-9));
+-      amp.push(Math.sqrt(w));
+-    }
+-    const f0 = C/(lam0*1e-9);
+-    const dnu = C*(bw*1e-9)/((lam0*1e-9)*(lam0*1e-9));
+-    meta = { f0, dnu, tau: TBP[shape]/dnu, lam0 };
+-  } else {
+-    const lam0=state.dLambda0, L=state.cavityLen, N0=state.numLines, bwNm=state.dBandwidth;
+-    const M = Math.floor((N0-1)/2);
+-    const FSR = C/(2*L);
+-    const f0 = C/(lam0*1e-9);
+-    const dnuFWHM = C*(bwNm*1e-9)/((lam0*1e-9)*(lam0*1e-9)); // FWHM in Hz, converted from nm at lam0
+-    iIndex = [];
+-    for (let i=-M;i<=M;i++){
+-      const f = f0 + i*FSR;
+-      if (f<=0) continue;
+-      const lam = (C/f)*1e9;
+-      if (lam<380||lam>1100) continue;
+-      const w = specWeight(i*FSR, dnuFWHM, shape);
+-      if (w < 1e-6) continue;
+-      lambda.push(lam);
+-      freq.push(f);
+-      amp.push(Math.sqrt(w));
+-      iIndex.push(i);
+-    }
+-    const simulatedHalfRange = M*FSR; // how far the simulated lines actually reach, in Hz
+-    meta = { f0, dnu: dnuFWHM, tau: TBP[shape]/Math.max(dnuFWHM,1), lam0, FSR, T: 1/FSR, M, simulatedHalfRange };
+-  }
+-
+-  const n = lambda.length;
+-  const key = state.mode+':'+state.phaseMode+':'+n;
+-  let phase;
+-  if (state.phaseMode==='locked'){
+-    phase = new Float64Array(n); // all zero
+-  } else {
+-    if (phaseCache.key===key && phaseCache.arr && phaseCache.arr.length===n){
+-      phase = phaseCache.arr;
+-    } else {
+-      phase = new Float64Array(n);
+-      for (let i=0;i<n;i++) phase[i]=Math.random()*2*Math.PI;
+-      phaseCache.key=key; phaseCache.arr=phase;
+-    }
+-  }
+-  return { lambda, freq, amp, phase, iIndex, meta, period:null };
+-}
+-function regeneratePhases(){
+-  if (!lastComp || state.phaseMode!=='random') return;
+-  // mutate the SAME array in place: lastComp.phase and phaseCache.arr are the
+-  // same reference, so this updates both without needing to rebuild lastComp.
+-  const arr = lastComp.phase;
+-  for (let i=0;i<arr.length;i++) arr[i]=Math.random()*2*Math.PI;
+-  lastComp.period = null; // phases changed -> cached FFT waveform is stale
+-}
+-
+-/* ---------------- field evaluation ---------------- */
+-function fieldAt(comp, t){
+-  let re=0, im=0;
+-  const {freq, amp, phase} = comp;
+-  for (let i=0;i<freq.length;i++){
+-    const th = 2*Math.PI*freq[i]*t + phase[i];
+-    re += amp[i]*Math.cos(th);
+-    im += amp[i]*Math.sin(th);
+-  }
+-  return {re, im};
+-}
+-function fieldSeries(comp, tArr){
+-  const n=tArr.length;
+-  const re=new Float64Array(n), im=new Float64Array(n);
+-  const {freq, amp, phase} = comp;
+-  const K = freq.length;
+-  for (let k=0;k<K;k++){
+-    const f=freq[k], a=amp[k], ph=phase[k];
+-    const w = 2*Math.PI*f;
+-    for (let j=0;j<n;j++){
+-      const th = w*tArr[j] + ph;
+-      re[j]+=a*Math.cos(th); im[j]+=a*Math.sin(th);
+-    }
+-  }
+-  return {re, im};
+-}
+-function linspace(a,b,n){
+-  const arr=new Float64Array(n);
+-  if (n===1){ arr[0]=a; return arr; }
+-  for (let i=0;i<n;i++) arr[i]=a+(b-a)*i/(n-1);
+-  return arr;
+-}
+-const MAX_SAMPLES = 20000;
+-
+-/* ---------------- exact fast comb synthesis via FFT ----------------
+-   For the discrete/comb case, all mode frequencies are f_i = f0 + i*FSR.
+-   Factor out the carrier: z_total(t) = e^{i 2*pi*f0*t} * z_inner(t), where
+-   z_inner(t) = sum_i A_i e^{i(2*pi*i*FSR*t + phi_i)} is EXACTLY periodic with
+-   period T = 1/FSR, independent of f0. That means z_inner over one period is
+-   just the inverse DFT of the per-line (amplitude, phase) spectrum — so instead
+-   of directly summing potentially tens of thousands of cosines at every time
+-   sample (which does not scale), we place each line into its FFT bin once and
+-   run a single length-K FFT. This makes N well into the 100,000s tractable. */
+-function nextPow2(v){ let p=1; while(p<v) p*=2; return p; }
+-function fftInPlace(re, im, invert){
+-  const n = re.length;
+-  for (let i=1,j=0;i<n;i++){
+-    let bit = n>>1;
+-    for (; j&bit; bit>>=1) j^=bit;
+-    j^=bit;
+-    if (i<j){
+-      const tr=re[i]; re[i]=re[j]; re[j]=tr;
+-      const ti=im[i]; im[i]=im[j]; im[j]=ti;
+-    }
+-  }
+-  for (let len=2; len<=n; len<<=1){
+-    const ang = (invert?1:-1)*2*Math.PI/len;
+-    const wr0=Math.cos(ang), wi0=Math.sin(ang);
+-    const half=len>>1;
+-    for (let i=0;i<n;i+=len){
+-      let wr=1, wi=0;
+-      for (let k=0;k<half;k++){
+-        const ur=re[i+k], ui=im[i+k];
+-        const vr=re[i+k+half]*wr - im[i+k+half]*wi;
+-        const vi=re[i+k+half]*wi + im[i+k+half]*wr;
+-        re[i+k]=ur+vr; im[i+k]=ui+vi;
+-        re[i+k+half]=ur-vr; im[i+k+half]=ui-vi;
+-        const nwr=wr*wr0-wi*wi0, nwi=wr*wi0+wi*wr0;
+-        wr=nwr; wi=nwi;
+-      }
+-    }
+-  }
+-}
+-function buildPeriodicField(comp){
+-  const M = comp.meta.M;
+-  // K must be large enough for two DIFFERENT reasons:
+-  //  1) frequency-domain correctness: K >= 2M+1 (else lines alias onto each other)
+-  //  2) time-domain resolution: linear interpolation between grid points only
+-  //     looks smooth if the grid spacing (T/K) is well under the pulse width,
+-  //     so we also require K to oversample T/tau by a healthy margin.
+-  const OVERSAMPLE = 14;
+-  const K_MAX = 1<<23; // hard cap so worst-case FFT stays around ~1s
+-  const timeReq = Math.ceil(OVERSAMPLE * comp.meta.T / Math.max(comp.meta.tau, 1e-18));
+-  const K = Math.min(K_MAX, nextPow2(Math.max(2*M+1, timeReq, 4096)));
+-  const re = new Float64Array(K), im = new Float64Array(K);
+-  const n = comp.lambda.length;
+-  for (let j=0;j<n;j++){
+-    const i = comp.iIndex[j];
+-    let k = i % K; if (k<0) k += K;
+-    const a = comp.amp[j], ph = comp.phase[j];
+-    re[k]+=a*Math.cos(ph); im[k]+=a*Math.sin(ph);
+-  }
+-  fftInPlace(re, im, true); // unnormalized inverse -> z_inner sampled at t_n = n*T/K
+-  return { re, im, K, T: comp.meta.T, resolved: K>=timeReq };
+-}
+-function sampleInner(period, t){
+-  const K=period.K;
+-  let frac = (t/period.T) % 1; if (frac<0) frac += 1;
+-  const pos = frac*K;
+-  let n0 = Math.floor(pos); if (n0>=K) n0=K-1;
+-  let n1 = n0+1; if (n1>=K) n1=0;
+-  const w = pos-n0;
+-  return {
+-    re: period.re[n0]*(1-w) + period.re[n1]*w,
+-    im: period.im[n0]*(1-w) + period.im[n1]*w
+-  };
+-}
+-
+-/* ---------------- formatting ---------------- */
+-function fmtFreq(hz){
+-  if (hz>=1e12) return (hz/1e12).toFixed(2)+' THz';
+-  if (hz>=1e9) return (hz/1e9).toFixed(2)+' GHz';
+-  if (hz>=1e6) return (hz/1e6).toFixed(2)+' MHz';
+-  return hz.toFixed(0)+' Hz';
+-}
+-function fmtTime(s){
+-  const a=Math.abs(s);
+-  if (a>=1e-9) return (s*1e9).toFixed(3)+' ns';
+-  if (a>=1e-12) return (s*1e12).toFixed(2)+' ps';
+-  return (s*1e15).toFixed(2)+' fs';
+-}
+-
+-/* ---------------- canvas helpers ---------------- */
+-function setupCanvas(canvas){
+-  const dpr = window.devicePixelRatio || 1;
+-  const rect = canvas.getBoundingClientRect();
+-  canvas.width = Math.max(1,Math.round(rect.width*dpr));
+-  canvas.height = Math.max(1,Math.round(rect.height*dpr));
+-  const ctx = canvas.getContext('2d');
+-  ctx.setTransform(dpr,0,0,dpr,0,0);
+-  return {ctx, w:rect.width, h:rect.height};
+-}
+-function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+-
+-function drawFrame(ctx, w, h, margin){
+-  const border = cssVar('--border');
+-  ctx.strokeStyle = border; ctx.lineWidth=1;
+-}
+-
+-function makeScales(margin, w, h, xmin, xmax, ymin, ymax){
+-  const pw = w - margin.l - margin.r, ph = h - margin.t - margin.b;
+-  const x = v => margin.l + (v-xmin)/(xmax-xmin||1)*pw;
+-  const y = v => margin.t + (1-(v-ymin)/(ymax-ymin||1))*ph;
+-  return {x,y,pw,ph};
+-}
+-function niceTicks(min,max,count){
+-  const range = max-min || 1;
+-  const raw = range/count;
+-  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+-  const norm = raw/mag;
+-  let step;
+-  if (norm<1.5) step=1*mag; else if (norm<3) step=2*mag; else if (norm<7) step=5*mag; else step=10*mag;
+-  const ticks=[];
+-  let t = Math.ceil(min/step)*step;
+-  for (; t<=max+1e-9; t+=step) ticks.push(Math.round(t/step)*step);
+-  return ticks;
+-}
+-function drawAxes(ctx, margin, w, h, xmin, xmax, ymin, ymax, opts){
+-  opts = opts||{};
+-  const muted = cssVar('--muted'), text = cssVar('--text'), border = cssVar('--border');
+-  const {x,y,pw,ph} = makeScales(margin,w,h,xmin,xmax,ymin,ymax);
+-  ctx.clearRect(0,0,w,h);
+-  ctx.fillStyle = cssVar('--scope'); ctx.fillRect(0,0,w,h);
+-  ctx.strokeStyle = border; ctx.lineWidth=1;
+-  ctx.strokeRect(margin.l, margin.t, pw, ph);
+-  ctx.font = '10.5px "IBM Plex Mono", monospace';
+-  ctx.fillStyle = muted;
+-  const xt = opts.xTicks || niceTicks(xmin,xmax,6);
+-  ctx.textAlign='center'; ctx.textBaseline='top';
+-  xt.forEach(v=>{
+-    if (v<xmin||v>xmax) return;
+-    const px = x(v);
+-    ctx.strokeStyle = 'rgba(128,128,128,0.15)';
+-    ctx.beginPath(); ctx.moveTo(px,margin.t); ctx.lineTo(px,margin.t+ph); ctx.stroke();
+-    ctx.fillText(opts.xFmt?opts.xFmt(v):v.toString(), px, margin.t+ph+4);
+-  });
+-  const yt = opts.yTicks || niceTicks(ymin,ymax,4);
+-  ctx.textAlign='right'; ctx.textBaseline='middle';
+-  yt.forEach(v=>{
+-    if (v<ymin||v>ymax) return;
+-    const py = y(v);
+-    ctx.strokeStyle = 'rgba(128,128,128,0.15)';
+-    ctx.beginPath(); ctx.moveTo(margin.l,py); ctx.lineTo(margin.l+pw,py); ctx.stroke();
+-    ctx.fillText(opts.yFmt?opts.yFmt(v):v.toString(), margin.l-6, py);
+-  });
+-  if (opts.xLabel){
+-    ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillStyle=text; ctx.font='11px "Space Grotesk", sans-serif';
+-    ctx.fillText(opts.xLabel, margin.l+pw/2, h-4);
+-  }
+-  if (opts.yLabel){
+-    ctx.save(); ctx.translate(12, margin.t+ph/2); ctx.rotate(-Math.PI/2);
+-    ctx.textAlign='center'; ctx.fillStyle=text; ctx.font='11px "Space Grotesk", sans-serif';
+-    ctx.fillText(opts.yLabel,0,0); ctx.restore();
+-  }
+-  return {x,y,pw,ph};
+-}
+-
+-/* ---------------- figure 1: spectrum ---------------- */
+-function gradientFillCurve(ctx, xsPx, ysPx, baselinePx, xDataMin, xDataMax, xPixLeft, xPixRight){
+-  const n = xsPx.length;
+-  if (n===0) return;
+-  const grad = ctx.createLinearGradient(xPixLeft,0,xPixRight,0);
+-  const STOPS=16;
+-  for (let s=0;s<=STOPS;s++){
+-    const t=s/STOPS;
+-    grad.addColorStop(t, wavelengthToColor(xDataMin + t*(xDataMax-xDataMin)));
+-  }
+-  // one fill + one stroke, regardless of how many points make up the curve —
+-  // calling ctx.fill()/stroke() per-segment is what froze the tab at high N.
+-  ctx.beginPath();
+-  ctx.moveTo(xsPx[0], baselinePx);
+-  for (let i=0;i<n;i++) ctx.lineTo(xsPx[i], ysPx[i]);
+-  ctx.lineTo(xsPx[n-1], baselinePx);
+-  ctx.closePath();
+-  ctx.fillStyle = grad; ctx.globalAlpha=0.55; ctx.fill(); ctx.globalAlpha=1;
+-  ctx.beginPath();
+-  ctx.moveTo(xsPx[0], ysPx[0]);
+-  for (let i=1;i<n;i++) ctx.lineTo(xsPx[i], ysPx[i]);
+-  ctx.strokeStyle='#ffffff'; ctx.globalAlpha=0.9; ctx.lineWidth=1.6; ctx.stroke(); ctx.globalAlpha=1;
+-}
+-
+-function drawSpectrum(comp){
+-  const canvas = document.getElementById('specCanvas');
+-  const {ctx,w,h} = setupCanvas(canvas);
+-  const margin = {l:44,r:14,t:12,b:26};
+-
+-  // When there are few enough lines to matter individually, auto-frame the
+-  // wavelength axis tightly around them — at the full 380-1100 nm scale a
+-  // comb this narrow is invisible (often under a picometer wide), so a
+-  // manual zoom control isn't needed and isn't a control that can fail.
+-  const autoZoom = state.mode==='discrete' && comp.lambda.length>1 && comp.lambda.length<100;
+-  let xmin=380, xmax=1100;
+-  if (autoZoom){
+-    let lamMin=Infinity, lamMax=-Infinity;
+-    for (let i=0;i<comp.lambda.length;i++){ const v=comp.lambda[i]; if(v<lamMin)lamMin=v; if(v>lamMax)lamMax=v; }
+-    const span = Math.max(lamMax-lamMin, 1e-9);
+-    const pad = span*0.15;
+-    xmin = lamMin-pad; xmax = lamMax+pad;
+-  }
+-  const specSub = document.getElementById('specSub');
+-  if (specSub) specSub.textContent = autoZoom
+-    ? `zoomed to the ${comp.lambda.length} comb lines (full range is 380–1100 nm)`
+-    : 'wavelength range 380–1100 nm';
+-
+-  const maxAmp = comp.amp.reduce((m,a)=>Math.max(m,a*a),0)||1;
+-  const {x,y,pw,ph} = drawAxes(ctx,margin,w,h,xmin,xmax,0,1.08, {
+-    xLabel:'Wavelength (nm)', yLabel:'Intensity (a.u.)',
+-    xFmt:v=> (xmax-xmin)<5 ? v.toFixed(4) : (xmax-xmin)<50 ? v.toFixed(2) : v.toFixed(0)
+-  });
+-  // visible/IR boundary marker (only meaningful when it's actually in view)
+-  if (700>=xmin && 700<=xmax){
+-    ctx.strokeStyle='rgba(128,128,128,0.35)'; ctx.setLineDash([3,3]);
+-    ctx.beginPath(); ctx.moveTo(x(700),margin.t); ctx.lineTo(x(700),margin.t+ph); ctx.stroke();
+-    ctx.setLineDash([]);
+-    ctx.fillStyle=cssVar('--muted'); ctx.font='9.5px "IBM Plex Mono", monospace'; ctx.textAlign='left';
+-    ctx.fillText('visible | IR', x(700)+4, margin.t+10);
+-  }
+-
+-  if (state.mode==='continuous'){
+-    const xsPx = comp.lambda.map(x);
+-    const ysPx = comp.lambda.map((lam,i)=>y((comp.amp[i]*comp.amp[i])/maxAmp));
+-    gradientFillCurve(ctx, xsPx, ysPx, y(0), xmin, xmax, margin.l, margin.l+pw);
+-  } else if (comp.lambda.length > 150){
+-    // Too dense to resolve individual lines at pixel scale (and far too many to
+-    // stroke/fill per line without freezing the tab). Draw the analytic
+-    // envelope on a small fixed-size smooth grid instead — this is exactly
+-    // the same weighting function used for the line amplitudes, just
+-    // evaluated continuously in wavelength rather than only at each line.
+-    const NGRID = 300;
+-    const weights = new Float64Array(NGRID);
+-    let maxW = 0;
+-    for (let k=0;k<NGRID;k++){
+-      const lam = xmin + (xmax-xmin)*k/(NGRID-1);
+-      const f = C/(lam*1e-9);
+-      const w = specWeight(f-comp.meta.f0, comp.meta.dnu, state.shape);
+-      weights[k]=w; if (w>maxW) maxW=w;
+-    }
+-    maxW = maxW||1;
+-    const xsPx=new Array(NGRID), ysPx=new Array(NGRID);
+-    for (let k=0;k<NGRID;k++){
+-      const lam = xmin + (xmax-xmin)*k/(NGRID-1);
+-      xsPx[k]=x(lam); ysPx[k]=y(weights[k]/maxW);
+-    }
+-    gradientFillCurve(ctx, xsPx, ysPx, y(0), xmin, xmax, margin.l, margin.l+pw);
+-    ctx.fillStyle=cssVar('--muted'); ctx.font='9.5px "IBM Plex Mono", monospace'; ctx.textAlign='right';
+-    ctx.fillText(`${comp.lambda.length.toLocaleString()} comb lines — envelope shown, individual lines not resolvable here`, margin.l+pw-4, margin.t+10);
+-  } else {
+-    comp.lambda.forEach((lam,i)=>{
+-      const px=x(lam), py=y((comp.amp[i]*comp.amp[i])/maxAmp);
+-      ctx.strokeStyle = wavelengthToColor(lam); ctx.globalAlpha=0.85;
+-      ctx.beginPath(); ctx.moveTo(px,y(0)); ctx.lineTo(px,py); ctx.lineWidth=Math.max(1, Math.min(3, 500/comp.lambda.length)); ctx.stroke();
+-      ctx.globalAlpha=1;
+-    });
+-  }
+-}
+-
+-/* ---------------- figure 2: component waves ---------------- */
+-function drawWaves(comp){
+-  const canvas = document.getElementById('wavesCanvas');
+-  const {ctx,w,h} = setupCanvas(canvas);
+-  const margin = {l:44,r:14,t:10,b:26};
+-  const n = comp.lambda.length;
+-  if (n===0){ ctx.clearRect(0,0,w,h); return; }
+-  const nShow = Math.min(16, n);
+-  const idxs = [];
+-  for (let k=0;k<nShow;k++) idxs.push(Math.round(k*(n-1)/Math.max(1,nShow-1)));
+-  const OFFSET = 2.3;
+-  const f0 = comp.meta.f0;
+-  const Tw = 12/f0;
+-  const nSamp = 500;
+-  const t = linspace(-Tw/2, Tw/2, nSamp);
+-
+-  const {x,y,pw,ph} = drawAxes(ctx,margin,w,h,-Tw/2*1e15,Tw/2*1e15,-1.3, (nShow-1)*OFFSET+1.3, {
+-    xLabel:'Time (fs)', yLabel:'Field (offset, a.u.)',
+-    xFmt:v=>v.toFixed(1), yTicks:[]
+-  });
+-
+-  idxs.forEach((idx,row)=>{
+-    const A=comp.amp[idx], f=comp.freq[idx], ph_=comp.phase[idx];
+-    ctx.beginPath();
+-    for (let j=0;j<nSamp;j++){
+-      const val = A*Math.cos(2*Math.PI*f*t[j]+ph_) + row*OFFSET;
+-      const px = x(t[j]*1e15), py = y(val);
+-      if (j===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+-    }
+-    ctx.strokeStyle = wavelengthToColor(comp.lambda[idx]);
+-    ctx.lineWidth=1.4; ctx.globalAlpha=0.92; ctx.stroke(); ctx.globalAlpha=1;
+-  });
+-}
+-
+-/* ---------------- shared: field with dashed envelope ---------------- */
+-function drawFieldWithEnvelope(ctx, xOf, y, tArr, fieldVals, envVals, color){
+-  const n = tArr.length;
+-  // soft shaded region between +/- envelope
+-  ctx.beginPath();
+-  for (let i=0;i<n;i++){ const px=xOf(tArr[i]), py=y(envVals[i]); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+-  for (let i=n-1;i>=0;i--){ const px=xOf(tArr[i]), py=y(-envVals[i]); ctx.lineTo(px,py); }
+-  ctx.closePath();
+-  ctx.fillStyle = cssVar('--accent'); ctx.globalAlpha=0.10; ctx.fill(); ctx.globalAlpha=1;
+-  // dashed envelope outline, top and bottom
+-  ctx.setLineDash([5,4]); ctx.strokeStyle = cssVar('--accent2'); ctx.lineWidth=1.3; ctx.globalAlpha=0.9;
+-  ctx.beginPath();
+-  for (let i=0;i<n;i++){ const px=xOf(tArr[i]), py=y(envVals[i]); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+-  ctx.stroke();
+-  ctx.beginPath();
+-  for (let i=0;i<n;i++){ const px=xOf(tArr[i]), py=y(-envVals[i]); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+-  ctx.stroke();
+-  ctx.setLineDash([]); ctx.globalAlpha=1;
+-  // solid oscillating field on top
+-  ctx.beginPath();
+-  for (let i=0;i<n;i++){ const px=xOf(tArr[i]), py=y(fieldVals[i]); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+-  ctx.strokeStyle = color; ctx.lineWidth=1.5; ctx.stroke();
+-}
+-
+-/* ---------------- figure 3: superposition ---------------- */
+-function drawSuperposition(comp){
+-  const canvas = document.getElementById('supCanvas');
+-  const {ctx,w,h} = setupCanvas(canvas);
+-  const margin = {l:50,r:14,t:10,b:26};
+-  const n = comp.lambda.length;
+-  if (n===0){ ctx.clearRect(0,0,w,h); return; }
+-  const meta = comp.meta;
+-
+-  if (state.mode==='continuous'){
+-    const Tw = 22*meta.tau;
+-    const nSamp = Math.min(MAX_SAMPLES, 3000);
+-    const tArr = linspace(-Tw/2, Tw/2, nSamp);
+-    const {re,im} = fieldSeries(comp, tArr);
+-    const envVals = new Float64Array(nSamp);
+-    for (let i=0;i<nSamp;i++) envVals[i]=Math.sqrt(re[i]*re[i]+im[i]*im[i]);
+-    let m=0; for (let i=0;i<nSamp;i++) m=Math.max(m,envVals[i]);
+-    m = m*1.15 || 1;
+-    const {x,y} = drawAxes(ctx,margin,w,h, tArr[0]*1e15, tArr[nSamp-1]*1e15, -m, m, {
+-      xLabel:'Time (fs)', yLabel:'Field (a.u.)', xFmt:v=>v.toFixed(1)
+-    });
+-    drawFieldWithEnvelope(ctx, v=>x(v*1e15), y, tArr, re, envVals, wavelengthToColor(meta.lam0));
+-    return;
+-  }
+-
+-  // discrete: use the FFT-cached one-period waveform (fast regardless of N)
+-  if (!comp.period) comp.period = buildPeriodicField(comp);
+-  const period = comp.period;
+-
+-  if (state.discreteView === 'train'){
+-    const Tw = state.roundTrips*meta.T;
+-    const nSamp = Math.min(MAX_SAMPLES, Math.max(1000, Math.round(state.roundTrips*Math.min(meta.M,4000)*6)));
+-    const tArr = linspace(-Tw/2, Tw/2, nSamp);
+-    const intensity = new Float64Array(nSamp);
+-    let ymax=0;
+-    for (let i=0;i<nSamp;i++){
+-      const s = sampleInner(period, tArr[i]);
+-      intensity[i]=s.re*s.re+s.im*s.im;
+-      if (intensity[i]>ymax) ymax=intensity[i];
+-    }
+-    ymax = ymax*1.08 || 1;
+-    const {x,y} = drawAxes(ctx,margin,w,h, tArr[0]*1e9, tArr[nSamp-1]*1e9, 0, ymax, {
+-      xLabel:'Time (ns)', yLabel:'Intensity (a.u.)', xFmt:v=>v.toFixed(2)
+-    });
+-    ctx.beginPath();
+-    for (let i=0;i<nSamp;i++){ const px=x(tArr[i]*1e9), py=y(intensity[i]); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+-    ctx.strokeStyle = wavelengthToColor(meta.lam0); ctx.lineWidth=1.5; ctx.stroke();
+-  } else {
+-    // single pulse: oscillating field + dashed envelope, carrier resolved
+-    // whenever the pulse is short enough relative to our sample cap.
+-    const Tw = 10*meta.tau;
+-    const nSamp = Math.min(MAX_SAMPLES, Math.max(800, Math.round(Tw*meta.f0*8)));
+-    const tArr = linspace(-Tw/2, Tw/2, nSamp);
+-    const fieldVals = new Float64Array(nSamp), envVals = new Float64Array(nSamp);
+-    for (let i=0;i<nSamp;i++){
+-      const s = sampleInner(period, tArr[i]);
+-      const theta = 2*Math.PI*meta.f0*tArr[i];
+-      fieldVals[i] = s.re*Math.cos(theta) - s.im*Math.sin(theta);
+-      envVals[i] = Math.sqrt(s.re*s.re+s.im*s.im);
+-    }
+-    let m=0; for (let i=0;i<nSamp;i++) m=Math.max(m, envVals[i]);
+-    m = m*1.15 || 1;
+-    let tUnit='fs', tScale=1e15;
+-    if (Tw>2e-9){ tUnit='ns'; tScale=1e9; } else if (Tw>2e-12){ tUnit='ps'; tScale=1e12; }
+-    const {x,y} = drawAxes(ctx,margin,w,h, tArr[0]*tScale, tArr[nSamp-1]*tScale, -m, m, {
+-      xLabel:`Time (${tUnit})`, yLabel:'Field (a.u.)', xFmt:v=>v.toFixed(v>100?0:2)
+-    });
+-    drawFieldWithEnvelope(ctx, v=>x(v*tScale), y, tArr, fieldVals, envVals, wavelengthToColor(meta.lam0));
+-    if (!period.resolved){
+-      ctx.fillStyle=cssVar('--muted'); ctx.font='9.5px "IBM Plex Mono", monospace'; ctx.textAlign='right';
+-      ctx.fillText('grid capped for speed — carrier is approximate at this N/bandwidth', margin.l + (w-margin.l-margin.r) - 4, margin.t+10);
+-    }
+-  }
+-}
+-
+-/* ---------------- readout ---------------- */
+-function fmtDeltaLam(v){
+-  return v<0.1 ? (v*1000).toFixed(2)+' pm' : v.toFixed(4)+' nm';
+-}
+-function updateSpecZoomPanel(comp){
+-  const row = document.getElementById('specZoomRow');
+-  const info = document.getElementById('specZoomInfo');
+-  const show = state.mode==='discrete' && comp.lambda.length>1 && comp.lambda.length<100;
+-  row.style.display = show ? 'flex' : 'none';
+-  if (!show) return;
+-  const diffs=[];
+-  for (let i=1;i<comp.lambda.length;i++) diffs.push(Math.abs(comp.lambda[i]-comp.lambda[i-1]));
+-  const min=Math.min(...diffs), max=Math.max(...diffs);
+-  const mean=diffs.reduce((a,b)=>a+b,0)/diffs.length;
+-  const spreadPct = mean>0 ? (max-min)/mean*100 : 0;
+-  info.textContent = `Δλ ${fmtDeltaLam(min)}–${fmtDeltaLam(max)} (±${spreadPct.toFixed(2)}% — equal in frequency, not quite in λ)`;
+-}
+-function updateReadout(comp){
+-  const box = document.getElementById('readoutBox');
+-  const meta = comp.meta;
+-  const rows = [];
+-  rows.push(['components simulated', comp.lambda.length]);
+-  rows.push(['center frequency f₀', fmtFreq(meta.f0)]);
+-  rows.push(['spectral width Δν', fmtFreq(meta.dnu)]);
+-  rows.push(['pulse duration τ', fmtTime(meta.tau)]);
+-  if (state.mode==='discrete'){
+-    rows.push(['comb spacing Δf (FSR)', fmtFreq(meta.FSR)]);
+-    rows.push(['round-trip period T', fmtTime(meta.T)]);
+-    rows.push(['pulses per period', (meta.T/meta.tau).toFixed(0)]);
+-  }
+-  box.innerHTML = rows.map(r=>`<span class="readout-label">${r[0]}</span><span class="readout-val mono">${r[1]}</span>`).join('');
+-
+-  const warn = document.getElementById('dBandwidthWarn');
+-  if (state.mode==='discrete' && meta.simulatedHalfRange < meta.dnu*0.5){
+-    warn.style.display='';
+-    warn.textContent = `Only ${comp.lambda.length} lines reach ±${fmtFreq(meta.simulatedHalfRange)} — not enough to resolve this bandwidth. Increase N (or reduce bandwidth) to see the true envelope shape.`;
+-  } else if (warn){
+-    warn.style.display='none';
+-  }
+-}
+-
+-/* ---------------- view toggle (discrete) ---------------- */
+-function renderViewToggle(){
+-  const wrap = document.getElementById('viewToggle');
+-  const rrRow = document.getElementById('roundtripRow');
+-  if (state.mode!=='discrete'){ wrap.innerHTML=''; rrRow.style.display='none'; return; }
+-  rrRow.style.display='flex';
+-  const opts = [
+-    ['train','Pulse train'],
+-    ['single','Single pulse (field + envelope)']
+-  ];
+-  wrap.innerHTML = opts.map(o=>`<button data-view="${o[0]}" class="${state.discreteView===o[0]?'active':''}">${o[1]}</button>`).join('');
+-  wrap.querySelectorAll('button').forEach(btn=>{
+-    btn.addEventListener('click', ()=>{ state.discreteView=btn.dataset.view; renderViewToggle(); redraw(); });
+-  });
+-}
+-
+-/* ---------------- main redraw ---------------- */
+-let lastComp=null;
+-function recompute(){ lastComp = computeComponents(); }
+-function redraw(){
+-  if (!lastComp) recompute();
+-  const comp = lastComp;
+-  drawSpectrum(comp);
+-  drawWaves(comp);
+-  drawSuperposition(comp);
+-  updateReadout(comp);
+-  updateSpecZoomPanel(comp);
+-  document.getElementById('supSub').textContent =
+-    state.mode==='continuous' ? 'oscillating field, envelope dashed' :
+-    (state.discreteView==='train' ? 'intensity over several cavity round trips' : 'oscillating field around one pulse peak, envelope dashed');
+-}
+-function fullUpdate(){ recompute(); renderViewToggle(); redraw(); }
+-
+-/* Discrete mode can trigger a ~0.2-1s FFT rebuild at very high N. Debounce so
+-   a slider drag doesn't hammer the main thread, and paint a "computing…" note
+-   first so the pause after releasing the slider doesn't look like a freeze.
+-   Continuous mode is always cheap, so it updates immediately either way. */
+-function runHeavy(fn){
+-  const sub = document.getElementById('supSub');
+-  if (sub) sub.textContent = 'computing…';
+-  setTimeout(fn, 0); // let the "computing…" text paint before the heavy work
+-}
+-let heavyTimer=null;
+-function updateAfterChange(){
+-  if (state.mode!=='discrete'){ fullUpdate(); return; }
+-  const sub = document.getElementById('supSub');
+-  if (sub) sub.textContent = 'computing…';
+-  clearTimeout(heavyTimer);
+-  heavyTimer = setTimeout(()=>runHeavy(fullUpdate), 180);
+-}
+-
+-/* ---------------- UI wiring ---------------- */
+-function syncModeUI(){
+-  document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active', b.dataset.mode===state.mode));
+-  document.getElementById('continuousControls').style.display = state.mode==='continuous' ? '' : 'none';
+-  document.getElementById('discreteControls').style.display = state.mode==='discrete' ? '' : 'none';
+-}
+-function syncPhaseUI(){
+-  document.querySelectorAll('#phaseSeg button').forEach(b=>b.classList.toggle('active', b.dataset.phase===state.phaseMode));
+-  document.getElementById('randomizeBtn').disabled = (state.phaseMode!=='random');
+-}
+-
+-document.getElementById('modeSeg').addEventListener('click', e=>{
+-  const btn = e.target.closest('button'); if (!btn) return;
+-  state.mode = btn.dataset.mode; syncModeUI(); updateAfterChange();
+-});
+-document.getElementById('phaseSeg').addEventListener('click', e=>{
+-  const btn = e.target.closest('button'); if (!btn) return;
+-  state.phaseMode = btn.dataset.phase; syncPhaseUI(); updateAfterChange();
+-});
+-document.getElementById('randomizeBtn').addEventListener('click', ()=>{
+-  if (state.mode==='discrete') runHeavy(()=>{ regeneratePhases(); redraw(); });
+-  else { regeneratePhases(); redraw(); }
+-});
+-document.getElementById('shapeSel').addEventListener('change', e=>{ state.shape=e.target.value; updateAfterChange(); });
+-
+-function bindSlider(id, key, fmt){
+-  const el = document.getElementById(id);
+-  const label = document.getElementById(id+'Val');
+-  el.addEventListener('input', ()=>{
+-    state[key] = parseFloat(el.value);
+-    label.textContent = fmt(state[key]);
+-    updateAfterChange();
+-  });
+-  label.textContent = fmt(state[key]);
+-}
+-
+-/* log-scale slider: raw HTML input spans 0-1000, mapped exponentially onto
+-   [vmin,vmax] so both the ~3-line and ~200,000-line ends of the comb-line
+-   slider (and the ~0.005-100 nm ends of the bandwidth slider) stay usable. */
+-const LOG_STEPS = 1000;
+-function logSliderToValue(pos, vmin, vmax){ return vmin*Math.pow(vmax/vmin, pos/LOG_STEPS); }
+-function valueToLogSlider(val, vmin, vmax){ return Math.round(LOG_STEPS*Math.log(val/vmin)/Math.log(vmax/vmin)); }
+-function bindLogSlider(id, key, vmin, vmax, fmt, oddOnly){
+-  const el = document.getElementById(id);
+-  const label = document.getElementById(id+'Val');
+-  el.min=0; el.max=LOG_STEPS; el.step=1;
+-  function setFromState(){
+-    el.value = valueToLogSlider(state[key], vmin, vmax);
+-    label.textContent = fmt(state[key]);
+-  }
+-  el.addEventListener('input', ()=>{
+-    let v = logSliderToValue(parseFloat(el.value), vmin, vmax);
+-    if (oddOnly){ v = Math.round(v); if (v%2===0) v+=1; }
+-    v = Math.min(vmax, Math.max(vmin, v));
+-    state[key] = v;
+-    label.textContent = fmt(v);
+-    updateAfterChange();
+-  });
+-  setFromState();
+-  return setFromState;
+-}
+-bindSlider('cLambda0','cLambda0', v=>v.toFixed(0)+' nm');
+-bindSlider('cBandwidth','cBandwidth', v=>v.toFixed(0)+' nm');
+-bindSlider('cSamples','cSamples', v=>v.toFixed(0));
+-bindSlider('dLambda0','dLambda0', v=>v.toFixed(0)+' nm');
+-bindSlider('cavityLen','cavityLen', v=>v.toFixed(2)+' m');
+-function fmtLines(v){ return Math.round(v).toLocaleString(); }
+-function fmtNm(v){ return v<0.1 ? v.toFixed(4)+' nm' : v<10 ? v.toFixed(3)+' nm' : v.toFixed(1)+' nm'; }
+-const setNumLinesSlider = bindLogSlider('numLines','numLines', 3, 200001, fmtLines, true);
+-const setBandwidthSlider = bindLogSlider('dBandwidth','dBandwidth', 0.005, 100, fmtNm, false);
+-document.getElementById('roundTrips').addEventListener('input', e=>{
+-  state.roundTrips = parseInt(e.target.value,10);
+-  document.getElementById('roundTripsVal').textContent = state.roundTrips;
+-  redraw();
+-});
+-
+-function applyPreset(name){
+-  if (name==='pulse'){
+-    Object.assign(state,{mode:'continuous', cLambda0:620, cBandwidth:140, shape:'gauss', phaseMode:'locked'});
+-  } else if (name==='thermal'){
+-    Object.assign(state,{mode:'continuous', cLambda0:620, cBandwidth:140, shape:'gauss', phaseMode:'random'});
+-  } else if (name==='tisapph'){
+-    Object.assign(state,{mode:'discrete', dLambda0:850, cavityLen:1.00, numLines:180001, dBandwidth:30, shape:'sech2', phaseMode:'locked', discreteView:'single', roundTrips:3});
+-  } else if (name==='multimode'){
+-    Object.assign(state,{mode:'discrete', dLambda0:850, cavityLen:1.00, numLines:180001, dBandwidth:30, shape:'sech2', phaseMode:'random', discreteView:'train', roundTrips:3});
+-  }
+-  // sync all slider UIs to new state
+-  document.getElementById('cLambda0').value = state.cLambda0; document.getElementById('cLambda0Val').textContent = state.cLambda0.toFixed(0)+' nm';
+-  document.getElementById('cBandwidth').value = state.cBandwidth; document.getElementById('cBandwidthVal').textContent = state.cBandwidth.toFixed(0)+' nm';
+-  document.getElementById('cSamples').value = state.cSamples; document.getElementById('cSamplesVal').textContent = state.cSamples.toFixed(0);
+-  document.getElementById('dLambda0').value = state.dLambda0; document.getElementById('dLambda0Val').textContent = state.dLambda0.toFixed(0)+' nm';
+-  document.getElementById('cavityLen').value = state.cavityLen; document.getElementById('cavityLenVal').textContent = state.cavityLen.toFixed(2)+' m';
+-  setNumLinesSlider(); setBandwidthSlider();
+-  document.getElementById('shapeSel').value = state.shape;
+-  document.getElementById('roundTrips').value = state.roundTrips; document.getElementById('roundTripsVal').textContent = state.roundTrips;
+-  syncModeUI(); syncPhaseUI();
+-  updateAfterChange();
+-}
+-document.querySelectorAll('[data-preset]').forEach(btn=>{
+-  btn.addEventListener('click', ()=>applyPreset(btn.dataset.preset));
+-});
+-
+-let resizeTimer=null;
+-window.addEventListener('resize', ()=>{
+-  clearTimeout(resizeTimer);
+-  resizeTimer = setTimeout(redraw, 80);
+-});
+-
+-/* ---------------- init ---------------- */
+-syncModeUI(); syncPhaseUI();
+-fullUpdate();
+-})();
+-</script>
+-</body>
+-</html>
