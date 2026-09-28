@@ -15,7 +15,8 @@ Each course has its own folder with an `index.html` listing its applets.
 - `fys501-laser-physics/`
 - `finnmath-app/`
 
-When adding an applet, link it from the course `index.html` and add its path to
+When adding an applet, link it from the course `index.html`, add
+`<script src="../assets/js/course-back.js" defer></script>` before `</body>` (adds the back-to-course link), and add its path to
 `APP_SHELL` in `service-worker.js`, then bump `CACHE_NAME` so installed copies update.
 
 ## Deploying with GitHub Pages
