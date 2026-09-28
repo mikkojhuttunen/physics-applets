@@ -6,7 +6,10 @@
 <title>Lens Spherical Aberration Explorer — FYS.240 Optics</title>
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/fys240-optics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
 <style>
+ canvas{display:block;width:100%;height:100%;}
+
   body{padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));
     padding-top:calc(14px + env(safe-area-inset-top,0px));
     display:flex;flex-direction:column;gap:12px;max-width:1100px;margin:0 auto;}
@@ -14,19 +17,14 @@
   .layout{display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start;}
   @media (max-width:860px){ .layout{grid-template-columns:1fr;} }
 
-  h1{font-size:1.15rem;margin:2px 0 2px;font-weight:600;letter-spacing:-0.01em;}
-  p.sub{margin:0;color:var(--text-dim);font-size:0.85rem;line-height:1.4;}
-
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;}
+  h1{margin:2px 0 2px;}
+  p.sub{margin:0;}
 
   .canvas-wrap{
-    position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;
-    background:
-      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.04), transparent 60%),
-      var(--panel);
-    border:1px solid var(--border);
+    position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;
+    
+    
   }
-  canvas{display:block;width:100%;height:100%;}
 
   .readout{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:0.82rem;margin-top:10px;font-family:var(--font-mono);}
   .readout .full{grid-column:1/-1;}
@@ -36,23 +34,14 @@
   .readout dd.blue{color:var(--blue);}
   .readout dd.green{color:var(--green);}
 
-  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:0.78rem;color:var(--text-dim);margin-top:8px;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;}
   .legend span{display:inline-flex;align-items:center;gap:5px;}
   .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
   .dash{background-image:repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px);height:2px;}
 
   .controls{display:flex;flex-direction:column;gap:14px;}
   .row{display:flex;flex-direction:column;gap:4px;}
-  .row .label-line{display:flex;justify-content:space-between;font-size:0.85rem;}
   .row .label-line b{font-weight:600;}
-  .row .label-line span{color:var(--violet);font-variant-numeric:tabular-nums;font-family:var(--font-mono);}
-
-  input[type=range]{-webkit-appearance:none;width:100%;height:28px;background:transparent;}
-  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:4px;background:var(--panel-2);}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
-    background:var(--violet);margin-top:-7px;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--border);}
-  input[type=range]::-moz-range-track{height:6px;border-radius:4px;background:var(--panel-2);}
-  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--violet);border:2px solid var(--panel);}
 
   .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:2px;}
   .switch{position:relative;width:48px;height:28px;flex:none;}
@@ -66,21 +55,11 @@
   .switch input:checked + .slider-pill::before{transform:translateX(20px);}
 
   .btnrow{display:flex;gap:10px;}
-  button.reset{
-    flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--panel);
-    color:var(--text);font-size:0.85rem;font-weight:600;cursor:pointer;font-family:var(--font-body);
-  }
-  button.reset:active{background:var(--panel-2);}
-
-  .disp-note{font-size:0.78rem;color:var(--text-dim);}
-  .warn{color:var(--red);font-size:0.78rem;margin-top:6px;}
-  .back{display:inline-block;margin-bottom:2px;color:var(--text-dim);font-size:0.82rem;text-decoration:none;}
-  .back:hover{text-decoration:underline;}
+  .warn{margin-top:6px;}
 </style>
 </head>
 <body>
 
-<a class="back" href="index.html">&larr; FYS.240 Optics</a>
 
 <header>
   <h1>🔬 Lens Spherical Aberration Explorer</h1>
@@ -491,5 +470,6 @@
   resizeCanvas();
 })();
 </script>
+<script src="../assets/js/course-back.js" defer></script>
 </body>
 </html>

@@ -4,65 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lens &amp; Telescope Imaging: Ray Tracing</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys240-optics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
 <style>
-  :root{
-    box-sizing:border-box;
-    padding-top:env(safe-area-inset-top,0px);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-    --bg:#f5f6f8; --panel:#ffffff; --text:#1b1f24; --muted:#5b6570;
-    --border:#dde1e6; --accent:#2563eb; --accent-soft:#e8efff;
-    --real:#1a8a4a; --virtual:#c2410c;
-    --ray1:#e0342a; --ray2:#1f7ae0; --ray3:#1a9c5a;
-    --axis:#94a0ab; --lens1:#2563eb; --lens2:#7c3aed;
+ :root{
+    --muted:var(--text-dim);
+    --real:var(--green); --virtual:var(--orange);
+    --ray1:var(--red); --ray2:var(--blue); --ray3:var(--green);
+    --axis:var(--text-faint); --lens1:var(--blue); --lens2:var(--violet);
   }
+ .mode-toggle{display:flex;margin-bottom:10px;}
+  .presets button{text-align:left;}
+  .card{margin-bottom:12px;}
+
   html{scroll-padding-top:env(safe-area-inset-top,0px);}
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#14171a; --panel:#1c2126; --text:#e7eaee; --muted:#9aa5b1;
-      --border:#2b3239; --accent:#5b8def; --accent-soft:#1e2a44;
-      --real:#4ade80; --virtual:#fb923c;
-      --ray1:#ff6b60; --ray2:#5b9dff; --ray3:#3ecf8e;
-      --axis:#5a6470; --lens1:#5b8def; --lens2:#b18cff;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#14171a; --panel:#1c2126; --text:#e7eaee; --muted:#9aa5b1;
-    --border:#2b3239; --accent:#5b8def; --accent-soft:#1e2a44;
-    --real:#4ade80; --virtual:#fb923c;
-    --ray1:#ff6b60; --ray2:#5b9dff; --ray3:#3ecf8e;
-    --axis:#5a6470; --lens1:#5b8def; --lens2:#b18cff;
-  }
-  *{box-sizing:border-box;}
   body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    margin:0;  
+    
     padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));
   }
-  h1{font-size:1.1rem; margin:2px 0 4px;}
-  .sub{color:var(--muted); font-size:0.83rem; margin:0 0 12px; line-height:1.4;}
+  h1{ margin:2px 0 4px;}
+  .sub{  margin:0 0 12px; }
   .card{
-    background:var(--panel); border:1px solid var(--border); border-radius:14px;
-    padding:14px; margin-bottom:12px;
+      
+     margin-bottom:12px;
   }
-  .mode-toggle{display:flex; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:10px;}
-  .mode-toggle button{
-    flex:1; padding:9px 4px; border:none; background:var(--panel); color:var(--text);
-    font-size:0.78rem; font-weight:600; cursor:pointer;
-  }
-  .mode-toggle button.active{background:var(--accent); color:#fff;}
-  .presets{display:flex; flex-direction:column; gap:6px; margin-bottom:6px;}
-  .presets button{
-    text-align:left; padding:9px 10px; border-radius:10px; border:1px solid var(--border);
-    background:var(--accent-soft); color:var(--text); font-size:0.82rem; cursor:pointer;
-  }
+    .presets{display:flex; flex-direction:column; gap:6px; margin-bottom:6px;}
   .presets button b{color:var(--accent);}
   /* --- per-tab visibility, driven by #layout[data-mode] --- */
-  #presetsSingle, #presetsTwo, #presetsScope, #scopeNote,
-  #row_s_o1, #row_h_o, #row_d, #row_f2, #row_theta, #row_H,
-  #panelScope { display:none; }
+  #presetsSingle, #presetsTwo, #presetsScope, #scopeNote, #row_s_o1, #row_h_o, #row_d, #row_f2, #row_theta, #row_H, #panelScope{ display:none; }
   #layout[data-mode="single"] #presetsSingle{ display:flex; }
   #layout[data-mode="single"] #row_s_o1{ display:block; }
   #layout[data-mode="single"] #row_h_o{ display:block; }
@@ -88,19 +59,10 @@
     .layout{display:grid; grid-template-columns:380px 1fr; gap:16px; align-items:start;}
     .col-figure{position:sticky; top:14px;}
   }
-  .small-btn{
-    font-size:0.74rem; font-weight:600; color:var(--accent); background:var(--accent-soft);
-    border:1px solid var(--border); border-radius:8px; padding:5px 9px; cursor:pointer; white-space:nowrap;
-  }
-  .note{font-size:0.76rem; color:var(--muted); line-height:1.4; margin:2px 0 8px; padding:8px 10px; background:var(--bg); border-radius:8px;}
+  .note{   margin:2px 0 8px; padding:8px 10px; background:var(--bg); border-radius:8px;}
   .slider-row{margin-bottom:10px;}
-  .slider-label{
-    display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:2px; color:var(--muted);
-  }
-  .slider-label span.val{color:var(--text); font-weight:700; font-variant-numeric:tabular-nums; font-family:'IBM Plex Mono',monospace;}
-  input[type=range]{width:100%; accent-color:var(--accent);}
   svg{width:100%; height:auto; max-height:70vh; display:block; background:var(--panel); border-radius:12px;}
-  .legend{display:flex; flex-wrap:wrap; gap:10px; font-size:0.74rem; color:var(--muted); margin-top:8px;}
+  .legend{display:flex; flex-wrap:wrap; gap:10px;   margin-top:8px;}
   .legend span{display:inline-flex; align-items:center; gap:4px;}
   .swatch{width:16px; height:3px; display:inline-block; border-radius:2px;}
   .dashed-swatch{width:16px; height:0; border-top:3px dashed var(--muted); display:inline-block;}
@@ -117,7 +79,6 @@
 </head>
 <body>
 
-<a href="index.html" style="display:inline-block;margin:0 0 10px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.240 Optics</a>
 <h1>🔭 Image Formation &amp; Ray Bundle Propagation</h1>
 <p class="sub">Thin-lens ray tracing for single- and two-lens imaging systems, plus afocal ray-bundle propagation through Keplerian and Galilean telescope layouts. The plot rescales automatically as image distances grow.</p>
 
@@ -369,7 +330,7 @@
     t.setAttribute('x',x); t.setAttribute('y',-y);
     t.setAttribute('font-size',size); t.setAttribute('fill',color);
     t.setAttribute('text-anchor',anchor||'middle');
-    t.setAttribute('font-family',"'IBM Plex Sans',-apple-system,Helvetica,Arial,sans-serif");
+    t.setAttribute('font-family',"'Space Grotesk',system-ui,sans-serif");
     t.setAttribute('font-weight','600');
     t.textContent = str;
     return t;
@@ -762,5 +723,6 @@
   redraw();
 })();
 </script>
+<script src="../assets/js/course-back.js" defer></script>
 </body>
 </html>

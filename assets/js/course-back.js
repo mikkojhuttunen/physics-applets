@@ -14,7 +14,7 @@
 
   var style = document.createElement('style');
   style.textContent =
-    '.course-back{display:inline-block;margin:0 0 14px;padding:2px 0;font:500 15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;' +
+    '.course-back{display:inline-block;margin:0 0 14px;padding:2px 0;font:500 0.85rem/1.4 var(--font-body,system-ui),-apple-system,"Segoe UI",sans-serif;' +
     'color:inherit;opacity:.68;text-decoration:none;-webkit-tap-highlight-color:transparent}' +
     '.course-back:hover,.course-back:focus-visible{opacity:1;text-decoration:underline}';
   document.head.appendChild(style);

@@ -4,249 +4,126 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grating Bench — FYS.240 Optics</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys240-optics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
 <style>
-  :root {
-    --bg: #eef1ef;
-    --panel: #ffffff;
-    --panel-border: #d7ddd9;
-    --ink: #12201c;
-    --ink-dim: #5b6a64;
-    --accent: #0e7c66;
-    --accent-soft: #cfe9e1;
-    --rail: #d2d9d5;
-    --thumb: #0e7c66;
-    --danger: #b5482f;
-    --grating-line: #12201c;
-    --canvas-bg: #f7f9f7;
-    --canvas-grid: #dfe6e2;
-    box-sizing: border-box;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+ :root{
+    --ink:var(--text); --ink-dim:var(--text-dim); --panel-border:var(--border); --rail:var(--border);
+    --thumb:var(--accent); --danger:var(--red); --grating-line:var(--text);
+    --canvas-bg:var(--panel); --canvas-grid:var(--grid);
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0d1412;
-      --panel: #141e1b;
-      --panel-border: #263531;
-      --ink: #e8f0ed;
-      --ink-dim: #8ea89f;
-      --accent: #4fd8b8;
-      --accent-soft: #1c3b34;
-      --rail: #2a3a35;
-      --thumb: #4fd8b8;
-      --danger: #ff8563;
-      --grating-line: #e8f0ed;
-      --canvas-bg: #0f1917;
-      --canvas-grid: #1c2925;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #0d1412;
-    --panel: #141e1b;
-    --panel-border: #263531;
-    --ink: #e8f0ed;
-    --ink-dim: #8ea89f;
-    --accent: #4fd8b8;
-    --accent-soft: #1c3b34;
-    --rail: #2a3a35;
-    --thumb: #4fd8b8;
-    --danger: #ff8563;
-    --grating-line: #e8f0ed;
-    --canvas-bg: #0f1917;
-    --canvas-grid: #1c2925;
-  }
-  html, body {
+ .seg{display:flex;}
+  .canvas-wrap{padding:6px;position:relative;}
+
+  html, body{
     height: 100%;
   }
-  * { box-sizing: border-box; }
-  body {
+  body{
     margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    
+    
+    
     scroll-padding-top: env(safe-area-inset-top, 0px);
   }
-  .app {
+  .app{
     max-width: 1180px;
     margin: 0 auto;
     padding: 28px 20px 40px;
   }
-  header {
+  header{
     margin-bottom: 20px;
   }
-  header h1 {
-    font-size: clamp(1.4rem, 2.6vw, 2rem);
-    font-weight: 700;
+  header h1{
+    
+    
     margin: 0 0 4px;
-    letter-spacing: -0.01em;
+    
   }
-  header p {
+  header p{
     margin: 0;
-    color: var(--ink-dim);
-    font-size: 0.95rem;
+    
+    
     max-width: 62ch;
   }
-  .layout {
+  .layout{
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 18px;
     align-items: start;
   }
-  @media (max-width: 800px) {
-    .layout { grid-template-columns: 1fr; }
+  @media (max-width: 800px){
+    .layout{ grid-template-columns: 1fr; }
   }
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    border-radius: 10px;
-    padding: 18px;
-  }
-  .controls .group {
+  .controls .group{
     margin-bottom: 20px;
   }
-  .controls .group:last-child { margin-bottom: 0; }
-  .controls label.field-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 0.82rem;
-    color: var(--ink-dim);
-    margin-bottom: 6px;
-  }
-  .controls .field-label b {
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 600;
-    color: var(--ink);
-    font-size: 0.85rem;
-  }
-  input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--rail);
-    outline: none;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--thumb);
-    cursor: pointer;
-    border: 2px solid var(--panel);
-    box-shadow: 0 0 0 1px var(--thumb);
-  }
-  input[type="range"]::-moz-range-thumb {
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--thumb);
-    cursor: pointer;
-    border: 2px solid var(--panel);
-    box-shadow: 0 0 0 1px var(--thumb);
-  }
-  .seg {
-    display: flex;
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .seg button {
-    flex: 1;
-    border: none;
-    background: transparent;
-    color: var(--ink-dim);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    padding: 8px 6px;
-    cursor: pointer;
-    border-right: 1px solid var(--panel-border);
-    transition: background 0.15s, color 0.15s;
-  }
-  .seg button:last-child { border-right: none; }
-  .seg button.active {
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-weight: 600;
-  }
-  .seg.stack { flex-direction: column; }
-  .seg.stack button { border-right: none; border-bottom: 1px solid var(--panel-border); text-align: left; padding: 9px 12px; }
-  .seg.stack button:last-child { border-bottom: none; }
+  .controls .group:last-child{ margin-bottom: 0; }
+  .seg.stack{ flex-direction: column; }
+  .seg.stack button{ border-right: none; border-bottom: 1px solid var(--panel-border); text-align: left; padding: 9px 12px; }
+  .seg.stack button:last-child{ border-bottom: none; }
 
-  .swatch-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-  .swatch {
+  .swatch-row{ display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .swatch{
     width: 22px; height: 22px;
     border-radius: 50%;
     border: 1px solid var(--panel-border);
     flex-shrink: 0;
   }
-  .swatch-row span {
+  .swatch-row span{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.8rem;
     color: var(--ink-dim);
   }
 
-  .stage {
+  .stage{
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
-  .canvas-wrap {
-    background: var(--canvas-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 10px;
+  .canvas-wrap{
+    
+    
+    
     padding: 6px;
     position: relative;
   }
-  canvas#scene {
+  canvas#scene{
     display: block;
     width: 100%;
     height: 460px;
     border-radius: 6px;
   }
-  .readout {
+  .readout{
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
-  @media (max-width: 560px) {
-    .readout { grid-template-columns: 1fr; }
+  @media (max-width: 560px){
+    .readout{ grid-template-columns: 1fr; }
   }
-  .readout .panel h2 {
-    font-size: 0.78rem;
-    text-transform: none;
-    letter-spacing: 0.02em;
-    color: var(--ink-dim);
+  .readout .panel h2{
+    
+    
+    
+    
     margin: 0 0 10px;
-    font-weight: 600;
+    
   }
-  .eq {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.95rem;
-    background: var(--accent-soft);
-    color: var(--accent);
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin: 0 0 12px;
-    overflow-x: auto;
-  }
-  table.orders {
+  table.orders{
     width: 100%;
     border-collapse: collapse;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.82rem;
   }
-  table.orders th, table.orders td {
+  table.orders th, table.orders td{
     text-align: left;
     padding: 5px 8px;
     border-bottom: 1px solid var(--panel-border);
   }
-  table.orders th { color: var(--ink-dim); font-weight: 500; }
-  table.orders td.m { font-weight: 600; }
-  .eff-bar {
+  table.orders th{ color: var(--ink-dim); font-weight: 500; }
+  table.orders td.m{ font-weight: 600; }
+  .eff-bar{
     display: inline-block;
     height: 8px;
     background: var(--accent);
@@ -254,19 +131,16 @@
     vertical-align: middle;
     margin-left: 6px;
   }
-  .orders-scroll { max-height: 210px; overflow-y: auto; }
-  .note {
-    font-size: 0.78rem;
-    color: var(--ink-dim);
-    line-height: 1.5;
+  .orders-scroll{ max-height: 210px; overflow-y: auto; }
+  .note{
+    
+    
+    
     margin-top: 10px;
   }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { background: var(--rail); border-radius: 4px; }
 </style>
 </head>
 <body>
-<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.240 Optics</a>
 
 <div class="app">
   <header>

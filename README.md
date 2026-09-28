@@ -21,6 +21,11 @@ Each course has its own folder with an `index.html` listing its applets.
   a coherence explorer (Michelson and Young, temporal vs spatial coherence).
 - `finnmath-app/`
 
+Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course
+file such as `fys240-optics.css` (course accent), and `applet.css` (panels, sliders, buttons,
+segmented controls, readouts). New applets link all three before their own `<style>`, which
+should hold only layout and figure-specific colours.
+
 When adding an applet, link it from the course `index.html`, add
 `<script src="../assets/js/course-back.js" defer></script>` before `</body>` (adds the back-to-course link), and add its path to
 `APP_SHELL` in `service-worker.js`, then bump `CACHE_NAME` so installed copies update.

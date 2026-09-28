@@ -4,98 +4,59 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Electric &amp; Magnetic Field Explorer — FYS.240 Optics</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys240-optics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
 <style>
-  :root {
-    --bg: #0b1220;
-    --panel: #101a2e;
-    --panel-line: #223055;
-    --text: #e7ecf7;
-    --muted: #8b9bc2;
-    --pos: #f2a65a;
-    --neg: #5aa9e6;
-    --field: #33c9c9;
-    --curl: #e85aad;
-    --grid-line: rgba(139,155,194,0.14);
-    --accent-btn: #1a2744;
-    --accent-btn-active: #2d4470;
-    box-sizing: border-box;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+ :root{
+    --panel-line:var(--border); --muted:var(--text-dim); --grid-line:var(--grid);
+    --accent-btn:var(--panel-2); --accent-btn-active:var(--accent);
+    --pos:var(--orange); --neg:var(--blue); --field:var(--cyan); --curl:var(--violet);
   }
-  @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) {
-      --bg: #f3f5fa;
-      --panel: #ffffff;
-      --panel-line: #dbe1ef;
-      --text: #16213e;
-      --muted: #5b6788;
-      --pos: #d97a1f;
-      --neg: #2f6fc4;
-      --field: #1a9797;
-      --curl: #c23e8c;
-      --grid-line: rgba(22,33,62,0.08);
-      --accent-btn: #eaeef7;
-      --accent-btn-active: #d7e0f5;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #0b1220; --panel: #101a2e; --panel-line: #223055; --text: #e7ecf7; --muted: #8b9bc2;
-  }
-  * { box-sizing: border-box; }
-  html, body {
+
+  html, body{
     height: 100%;
     margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    
+    
     scroll-padding-top: env(safe-area-inset-top, 0px);
-    -webkit-tap-highlight-color: transparent;
+    
   }
-  #app { min-height: 100%; display: flex; flex-direction: column; }
-  header { padding: 14px 16px 10px; border-bottom: 1px solid var(--panel-line); }
-  header h1 { margin: 0 0 2px; font-size: 18px; font-weight: 650; letter-spacing: 0.2px; }
-  header p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
-  main { flex: 1; display: flex; flex-direction: column; gap: 0; }
-  @media (min-width: 780px) {
-    main { flex-direction: row; }
-    #stageWrap { flex: 1 1 62%; }
-    #panel { flex: 1 1 38%; max-width: 430px; border-left: 1px solid var(--panel-line); }
+  #app{ min-height: 100%; display: flex; flex-direction: column; }
+  header{ padding: 14px 16px 10px; border-bottom: 1px solid var(--panel-line); }
+  header h1{ margin: 0 0 2px;    }
+  header p{ margin: 0;    }
+  main{ flex: 1; display: flex; flex-direction: column; gap: 0; }
+  @media (min-width: 780px){
+    main{ flex-direction: row; }
+    #stageWrap{ flex: 1 1 62%; }
+    #panel{ flex: 1 1 38%; max-width: 430px; border-left: 1px solid var(--panel-line); }
   }
-  #stageWrap { position: relative; background: var(--panel); min-height: 320px; flex: 1 1 56vh; }
-  canvas.field { display: block; width: 100%; height: 100%; touch-action: none; }
-  #panel { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .seg { display: inline-flex; border: 1px solid var(--panel-line); border-radius: 8px; overflow: hidden; }
-  .seg button { border: none; background: var(--accent-btn); color: var(--text); padding: 8px 12px; font-size: 13px; cursor: pointer; }
-  .seg button.active { background: var(--accent-btn-active); font-weight: 600; }
-  button.pill, button.icon-btn {
-    border: 1px solid var(--panel-line); background: var(--accent-btn); color: var(--text);
-    border-radius: 8px; padding: 7px 11px; font-size: 13px; cursor: pointer;
-  }
-  button.pill.small { padding: 5px 9px; font-size: 12px; }
-  button.pill:active, button.icon-btn:active, .seg button:active { transform: translateY(1px); }
-  label.chk { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); user-select: none; }
-  h2 { font-size: 12px; color: var(--muted); margin: 0 0 6px; font-weight: 600; letter-spacing: 0.2px; }
-  .section { padding-top: 10px; border-top: 1px solid var(--panel-line); }
-  .section:first-child { border-top: none; padding-top: 0; }
-  #probeReadout { font-size: 13px; line-height: 1.55; color: var(--text); }
-  #probeReadout .num { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; color: var(--muted); }
-  #probeReadout .big { font-size: 13.5px; font-weight: 600; }
-  .sliderRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-  .sliderRow input[type=range] { flex: 1; }
-  .sliderRow span { font-size: 12px; color: var(--muted); width: 34px; text-align: right; }
-  .indicatorRow { display: flex; gap: 18px; align-items: center; margin-top: 10px; }
-  .indicatorBox { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
-  .legend { font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .legend b { color: var(--text); font-weight: 600; }
-  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-  footer.hint { font-size: 11.5px; color: var(--muted); padding-top: 4px; }
+  #stageWrap{ position: relative; background: var(--panel); min-height: 320px; flex: 1 1 56vh; }
+  canvas.field{ display: block; width: 100%; height: 100%; touch-action: none; }
+  #panel{ padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+  .row{ display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  label.chk{ display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); user-select: none; }
+  h2{   margin: 0 0 6px;   }
+  .section{ padding-top: 10px; border-top: 1px solid var(--panel-line); }
+  .section:first-child{ border-top: none; padding-top: 0; }
+  #probeReadout{ font-size: 13px; line-height: 1.55; color: var(--text); }
+  #probeReadout .num{ font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+  #probeReadout .big{ font-size: 13.5px; font-weight: 600; }
+  .sliderRow{ display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .sliderRow input[type=range]{ flex: 1; }
+  .sliderRow span{ font-size: 12px; color: var(--muted); width: 34px; text-align: right; }
+  .indicatorRow{ display: flex; gap: 18px; align-items: center; margin-top: 10px; }
+  .indicatorBox{ display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+  .legend b{ color: var(--text); font-weight: 600; }
+  .dot{ display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  footer.hint{ font-size: 11.5px; color: var(--muted); padding-top: 4px; }
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <a href="index.html" style="font-size:12.5px;color:var(--muted);text-decoration:none;">&larr; Back to course</a>
     <h1 style="margin-top:6px;">Electric &amp; Magnetic Field Explorer</h1>
     <p>Drag a charge to move it, tap it to flip sign/current. Tap empty space to drop a probe loop — drag its middle to move it, drag its edge to resize it.</p>
   </header>
@@ -412,7 +373,7 @@
       ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1; ctx.stroke();
       if (mode === 'E') {
-        ctx.fillStyle = '#fff'; ctx.font = '600 14px ui-sans-serif, system-ui, sans-serif';
+        ctx.fillStyle = '#fff'; ctx.font = '600 14px "Space Grotesk", sans-serif';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(c0.q > 0 ? '+' : '−', c.x, c.y + 1);
       } else {
@@ -671,5 +632,6 @@
   requestAnimationFrame(draw);
 })();
 </script>
+<script src="../assets/js/course-back.js" defer></script>
 </body>
 </html>
