@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DOS, Van Hove Singularities &amp; Transition Probability</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --ink:#1f2328; --muted:#5b6470;
+    --line:#d8dce1; --accent:#2563eb;
+    --grid:#e6e8eb; --shade:#eef2f7;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14171a; --panel:#1c2024; --ink:#e8eaed; --muted:#9aa4b2;
+      --line:#333941; --accent:#60a5fa; --grid:#2a2f36; --shade:#20252b;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14171a; --panel:#1c2024; --ink:#e8eaed; --muted:#9aa4b2;
+    --line:#333941; --accent:#60a5fa; --grid:#2a2f36; --shade:#20252b;
+  }
+  html,body{height:100%;}
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:14px 12px 28px;}
+  h1{font-size:1.05rem; line-height:1.35; margin:2px 0 2px; font-weight:700;}
+  .sub{color:var(--muted); font-size:0.8rem; line-height:1.4; margin:0 0 12px;}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:8px 6px 6px; margin-bottom:10px;
+  }
+  .card h2{font-size:0.66rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); margin:2px 4px 4px; font-weight:600; line-height:1.25;}
+  .row{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-bottom:6px;}
+  .row > .card{margin-bottom:0;}
+  svg{display:block; width:100%; height:auto; overflow:hidden;}
+  .axislabel{font-size:7px; fill:var(--muted);}
+  .gridline{stroke:var(--grid); stroke-width:1;}
+  .axis{stroke:var(--muted); stroke-width:1;}
+  .controls{padding:6px 8px 4px;}
+  .ctrl{margin-bottom:12px;}
+  .ctrl label{display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:4px; color:var(--ink);}
+  .ctrl label .val{color:var(--accent); font-weight:600; font-variant-numeric:tabular-nums;}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:4px;
+    background:var(--grid); outline:none; margin:0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--panel); box-shadow:0 0 0 1px var(--line);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px; height:20px; border-radius:50%; background:var(--accent); border:2px solid var(--panel);
+  }
+  .segbtns{display:flex; gap:6px; margin-bottom:12px;}
+  .segbtns button{
+    flex:1; padding:8px 4px; border-radius:8px; border:1px solid var(--line);
+    background:var(--shade); color:var(--ink); font-size:0.78rem; font-weight:600;
+  }
+  .segbtns button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .legend{display:flex; flex-wrap:wrap; gap:10px; padding:2px 6px 8px; font-size:0.72rem; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .note{font-size:0.78rem; line-height:1.5; color:var(--muted); padding:2px 4px 6px;}
+  .note b{color:var(--ink);}
+  footer{color:var(--muted); font-size:0.7rem; text-align:center; margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Density of States, Van&nbsp;Hove Singularities &amp; Transition Probability</h1>
+  <p class="sub">Parabolic 1D subbands (quantum-wire / CNT-like). All three panels share one vertical energy scale: each flat band extremum gives a DOS spike at the same height, and an absorption peak appears when ħω = 2E matches a subband pair.</p>
+
+  <div class="row">
+    <div class="card">
+      <h2>Dispersion<br>E(k)</h2>
+      <svg id="svgDisp" viewBox="0 0 120 240"></svg>
+    </div>
+    <div class="card">
+      <h2>DOS<br>g(E)</h2>
+      <svg id="svgDOS" viewBox="0 0 120 240"></svg>
+    </div>
+    <div class="card">
+      <h2>Absorption<br>α(ħω), ħω=2E</h2>
+      <svg id="svgAbs" viewBox="0 0 120 240"></svg>
+    </div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="card controls">
+    <div class="segbtns" id="nbtns"></div>
+
+    <div class="ctrl">
+      <label>Subband spacing ΔE (confinement) <span class="val" id="dEVal"></span></label>
+      <input type="range" id="dE" min="0.02" max="0.35" step="0.005" value="0.14">
+    </div>
+
+    <div class="ctrl">
+      <label>Band curvature ∝ 1/m* <span class="val" id="curvVal"></span></label>
+      <input type="range" id="curv" min="0.03" max="0.35" step="0.005" value="0.12">
+    </div>
+
+    <div class="ctrl">
+      <label>Broadening γ (scattering / linewidth) <span class="val" id="gVal"></span></label>
+      <input type="range" id="gamma" min="0.004" max="0.12" step="0.002" value="0.015">
+    </div>
+  </div>
+
+  <p class="note"><b>Curvature</b> steepens the parabolas at left and, since g ∝ 1/√curvature, lowers every DOS and absorption peak. <b>γ → minimum</b> sharpens the peaks toward the ideal 1/√(E−E₀) divergence (tops are clipped at the frame). <b>ΔE</b> moves the subbands apart, and the DOS and absorption peaks follow at the same heights.</p>
+
+  <footer>Model: Eₙ = ±(E_g/2 + n²ΔE) ± curv·k², g ∝ 1/√(curv·(E−Eₙ+γ)), direct Δn=0 transitions. Booklet §8.2.1, Figs. 8.3–8.4.</footer>
+</div>
+
+<script>
+(function(){
+  const Eg = 1.0;
+  const kmax = 2.2;
+  const GMAX = 40;
+  const colors = ['#dc2626','#2563eb','#059669','#7c3aed'];
+  const state = { N:2, dE:0.14, curv:0.12, gamma:0.015 };
+
+  const dispSvg = document.getElementById('svgDisp');
+  const dosSvg  = document.getElementById('svgDOS');
+  const absSvg  = document.getElementById('svgAbs');
+  const legendEl = document.getElementById('legend');
+  const nbtns = document.getElementById('nbtns');
+
+  const W=120, H=240, padT=8, padB=8;
+
+  function svgEl(tag, attrs){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  function subbands(){
+    const Ec=[], Ev=[];
+    for(let n=1;n<=state.N;n++){
+      Ec.push(Eg/2 + n*n*state.dE);
+      Ev.push(-Eg/2 - n*n*state.dE);
+    }
+    return {Ec,Ev};
+  }
+  function Emax(){ const {Ec}=subbands(); return Ec[Ec.length-1] + 0.5; }
+  function C(){ return 1/Math.sqrt(state.curv); }
+
+  function dosParts(E){
+    const {Ec,Ev} = subbands();
+    const per=[]; let total=0;
+    for(let i=0;i<state.N;i++){
+      let g=0;
+      const xc=E-Ec[i]; if(xc>0) g += C()/Math.sqrt(xc+state.gamma);
+      const xv=Ev[i]-E; if(xv>0) g += C()/Math.sqrt(xv+state.gamma);
+      per.push(g); total+=g;
+    }
+    return {per,total};
+  }
+  function absParts(hw){
+    const {Ec,Ev} = subbands();
+    const per=[]; let total=0;
+    for(let i=0;i<state.N;i++){
+      const x = hw-(Ec[i]-Ev[i]);
+      const v = x>0 ? C()/Math.sqrt(x+state.gamma) : 0;
+      per.push(v); total+=v;
+    }
+    return {per,total};
+  }
+
+  function frame(svg, id, padL, padR){
+    svg.innerHTML='';
+    const defs = svgEl('defs',{});
+    const cp = svgEl('clipPath',{id:id});
+    cp.appendChild(svgEl('rect',{x:padL,y:padT,width:W-padL-padR,height:H-padT-padB}));
+    defs.appendChild(cp);
+    svg.appendChild(defs);
+  }
+
+  function guides(svg, x1, x2, yE, ev, ec){
+    const {Ec,Ev} = subbands();
+    for(let i=0;i<state.N;i++){
+      if(ec) svg.appendChild(svgEl('line',{x1:x1,x2:x2,y1:yE(Ec[i]),y2:yE(Ec[i]),stroke:colors[i],'stroke-width':0.8,'stroke-dasharray':'2 3',opacity:0.6}));
+      if(ev) svg.appendChild(svgEl('line',{x1:x1,x2:x2,y1:yE(Ev[i]),y2:yE(Ev[i]),stroke:colors[i],'stroke-width':0.8,'stroke-dasharray':'2 3',opacity:0.6}));
+    }
+  }
+
+  function renderDisp(){
+    const padL=16, padR=4;
+    frame(dispSvg,'cpD',padL,padR);
+    const {Ec,Ev}=subbands(); const Em=Emax();
+    const xk = k => padL + (k+kmax)/(2*kmax)*(W-padL-padR);
+    const yE = E => padT + (Em-E)/(2*Em)*(H-padT-padB);
+
+    dispSvg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:yE(0),y2:yE(0),class:'gridline'}));
+    guides(dispSvg,padL,W-padR,yE,true,true);
+    dispSvg.appendChild(svgEl('line',{x1:padL,x2:padL,y1:padT,y2:H-padB,class:'axis'}));
+    const t=svgEl('text',{x:3,y:padT+8,class:'axislabel'}); t.textContent='E'; dispSvg.appendChild(t);
+    const tk=svgEl('text',{x:W-padR-6,y:yE(0)-3,class:'axislabel'}); tk.textContent='k'; dispSvg.appendChild(tk);
+
+    const g = svgEl('g',{'clip-path':'url(#cpD)'});
+    for(let i=0;i<state.N;i++){
+      let dC='', dV='';
+      const nP=60;
+      for(let j=0;j<=nP;j++){
+        const k=-kmax+j*(2*kmax/nP);
+        dC += (j?'L':'M')+xk(k).toFixed(2)+','+yE(Ec[i]+state.curv*k*k).toFixed(2)+' ';
+        dV += (j?'L':'M')+xk(k).toFixed(2)+','+yE(Ev[i]-state.curv*k*k).toFixed(2)+' ';
+      }
+      g.appendChild(svgEl('path',{d:dC,fill:'none',stroke:colors[i],'stroke-width':1.8}));
+      g.appendChild(svgEl('path',{d:dV,fill:'none',stroke:colors[i],'stroke-width':1.8}));
+      const x0=xk(0);
+      g.appendChild(svgEl('line',{x1:x0,x2:x0,y1:yE(Ev[i]),y2:yE(Ec[i]),stroke:colors[i],'stroke-width':1,opacity:0.55,'stroke-dasharray':'1.5 2'}));
+    }
+    dispSvg.appendChild(g);
+  }
+
+  function renderDOS(){
+    const padL=6, padR=4;
+    frame(dosSvg,'cpG',padL,padR);
+    const Em=Emax();
+    const yE = E => padT + (Em-E)/(2*Em)*(H-padT-padB);
+    const xg = g => padL + g/GMAX*(W-padL-padR);
+
+    dosSvg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:yE(0),y2:yE(0),class:'gridline'}));
+    guides(dosSvg,padL,W-padR,yE,true,true);
+    dosSvg.appendChild(svgEl('line',{x1:padL,x2:padL,y1:padT,y2:H-padB,class:'axis'}));
+    const t=svgEl('text',{x:padL+3,y:padT+8,class:'axislabel'}); t.textContent='g(E) →'; dosSvg.appendChild(t);
+
+    const nS=240;
+    const g = svgEl('g',{'clip-path':'url(#cpG)'});
+    const paths = Array.from({length:state.N},()=> '');
+    let tot='';
+    for(let j=0;j<=nS;j++){
+      const E=-Em+j*(2*Em/nS);
+      const r=dosParts(E);
+      const y=yE(E).toFixed(2);
+      for(let i=0;i<state.N;i++) paths[i]+=(j?'L':'M')+xg(r.per[i]).toFixed(2)+','+y+' ';
+      tot += (j?'L':'M')+xg(r.total).toFixed(2)+','+y+' ';
+    }
+    for(let i=0;i<state.N;i++) g.appendChild(svgEl('path',{d:paths[i],fill:'none',stroke:colors[i],'stroke-width':1.4,opacity:0.85}));
+    g.appendChild(svgEl('path',{d:tot,fill:'none',stroke:css('--ink'),'stroke-width':1.4,'stroke-dasharray':'1 2',opacity:0.6}));
+    dosSvg.appendChild(g);
+  }
+
+  function renderAbs(){
+    const padL=6, padR=4;
+    frame(absSvg,'cpA',padL,padR);
+    const Em=Emax();
+    const yE = E => padT + (Em-E)/(2*Em)*(H-padT-padB);
+    const xa = a => padL + a/GMAX*(W-padL-padR);
+
+    absSvg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:yE(0),y2:yE(0),class:'axis'}));
+    guides(absSvg,padL,W-padR,yE,false,true);
+    absSvg.appendChild(svgEl('line',{x1:padL,x2:padL,y1:padT,y2:yE(0),class:'axis'}));
+    const t=svgEl('text',{x:padL+3,y:padT+8,class:'axislabel'}); t.textContent='α →'; absSvg.appendChild(t);
+    const t2=svgEl('text',{x:W-padR-2,y:yE(0)+10,class:'axislabel','text-anchor':'end'}); t2.textContent='ħω = 2E (upper half)'; absSvg.appendChild(t2);
+
+    const nS=240;
+    const g = svgEl('g',{'clip-path':'url(#cpA)'});
+    const paths = Array.from({length:state.N},()=> '');
+    let tot='';
+    for(let j=0;j<=nS;j++){
+      const E=j*(Em/nS);
+      const r=absParts(2*E);
+      const y=yE(E).toFixed(2);
+      for(let i=0;i<state.N;i++) paths[i]+=(j?'L':'M')+xa(r.per[i]).toFixed(2)+','+y+' ';
+      tot += (j?'L':'M')+xa(r.total).toFixed(2)+','+y+' ';
+    }
+    for(let i=0;i<state.N;i++) g.appendChild(svgEl('path',{d:paths[i],fill:'none',stroke:colors[i],'stroke-width':1.3,opacity:0.7}));
+    g.appendChild(svgEl('path',{d:tot,fill:'none',stroke:css('--ink'),'stroke-width':1.8}));
+    absSvg.appendChild(g);
+  }
+
+  function buildLegend(){
+    legendEl.innerHTML='';
+    for(let i=0;i<state.N;i++){
+      const s=document.createElement('span');
+      s.innerHTML='<span class="dot" style="background:'+colors[i]+'"></span> subband n='+(i+1);
+      legendEl.appendChild(s);
+    }
+    const s=document.createElement('span');
+    s.innerHTML='<span class="dot" style="background:var(--ink);opacity:.6"></span> total';
+    legendEl.appendChild(s);
+  }
+
+  function buildNbtns(){
+    nbtns.innerHTML='';
+    for(let n=1;n<=4;n++){
+      const b=document.createElement('button');
+      b.textContent=n+(n>1?' subbands':' subband');
+      b.setAttribute('aria-pressed', n===state.N?'true':'false');
+      b.onclick=()=>{ state.N=n; buildLegend(); buildNbtns(); render(); };
+      nbtns.appendChild(b);
+    }
+  }
+
+  function render(){
+    renderDisp(); renderDOS(); renderAbs();
+    document.getElementById('dEVal').textContent=state.dE.toFixed(3);
+    document.getElementById('curvVal').textContent=state.curv.toFixed(3);
+    document.getElementById('gVal').textContent=state.gamma.toFixed(3);
+  }
+
+  document.getElementById('dE').addEventListener('input', e=>{ state.dE=parseFloat(e.target.value); render(); });
+  document.getElementById('curv').addEventListener('input', e=>{ state.curv=parseFloat(e.target.value); render(); });
+  document.getElementById('gamma').addEventListener('input', e=>{ state.gamma=parseFloat(e.target.value); render(); });
+
+  buildLegend(); buildNbtns(); render();
+})();
+</script>
+</body>
+</html>
