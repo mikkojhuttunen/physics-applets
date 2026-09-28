@@ -1,0 +1,23 @@
+diff --git a/fys501-laser-physics/index.html b/fys501-laser-physics/index.html
+--- a/fys501-laser-physics/index.html
++++ b/fys501-laser-physics/index.html
+@@ -21,7 +21,6 @@
+   <ul>
+     <li><a href="gain-media-spectra.html">Laser Gain Media: Absorption &amp; Emission</a></li>
+     <li><a href="gaussian-beam-cavity.html">Gaussian Beam Cavity Explorer (ABCD resonator stability)</a></li>
+-    <li><a href="spectral-synthesizer.html">Spectral Synthesizer: Continuous vs. Frequency-Comb Superposition</a></li>
+   </ul>
+ </body>
+ </html>
+
+diff --git a/fys240-optics/index.html b/fys240-optics/index.html
+--- a/fys240-optics/index.html
++++ b/fys240-optics/index.html
+@@ -24,6 +24,7 @@
+     <li><a href="lens_aberration_explorer.html">Lens Spherical Aberration Explorer</a></li>
+     <li><a href="coma_explorer.html">Lens Coma Aberration Explorer</a></li>
+     <li><a href="diffraction-grating-explorer.html">Grating Bench (Diffraction Grating Explorer)</a></li>
++    <li><a href="spectral-synthesizer.html">Spectral Synthesizer: Continuous vs. Frequency-Comb Superposition</a></li>
+   </ul>
+ </body>
+ </html>
