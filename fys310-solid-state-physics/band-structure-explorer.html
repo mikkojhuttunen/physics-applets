@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Band Structure Explorer — Empty Lattice to Real Gaps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F4EE; --panel:#FFFFFF; --panel-2:#F0EEE6; --line:#DAD5C6;
+  --text:#20241F; --muted:#6B6F63;
+  --valence:#0E7C6E; --conduction:#C4632B; --gapfill: rgba(196,99,43,0.16);
+  --violet:#5B4BD6; --grid:#E2DECE; --axis:#8B8B7D; --onaccent:#FFFFFF;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12140F; --panel:#1A1D16; --panel-2:#20241C; --line:#33372A;
+    --text:#EFEEE4; --muted:#9BA095;
+    --valence:#5FD8C4; --conduction:#F0A857; --gapfill: rgba(240,168,87,0.20);
+    --violet:#B0A2FF; --grid:#2A2E22; --axis:#7C816F; --onaccent:#0B120E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12140F; --panel:#1A1D16; --panel-2:#20241C; --line:#33372A;
+  --text:#EFEEE4; --muted:#9BA095;
+  --valence:#5FD8C4; --conduction:#F0A857; --gapfill: rgba(240,168,87,0.20);
+  --violet:#B0A2FF; --grid:#2A2E22; --axis:#7C816F; --onaccent:#0B120E;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+h1,h2,h3{font-family:'Spectral',Georgia,'Times New Roman',serif; font-weight:600; margin:0;}
+.wrap{max-width:1180px; margin:0 auto; padding:28px 20px 60px;}
+header.top{margin-bottom:22px;}
+header.top h1{font-size:26px; letter-spacing:0.2px;}
+header.top p{margin:8px 0 0; color:var(--muted); font-size:14.5px; max-width:64ch; line-height:1.55;}
+.layout{display:grid; grid-template-columns:270px minmax(0,1fr); gap:20px;}
+@media (max-width:860px){ .layout{grid-template-columns:1fr;} }
+.card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px;}
+.sidebar .card + .card{margin-top:16px;}
+.tabs{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap;}
+.tab-btn{
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:600; padding:9px 16px; border-radius:999px;
+  border:1px solid var(--line); background:var(--panel); color:var(--muted); cursor:pointer; transition:all .15s ease;
+}
+.tab-btn.active{background:var(--text); color:var(--bg); border-color:var(--text);}
+.tab-btn:hover:not(.active){border-color:var(--axis); color:var(--text);}
+.field{margin-bottom:16px;} .field:last-child{margin-bottom:0;}
+.field label{display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:7px;}
+.seg{display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+.seg button{
+  flex:1; padding:8px 6px; font-size:13.5px; font-weight:600; font-family:'Inter',sans-serif;
+  background:var(--panel-2); color:var(--muted); border:none; cursor:pointer; border-right:1px solid var(--line);
+}
+.seg button:last-child{border-right:none;}
+.seg button.active{background:var(--valence); color:var(--onaccent);}
+select{width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2); color:var(--text); font-family:'Inter',sans-serif; font-size:14px;}
+.slider-row{display:flex; align-items:center; gap:10px;}
+input[type=range]{flex:1; accent-color:var(--valence);}
+.slider-val{font-size:13px; font-variant-numeric:tabular-nums; min-width:44px; text-align:right;}
+.hint{font-size:12px; color:var(--muted); margin:6px 0 0; line-height:1.5;}
+.matbtns{display:flex; flex-wrap:wrap; gap:8px;}
+.matbtn{padding:8px 14px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2); color:var(--text); font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600; cursor:pointer;}
+.matbtn.active{background:var(--conduction); border-color:var(--conduction); color:var(--onaccent);}
+.status{font-size:12.5px; color:var(--violet); min-height:16px; margin-top:6px;}
+.plotcard{padding:16px 16px 10px;}
+.plothead{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:6px;}
+.plot-legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--muted);}
+.plot-legend span{display:inline-flex; align-items:center; gap:6px;}
+.swatch{width:14px; height:3px; border-radius:2px; display:inline-block;}
+.tools{display:flex; gap:8px; flex-wrap:wrap;}
+.toggle-btn{
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:600; padding:8px 13px; border-radius:8px;
+  border:1px solid var(--violet); background:transparent; color:var(--violet); cursor:pointer;
+}
+.toggle-btn.active{background:var(--violet); color:var(--onaccent);}
+svg{width:100%; height:auto; display:block;}
+.axislabel{fill:var(--muted); font-size:12px; font-family:'Inter',sans-serif;}
+.ticklabel{fill:var(--text); font-size:13px; font-family:'Inter',sans-serif; font-weight:600;}
+.gridline{stroke:var(--grid); stroke-width:1;}
+.axisline{stroke:var(--axis); stroke-width:1;}
+.halo{paint-order:stroke; stroke:var(--panel); stroke-width:4px; stroke-linejoin:round;}
+.gaplabel{fill:var(--conduction); font-size:14px; font-weight:700; font-family:'Inter',sans-serif;}
+.edgelabel{fill:var(--violet); font-size:12.5px; font-weight:600; font-family:'Inter',sans-serif;}
+.infopanel{margin-top:16px;}
+.infopanel h3{font-size:15.5px; margin-bottom:8px;}
+.infopanel p{font-size:13.8px; line-height:1.65; margin:0 0 10px;}
+.infopanel p.muted{color:var(--muted); font-size:13px;}
+.gapstat{display:flex; gap:22px; flex-wrap:wrap; padding:12px 14px; background:var(--panel-2); border-radius:8px; margin-bottom:12px; border:1px solid var(--line);}
+.gapstat .item .k{font-size:11.5px; color:var(--muted); font-weight:600;}
+.gapstat .item .v{font-size:16px; font-weight:700; font-family:'Spectral',serif; margin-top:2px;}
+.gapstat .item .v.open{color:var(--conduction);}
+.gapstat .item .v.closed{color:var(--muted);}
+.compare{margin-top:16px; overflow-x:auto;}
+.compare h3{font-size:15.5px; margin-bottom:8px;}
+.compare table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:520px;}
+.compare th{text-align:left; font-weight:600; color:var(--muted); font-size:12px; padding:6px 10px; border-bottom:1px solid var(--line);}
+.compare td{padding:8px 10px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums;}
+.compare tr.cur td{background:var(--panel-2);}
+.compare td.gapok{color:var(--conduction); font-weight:700;}
+.compare td.gapno{color:var(--muted);}
+.cardhead{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;}
+.cardtitle{font-family:'Spectral',Georgia,serif; font-weight:600; font-size:15px;}
+.collapse-btn{font-family:'Inter',sans-serif; font-size:12px; font-weight:600; padding:5px 11px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); color:var(--muted); cursor:pointer;}
+.collapse-btn:hover{color:var(--text); border-color:var(--axis);}
+.card.collapsed .cardbody{display:none;}
+.card.collapsed .cardhead{margin-bottom:0;}
+input[type=range]:focus-visible{outline:2px solid var(--violet); outline-offset:3px; border-radius:6px;}
+footer{margin-top:28px; font-size:12px; color:var(--muted); line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Band Structure Explorer</h1>
+    <p>Free-electron states folded into a Brillouin zone, and what it takes to turn that folding into a complete band gap: from the empty lattice, through a weak periodic potential, to Al, Si, Ge, GaAs and diamond.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="empty">Empty lattice</button>
+    <button class="tab-btn" data-tab="nfe">Weak potential</button>
+    <button class="tab-btn" data-tab="materials">Materials</button>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="card">
+        <div class="cardhead"><span class="cardtitle">Structure</span><button class="collapse-btn" data-target="struct" aria-expanded="true">Hide</button></div>
+        <div class="cardbody" id="body-struct">
+        <div class="field" id="field-dim">
+          <label>Dimension</label>
+          <div class="seg" id="dimSeg">
+            <button data-dim="2" class="active">2D</button>
+            <button data-dim="3">3D</button>
+          </div>
+        </div>
+        <div class="field" id="field-lattice">
+          <label>Lattice</label>
+          <select id="latticeSel"></select>
+        </div>
+        <div class="field" id="field-material" style="display:none;">
+          <label>Material</label>
+          <div class="matbtns" id="matBtns"></div>
+        </div>
+        <div class="field" id="field-comp" style="display:none;">
+          <label>Al fraction x in AlₓGa₁₋ₓAs</label>
+          <div class="slider-row">
+            <input type="range" id="compSlider" min="0" max="1" step="0.01" value="0.3">
+            <span class="slider-val" id="compVal">0.30</span>
+          </div>
+          <p class="hint">x = 0 is GaAs, x = 1 is AlAs. Watch the conduction minimum move from Γ to X.</p>
+        </div>
+              </div>
+</div>
+      <div class="card" id="panel-view">
+        <div class="cardhead"><span class="cardtitle">Bands</span><button class="collapse-btn" data-target="view" aria-expanded="true">Hide</button></div>
+        <div class="cardbody" id="body-view">
+        <div class="field" id="field-nband">
+          <label>Bands shown</label>
+          <div class="slider-row">
+            <input type="range" id="nbandSlider" min="3" max="10" step="1" value="8">
+            <span class="slider-val" id="nbandVal">8</span>
+          </div>
+        </div>
+        <div class="field" id="field-fill">
+          <label>Bands filled (electron count)</label>
+          <div class="slider-row">
+            <input type="range" id="fillSlider" min="1" max="7" step="1" value="1">
+            <span class="slider-val" id="fillVal">1</span>
+          </div>
+          <p class="hint">Treats the lowest N bands as occupied and looks for a complete gap above them. Diamond-structure crystals have 8 valence electrons per cell: 4 bands.</p>
+        </div>
+              </div>
+</div>
+      <div class="card" id="panel-potential" style="display:none;">
+        <div class="cardhead"><span class="cardtitle">Potential</span><button class="collapse-btn" data-target="pot" aria-expanded="true">Hide</button></div>
+        <div class="cardbody" id="body-pot">
+        <div class="field">
+          <label>Potential strength V₀</label>
+          <div class="slider-row">
+            <input type="range" id="v0Slider" min="0" max="1.4" step="0.01" value="0.3">
+            <span class="slider-val" id="v0Val">0.30</span>
+          </div>
+          <p class="hint" id="v0Hint">Coupling between plane waves, in units of ħ²/2m·(2π/a)². V₀ = 0 is the empty lattice.</p>
+        </div>
+        <div class="field" id="field-asym" style="display:none;">
+          <label>Basis-atom asymmetry Δf</label>
+          <div class="slider-row">
+            <input type="range" id="asymSlider" min="0" max="1" step="0.01" value="0">
+            <span class="slider-val" id="asymVal">0.00</span>
+          </div>
+          <p class="hint">0 = two identical atoms (diamond, Si, Ge). 1 = GaAs-like asymmetry, which un-forbids reflections that identical atoms cancel.</p>
+        </div>
+              </div>
+</div>
+      <div class="status" id="statusMsg"></div>
+    </div>
+
+    <div class="main">
+      <div class="card plotcard">
+        <div class="plothead">
+          <div class="plot-legend">
+            <span><i class="swatch" style="background:var(--valence)"></i>occupied</span>
+            <span><i class="swatch" style="background:var(--conduction)"></i>unoccupied</span>
+            <span><i class="swatch" style="background:var(--gapfill); width:14px; height:12px; border-radius:2px;"></i>complete gap</span>
+          </div>
+          <div class="tools">
+            <button class="toggle-btn" id="edgeBtn" aria-pressed="false">Show direct vs indirect gap</button>
+            <button class="toggle-btn" id="zoomBtn" aria-pressed="false">Zoom to gap</button>
+          </div>
+        </div>
+        <svg id="plotSvg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="card compare" id="alloyBox" style="display:none; margin-top:16px;">
+        <h3>Conduction-band valleys versus composition</h3>
+        <svg id="alloySvg" viewBox="0 0 900 330" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="card infopanel">
+        <div class="gapstat" id="gapStat"></div>
+        <h3 id="infoTitle">Lattice notes</h3>
+        <p id="infoText"></p>
+        <p class="muted" id="infoNote"></p>
+      </div>
+
+      <div class="card compare" id="compareBox" style="display:none; margin-top:16px;">
+        <h3>The five materials at a glance</h3>
+        <table>
+          <thead><tr><th>Material</th><th>Model gap</th><th>Character in model</th><th>Experiment</th></tr></thead>
+          <tbody id="compareBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Tip: click a slider, then use the arrow keys (Shift for fine steps, PageUp/PageDown for big ones).<br>Si, Ge and GaAs use the empirical pseudopotential form factors of Cohen and Bergstresser (1966) with their real lattice constants, so energies are in eV. Diamond uses Si's form factors scaled up (by 1.21) to land near its known gap, and Al uses two approximate form factors. The other lattices are toy models in units of ħ²/2m·(2π/a)². The plane-wave basis is truncated and spin-orbit coupling is ignored, so this teaches the symmetry argument; it is not a substitute for a full band-structure calculation.
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const TAU = 2*Math.PI;
+const A0 = 0.529177, RYEV = 13.6057;
+function dot3(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function cross3(a,b){return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];}
+function add3(a,b){return [a[0]+b[0],a[1]+b[1],a[2]+b[2]];}
+function sub3(a,b){return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];}
+function scale3(a,s){return [a[0]*s,a[1]*s,a[2]*s];}
+
+/* reciprocal vectors in units of 2π/a (a = 1) */
+function reciprocal(a1,a2,a3){
+  const vol = dot3(a1, cross3(a2,a3));
+  return [scale3(cross3(a2,a3),1/vol), scale3(cross3(a3,a1),1/vol), scale3(cross3(a1,a2),1/vol)];
+}
+function generateGs(b,nmax,cut2){
+  const list=[];
+  for(let n1=-nmax[0];n1<=nmax[0];n1++)for(let n2=-nmax[1];n2<=nmax[1];n2++)for(let n3=-nmax[2];n3<=nmax[2];n3++){
+    const G=add3(add3(scale3(b[0],n1),scale3(b[1],n2)),scale3(b[2],n3));
+    const m2=dot3(G,G);
+    if(m2<=cut2) list.push({G,m2});
+  }
+  list.sort((x,y)=>x.m2-y.m2);
+  return list;
+}
+
+/* eigenvalues of a real symmetric matrix (Householder + implicit QL), destroys a */
+function eigvalsSym(a,n){
+  const d=new Float64Array(n), e=new Float64Array(n);
+  for(let i=n-1;i>0;i--){
+    const l=i-1; let h=0, scale=0;
+    if(l>0){
+      for(let k=0;k<=l;k++) scale+=Math.abs(a[i][k]);
+      if(scale===0) e[i]=a[i][l];
+      else{
+        for(let k=0;k<=l;k++){ a[i][k]/=scale; h+=a[i][k]*a[i][k]; }
+        let f=a[i][l];
+        let g=(f>=0?-Math.sqrt(h):Math.sqrt(h));
+        e[i]=scale*g; h-=f*g; a[i][l]=f-g; f=0;
+        for(let j=0;j<=l;j++){
+          g=0;
+          for(let k=0;k<=j;k++) g+=a[j][k]*a[i][k];
+          for(let k=j+1;k<=l;k++) g+=a[k][j]*a[i][k];
+          e[j]=g/h; f+=e[j]*a[i][j];
+        }
+        const hh=f/(h+h);
+        for(let j=0;j<=l;j++){
+          f=a[i][j]; g=e[j]-hh*f; e[j]=g;
+          for(let k=0;k<=j;k++) a[j][k]-=(f*e[k]+g*a[i][k]);
+        }
+      }
+    } else e[i]=a[i][l];
+    d[i]=h;
+  }
+  e[0]=0;
+  for(let i=0;i<n;i++) d[i]=a[i][i];
+  for(let i=1;i<n;i++) e[i-1]=e[i];
+  e[n-1]=0;
+  for(let l=0;l<n;l++){
+    let iter=0, m;
+    do{
+      for(m=l;m<n-1;m++){
+        const dd=Math.abs(d[m])+Math.abs(d[m+1]);
+        if(Math.abs(e[m])<=1e-15*dd) break;
+      }
+      if(m!==l){
+        if(iter++===80) break;
+        let g=(d[l+1]-d[l])/(2*e[l]);
+        let r=Math.hypot(g,1);
+        g=d[m]-d[l]+e[l]/(g+(g>=0?Math.abs(r):-Math.abs(r)));
+        let s=1,c=1,p=0,i;
+        for(i=m-1;i>=l;i--){
+          const f=s*e[i], b=c*e[i];
+          r=Math.hypot(f,g); e[i+1]=r;
+          if(r===0){ d[i+1]-=p; e[m]=0; break; }
+          s=f/r; c=g/r; g=d[i+1]-p;
+          r=(d[i]-g)*s+2*c*b;
+          p=s*r; d[i+1]=g+p; g=c*r-b;
+        }
+        if(r===0 && i>=l) continue;
+        d[l]-=p; e[l]=g; e[m]=0;
+      }
+    } while(m!==l);
+  }
+  return Array.from(d).sort((x,y)=>x-y);
+}
+
+/* potential couplings: W(dG) -> [re, im], dG in units of 2π/a */
+function gaussW(V0,sigma){
+  return function(dG){ const g2=dot3(dG,dG); return [V0*Math.exp(-g2/(2*sigma*sigma)),0]; };
+}
+function diamondW(VS,VA,tau){
+  return function(dG){
+    const s=Math.round(dot3(dG,dG));
+    const th=TAU*dot3(dG,tau);
+    return [(VS[s]||0)*Math.cos(th), (VA[s]||0)*Math.sin(th)];
+  };
+}
+function monoShellW(V){
+  return function(dG){ return [V[Math.round(dot3(dG,dG))]||0, 0]; };
+}
+
+function makeBase(Gs,W){
+  const n=Gs.length;
+  if(!W) return {n,N:n,cplx:false,M:null};
+  const Re=[],Im=[]; let anyIm=false;
+  for(let i=0;i<n;i++){Re.push(new Float64Array(n));Im.push(new Float64Array(n));}
+  for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+    const w=W(sub3(Gs[i].G,Gs[j].G));
+    Re[i][j]=w[0];Re[j][i]=w[0];Im[i][j]=w[1];Im[j][i]=-w[1];
+    if(Math.abs(w[1])>1e-12) anyIm=true;
+  }
+  if(!anyIm){
+    return {n,N:n,cplx:false,M:Re};
+  }
+  const N=2*n, M=[];
+  for(let i=0;i<N;i++) M.push(new Float64Array(N));
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    M[i][j]=Re[i][j]; M[i][n+j]=-Im[i][j]; M[n+i][j]=Im[i][j]; M[n+i][n+j]=Re[i][j];
+  }
+  return {n,N,cplx:true,M};
+}
+function bandsAt(base,Gs,k,nb){
+  const n=base.n;
+  const kin=new Float64Array(n);
+  for(let i=0;i<n;i++){const x=k[0]+Gs[i].G[0],y=k[1]+Gs[i].G[1],z=k[2]+Gs[i].G[2];kin[i]=x*x+y*y+z*z;}
+  if(!base.M){ return Array.from(kin).sort((x,y)=>x-y).slice(0,nb); }
+  const N=base.N, M=new Array(N);
+  for(let i=0;i<N;i++) M[i]=Float64Array.from(base.M[i]);
+  for(let i=0;i<n;i++){ M[i][i]=kin[i]; if(base.cplx) M[n+i][n+i]=kin[i]; }
+  const ev=eigvalsSym(M,N);
+  if(!base.cplx) return ev.slice(0,nb);
+  const out=[]; for(let i=0;i<2*nb;i+=2) out.push(0.5*(ev[i]+ev[i+1]));
+  return out;
+}
+
+/* ---------- lattice definitions (k paths in units of 2π/a) ---------- */
+const S3 = Math.sqrt(3);
+const FCC_PATH = [['L',[.5,.5,.5]],['Γ',[0,0,0]],['X',[1,0,0]],['W',[1,.5,0]],['K',[.75,.75,0]],['Γ',[0,0,0]]];
+const LAT2 = {
+  sq:{ id:'sq', dim:2, name:'Square', a:[[1,0,0],[0,1,0],[0,0,1]], nmax:[4,4,0], cut2:10.01, sigma:0.85, basis:1,
+    path:[['Γ',[0,0,0]],['X',[.5,0,0]],['M',[.5,.5,0]],['Γ',[0,0,0]]],
+    info:"Square lattice (2D), point group 4mm. Gaps open at X (edge midpoints) and M (corners) once the potential is non-zero. With only 4-fold symmetry the X and M gaps sit at different energies, so a complete gap across the zone needs a stronger potential than a higher-symmetry lattice would." },
+  hex:{ id:'hex', dim:2, name:'Hexagonal (triangular)', a:[[1,0,0],[.5,S3/2,0],[0,0,1]], nmax:[5,5,0], cut2:17.34, sigma:0.97, basis:1,
+    path:[['Γ',[0,0,0]],['M',[.5,1/(2*S3),0]],['K',[2/3,0,0]],['Γ',[0,0,0]]],
+    info:"Hexagonal / triangular lattice (2D), point group 6mm. The 6 equivalent M points and 6 equivalent K points open gaps together around the whole zone boundary, so higher lattice symmetry gets to a complete gap with a weaker potential than the square lattice." }
+};
+const LAT3 = {
+  sc:{ id:'sc', dim:3, name:'Simple cubic', a:[[1,0,0],[0,1,0],[0,0,1]], nmax:[3,3,3], cut2:5.01, sigma:0.85, basis:1,
+    path:[['Γ',[0,0,0]],['X',[.5,0,0]],['M',[.5,.5,0]],['Γ',[0,0,0]],['R',[.5,.5,.5]],['X',[.5,0,0]]],
+    info:"Simple cubic (3D), full cubic symmetry Oh. All 6 X faces and 8 R corners are equivalent, so gaps open there together once V(G) is non-zero. Nothing is simple cubic at the atomic scale, but it is the cleanest 3D case." },
+  fcc:{ id:'fcc', dim:3, name:'FCC (one atom per cell)', a:[[0,.5,.5],[.5,0,.5],[.5,.5,0]], nmax:[3,3,3], cut2:12.01, sigma:1.46, basis:1, path:FCC_PATH,
+    info:"Face-centered cubic (3D), point group Oh: the structure of Al, Cu and Ag. One atom per primitive cell means no structure-factor cancellation, so any non-zero potential opens gaps at the zone boundary. Whether a real FCC metal is gapped comes down to electron count, not forbidden reflections." },
+  bcc:{ id:'bcc', dim:3, name:'BCC (one atom per cell)', a:[[-.5,.5,.5],[.5,-.5,.5],[.5,.5,-.5]], nmax:[3,3,3], cut2:10.01, sigma:1.2, basis:1,
+    path:[['Γ',[0,0,0]],['H',[0,0,1]],['N',[.5,0,.5]],['Γ',[0,0,0]],['P',[.5,.5,.5]],['H',[0,0,1]]],
+    info:"Body-centered cubic (3D), point group Oh; its reciprocal lattice is FCC. One atom per cell, so every reflection is allowed: gaps open wherever the potential has weight." },
+  diamond:{ id:'diamond', dim:3, name:'Diamond / zincblende (2-atom basis)', a:[[0,.5,.5],[.5,0,.5],[.5,.5,0]], nmax:[3,3,3], cut2:12.01, basis:2, tau:[1/8,1/8,1/8], path:FCC_PATH,
+    info:"An FCC lattice with two atoms per cell, at (0,0,0) and (¼,¼,¼): diamond, Si and Ge, or zincblende (GaAs) if the atoms differ. The structure factor is S(G) = f₁ + f₂e^(−iG·d). With identical atoms it is exactly zero for a family of reflections (the (200) type): those states cannot couple however strong the potential is. Make the atoms different and the cancellation breaks, so the gaps identical atoms forbid can open, as in GaAs. Try V₀ ≈ 0.56 with 4 bands filled, then raise Δf." }
+};
+
+/* ---------- materials (empirical pseudopotentials) ---------- */
+function E0ry(a){ return Math.pow(TAU*A0/a,2); }
+function ry2u(o,a){ const r={}; for(const k in o) r[k]=o[k]/E0ry(a); return r; }
+function scaled(o,s){ const r={}; for(const k in o) r[k]=o[k]*s; return r; }
+const SI_VS = ry2u({3:-.21,8:.04,11:.08},5.43);
+const MATERIALS = {
+  Al:{ label:'Al', lat:'fcc', a:4.05, kind:'mono', V:ry2u({3:.0179,4:.0562},4.05), fill:1,
+    exp:'No gap (metal)',
+    note:"Aluminium: FCC, one atom per cell, 3 valence electrons. Three electrons cannot fill a whole number of bands (2 per band), so the second band is only partly filled and occupied and empty states overlap in energy. No complete gap at any potential strength: a metal." },
+  Si:{ label:'Si', lat:'diamond', a:5.43, kind:'dia', VS:SI_VS, VA:{}, fill:4,
+    exp:'1.12 eV, indirect',
+    note:"Silicon: two identical atoms per cell, 8 valence electrons fill exactly 4 bands. The identical-atom structure factor cancels the (200) reflection, and the gap is indirect: valence maximum at Γ, conduction minimum most of the way from Γ toward X." },
+  Ge:{ label:'Ge', lat:'diamond', a:5.66, kind:'dia', VS:ry2u({3:-.23,8:.01,11:.06},5.66), VA:{}, fill:4,
+    exp:'0.66 eV, indirect',
+    note:"Germanium: same diamond structure and the same cancellation as Si, but the conduction minimum sits at L instead of near X. The model overestimates the gap; the band-edge positions are what it gets right." },
+  GaAs:{ label:'GaAs', lat:'diamond', a:5.65, kind:'dia', VS:ry2u({3:-.23,8:.01,11:.06},5.65), VA:ry2u({3:.07,4:.05,11:.01},5.65), fill:4,
+    exp:'1.42 eV, direct',
+    note:"Gallium arsenide: the Si/Ge structure with two different atoms, Ga and As. That asymmetry (the antisymmetric form factors) un-cancels the reflections identical atoms forbid, and the conduction minimum drops to Γ, directly above the valence maximum: a direct gap." },
+  C:{ label:'Diamond (C)', lat:'diamond', a:3.567, kind:'dia', VS:scaled(SI_VS,1.21), VA:{}, fill:4,
+    exp:'5.47 eV, indirect',
+    note:"Diamond: the same structure as Si and Ge, with carbon's short, strong bonds (Si's form factors are scaled up by 1.21 to land near the known gap). A wide complete gap opens across the whole zone, the same way it does for Si." }
+};
+
+const ALLOY = { ga:{VS:{3:-.23,8:.01,11:.06},VA:{3:.07,4:.05,11:.01},a:5.65}, al:{VS:{3:-.245,8:.04,11:.06},VA:{3:.0625,4:.0425,11:-.005},a:5.66} };
+MATERIALS.AlGaAs = { label:'AlGaAs', lat:'diamond', kind:'alloy', fill:4, exp:'direct below x ≈ 0.45, indirect (X valley) above; AlAs 2.15 eV indirect',
+  note:'' };
+function alloyParams(x){
+  const mix=(k,t)=>{const r={}; for(const s in ALLOY.ga[k]) r[s]=ALLOY.ga[k][s]*(1-x)+ALLOY.al[k][s]*x; return r;};
+  const aa=ALLOY.ga.a*(1-x)+ALLOY.al.a*x;
+  return {a:aa, VS:ry2u(mix('VS'),aa), VA:ry2u(mix('VA'),aa)};
+}
+function alloyNote(){
+  return "Al"+"ₓGa₁₋ₓAs at x = "+state.x.toFixed(2)+", using a virtual-crystal average of GaAs and AlAs form factors. Raising x lifts the Γ conduction valley quickly but the X valley only slowly, so at some composition the conduction minimum jumps from Γ (direct) to X (indirect). The same zincblende structure and the same valence band: only the conduction-band valleys reorder. Real crossover: x ≈ 0.45 (this model crosses a little earlier). The AlAs form factors here are fitted to its known Γ, X and L gaps rather than taken from a table.";
+}
+/* ---------- state ---------- */
+const state = { tab:'empty', dim:2, latId:'sq', V0:0.3, asym:0, nBandsShown:8, bandsFilled:1, material:'Si', showEdges:false, zoom:false, x:0.3 };
+let computed=null, timer=null;
+const matCache = {};
+
+function currentLattice(){
+  if(state.tab==='materials') return LAT3[MATERIALS[state.material].lat];
+  return state.dim===2 ? LAT2[state.latId] : LAT3[state.latId];
+}
+function effectiveFilled(){ return state.tab==='materials' ? MATERIALS[state.material].fill : state.bandsFilled; }
+
+/* ---------- compute ---------- */
+function buildPath(lat){
+  const b=reciprocal(lat.a[0],lat.a[1],lat.a[2]);
+  const pts=lat.path.map(p=>({lab:p[0],k:p[1]}));
+  const segLens=[];
+  for(let i=0;i<pts.length-1;i++){ const d=sub3(pts[i+1].k,pts[i].k); segLens.push(Math.sqrt(dot3(d,d))); }
+  const total=segLens.reduce((x,y)=>x+y,0);
+  const N=lat.dim===2?120:100;
+  const xs=[], ks=[], tickX=[{lab:pts[0].lab,x:0}]; let xc=0;
+  for(let s=0;s<segLens.length;s++){
+    const ns=Math.max(8,Math.round(N*segLens[s]/total));
+    for(let j=(s===0?0:1);j<=ns;j++){
+      const t=j/ns; ks.push(add3(pts[s].k,scale3(sub3(pts[s+1].k,pts[s].k),t))); xs.push(xc+t*segLens[s]);
+    }
+    xc+=segLens[s]; tickX.push({lab:pts[s+1].lab,x:xc});
+  }
+  return {b,xs,ks,tickX,totalLen:xc};
+}
+
+function configFor(tab,lat,material){
+  if(tab==='materials' && MATERIALS[material].kind==='alloy'){
+    const p=alloyParams(state.x);
+    return {W:diamondW(p.VS,p.VA,lat.tau), scale:E0ry(p.a)*RYEV, unit:'eV'};
+  }
+  if(tab==='materials'){
+    const m=MATERIALS[material];
+    const es=E0ry(m.a)*RYEV;
+    const W = m.kind==='mono' ? monoShellW(m.V) : diamondW(m.VS,m.VA,lat.tau);
+    return {W, scale:es, unit:'eV'};
+  }
+  if(tab==='empty') return {W:null, scale:1, unit:'u'};
+  if(lat.id==='diamond'){
+    const v=state.V0, d=state.asym;
+    const VS={3:-v, 8:0.19*v, 11:0.38*v};
+    const VA={3:d*0.33*v, 4:d*0.24*v, 11:d*0.05*v};
+    return {W:diamondW(VS,VA,lat.tau), scale:1, unit:'u'};
+  }
+  return {W:gaussW(state.V0,lat.sigma), scale:1, unit:'u'};
+}
+
+function computeBands(cfg,lat){
+  const pth=buildPath(lat);
+  const Gs=generateGs(pth.b,lat.nmax,lat.cut2);
+  const base=makeBase(Gs,cfg.W);
+  const nb=10;
+  const bands=[]; for(let b=0;b<nb;b++) bands.push(new Array(pth.ks.length));
+  for(let i=0;i<pth.ks.length;i++){
+    const e=bandsAt(base,Gs,pth.ks[i],nb);
+    for(let b=0;b<nb;b++) bands[b][i]=e[b]*cfg.scale;
+  }
+  return {xs:pth.xs,tickX:pth.tickX,totalLen:pth.totalLen,bands,lat,unit:cfg.unit};
+}
+
+function analyze(c,filled){
+  if(filled<1||filled>=c.bands.length) return null;
+  const lo=c.bands[filled-1], up=c.bands[filled];
+  let vb=-Infinity,vx=0,cb=Infinity,cx=0,md=Infinity,mx=0;
+  for(let i=0;i<lo.length;i++){
+    if(lo[i]>vb){vb=lo[i];vx=c.xs[i];}
+    if(up[i]<cb){cb=up[i];cx=c.xs[i];}
+    const d=up[i]-lo[i]; if(d<md){md=d;mx=c.xs[i];}
+  }
+  return {vbTop:vb,vbX:vx,cbBot:cb,cbX:cx,gap:cb-vb,direct:Math.abs(vx-cx)<0.012*c.totalLen,minDirect:md,minDirectX:mx};
+}
+
+function doRecompute(){
+  if(state.tab==='materials' && state.material!=='AlGaAs' && matCache[state.material]){
+    computed=matCache[state.material]; render(); setStatus(''); fillMatCache(); return;
+  }
+  const lat=currentLattice();
+  const cfg=configFor(state.tab,lat,state.material);
+  computed=computeBands(cfg,lat);
+  if(state.tab==='materials' && state.material!=='AlGaAs'){ matCache[state.material]=computed; }
+  render(); setStatus('');
+  if(state.tab==='materials') fillMatCache();
+}
+function setStatus(t){ document.getElementById('statusMsg').textContent=t; }
+function scheduleRecompute(){
+  setStatus('Recalculating band structure…');
+  clearTimeout(timer);
+  timer=setTimeout(function(){ setTimeout(doRecompute,15); },160);
+}
+function fillMatCache(){
+  if(state.tab!=='materials') return;
+  const missing=Object.keys(MATERIALS).find(k=>k!=='AlGaAs' && !matCache[k]);
+  renderCompare();
+  if(!missing) return;
+  setTimeout(function(){
+    if(state.tab!=='materials') return;
+    if(!matCache[missing]){
+      const m=MATERIALS[missing], lat=LAT3[m.lat];
+      matCache[missing]=computeBands(configFor('materials',lat,missing),lat);
+    }
+    fillMatCache();
+  },40);
+}
+
+/* ---------- helpers ---------- */
+function kDesc(c,x){
+  const T=c.tickX; let best=0,bd=Infinity;
+  T.forEach((t,i)=>{const d=Math.abs(t.x-x); if(d<bd){bd=d;best=i;}});
+  if(bd<0.02*c.totalLen) return T[best].lab;
+  for(let i=0;i<T.length-1;i++) if(x>=T[i].x && x<=T[i+1].x){
+    const f=(x-T[i].x)/(T[i+1].x-T[i].x); return Math.round(f*100)+'% of the way '+T[i].lab+'→'+T[i+1].lab;
+  }
+  return '';
+}
+function fmtE(c,v){ return c.unit==='eV' ? v.toFixed(2)+' eV' : v.toFixed(3)+' (2π/a)²'; }
+const svgNS='http://www.w3.org/2000/svg';
+function el(n,attrs){ const e=document.createElementNS(svgNS,n); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+function txt(svg,x,y,s,cls,anchor){ const t=el('text',{x:x,y:y,class:cls,'text-anchor':anchor||'middle'}); t.textContent=s; svg.appendChild(t); return t; }
+
+/* ---------- render ---------- */
+function render(){
+  const c=computed; if(!c) return;
+  const svg=document.getElementById('plotSvg'); while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const isMat=state.tab==='materials';
+  const filled=effectiveFilled();
+  const nShown=isMat ? Math.min(filled+2,c.bands.length) : Math.min(state.nBandsShown,c.bands.length);
+  const info=analyze(c,filled);
+  const semi = isMat && info && info.gap>0;
+  const shift = semi ? info.vbTop : 0;
+
+  const W=900,H=500,mL=66,mR=24,mT=18,mB=54,pW=W-mL-mR,pH=H-mT-mB;
+  let yMin=Infinity,yMax=-Infinity;
+  for(let b=0;b<nShown;b++) for(const v of c.bands[b]){ const u=v-shift; if(u<yMin)yMin=u; if(u>yMax)yMax=u; }
+  let pad=(yMax-yMin)*0.05; yMin-=pad; yMax+=pad;
+  if(state.zoom && info){
+    const mid=(info.vbTop+info.cbBot)/2-shift, full=yMax-yMin;
+    const half=Math.max(2.2*Math.abs(info.gap),0.12*full);
+    yMin=mid-half; yMax=mid+half;
+  }
+  const px=x=>mL+x/c.totalLen*pW, py=e=>mT+pH-(e-yMin)/(yMax-yMin)*pH;
+
+  const defs=el('defs',{});
+  const mk=el('marker',{id:'arr',markerWidth:9,markerHeight:9,refX:7,refY:4.5,orient:'auto-start-reverse',markerUnits:'userSpaceOnUse'});
+  mk.appendChild(el('path',{d:'M0,0 L9,4.5 L0,9 z',style:'fill:var(--violet)'}));
+  defs.appendChild(mk);
+  const cp=el('clipPath',{id:'plotclip'}); cp.appendChild(el('rect',{x:mL,y:mT,width:pW,height:pH})); defs.appendChild(cp);
+  svg.appendChild(defs);
+
+  const ny=5, dec=(yMax-yMin)<3?2:1;
+  for(let t=0;t<=ny;t++){
+    const e=yMin+(yMax-yMin)*t/ny, y=py(e);
+    svg.appendChild(el('line',{x1:mL,x2:mL+pW,y1:y,y2:y,class:'gridline'}));
+    txt(svg,mL-10,y+4,e.toFixed(dec),'axislabel','end');
+  }
+  c.tickX.forEach(t=>{
+    const x=px(t.x);
+    svg.appendChild(el('line',{x1:x,x2:x,y1:mT,y2:mT+pH,class:'gridline'}));
+    txt(svg,x,mT+pH+22,t.lab,'ticklabel');
+  });
+  svg.appendChild(el('line',{x1:mL,x2:mL,y1:mT,y2:mT+pH,class:'axisline'}));
+  svg.appendChild(el('line',{x1:mL,x2:mL+pW,y1:mT+pH,y2:mT+pH,class:'axisline'}));
+  const yl=el('text',{x:18,y:mT+pH/2,class:'axislabel','text-anchor':'middle',transform:'rotate(-90 18 '+(mT+pH/2)+')'});
+  yl.textContent = c.unit==='eV' ? (semi?'Energy relative to valence-band maximum (eV)':'Energy (eV)') : 'Energy (units of ħ²/2m · (2π/a)²)';
+  svg.appendChild(yl);
+  txt(svg,mL+pW/2,H-8,'Wavevector k along a high-symmetry path','axislabel');
+
+  const g=el('g',{'clip-path':'url(#plotclip)'}); svg.appendChild(g);
+  const hasGap = info && info.gap>0;
+  if(hasGap){
+    const yT=py(info.cbBot-shift), yB=py(info.vbTop-shift);
+    g.appendChild(el('rect',{x:mL,y:yT,width:pW,height:Math.max(1.5,yB-yT),fill:'var(--gapfill)'}));
+    g.appendChild(el('line',{x1:mL,x2:mL+pW,y1:yT,y2:yT,stroke:'var(--conduction)','stroke-width':1,'stroke-dasharray':'5 4'}));
+    g.appendChild(el('line',{x1:mL,x2:mL+pW,y1:yB,y2:yB,stroke:'var(--valence)','stroke-width':1,'stroke-dasharray':'5 4'}));
+  }
+  const cs=getComputedStyle(document.documentElement);
+  const colV=cs.getPropertyValue('--valence').trim(), colC=cs.getPropertyValue('--conduction').trim();
+  const fl=Math.min(filled,nShown);
+  for(let b=0;b<nShown;b++){
+    let d='';
+    for(let i=0;i<c.xs.length;i++) d+=(i?'L':'M')+px(c.xs[i]).toFixed(1)+','+py(c.bands[b][i]-shift).toFixed(1)+' ';
+    g.appendChild(el('path',{d:d,fill:'none',stroke:b<fl?colV:colC,'stroke-width':2.2,'stroke-linejoin':'round'}));
+  }
+
+  if(hasGap){
+    const yT=py(info.cbBot-shift), yB=py(info.vbTop-shift), yM=(yT+yB)/2;
+    const label='Complete gap  Eg = '+fmtE(c,info.gap);
+    if(!state.showEdges){
+      const t=txt(svg,mL+pW/2,(yB-yT)>20?yM+5:yT-8,label,'gaplabel'); t.setAttribute('class','gaplabel halo');
+      const t2=txt(svg,mL+pW/2,(yB-yT)>20?yM+5:yT-8,label,'gaplabel');
+    }
+  }
+
+  if(state.showEdges && hasGap){
+    const xv=px(info.vbX), xc=px(info.cbX);
+    const yV=py(info.vbTop-shift), yC=py(info.cbBot-shift);
+    [xv,xc].forEach((x,i)=>{ if(i===1 && Math.abs(xv-xc)<1) return;
+      svg.appendChild(el('line',{x1:x,x2:x,y1:mT,y2:mT+pH,stroke:'var(--violet)','stroke-width':1.2,'stroke-dasharray':'3 4',opacity:0.8})); });
+    if(info.direct){
+      svg.appendChild(el('line',{x1:xv,x2:xv,y1:yV-1,y2:yC+1,stroke:'var(--violet)','stroke-width':3,'marker-start':'url(#arr)','marker-end':'url(#arr)'}));
+    } else {
+      svg.appendChild(el('line',{x1:xv,x2:xv,y1:yV-1,y2:yC+1,stroke:'var(--violet)','stroke-width':3,'marker-end':'url(#arr)'}));
+      svg.appendChild(el('line',{x1:xv+1,x2:xc-1,y1:yC,y2:yC,stroke:'var(--violet)','stroke-width':3,'stroke-dasharray':'7 5','marker-end':'url(#arr)'}));
+      svg.appendChild(el('line',{x1:xv,x2:xc,y1:yV,y2:yC,stroke:'var(--violet)','stroke-width':1.5,'stroke-dasharray':'2 4',opacity:0.8}));
+    }
+    svg.appendChild(el('circle',{cx:xv,cy:yV,r:6.5,fill:colV,stroke:'var(--panel)','stroke-width':2}));
+    svg.appendChild(el('circle',{cx:xc,cy:yC,r:6.5,fill:colC,stroke:'var(--panel)','stroke-width':2}));
+    const rightSide = xv<mL+pW*0.55;
+    const anch = rightSide?'start':'end', off = rightSide?12:-12;
+    const tag=(x,y,s,anchor)=>{ const a=txt(svg,x,y,s,'edgelabel',anchor); a.setAttribute('class','edgelabel halo'); txt(svg,x,y,s,'edgelabel',anchor); };
+    tag(xv+(xv<xc||info.direct?-10:10),yV+22,'VBM',xv<xc||info.direct?'end':'start');
+    tag(xc+(info.direct?10:12),yC-12,'CBM',info.direct?'start':'start');
+    const midY=(yV+yC)/2;
+    if(info.direct){
+      tag(xv+off,midY-6,'Direct gap: photon only',anch);
+      tag(xv+off,midY+12,'Eg = '+fmtE(c,info.gap),anch);
+    } else {
+      tag(xv+off,midY+4,'photon: Eg',anch);
+      tag((xv+xc)/2,yC-10,'phonon supplies Δk','middle');
+      tag(Math.max(mL+8,Math.min(mL+pW-8,(xv+xc)/2)),Math.min(mT+pH-8,yV+40),'Indirect gap Eg = '+fmtE(c,info.gap),'middle');
+    }
+  } else if(state.showEdges && !hasGap){
+    txt(svg,mL+pW/2,mT+24,'No complete gap here: occupied and empty bands overlap in energy, so there is no band edge pair to mark.','edgelabel');
+  }
+  renderInfo(info,semi);
+  if(isMat) renderCompare();
+  renderAlloyChart();
+}
+
+function renderInfo(info,semi){
+  const c=computed, lat=c.lat;
+  document.getElementById('infoTitle').textContent = state.tab==='materials' && state.material==='AlGaAs' ? 'AlₓGa₁₋ₓAs alloy, x = '+state.x.toFixed(2) : lat.name + (state.tab==='materials' ? ': '+MATERIALS[state.material].label : '');
+  document.getElementById('infoText').textContent = lat.info;
+  document.getElementById('infoNote').textContent = state.tab==='materials' ? (state.material==='AlGaAs'?alloyNote():MATERIALS[state.material].note)+'  Experiment: '+MATERIALS[state.material].exp+'.' : '';
+  const st=document.getElementById('gapStat'); st.innerHTML='';
+  const add=(k,v,cls)=>{ const d=document.createElement('div'); d.className='item'; d.innerHTML='<div class="k">'+k+'</div><div class="v '+(cls||'')+'">'+v+'</div>'; st.appendChild(d); };
+  if(!info) return;
+  if(info.gap>0){
+    add('Complete gap','Yes: '+fmtE(c,info.gap),'open');
+    add('Character', info.direct ? 'Direct, at '+kDesc(c,info.vbX) : 'Indirect: '+kDesc(c,info.vbX)+' → '+kDesc(c,info.cbX),'open');
+    if(!info.direct) add('Smallest vertical gap', fmtE(c,info.minDirect)+' at '+kDesc(c,info.minDirectX));
+  } else {
+    add('Complete gap','No: bands overlap by '+fmtE(c,-info.gap),'closed');
+  }
+  add('Bands filled',String(effectiveFilled()));
+}
+
+function renderCompare(){
+  const box=document.getElementById('compareBox');
+  box.style.display = state.tab==='materials' ? '' : 'none';
+  if(state.tab!=='materials') return;
+  const body=document.getElementById('compareBody'); body.innerHTML='';
+  Object.keys(MATERIALS).filter(k=>k!=='AlGaAs').forEach(key=>{
+    const m=MATERIALS[key], c=matCache[key];
+    const tr=document.createElement('tr'); if(key===state.material) tr.className='cur';
+    let gapCell='computing…', charCell='', cls='';
+    if(c){
+      const i=analyze(c,m.fill);
+      if(i.gap>0){ gapCell=i.gap.toFixed(2)+' eV'; cls='gapok';
+        charCell = i.direct ? 'Direct at '+kDesc(c,i.vbX) : 'Indirect: '+kDesc(c,i.vbX)+' → '+kDesc(c,i.cbX); }
+      else { gapCell='none'; cls='gapno'; charCell='Bands overlap: metal'; }
+    }
+    tr.innerHTML='<td>'+m.label+'</td><td class="'+cls+'">'+gapCell+'</td><td>'+charCell+'</td><td>'+m.exp+'</td>';
+    body.appendChild(tr);
+  });
+}
+
+/* ---------- AlGaAs valley chart ---------- */
+let alloyChartTimer=null;
+function alloyValleys(x){
+  const lat=LAT3.diamond, p=alloyParams(x), pth=buildPath(lat);
+  const Gs=generateGs(pth.b,lat.nmax,lat.cut2), base=makeBase(Gs,diamondW(p.VS,p.VA,lat.tau));
+  const es=E0ry(p.a)*RYEV, e=k=>bandsAt(base,Gs,k,5).map(v=>v*es);
+  const g=e([0,0,0]); let xv=Infinity;
+  [0.8,0.85,0.9,0.95,1].forEach(t=>{ xv=Math.min(xv,e([t,0,0])[4]); });
+  return {G:g[4]-g[3], X:xv-g[3], L:e([.5,.5,.5])[4]-g[3]};
+}
+let alloyCurve=null;
+function computeAlloyCurve(){
+  alloyCurve=[]; for(let i=0;i<=20;i++){ const x=i/20; alloyCurve.push(Object.assign({x:x},alloyValleys(x))); }
+}
+function renderAlloyChart(){
+  const box=document.getElementById('alloyBox');
+  const on=state.tab==='materials' && state.material==='AlGaAs';
+  box.style.display=on?'':'none'; if(!on) return;
+  if(!alloyCurve) computeAlloyCurve();
+  const svg=document.getElementById('alloySvg'); while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const W=900,H=330,mL=66,mR=24,mT=16,mB=48,pW=W-mL-mR,pH=H-mT-mB;
+  let lo=Infinity,hi=-Infinity; alloyCurve.forEach(r=>{['G','X','L'].forEach(k=>{lo=Math.min(lo,r[k]);hi=Math.max(hi,r[k]);});});
+  lo=Math.floor(lo*5)/5-0.1; hi=Math.ceil(hi*5)/5+0.1;
+  const px=x=>mL+x*pW, py=e=>mT+pH-(e-lo)/(hi-lo)*pH;
+  for(let e=Math.ceil(lo*2)/2;e<=hi;e+=0.5){ svg.appendChild(el('line',{x1:mL,x2:mL+pW,y1:py(e),y2:py(e),class:'gridline'})); txt(svg,mL-10,py(e)+4,e.toFixed(1),'axislabel','end'); }
+  for(let x=0;x<=1.001;x+=0.2){ svg.appendChild(el('line',{x1:px(x),x2:px(x),y1:mT,y2:mT+pH,class:'gridline'})); txt(svg,px(x),mT+pH+20,x.toFixed(1),'ticklabel'); }
+  svg.appendChild(el('line',{x1:mL,x2:mL,y1:mT,y2:mT+pH,class:'axisline'}));
+  svg.appendChild(el('line',{x1:mL,x2:mL+pW,y1:mT+pH,y2:mT+pH,class:'axisline'}));
+  const yl=el('text',{x:18,y:mT+pH/2,class:'axislabel','text-anchor':'middle',transform:'rotate(-90 18 '+(mT+pH/2)+')'}); yl.textContent='Conduction-band valley above VBM (eV)'; svg.appendChild(yl);
+  txt(svg,mL+pW/2,H-6,'Al fraction x in AlₓGa₁₋ₓAs','axislabel');
+  // crossover
+  let xc=null;
+  for(let i=1;i<alloyCurve.length;i++){ const a0=alloyCurve[i-1],a1=alloyCurve[i]; const d0=a0.G-Math.min(a0.X,a0.L), d1=a1.G-Math.min(a1.X,a1.L);
+    if(d0<=0 && d1>0){ xc=a0.x+(a1.x-a0.x)*(-d0)/(d1-d0); break; } }
+  if(xc!==null){
+    svg.appendChild(el('rect',{x:px(xc),y:mT,width:px(1)-px(xc),height:pH,fill:'var(--gapfill)'}));
+    txt(svg,px(xc)+(px(1)-px(xc))/2,mT+18,'indirect (X or L valley lowest)','edgelabel');
+    txt(svg,(px(0)+px(xc))/2,mT+18,'direct (Γ valley lowest)','edgelabel');
+    svg.appendChild(el('line',{x1:px(xc),x2:px(xc),y1:mT,y2:mT+pH,stroke:'var(--violet)','stroke-width':1.5,'stroke-dasharray':'5 4'}));
+    txt(svg,px(xc),mT+pH-8,'crossover x ≈ '+xc.toFixed(2),'edgelabel');
+  }
+  const cols={G:['var(--valence)','Γ valley'],X:['var(--conduction)','X valley'],L:['var(--violet)','L valley']};
+  ['G','X','L'].forEach((k,idx)=>{
+    let d=''; alloyCurve.forEach((r,i)=>{ d+=(i?'L':'M')+px(r.x).toFixed(1)+','+py(r[k]).toFixed(1)+' '; });
+    svg.appendChild(el('path',{d:d,fill:'none',stroke:cols[k][0],'stroke-width':2.6}));
+    const last=alloyCurve[alloyCurve.length-1]; const t=txt(svg,mL+pW-6,py(last[k])+(k==='G'?-8:(k==='L'?-8:14)),cols[k][1],'edgelabel','end');
+  });
+  const cur=alloyValleys(state.x);
+  svg.appendChild(el('line',{x1:px(state.x),x2:px(state.x),y1:mT,y2:mT+pH,stroke:'var(--text)','stroke-width':1.2,opacity:0.7}));
+  [['G','var(--valence)'],['X','var(--conduction)'],['L','var(--violet)']].forEach(p=>{ svg.appendChild(el('circle',{cx:px(state.x),cy:py(cur[p[0]]),r:5.5,fill:p[1],stroke:'var(--panel)','stroke-width':2})); });
+}
+
+/* ---------- UI ---------- */
+function populateLatticeSelect(){
+  const sel=document.getElementById('latticeSel'); sel.innerHTML='';
+  const src=state.dim===2?LAT2:LAT3;
+  Object.keys(src).forEach(id=>{ const o=document.createElement('option'); o.value=id; o.textContent=src[id].name; sel.appendChild(o); });
+  if(!src[state.latId]) state.latId=Object.keys(src)[0];
+  sel.value=state.latId;
+}
+function syncControls(){
+  const isMat=state.tab==='materials', isNfe=state.tab==='nfe';
+  document.getElementById('panel-potential').style.display = isNfe ? '' : 'none';
+  document.getElementById('field-dim').style.display = isMat?'none':'';
+  document.getElementById('field-lattice').style.display = isMat?'none':'';
+  document.getElementById('field-material').style.display = isMat?'':'none';
+  document.getElementById('field-comp').style.display = (isMat && state.material==='AlGaAs') ? '' : 'none';
+  document.getElementById('field-nband').style.display = isMat?'none':'';
+  document.getElementById('field-fill').style.display = isMat?'none':'';
+  document.getElementById('panel-view').style.display = isMat?'none':'';
+  const lat=currentLattice();
+  document.getElementById('field-asym').style.display = (lat.basis===2 && isNfe) ? '' : 'none';
+  document.getElementById('v0Hint').textContent = lat.id==='diamond'
+    ? 'Strength of the periodic potential, in units of ħ²/2m·(2π/a)². About 0.56 corresponds to silicon.'
+    : 'Coupling between plane waves, in units of ħ²/2m·(2π/a)². V₀ = 0 is the empty lattice.';
+}
+function setSlider(id,valId,v,fmt){ document.getElementById(id).value=v; document.getElementById(valId).textContent=fmt?fmt(v):v; }
+function switchTab(tab){
+  state.tab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  syncControls();
+  document.getElementById('compareBox').style.display = tab==='materials'?'':'none';
+  scheduleRecompute();
+}
+function buildMatButtons(){
+  const box=document.getElementById('matBtns'); box.innerHTML='';
+  Object.keys(MATERIALS).forEach(key=>{
+    const b=document.createElement('button'); b.className='matbtn'+(key===state.material?' active':''); b.textContent=MATERIALS[key].label;
+    b.addEventListener('click',()=>{ state.material=key; document.querySelectorAll('.matbtn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); syncControls(); scheduleRecompute(); });
+    box.appendChild(b);
+  });
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+document.getElementById('dimSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  state.dim=parseInt(b.dataset.dim,10);
+  document.querySelectorAll('#dimSeg button').forEach(x=>x.classList.toggle('active',x===b));
+  populateLatticeSelect(); syncControls(); scheduleRecompute();
+});
+document.getElementById('latticeSel').addEventListener('change',function(){
+  state.latId=this.value;
+  if(state.latId==='diamond' && state.tab!=='empty'){
+    state.V0=0.56; state.asym=0; state.bandsFilled=4;
+    setSlider('v0Slider','v0Val',0.56,v=>v.toFixed(2)); setSlider('asymSlider','asymVal',0,v=>v.toFixed(2)); setSlider('fillSlider','fillVal',4);
+  }
+  syncControls(); scheduleRecompute();
+});
+document.getElementById('compSlider').addEventListener('input',function(){ state.x=parseFloat(this.value); document.getElementById('compVal').textContent=state.x.toFixed(2); scheduleRecompute(); });
+document.getElementById('v0Slider').addEventListener('input',function(){ state.V0=parseFloat(this.value); document.getElementById('v0Val').textContent=state.V0.toFixed(2); scheduleRecompute(); });
+document.getElementById('asymSlider').addEventListener('input',function(){ state.asym=parseFloat(this.value); document.getElementById('asymVal').textContent=state.asym.toFixed(2); scheduleRecompute(); });
+const fillSlider=document.getElementById('fillSlider');
+document.getElementById('nbandSlider').addEventListener('input',function(){
+  state.nBandsShown=parseInt(this.value,10); document.getElementById('nbandVal').textContent=state.nBandsShown;
+  const mx=Math.max(1,state.nBandsShown-1); fillSlider.max=mx;
+  if(state.bandsFilled>mx){ state.bandsFilled=mx; fillSlider.value=mx; document.getElementById('fillVal').textContent=mx; }
+  render();
+});
+fillSlider.addEventListener('input',function(){ state.bandsFilled=parseInt(this.value,10); document.getElementById('fillVal').textContent=state.bandsFilled; render(); });
+function toggle(btnId,key){
+  const b=document.getElementById(btnId);
+  b.addEventListener('click',()=>{ state[key]=!state[key]; b.classList.toggle('active',state[key]); b.setAttribute('aria-pressed',state[key]); render(); });
+}
+toggle('edgeBtn','showEdges'); toggle('zoomBtn','zoom');
+
+document.querySelectorAll('.collapse-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    const card=btn.closest('.card'); const c=card.classList.toggle('collapsed');
+    btn.textContent=c?'Show':'Hide'; btn.setAttribute('aria-expanded',String(!c));
+  });
+});
+/* keyboard control of sliders: arrows step by a coarse increment, Shift for fine, PageUp/PageDown for large */
+const KEY_STEP = { v0Slider:[0.05,0.01,0.2], asymSlider:[0.05,0.01,0.2], compSlider:[0.05,0.01,0.2] };
+document.querySelectorAll('input[type=range]').forEach(function(sl){
+  sl.addEventListener('keydown',function(e){
+    const dirs={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1,PageUp:1,PageDown:-1};
+    if(!(e.key in dirs)) return;
+    const s=KEY_STEP[sl.id]; const fine=parseFloat(sl.step)||1;
+    let inc = s ? (e.key.indexOf('Page')===0 ? s[2] : (e.shiftKey ? s[1] : s[0])) : (e.key.indexOf('Page')===0 ? 2*fine : fine);
+    const lo=parseFloat(sl.min), hi=parseFloat(sl.max);
+    let v=parseFloat(sl.value)+dirs[e.key]*inc;
+    v=Math.min(hi,Math.max(lo,Math.round(v*1000)/1000));
+    e.preventDefault();
+    sl.value=v; sl.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+});
+buildMatButtons(); populateLatticeSelect();
+fillSlider.max=Math.max(1,state.nBandsShown-1);
+switchTab('materials');
+
+})();
+</script>
+</body>
+</html>
