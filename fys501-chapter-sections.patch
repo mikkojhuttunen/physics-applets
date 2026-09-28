@@ -1,0 +1,68 @@
+diff --git a/fys501-laser-physics/hole_burning.html b/fys501-laser-physics/hole_burning.html
+index 06ad74a..b284d28 100644
+--- a/fys501-laser-physics/hole_burning.html
++++ b/fys501-laser-physics/hole_burning.html
+@@ -474,5 +474,6 @@ button[aria-pressed="true"] { border-color: var(--accent); background: color-mix
+   update();
+ })();
+ </script>
++<script src="../assets/js/course-back.js" defer></script>
+ </body>
+ </html>
+diff --git a/fys501-laser-physics/index.html b/fys501-laser-physics/index.html
+index 528a771..aedd1a8 100644
+--- a/fys501-laser-physics/index.html
++++ b/fys501-laser-physics/index.html
+@@ -9,20 +9,39 @@
+ <style>
+   body { max-width: 720px; margin: 40px auto; padding: 0 16px; }
+   h1 { font-size: 1.4rem; }
+-  ul { padding-left: 1.2rem; line-height: 2.2; }
++  h2 { font-size: 1rem; font-weight: 600; margin: 28px 0 6px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
++  h2:first-of-type { margin-top: 24px; }
++  ul { padding-left: 1.2rem; line-height: 2.2; margin: 0 0 4px; }
+   a { color: var(--violet); text-decoration: none; }
+   a:hover { text-decoration: underline; }
+   .back { display: inline-block; margin-bottom: 24px; color: var(--text-dim); }
++  .empty { color: var(--text-faint); font-style: italic; }
+ </style>
+ </head>
+ <body>
+   <a class="back" href="../index.html">&larr; All courses</a>
+   <h1>FYS.501 Laser Physics</h1>
++
++  <h2>1. Introductory Concepts</h2>
+   <ul>
+-    <li><a href="gain-media-spectra.html">Laser Gain Media: Absorption &amp; Emission</a></li>
+     <li><a href="laser-condition-losses.html">Laser Condition and Logarithmic Losses (threshold inversion, round-trip gain)</a></li>
+     <li><a href="coherence-explorer.html">Temporal and Spatial Coherence: Michelson and Young</a></li>
++  </ul>
++
++  <h2>2. Semiclassical Theory of Light&ndash;Matter Interaction</h2>
++  <ul>
++    <li><a href="gain-media-spectra.html">Laser Gain Media: Absorption &amp; Emission</a></li>
++    <li><a href="hole_burning.html">Line Broadening and Spectral Hole Burning</a></li>
++    <li><a href="laser_field_explorer.html">Field Strength Console: Laser Intensity Regimes</a></li>
++  </ul>
++
++  <h2>3. Passive Optical Resonators</h2>
++  <ul>
+     <li><a href="gaussian-beam-cavity.html">Gaussian Beam Cavity Explorer (ABCD resonator stability)</a></li>
++  </ul>
++
++  <h2>4. Continuous Wave (CW) Behaviour of a Laser</h2>
++  <ul>
+     <li><a href="laser-rate-equations.html">Laser Rate Equations: 3- and 4-level systems (ruby, Nd:YAG)</a></li>
+     <li><a href="spatial-hole-burning.html">Spatial Hole Burning in a Standing-Wave Cavity (linear vs ring)</a></li>
+     <li><a href="mode-competition.html">Mode Competition: homogeneous vs inhomogeneous gain, etalon mode selection</a></li>
+diff --git a/fys501-laser-physics/laser_field_explorer.html b/fys501-laser-physics/laser_field_explorer.html
+index 7a1882b..1e0fec6 100644
+--- a/fys501-laser-physics/laser_field_explorer.html
++++ b/fys501-laser-physics/laser_field_explorer.html
+@@ -558,5 +558,6 @@
+   update(false);
+ })();
+ </script>
++<script src="../assets/js/course-back.js" defer></script>
+ </body>
+ </html>

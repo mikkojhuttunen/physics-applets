@@ -1,0 +1,185 @@
+From 1bad7a255b562909edbf44cf159a4af5e02edfce Mon Sep 17 00:00:00 2001
+From: Mikko Huttunen <mikko@example.com>
+Date: Mon, 28 Sep 2026 12:19:07 +0000
+Subject: [PATCH] FTIR explorer: stretch figure to match controls-panel height
+
+- .layout now uses align-items: stretch, with .figure-col/.bench/svg
+  chained as flex:1 so the diagram fills exactly the same height as
+  the Configuration panel (no more blank gap above the readout box)
+- SVG viewBox height is now dynamic: a ResizeObserver watches the
+  rendered box and recomputes vbH so the internal geometry (interface
+  line, gap band, ray lengths) fills the taller canvas without
+  distortion or clipping
+- Moved the incident/reflected/transmitted/normal color legend from
+  an external HTML row into the SVG itself (bottom-left corner),
+  removing the now-unused .legend/.swatch CSS
+- Slightly lengthened the ray segments (150 -> 190 units) to match
+  the larger figure
+---
+ fys240-optics/ftir_explorer.html | 84 +++++++++++++++++++-------------
+ 1 file changed, 50 insertions(+), 34 deletions(-)
+
+diff --git a/fys240-optics/ftir_explorer.html b/fys240-optics/ftir_explorer.html
+index a164b9c..3a9f1a5 100644
+--- a/fys240-optics/ftir_explorer.html
++++ b/fys240-optics/ftir_explorer.html
+@@ -91,7 +91,7 @@
+   }
+   .layout {
+     display: flex;
+-    align-items: flex-start;
++    align-items: stretch;
+     gap: 22px;
+     flex-wrap: wrap;
+   }
+@@ -101,44 +101,32 @@
+   }
+   .controls-col .panel { margin-top: 0; }
+   .figure-col {
+-    flex: 0 0 380px;
++    flex: 0 0 440px;
+     min-width: 260px;
++    display: flex;
++    flex-direction: column;
+   }
+   @media (max-width: 720px) {
+-    .layout { flex-direction: column; }
++    .layout { flex-direction: column; align-items: stretch; }
+     .controls-col, .figure-col { flex: 1 1 auto; width: 100%; }
++    .figure-col { min-height: 340px; }
+   }
+ 
+   .bench {
+     background: transparent;
+     border-radius: 14px;
+     padding: 0;
++    flex: 1;
++    display: flex;
++    min-height: 320px;
+   }
+   svg#scene {
+     width: 100%;
+-    height: auto;
++    height: 100%;
++    flex: 1;
+     display: block;
+     border-radius: 8px;
+   }
+-  .legend {
+-    display: flex;
+-    flex-wrap: wrap;
+-    gap: 14px;
+-    padding: 10px 4px 2px;
+-    font-size: 0.88rem;
+-    color: var(--ink-muted);
+-  }
+-  .legend span {
+-    display: inline-flex;
+-    align-items: center;
+-    gap: 6px;
+-  }
+-  .swatch {
+-    width: 16px; height: 3px;
+-    border-radius: 2px;
+-    display: inline-block;
+-  }
+-
+   .panel {
+     background: var(--panel);
+     border: 1px solid var(--panel-border);
+@@ -362,12 +350,6 @@
+     <div class="figure-col">
+       <div class="bench">
+         <svg id="scene" viewBox="0 0 700 440" xmlns="http://www.w3.org/2000/svg"></svg>
+-        <div class="legend">
+-          <span><i class="swatch" style="background:var(--incident)"></i>incident</span>
+-          <span><i class="swatch" style="background:var(--reflected)"></i>reflected</span>
+-          <span><i class="swatch" style="background:var(--transmitted)"></i>transmitted / refracted</span>
+-          <span><i class="swatch" style="background:#8a97a1"></i>normal</span>
+-        </div>
+       </div>
+     </div>
+   </div>
+@@ -420,7 +402,8 @@
+     gapEnabled: true,
+     gap: 200,
+     pol: 's',
+-    theta1: 30
++    theta1: 30,
++    vbH: 440 // viewBox height in SVG units; kept in sync with the rendered box by ResizeObserver
+   };
+ 
+   const els = {
+@@ -531,10 +514,11 @@
+     const p = compute();
+     const scene = els.scene;
+     scene.innerHTML = '';
+-    const W = 700, H = 440;
++    const W = 700, H = state.vbH;
++    scene.setAttribute('viewBox', `0 0 ${W} ${H}`);
+     const cx = 350;
+-    const y1 = 170;
+-    const gapPxHeight = 56;
++    const y1 = Math.round(H * 0.30);
++    const gapPxHeight = Math.round(H * 0.11);
+     const y2 = state.gapEnabled ? y1 + gapPxHeight : y1;
+ 
+     // media bands — fill the full canvas edge-to-edge
+@@ -563,7 +547,7 @@
+     scene.appendChild(svgEl('line', {x1:cx,y1:6,x2:cx,y2:H-6,stroke:'#8a97a1','stroke-width':1,'stroke-dasharray':'4,4'}));
+ 
+     const theta1 = state.theta1 * Math.PI/180;
+-    const L1 = 150, L2 = 150;
++    const L1 = 190, L2 = 190;
+ 
+     // incident ray
+     const ix = cx - L1*Math.sin(theta1), iy = y1 - L1*Math.cos(theta1);
+@@ -638,6 +622,22 @@
+       }
+     }
+ 
++    // in-figure legend (bottom-left, inside the lower medium band)
++    const legendItems = [
++      ['incident', 'var(--incident)'],
++      ['reflected', 'var(--reflected)'],
++      ['transmitted / refracted', 'var(--transmitted)'],
++      ['normal', '#8a97a1']
++    ];
++    const legRowH = 22;
++    const legX = 16;
++    const legYStart = H - 16 - (legendItems.length - 1) * legRowH;
++    legendItems.forEach(([label, color], i) => {
++      const ly = legYStart + i * legRowH;
++      scene.appendChild(svgEl('line', {x1: legX, y1: ly - 5, x2: legX + 22, y2: ly - 5, stroke: color, 'stroke-width': 3, 'stroke-dasharray': label === 'normal' ? '4,3' : ''}));
++      scene.appendChild(Object.assign(svgEl('text', {x: legX + 30, y: ly, fill: 'var(--ink-muted)', 'font-size': '13px', 'font-family': 'IBM Plex Sans, sans-serif'}), {textContent: label}));
++    });
++
+     renderReadout(p, statusLines);
+   }
+ 
+@@ -690,6 +690,22 @@
+   });
+   els.presetBtns.forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
+ 
++  // ---------- keep figure height matched to the controls column ----------
++  if ('ResizeObserver' in window){
++    let pending = false;
++    const ro = new ResizeObserver(entries => {
++      const entry = entries[0];
++      const w = entry.contentRect.width, h = entry.contentRect.height;
++      if (w < 10 || h < 10) return;
++      const newVbH = Math.max(360, Math.round(700 * (h / w)));
++      if (Math.abs(newVbH - state.vbH) > 2 && !pending){
++        pending = true;
++        requestAnimationFrame(() => { pending = false; state.vbH = newVbH; render(); });
++      }
++    });
++    ro.observe(els.scene);
++  }
++
+   // ---------- init ----------
+   applyPreset('glass-air');
+ })();
+-- 
+2.43.0
+
