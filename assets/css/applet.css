@@ -144,6 +144,7 @@ input[type=range]::-moz-range-thumb {
 /* Slider row: label left, value right ----------------------------------- */
 
 .row .label-line,
+.ctrl label,
 .slider-label,
 .field-label,
 .row-label {
@@ -156,6 +157,7 @@ input[type=range]::-moz-range-thumb {
   margin-bottom: 2px;
 }
 .row .label-line span,
+.ctrl label .val,
 .slider-label span.val,
 .field-label b,
 .row-label span.val {
@@ -176,6 +178,12 @@ button.icon-btn,
 .presets button,
 .small-btn,
 .rbtn,
+.chip,
+.tab-btn,
+.matbtn,
+.toggle-btn,
+.collapse-btn,
+.segbtns button,
 .view-toggle button {
   font-family: inherit;
   font-size: var(--fs-label);
@@ -196,6 +204,12 @@ button.pill:hover,
 .presets button:hover,
 .small-btn:hover,
 .rbtn:hover,
+.chip:hover,
+.tab-btn:hover,
+.matbtn:hover,
+.toggle-btn:hover,
+.collapse-btn:hover,
+.segbtns button:hover,
 .view-toggle button:hover { border-color: var(--accent); }
 .btn:active,
 button.reset:active,
@@ -204,6 +218,7 @@ button.icon-btn:active { transform: translateY(1px); }
 .btn.small,
 button.pill.small,
 .small-btn,
+.collapse-btn,
 .rbtn { font-size: var(--fs-small); padding: 5px 9px; }
 .btn[disabled] { opacity: .4; cursor: not-allowed; }
 
@@ -211,6 +226,12 @@ button.pill.small,
 .btn[aria-pressed="true"],
 .preset-btn.active,
 .rbtn.active,
+.chip.active,
+.tab-btn.active,
+.matbtn.active,
+.toggle-btn.active,
+.icon-btn.active,
+.segbtns button[aria-pressed="true"],
 .view-toggle button.active {
   background: var(--accent);
   border-color: var(--accent);
