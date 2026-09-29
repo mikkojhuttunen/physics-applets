@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Interatomic potential: Lennard-Jones and Morse</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
+  --lj:#1f6feb; --morse:#d9480f; --r0:#2f9e44; --de:#7048e8; --rep:#e03131; --att:#0c8599; --accent:#1f6feb;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+    --lj:#5c9dff; --morse:#ff8a4c; --r0:#51cf66; --de:#9775fa; --rep:#ff6b6b; --att:#3bc9db; --accent:#5c9dff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+  --lj:#5c9dff; --morse:#ff8a4c; --r0:#51cf66; --de:#9775fa; --rep:#ff6b6b; --att:#3bc9db; --accent:#5c9dff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 16px 28px;}
+h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+.sub{color:var(--muted);margin:0 0 14px;font-size:.9rem}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 14px;overflow-x:auto;line-height:1.9}
+.eq .m{display:inline-block;min-width:5.2em;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:650;font-size:.8rem}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center}
+.presets .lab{font-size:.82rem;color:var(--muted);margin-right:2px}
+.pnote{font-size:.8rem;color:var(--muted);min-height:1.3em;margin-bottom:10px}
+.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.84rem;padding:5px 10px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,.seg button:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.layout{display:grid;grid-template-columns:minmax(270px,320px) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:12px}
+.main{min-width:0}
+.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:10px 14px 12px;display:flex;flex-direction:column;gap:11px}
+.grp h2{margin:0;font-size:.95rem;font-weight:650;color:var(--gc,var(--accent))}
+.grp.pot{--gc:var(--r0)}
+.grp.vib{--gc:var(--de)}
+.ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+.hint{font-size:.76rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:5px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.82rem;cursor:pointer;border-right:1px solid var(--border)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+label.chk{display:flex;gap:8px;align-items:center;font-size:.84rem;color:var(--fg);cursor:pointer}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--sc,var(--muted));border-radius:0 10px 10px 0}
+.status .pill{font-weight:650;color:var(--sc,var(--muted))}
+.status .txt{color:var(--muted);font-size:.88rem}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 12px}
+.read{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.read .k{font-size:.76rem;color:var(--muted)}
+.read .v{font-size:1.2rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.35}
+.read .v .ln{display:block}
+.read .v.two{font-size:.9rem}
+.read .v .ln{white-space:nowrap}
+.read .s{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.read .s .ln{display:block}
+.read .s .tag{font-size:.62rem;padding:0 5px}
+.tag{display:inline-block;font-style:normal;font-size:.68rem;font-weight:650;padding:0 6px;margin-right:6px;border-radius:5px;color:#fff;vertical-align:1px}
+.tag.lj{background:var(--lj)}
+.tag.mo{background:var(--morse)}
+.plotbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 10px 8px;margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:2px 4px 6px;font-size:.78rem;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:5px}
+.legend i.dash{border-top-style:dashed}
+.legend i.dot{border-top-style:dotted}
+canvas{display:block;width:100%;touch-action:pan-y;cursor:ew-resize}
+.cap{margin:6px 4px 0;font-size:.78rem;color:var(--muted)}
+table.cmp{width:100%;border-collapse:collapse;font-size:.84rem}
+table.cmp th,table.cmp td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}
+table.cmp th{font-weight:650}
+table.cmp tr:last-child td{border-bottom:0}
+table.cmp td:first-child{color:var(--muted)}
+.dim{color:var(--muted);font-size:.9em}
+details{margin-top:14px;color:var(--muted);font-size:.88rem}
+summary{cursor:pointer;color:var(--fg)}
+details p{margin:8px 0;max-width:80ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Interatomic potential curve: Lennard-Jones and Morse</h1>
+  <p class="sub">FYS.232 Structure of Matter · Ch. 2, Sects. 2.1–2.2 · bond length, dissociation energy and the force F = −dU/dr from one potential-energy curve</p>
+  <div class="eq" id="eq"></div>
+
+  <div class="presets" id="presets"><span class="lab">Presets:</span></div>
+  <div class="pnote" id="pnote"></div>
+
+  <div class="layout">
+    <div class="side">
+      <section class="grp pot">
+        <h2>Potential</h2>
+        <div class="ctl">
+          <span class="lab">Model</span>
+          <div class="seg" id="segModel">
+            <button data-v="lj" aria-pressed="false">Lennard-Jones</button>
+            <button data-v="morse" aria-pressed="false">Morse</button>
+            <button data-v="both" aria-pressed="true">Compare</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <label for="sD">Well depth D (dissociation energy): <span class="val" id="vD"></span></label>
+          <input id="sD" type="range" min="-2.52" max="1.3" step="0.001" value="0.68">
+          <div class="hint" id="hD"></div>
+        </div>
+        <div class="ctl">
+          <label for="sR">Equilibrium separation r₀ (bond length): <span class="val" id="vR"></span></label>
+          <input id="sR" type="range" min="-1.3" max="-0.1" step="0.001" value="-1.13">
+          <div class="hint" id="hR"></div>
+        </div>
+        <div class="ctl" id="ctlA">
+          <label for="sA">Morse width parameter a: <span class="val" id="vA"></span></label>
+          <input id="sA" type="range" min="0.45" max="2.1" step="0.001" value="1.29">
+          <div class="hint" id="hA"></div>
+          <div class="presets" style="margin:6px 0 0"><button class="btn" id="bMatch">Match LJ curvature (a = 6/r₀)</button></div>
+        </div>
+      </section>
+
+      <section class="grp">
+        <h2>Probe and display</h2>
+        <div class="ctl">
+          <label for="sP">Probe separation r: <span class="val" id="vP"></span></label>
+          <input id="sP" type="range" min="0.5" max="3" step="0.001" value="1.3">
+          <div class="hint">or drag on the figure, or focus it and use ← →</div>
+        </div>
+        <div class="ctl">
+          <span class="lab">Force units</span>
+          <div class="seg" id="segUnits">
+            <button data-v="nN" aria-pressed="true">nN</button>
+            <button data-v="eV" aria-pressed="false">eV/nm</button>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="chkH"> Show harmonic (spring) approximation</label>
+      </section>
+
+      <section class="grp vib">
+        <h2>Vibration (optional)</h2>
+        <div class="ctl">
+          <label for="sMu">Reduced mass μ: <span class="val" id="vMu"></span></label>
+          <input id="sMu" type="range" min="-0.4" max="2.18" step="0.001" value="-0.3">
+          <div class="hint" id="hMu"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="main">
+      <div class="status" id="status"><span class="pill" id="pill"></span><span class="txt" id="stxt"></span></div>
+      <div class="reads" id="reads"></div>
+
+      <div class="plotbox">
+        <div class="legend" id="legend">
+          <span id="lgLJ"><i style="border-color:var(--lj)"></i>Lennard-Jones</span>
+          <span id="lgMO"><i style="border-color:var(--morse)"></i>Morse</span>
+          <span><i class="dash" style="border-color:var(--r0)"></i>bond length r₀</span>
+          <span><i style="border-color:var(--de)"></i>dissociation energy D</span>
+          <span><i class="dot" style="border-color:var(--fg)"></i>probe</span>
+          <span id="lgH" hidden><i class="dash" style="border-color:var(--muted)"></i>harmonic approximation</span>
+        </div>
+        <canvas id="cFig" tabindex="0" role="img" aria-label="Interatomic potential energy and force curves"></canvas>
+        <p class="cap">Atom B is placed at the probe separation r from atom A (fixed at r = 0); the dashed green circle marks the equilibrium position r₀. Arrows show the force on B, drawn on a compressed (tanh) scale; atom sizes are schematic. In the force panel, the shaded area between the curve and F = 0 beyond r₀ equals D, the work needed to pull the atoms apart. All three panels share the r axis.</p>
+      </div>
+
+      <div class="plotbox">
+        <table class="cmp" id="cmp"></table>
+        <p class="cap" id="cmpcap"></p>
+      </div>
+
+      <details>
+        <summary>What to look for</summary>
+        <p><b>Two anchor numbers.</b> Both models are built from the same two inputs: the minimum sits at the bond length r₀, where the force F = −dU/dr vanishes, and it lies a depth D below the energy of the separated atoms, U(∞) = 0. D is therefore the energy needed to pull the bond apart completely (the dissociation energy, measured from the bottom of the well). The models differ in how they connect these two points.</p>
+        <p><b>Repulsive wall.</b> When the electron clouds start to overlap, the Pauli exclusion principle pushes the atoms apart. This is the same physics as the A/rⁿ term in the ionic-solid model of Sect. 2.4. LJ uses r⁻¹²; Morse uses an exponential and stays finite at r → 0.</p>
+        <p><b>Attractive tail.</b> LJ's −r⁻⁶ term is the van der Waals attraction between neutral atoms: shallow and long-ranged (try Ar₂). Morse falls off exponentially and is the usual fit for covalent bonds such as H₂ and N₂, where the attraction comes from the shared electron pair (Sect. 2.2). Sect. 2.2 builds the H₂⁺ curve from two competing terms, the electron energy that falls as the protons approach and the proton–proton repulsion that rises, and the sum has a minimum near 0.11 nm; use the H₂⁺ preset.</p>
+        <p><b>Force and vibration.</b> The steepest part of the attractive branch is the inflection point of U; there |F| is largest (F<sub>max</sub> = aD/2 for Morse, ≈ 2.69 D/r₀ for LJ) and it is the force needed to pull the bond apart. Because F = −dU/dr, the shaded area under the attractive branch is exactly D. Close to r₀ the force is a spring, F ≈ −k(r − r₀) with k = U″(r₀) (switch on the harmonic approximation), which gives the vibration ħω = ħ√(k/μ) of Sect. 2.3 and the zero-point correction D₀ ≈ D − ħω/2. Matching the two models at the minimum requires a = 6/r₀; real covalent bonds have a much smaller a, so LJ is far too stiff for them.</p>
+        <p><b>Preset values.</b> H₂: r₀ = 0.0741 nm, D = 4.75 eV, ω<sub>e</sub> = 4401 cm⁻¹. H₂⁺: 0.106 nm, 2.79 eV, 2321 cm⁻¹. N₂: 0.1098 nm, 9.91 eV, 2359 cm⁻¹. In each case the Morse a follows from ω<sub>e</sub> = (a/2πc)√(2D/μ). Ar₂ uses typical LJ parameters of argon (ε = 10.3 meV, σ = 0.3405 nm, so r₀ = 2<sup>1/6</sup>σ = 0.382 nm); the real dimer has r<sub>e</sub> ≈ 0.376 nm and D ≈ 12.3 meV.</p>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const clamp = (x,a,b) => Math.min(b, Math.max(a, x));
+
+  const C = {
+    U_KG: 1.66053907e-27,      // atomic mass unit (kg)
+    HBAR_EVS: 6.582119569e-16, // hbar (eV s)
+    EV_NN: 0.160217663,        // 1 eV/nm = 0.1602 nN;  1 eV/nm^2 = 0.1602 N/m
+    EV_KJMOL: 96.4853,         // kJ/mol per eV
+    A0: 0.0529177,             // Bohr radius (nm)
+    KT300: 0.025852,           // k_B T at 300 K (eV)
+    EV_CM: 8065.544            // cm^-1 per eV
+  };
+
+  const PRESETS = [
+    { name:'H₂⁺', D:2.79,   r0:0.1058, a:13.4, mu:0.5036, note:'H₂⁺ (Sect. 2.2): r₀ = 0.106 nm, D = 2.79 eV, ωₑ = 2321 cm⁻¹; Morse a from ωₑ.' },
+    { name:'H₂',  D:4.75,   r0:0.0741, a:19.4, mu:0.5039, note:'H₂: r₀ = 0.0741 nm, D = 4.75 eV, ωₑ = 4401 cm⁻¹; Morse a from ωₑ. Compare with LJ: it is far stiffer.' },
+    { name:'N₂',  D:9.91,   r0:0.1098, a:26.9, mu:7.0015, note:'N₂: r₀ = 0.1098 nm, D = 9.91 eV, ωₑ = 2359 cm⁻¹; Morse a from ωₑ.' },
+    { name:'Ar₂ (van der Waals)', D:0.0103, r0:0.3822, a:15.7, mu:19.98, note:'Ar₂: typical LJ parameters ε = 10.3 meV, σ = 0.3405 nm (r₀ = 2^(1/6)σ); Morse a set to 6/r₀.' }
+  ];
+
+  const S = { model:'both', logD:0, logR:0, logA:0, logMu:0, rho:1.3, units:'nN', harm:false };
+  let G = { mL:66, bw:500, xmax:1 };
+  let UP = null;
+
+  /* ---------- number formatting ---------- */
+  const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  const sup = n => String(n).split('').map(ch => SUP[ch] || ch).join('');
+  function fmt(x, n){
+    n = n || 3;
+    if (x === 0) return '0';
+    if (!isFinite(x)) return x > 0 ? '∞' : '−∞';
+    const a = Math.abs(x);
+    let s;
+    if (a >= 1e5 || a < 1e-3){
+      const e = Math.floor(Math.log10(a));
+      s = (x/Math.pow(10,e)).toPrecision(n) + '×10' + sup(e);
+    } else if (a >= 1000){
+      s = Math.round(x).toLocaleString('en-US');
+    } else {
+      s = x.toPrecision(n);
+    }
+    return s.replace('-', '−');
+  }
+  const fmtE = v => (Math.abs(v) >= 0.1 || v === 0) ? fmt(v) + ' eV' : fmt(v*1000) + ' meV';
+  function unitsPair(Fa){
+    const nn = Fa*C.EV_NN < 0.1 ? {f:C.EV_NN*1000, u:'pN'} : {f:C.EV_NN, u:'nN'};
+    const ev = Fa < 0.1 ? {f:1000, u:'meV/nm'} : {f:1, u:'eV/nm'};
+    return S.units === 'nN' ? {main:nn, alt:ev} : {main:ev, alt:nn};
+  }
+  const fmtF = F => fmt(F*UP.main.f) + ' ' + UP.main.u;
+  const fmtFalt = F => fmt(F*UP.alt.f) + ' ' + UP.alt.u;
+
+  /* ---------- potential models ---------- */
+  function mkLJ(D, r0){
+    return {
+      id:'lj', name:'Lennard-Jones', short:'LJ', tag:'lj', col:'--lj',
+      U: r => { const x = r0/r, x6 = Math.pow(x,6); return D*(x6*x6 - 2*x6); },
+      F: r => { const x = r0/r, x6 = Math.pow(x,6); return 12*D/r0*x*(x6*x6 - x6); },
+      k: 72*D/(r0*r0),
+      Fmax: 12*42/169*(D/r0)*Math.pow(7/13, 1/6),
+      rF: r0*Math.pow(13/7, 1/6),
+      sigma: r0/Math.pow(2, 1/6)
+    };
+  }
+  function mkMorse(D, r0, a){
+    const s = r0 - Math.LN2/a;
+    return {
+      id:'mo', name:'Morse', short:'Morse', tag:'mo', col:'--morse',
+      U: r => { const e = Math.exp(-a*(r - r0)); return D*(e*e - 2*e); },
+      F: r => { const e = Math.exp(-a*(r - r0)); return 2*a*D*(e*e - e); },
+      k: 2*D*a*a,
+      Fmax: a*D/2,
+      rF: r0 + Math.LN2/a,
+      sigma: s > 0 ? s : null
+    };
+  }
+
+  function derive(){
+    const D = Math.pow(10, S.logD), r0 = Math.pow(10, S.logR), a = Math.pow(10, S.logA), mu = Math.pow(10, S.logMu);
+    const lj = mkLJ(D, r0), mo = mkMorse(D, r0, a);
+    const ms = S.model === 'lj' ? [lj] : S.model === 'morse' ? [mo] : [lj, mo];
+    ms.forEach(m => {
+      const w = Math.sqrt(m.k*C.EV_NN/(mu*C.U_KG));   // rad/s
+      m.hw = C.HBAR_EVS*w;                            // eV
+      m.D0 = D - m.hw/2;
+    });
+    let xr = 2.8;
+    if (ms.indexOf(mo) >= 0) xr = Math.max(xr, 1 + 4/(a*r0));
+    xr = Math.min(xr, 6);
+    const Fa = Math.max.apply(null, ms.map(m => m.Fmax));
+    return { D, r0, a, mu, lj, mo, ms, xr, Fa };
+  }
+
+  /* ---------- canvas helpers ---------- */
+  function font(c, px, wt){ c.font = (wt||400) + ' ' + px + 'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'; }
+  function niceStep(span, target){
+    const raw = span/target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
+    return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10)*p;
+  }
+  function ticks(lo, hi, n){
+    const s = niceStep(hi - lo, n), a = [];
+    for (let v = Math.ceil(lo/s)*s; v <= hi + 1e-12; v += s) a.push(+v.toPrecision(10));
+    return a;
+  }
+  function arrow(c, x0, y0, x1, y1, col, lw, both){
+    c.save(); c.strokeStyle = col; c.fillStyle = col; c.lineWidth = lw; c.lineCap = 'round';
+    const ang = Math.atan2(y1-y0, x1-x0), hl = 7 + lw;
+    function head(x, y, a){
+      c.beginPath(); c.moveTo(x, y);
+      c.lineTo(x - hl*Math.cos(a-0.4), y - hl*Math.sin(a-0.4));
+      c.lineTo(x - hl*Math.cos(a+0.4), y - hl*Math.sin(a+0.4));
+      c.closePath(); c.fill();
+    }
+    c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+    head(x1, y1, ang); if (both) head(x0, y0, ang + Math.PI);
+    c.restore();
+  }
+
+  /* ---------- main figure ---------- */
+  function draw(d){
+    const cv = $('cFig'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 640;
+    const h = Math.round(clamp(w*0.92, 560, 700));
+    cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); cv.style.height = h + 'px';
+    const c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+
+    const fg = css('--fg'), mut = css('--muted'), gr = css('--grid'), bd = css('--border'), cd = css('--card');
+    const cR0 = css('--r0'), cDe = css('--de'), cRep = css('--rep'), cAtt = css('--att');
+
+    const mL = 66, mR = 14, mT = 8, gap = 14, bot = 46;
+    const hs = Math.round(clamp(w*0.19, 104, 140));
+    const rest = h - mT - hs - 2*gap - bot, hu = Math.round(rest*0.55), hf = rest - hu;
+    const bw = w - mL - mR;
+    const bs = { x:mL, y:mT, w:bw, h:hs };
+    const bu = { x:mL, y:mT + hs + gap, w:bw, h:hu };
+    const bf = { x:mL, y:mT + hs + gap + hu + gap, w:bw, h:hf };
+    const xmax = d.xr*d.r0;
+    G = { mL, bw, xmax };
+    const mx = r => mL + bw*r/xmax;
+    const rp = S.rho*d.r0;
+
+    const hline = (x0, x1, y) => { c.beginPath(); c.moveTo(x0,y); c.lineTo(x1,y); c.stroke(); };
+    const vline = (x, y0, y1) => { c.beginPath(); c.moveTo(x,y0); c.lineTo(x,y1); c.stroke(); };
+    const clipBox = b => { c.beginPath(); c.rect(b.x, b.y, b.w, b.h); c.clip(); };
+
+    // y scales
+    const uLo = -1.4*d.D, uHi = 1.7*d.D;
+    const myU = v => bu.y + bu.h*(1 - (v - uLo)/(uHi - uLo));
+    const uS = d.D >= 0.1 ? 1 : 1e-3, uUnit = uS === 1 ? 'eV' : 'meV';
+    const fLo = -1.9*d.Fa, fHi = 3.4*d.Fa;
+    const myF = v => bf.y + bf.h*(1 - (v - fLo)/(fHi - fLo));
+    const fU = UP.main;
+
+    const xt = ticks(0, xmax, 7);
+    const ut = ticks(uLo/uS, uHi/uS, 6).map(v => v*uS);
+    const ft = ticks(fLo*fU.f, fHi*fU.f, 6).map(v => v/fU.f);
+
+    function gridPanel(box, yt, my, ylabFn, ylab){
+      c.save(); c.lineWidth = 1; font(c, 11);
+      yt.forEach(v => {
+        const y = my(v);
+        c.strokeStyle = gr; hline(box.x, box.x + box.w, y);
+        c.fillStyle = mut; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillText(ylabFn(v), box.x - 6, y);
+      });
+      xt.forEach(v => { c.strokeStyle = gr; vline(mx(v), box.y, box.y + box.h); });
+      c.strokeStyle = bd; c.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
+      c.save(); c.translate(13, box.y + box.h/2); c.rotate(-Math.PI/2);
+      c.textAlign = 'center'; c.textBaseline = 'top'; c.fillStyle = mut; c.fillText(ylab, 0, 0); c.restore();
+      c.restore();
+    }
+
+    // ----- panel frames -----
+    c.save(); c.lineWidth = 1; c.strokeStyle = gr;
+    xt.forEach(v => vline(mx(v), bs.y, bs.y + bs.h));
+    c.strokeStyle = bd; c.strokeRect(bs.x + 0.5, bs.y + 0.5, bs.w - 1, bs.h - 1);
+    c.restore();
+    gridPanel(bu, ut, myU, v => String(+(v/uS).toPrecision(3)), 'U (' + uUnit + ')');
+    gridPanel(bf, ft, myF, v => String(+(v*fU.f).toPrecision(3)), 'F (' + fU.u + ')');
+
+    // x axis labels (shared, below the force panel)
+    c.save(); font(c, 11); c.fillStyle = mut; c.textAlign = 'center'; c.textBaseline = 'top';
+    xt.forEach(v => c.fillText(String(+v.toPrecision(3)), mx(v), bf.y + bf.h + 5));
+    c.textBaseline = 'bottom'; c.fillText('interatomic separation r (nm)', bf.x + bf.w/2, bf.y + bf.h + 38);
+    c.restore();
+
+    // panel titles
+    c.save(); font(c, 11.5, 650); c.fillStyle = mut; c.textAlign = 'right'; c.textBaseline = 'top';
+    c.fillText('U(r)', bu.x + bu.w - 8, bu.y + 6);
+    c.fillText('F = −dU/dr', bf.x + bf.w - 8, bf.y + 6);
+    c.restore();
+
+    // ----- guide lines: r0 and probe across all panels -----
+    c.save(); c.lineWidth = 1.3;
+    c.strokeStyle = cR0; c.setLineDash([5,4]); vline(mx(d.r0), bs.y, bf.y + bf.h);
+    c.strokeStyle = fg; c.globalAlpha = 0.55; c.setLineDash([2,3]); vline(mx(rp), bs.y, bf.y + bf.h);
+    c.restore();
+
+    // ----- strip: atoms and force arrows -----
+    c.save(); clipBox(bs);
+    const scale = bw/xmax, R = clamp(0.3*d.r0*scale, 10, 0.27*hs), cy = bs.y + hs*0.42;
+    c.strokeStyle = bd; c.lineWidth = 1; hline(bs.x, bs.x + bs.w, cy);
+    c.setLineDash([4,3]); c.strokeStyle = cR0; c.lineWidth = 1.5;
+    c.beginPath(); c.arc(mx(d.r0), cy, R, 0, 7); c.stroke(); c.setLineDash([]);
+    function atom(x){
+      c.fillStyle = fg; c.globalAlpha = 0.10; c.beginPath(); c.arc(x, cy, R, 0, 7); c.fill(); c.globalAlpha = 1;
+      c.strokeStyle = mut; c.lineWidth = 1.5; c.beginPath(); c.arc(x, cy, R, 0, 7); c.stroke();
+      c.fillStyle = fg; c.beginPath(); c.arc(x, cy, 3, 0, 7); c.fill();
+    }
+    atom(mL); atom(mx(rp));
+    const Lcap = Math.min(90, bw*0.16);
+    d.ms.forEach((m, i) => {
+      const F = m.F(rp), L = Lcap*Math.tanh(Math.abs(F)/d.Fa);
+      if (L < 2) return;
+      const y = cy + (d.ms.length > 1 ? (i ? 9 : -9) : 0), x0 = mx(rp);
+      arrow(c, x0, y, x0 + (F >= 0 ? L : -L), y, css(m.col), 3);
+    });
+    font(c, 11); c.fillStyle = mut; c.textBaseline = 'bottom'; c.textAlign = 'left';
+    c.fillText('atom A', mL + 6, cy - R - 4);
+    c.textAlign = 'center'; c.fillText('atom B', mx(rp), cy - R - 4);
+    c.textAlign = 'right'; c.textBaseline = 'top'; c.fillText('arrow = force on B', bs.x + bs.w - 6, bs.y + 5);
+    // ruler
+    const yr = bs.y + hs*0.86, xa = mL, xb = mx(rp);
+    c.strokeStyle = fg; c.lineWidth = 1.2; hline(xa, xb, yr); vline(xa, yr - 4, yr + 4); vline(xb, yr - 4, yr + 4);
+    font(c, 11.5, 650); c.fillStyle = fg; c.textBaseline = 'bottom';
+    const rtxt = 'r = ' + fmt(rp) + ' nm';
+    if (xb - xa > 96){ c.textAlign = 'center'; c.fillText(rtxt, (xa + xb)/2, yr - 3); }
+    else { c.textAlign = 'left'; c.fillText(rtxt, xb + 8, yr + 4); }
+    c.restore();
+
+    // ----- U panel -----
+    c.save(); clipBox(bu);
+    c.strokeStyle = mut; c.lineWidth = 1.2; c.setLineDash([6,4]); hline(bu.x, bu.x + bu.w, myU(0));
+    c.strokeStyle = cDe; c.lineWidth = 1; c.setLineDash([2,3]); hline(bu.x, mx(d.r0), myU(-d.D));
+    c.setLineDash([]);
+    const N = 600, r_lo = 0.03*xmax;
+    const yc = (box, y) => clamp(y, box.y - 3000, box.y + box.h + 3000);
+    function trace(box, my, fn){
+      c.beginPath();
+      for (let i = 0; i <= N; i++){
+        const r = r_lo + (xmax - r_lo)*i/N, y = yc(box, my(fn(r)));
+        i ? c.lineTo(mx(r), y) : c.moveTo(mx(r), y);
+      }
+    }
+    if (S.harm){
+      d.ms.forEach(m => {
+        c.strokeStyle = css(m.col); c.globalAlpha = 0.6; c.lineWidth = 1.5; c.setLineDash([5,4]);
+        trace(bu, myU, r => -d.D + 0.5*m.k*(r - d.r0)*(r - d.r0)); c.stroke();
+      });
+      c.globalAlpha = 1; c.setLineDash([]);
+    }
+    d.ms.forEach(m => { c.strokeStyle = css(m.col); c.lineWidth = 2.8; trace(bu, myU, m.U); c.stroke(); });
+    c.restore();
+
+    // U annotations (outside clip)
+    c.save();
+    font(c, 11); c.fillStyle = mut; c.textAlign = 'right'; c.textBaseline = 'bottom';
+    c.fillText('U(∞) = 0', bu.x + bu.w - 6, myU(0) - 4);
+    // dissociation energy arrow
+    const xd = mx(d.r0);
+    arrow(c, xd, myU(-d.D), xd, myU(0), cDe, 2, true);
+    font(c, 12, 650); c.fillStyle = cDe; c.textAlign = 'left';
+    const dtxt = 'D = ' + fmtE(d.D);
+    if (xd - bu.x > 110){ c.textBaseline = 'bottom'; c.fillText(dtxt, bu.x + 8, myU(-d.D) - 5); }
+    else { c.textBaseline = 'top'; c.fillText(dtxt, xd + 10, myU(-d.D) + 5); }
+    // r0 label
+    font(c, 11.5, 650); c.fillStyle = cR0; c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillText('r₀ = ' + fmt(d.r0) + ' nm', xd + 6, bu.y + 6);
+    // sigma and inflection markers
+    d.ms.forEach(m => {
+      const col = css(m.col);
+      if (m.sigma){
+        const x = mx(m.sigma), y = myU(0);
+        c.fillStyle = col; c.strokeStyle = cd; c.lineWidth = 2; c.beginPath(); c.arc(x, y, 4.5, 0, 7); c.fill(); c.stroke();
+        font(c, 11, 650); c.textAlign = 'right'; c.textBaseline = 'top'; c.fillText('σ', x - 6, y + 4);
+      }
+      const xi = mx(m.rF), yi = myU(m.U(m.rF));
+      c.fillStyle = cd; c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.arc(xi, yi, 4.5, 0, 7); c.fill(); c.stroke();
+    });
+    // probe dots on U
+    d.ms.forEach(m => {
+      const yy = myU(m.U(rp)), off = yy < bu.y + 3 || yy > bu.y + bu.h - 3, y = clamp(yy, bu.y + 3, bu.y + bu.h - 3);
+      c.fillStyle = off ? cd : css(m.col); c.strokeStyle = off ? css(m.col) : cd; c.lineWidth = 2;
+      c.beginPath(); c.arc(mx(rp), y, 5.5, 0, 7); c.fill(); c.stroke();
+    });
+    c.restore();
+
+    // ----- F panel -----
+    c.save(); clipBox(bf);
+    const y0 = myF(0);
+    // area between F and zero for r > r0 equals D: the work needed to pull the atoms apart
+    d.ms.forEach(m => {
+      c.save(); c.beginPath(); c.rect(bf.x, y0, bf.w, bf.y + bf.h - y0); c.clip();
+      c.beginPath();
+      for (let i = 0; i <= 300; i++){
+        const r = d.r0 + (xmax - d.r0)*i/300, y = myF(m.F(r));
+        i ? c.lineTo(mx(r), y) : c.moveTo(mx(r), y);
+      }
+      c.lineTo(mx(xmax), y0); c.lineTo(mx(d.r0), y0); c.closePath();
+      c.fillStyle = css(m.col); c.globalAlpha = 0.17; c.fill(); c.restore();
+    });
+    c.strokeStyle = fg; c.globalAlpha = 0.55; c.lineWidth = 1.2; hline(bf.x, bf.x + bf.w, y0); c.globalAlpha = 1;
+    if (S.harm){
+      d.ms.forEach(m => {
+        c.strokeStyle = css(m.col); c.globalAlpha = 0.6; c.lineWidth = 1.5; c.setLineDash([5,4]);
+        trace(bf, myF, r => -m.k*(r - d.r0)); c.stroke();
+      });
+      c.globalAlpha = 1; c.setLineDash([]);
+    }
+    d.ms.forEach(m => { c.strokeStyle = css(m.col); c.lineWidth = 2.8; trace(bf, myF, m.F); c.stroke(); });
+    c.restore();
+
+    // F annotations
+    c.save();
+    font(c, 11); c.textAlign = 'left';
+    const t1 = 'F > 0  repulsive', t2 = 'F < 0  attractive';
+    const availL = xd - bf.x - 12, wFull = Math.max(c.measureText(t1).width, c.measureText(t2).width) + 8;
+    const l1 = availL >= wFull ? t1 : availL >= 44 ? 'F > 0' : null, l2 = availL >= wFull ? t2 : availL >= 44 ? 'F < 0' : null;
+    if (l1){
+      c.fillStyle = cRep; c.textBaseline = 'bottom'; c.fillText(l1, bf.x + 8, y0 - 5);
+      c.fillStyle = cAtt; c.textBaseline = 'top'; c.fillText(l2, bf.x + 8, y0 + 5);
+    }
+    c.fillStyle = mut; c.textAlign = 'right'; c.fillText('shaded area = D', bf.x + bf.w - 8, y0 + 7); c.textAlign = 'left';
+    // equilibrium point
+    c.fillStyle = cR0; c.strokeStyle = cd; c.lineWidth = 2; c.beginPath(); c.arc(xd, y0, 5, 0, 7); c.fill(); c.stroke();
+    font(c, 11.5, 650); c.fillStyle = cR0; c.textBaseline = 'bottom'; c.textAlign = 'left';
+    c.fillText('F = 0 at r₀', xd + 8, y0 - 5);
+    // maximum attraction
+    d.ms.forEach(m => {
+      const col = css(m.col), x = mx(m.rF), y = myF(-m.Fmax);
+      c.fillStyle = cd; c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.arc(x, y, 4.5, 0, 7); c.fill(); c.stroke();
+      if (d.ms.length === 1){
+        font(c, 11.5, 650); c.fillStyle = col; c.textBaseline = 'middle';
+        const right = bf.x + bf.w - 4, full = 'max. attraction ' + fmtF(m.Fmax) + ' at r = ' + fmt(m.rF) + ' nm';
+        const short = 'max. attraction ' + fmtF(m.Fmax);
+        const fits = x + 9 + c.measureText(full).width <= right;
+        const t = fits ? full : short, tw = c.measureText(t).width;
+        c.textAlign = 'left';
+        c.fillText(t, Math.min(x + 9, right - tw), y + 4 + (x + 9 + tw > right ? 12 : 0));
+      }
+    });
+    // probe dots on F
+    d.ms.forEach(m => {
+      const yy = myF(m.F(rp)), off = yy < bf.y + 3 || yy > bf.y + bf.h - 3, y = clamp(yy, bf.y + 3, bf.y + bf.h - 3);
+      c.fillStyle = off ? cd : css(m.col); c.strokeStyle = off ? css(m.col) : cd; c.lineWidth = 2;
+      c.beginPath(); c.arc(mx(rp), y, 5.5, 0, 7); c.fill(); c.stroke();
+    });
+    c.restore();
+  }
+
+  /* ---------- text, readouts, table ---------- */
+  function eqHtml(d){
+    const lj = '<span class="m" style="color:var(--lj)">Lennard-Jones</span> U(r) = D [ (r₀/r)<sup>12</sup> − 2 (r₀/r)<sup>6</sup> ],&nbsp; F = (12D/r₀) [ (r₀/r)<sup>13</sup> − (r₀/r)<sup>7</sup> ]&nbsp;&nbsp;<span style="color:var(--muted)">(D = ε, r₀ = 2<sup>1/6</sup>σ)</span>';
+    const mo = '<span class="m" style="color:var(--morse)">Morse</span> U(r) = D [ e<sup>−2a(r−r₀)</sup> − 2 e<sup>−a(r−r₀)</sup> ],&nbsp; F = 2aD [ e<sup>−2a(r−r₀)</sup> − e<sup>−a(r−r₀)</sup> ]';
+    const tail = '<br><span style="color:var(--muted)">F = −dU/dr,&nbsp; F(r₀) = 0,&nbsp; U(r₀) = −D,&nbsp; U(∞) = 0</span>';
+    return (S.model === 'lj' ? lj : S.model === 'morse' ? mo : lj + '<br>' + mo) + tail;
+  }
+
+  function lines(d, fn){
+    return d.ms.map(m => '<span class="ln">' + (d.ms.length > 1 ? '<i class="tag ' + m.tag + '">' + m.short + '</i>' : '') + fn(m) + '</span>').join('');
+  }
+  function card(k, v, s, two){
+    return '<div class="read"><div class="k">' + k + '</div><div class="v' + (two ? ' two' : '') + '">' + v + '</div><div class="s">' + s + '</div></div>';
+  }
+
+  function updateText(d){
+    const rp = S.rho*d.r0, two = d.ms.length > 1, m0 = d.ms[0];
+    $('eq').innerHTML = eqHtml(d);
+
+    // readout cards
+    $('reads').innerHTML =
+      card('Bond length r₀', fmt(d.r0) + ' nm', fmt(d.r0*10) + ' Å · ' + fmt(d.r0/C.A0) + ' a₀ (F = 0 here)') +
+      card('Dissociation energy D', fmtE(d.D), fmt(d.D*C.EV_KJMOL) + ' kJ/mol · D/k<sub>B</sub>T(300 K) = ' + fmt(d.D/C.KT300)) +
+      card('Probe separation r', fmt(rp) + ' nm', fmt(S.rho) + ' r₀') +
+      card('Potential energy U(r)', lines(d, m => fmtE(m.U(rp))), 'relative to separated atoms; U(r₀) = −D', two) +
+      card('Force F = −dU/dr', lines(d, m => fmtF(m.F(rp))), lines(d, m => fmtFalt(m.F(rp))), two);
+
+    // status
+    const F0 = m0.F(rp), near = Math.abs(S.rho - 1) < 0.004, st = $('status');
+    let pill, txt, col;
+    if (near){ pill = 'Equilibrium'; col = 'var(--r0)'; txt = 'F = 0 at r = r₀: U sits at its minimum, −D.'; }
+    else if (F0 > 0){ pill = 'Repulsive'; col = 'var(--rep)'; txt = 'r < r₀: overlapping electron clouds push the atoms apart (F > 0).'; }
+    else {
+      pill = 'Attractive'; col = 'var(--att)';
+      txt = rp < m0.rF
+        ? 'r > r₀: the net force pulls the atoms back toward r₀, and it keeps growing with r until the inflection point of U.'
+        : 'Beyond the inflection point: the pull has passed its maximum and now weakens with distance.';
+    }
+    st.style.setProperty('--sc', col); $('pill').textContent = pill; $('stxt').textContent = txt;
+
+    // comparison table
+    const head = '<tr><th>Quantity</th>' + d.ms.map(m => '<th style="color:var(' + m.col + ')">' + m.name + '</th>').join('') + '</tr>';
+    const rows = [
+      ['Force constant k = U″(r₀)', m => fmt(m.k) + ' eV/nm² <span class="dim">(' + fmt(m.k*C.EV_NN) + ' N/m)</span>'],
+      ['Vibrational quantum ħω', m => fmtE(m.hw) + ' <span class="dim">(' + fmt(m.hw*C.EV_CM) + ' cm⁻¹)</span>'],
+      ['Zero-point corrected D₀ ≈ D − ħω/2', m => m.D0 > 0 ? fmtE(m.D0) : 'no bound level'],
+      ['Maximum attraction F<sub>max</sub>', m => fmtF(m.Fmax) + ' <span class="dim">at r = ' + fmt(m.rF) + ' nm (' + fmt(m.rF/d.r0) + ' r₀)</span>'],
+      ['U = 0 at r = σ', m => m.sigma ? fmt(m.sigma) + ' nm <span class="dim">(' + fmt(m.sigma/d.r0) + ' r₀)</span>' : '—']
+    ];
+    $('cmp').innerHTML = head + rows.map(r => '<tr><td>' + r[0] + '</td>' + d.ms.map(m => '<td>' + r[1](m) + '</td>').join('') + '</tr>').join('');
+    $('cmpcap').textContent = two
+      ? 'Both models share r₀ and D (the inputs); they differ in stiffness k, in F_max and in how quickly the tail decays. ħω uses the reduced mass set under “Vibration”.'
+      : 'ħω uses the reduced mass set under “Vibration”; the zero-point estimate assumes a harmonic well.';
+
+    // slider labels and hints
+    $('vD').textContent = fmtE(d.D);
+    $('vR').textContent = fmt(d.r0) + ' nm';
+    $('vA').textContent = fmt(d.a) + ' nm⁻¹';
+    $('vMu').textContent = fmt(d.mu) + ' u';
+    $('vP').textContent = fmt(S.rho) + ' r₀ = ' + fmt(rp) + ' nm';
+    $('hD').innerHTML = fmt(d.D*C.EV_KJMOL) + ' kJ/mol · D/k<sub>B</sub>T at 300 K = ' + fmt(d.D/C.KT300);
+    $('hR').textContent = fmt(d.r0*10) + ' Å = ' + fmt(d.r0/C.A0) + ' a₀ (Bohr radius a₀ = 0.0529 nm)';
+    $('hA').textContent = 'range 1/a = ' + fmt(1/d.a) + ' nm · k = 2Da² · matches LJ at a = 6/r₀ = ' + fmt(6/d.r0) + ' nm⁻¹';
+    $('hMu').textContent = 'only sets ħω and D₀; for a diatomic μ = m₁m₂/(m₁+m₂)';
+
+    // legend and a11y
+    $('lgLJ').hidden = d.ms.indexOf(d.lj) < 0;
+    $('lgMO').hidden = d.ms.indexOf(d.mo) < 0;
+    $('lgH').hidden = !S.harm;
+    $('cFig').setAttribute('aria-label', 'Interatomic potential figure. Bond length ' + fmt(d.r0) + ' nm, dissociation energy ' + fmtE(d.D) +
+      '. Probe at r = ' + fmt(rp) + ' nm: U = ' + fmtE(m0.U(rp)) + ', F = ' + fmtF(F0) + '.');
+  }
+
+  function update(){
+    const d = derive();
+    S.rho = clamp(S.rho, 0.5, d.xr);
+    UP = unitsPair(d.Fa);
+    const sp = $('sP'); sp.max = d.xr; sp.value = S.rho;
+    $('ctlA').hidden = S.model === 'lj';
+    updateText(d);
+    draw(d);
+  }
+
+  /* ---------- controls ---------- */
+  function syncSliders(){
+    $('sD').value = S.logD; $('sR').value = S.logR; $('sA').value = S.logA; $('sMu').value = S.logMu;
+  }
+  function clearNote(){ $('pnote').textContent = ''; }
+  function applyPreset(p){
+    S.logD = Math.log10(p.D); S.logR = Math.log10(p.r0); S.logA = Math.log10(p.a); S.logMu = Math.log10(p.mu);
+    $('pnote').textContent = p.note;
+    syncSliders(); update();
+  }
+  const pr = $('presets');
+  PRESETS.forEach(p => {
+    const b = document.createElement('button'); b.className = 'btn'; b.textContent = p.name;
+    b.addEventListener('click', () => applyPreset(p));
+    pr.appendChild(b);
+  });
+
+  [['sD','logD'], ['sR','logR'], ['sA','logA'], ['sMu','logMu']].forEach(([id, key]) => {
+    $(id).addEventListener('input', () => { S[key] = +$(id).value; clearNote(); update(); });
+  });
+  $('sP').addEventListener('input', () => { S.rho = +$('sP').value; update(); });
+  $('bMatch').addEventListener('click', () => {
+    S.logA = clamp(Math.log10(6/Math.pow(10, S.logR)), 0.45, 2.1); clearNote(); syncSliders(); update();
+  });
+  function seg(id, key){
+    const el = $(id);
+    el.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      S[key] = b.dataset.v;
+      el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+      update();
+    });
+  }
+  seg('segModel', 'model'); seg('segUnits', 'units');
+  $('chkH').addEventListener('change', () => { S.harm = $('chkH').checked; update(); });
+
+  // probe: drag on the figure, or arrow keys
+  const cv = $('cFig'); let drag = false;
+  function fromEvent(e){
+    const rect = cv.getBoundingClientRect();
+    S.rho = ((e.clientX - rect.left - G.mL)/G.bw*G.xmax)/Math.pow(10, S.logR);
+    update();
+  }
+  cv.addEventListener('pointerdown', e => { drag = true; cv.setPointerCapture(e.pointerId); fromEvent(e); });
+  cv.addEventListener('pointermove', e => { if (drag) fromEvent(e); });
+  ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => { drag = false; }));
+  cv.addEventListener('keydown', e => {
+    const step = (e.shiftKey ? 0.1 : 0.01);
+    if (e.key === 'ArrowRight'){ S.rho += step; update(); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft'){ S.rho -= step; update(); e.preventDefault(); }
+  });
+
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(update, 80); });
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', update);
+
+  applyPreset(PRESETS[1]);
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

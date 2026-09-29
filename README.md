@@ -7,7 +7,10 @@ dependencies (no CDN, no build step) and runs directly in a browser.
 
 Each course has its own folder with an `index.html` listing its applets.
 
-- `fys232-structure-of-matter/`
+- `fys232-structure-of-matter/` — a chained radioactive decay applet and an interatomic potential explorer
+  (Lennard-Jones and Morse curves with adjustable well depth and equilibrium separation; bond length,
+  dissociation energy and force F = −dU/dr shown together, with the harmonic approximation, vibrational
+  quantum and zero-point corrected D₀; presets for H₂⁺, H₂, N₂ and Ar₂).
 - `fys240-optics/`
 - `fys310-solid-state-physics/` — lattice viewer (3D lattices with primitive vectors, Brillouin zones with empty-lattice bands, 2D Bravais lattices), Van Hove and DOS explorer,
   band structure explorer (empty lattice, weak potential, Al/Si/Ge/GaAs/diamond

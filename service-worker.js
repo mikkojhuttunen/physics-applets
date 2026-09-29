@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v23";
+const CACHE_NAME = "physics-applets-v24";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -10,6 +10,7 @@ const APP_SHELL = [
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
   "fys232-structure-of-matter/index.html",
+  "fys232-structure-of-matter/interatomic-potential-explorer.html",
   "fys240-optics/index.html",
   "fys240-optics/plane-wave-explorer.html",
   "fys240-optics/em-spectrum-explorer.html",
