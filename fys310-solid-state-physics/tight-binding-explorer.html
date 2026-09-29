@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tight-Binding Explorer — Bands from Orbitals and Hopping</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys310-solid-state-physics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+  :root {
+    --band1: var(--cyan);
+    --band2: var(--orange);
+    --ef: var(--green);
+    --muted: var(--text-dim);
+    --line: var(--border);
+    --fill: rgba(35,199,217,0.14);
+    --gap: rgba(242,145,75,0.16);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+  header.top { margin-bottom: 18px; }
+  header.top p { margin: 8px 0 0; max-width: 64ch; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tab { display: none; }
+  .tab.on { display: block; }
+  .layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+  .right { display: grid; gap: 16px; min-width: 0; }
+  .ctrl { margin-bottom: 12px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+  .presets button { padding: 5px 9px; font-size: var(--fs-small); }
+  .plots { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .plots { grid-template-columns: 1fr; } }
+  .plots canvas { width: 100%; height: 340px; display: block; }
+  .cap { font-size: var(--fs-small); color: var(--text-dim); margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 2px 22px; margin: 0; }
+  .readout div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); padding: 4px 0; font-size: var(--fs-label); }
+  .readout dd { margin: 0; font-family: var(--font-mono); font-weight: 600; text-align: right; }
+  .verdict { margin: 12px 0 0; padding-left: 10px; border-left: 3px solid var(--border); font-weight: 600; font-size: var(--fs-body); }
+  .verdict.ok { border-left-color: var(--green); }
+  .verdict.warn { border-left-color: var(--orange); }
+  .notes h3 { font-size: 0.95rem; color: var(--text); margin: 0 0 6px; }
+  .notes p, .notes li { font-size: var(--fs-body); margin: 0 0 8px; }
+  .notes ul { margin: 0 0 8px; padding-left: 20px; }
+  .notes .eq { margin: 0 0 8px; }
+  .mapwrap { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .mapwrap canvas { width: 100%; max-width: 380px; aspect-ratio: 1; height: auto; display: block; }
+  .mapwrap p { flex: 1 1 240px; margin: 0; font-size: var(--fs-body); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1>Tight-Binding Explorer</h1>
+  <p class="sub">Energy bands from atomic orbitals and hopping: a 1D chain, two atoms per cell, graphene and h-BN with doping, an fcc s-band, and a group 2 chain with s and p orbitals.</p>
+</header>
+
+<div class="tabs" id="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="chain" role="tab">1D chain</button>
+  <button class="tab-btn" data-tab="dimer" role="tab">Two atoms per cell</button>
+  <button class="tab-btn" data-tab="honey" role="tab">Graphene and h-BN</button>
+  <button class="tab-btn" data-tab="fcc" role="tab">fcc s-band (HW5)</button>
+  <button class="tab-btn" data-tab="sp" role="tab">s + p orbitals (HW6)</button>
+</div>
+
+<!-- ============ TAB 1 ============ -->
+<section id="tab-chain" class="tab on">
+<div class="layout">
+  <div class="card"><div id="c1"></div></div>
+  <div class="right">
+    <div class="card">
+      <div class="plots">
+        <div><p class="cap">Band E(k) with the N allowed k-points</p><canvas id="cv1a"></canvas></div>
+        <div><p class="cap">DOS (states / eV / atom)</p><canvas id="cv1b"></canvas></div>
+      </div>
+    </div>
+    <div class="card"><dl class="readout" id="r1"></dl><p class="verdict" id="v1"></p></div>
+    <div class="card notes">
+      <h3>What is going on</h3>
+      <p>Each atom contributes one orbital. Electrons sit on-site with energy ε₀ and hop to a neighbour with amplitude −t (booklet §7.4.1, Eq. 7.4.37). Plane waves diagonalise the Hamiltonian:</p>
+      <p class="eq">E(k) = ε₀ − 2t cos(ka) − 2t′ cos(2ka)</p>
+      <p>The dots are the allowed k-values of a ring of N atoms (periodic boundary conditions). Each holds two electrons. Filled dots are occupied, half-filled dots hold one electron.</p>
+      <ul>
+        <li>The bandwidth is 4t. Hopping grows with orbital overlap, so squeezing the lattice widens the band.</li>
+        <li>Near the band bottom E ≈ E₀ + ħ²k²/2m*, with m* = ħ²/(2ta²): a narrow band means heavy electrons.</li>
+        <li>The 1D density of states diverges at the band edges (van Hove singularities, §8.2.1).</li>
+      </ul>
+      <h3>Try this</h3>
+      <ul>
+        <li>Step N from 4 to 40 and watch the discrete levels merge into a continuous band.</li>
+        <li>Set 1 electron per atom (half-filled band: metal), then 2 electrons per atom (full band: insulator). Real divalent metals such as Mg still conduct because the s and p bands overlap (HW6, Q3; see the s + p tab).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ TAB 2 ============ -->
+<section id="tab-dimer" class="tab">
+<div class="layout">
+  <div class="card"><div id="c2"></div></div>
+  <div class="right">
+    <div class="card">
+      <div class="plots">
+        <div><p class="cap">Bands E(k) in the first Brillouin zone</p><canvas id="cv2a"></canvas></div>
+        <div><p class="cap">DOS (states / eV / cell)</p><canvas id="cv2b"></canvas></div>
+      </div>
+    </div>
+    <div class="card"><dl class="readout" id="r2"></dl><p class="verdict" id="v2"></p></div>
+    <div class="card notes">
+      <h3>What is going on</h3>
+      <p>With two atoms A and B per unit cell the Bloch Hamiltonian is a 2×2 matrix. The hopping alternates between t₁ (inside the cell) and t₂ (between cells):</p>
+      <p class="eq">E±(k) = ± √( Δ² + t₁² + t₂² + 2t₁t₂ cos ka ),  Δ = (ε_A − ε_B)/2</p>
+      <p>The bands are separated by a gap at the zone edge, k = π/a:</p>
+      <p class="eq">E_g = 2 √( Δ² + (t₁ − t₂)² )</p>
+      <ul>
+        <li>Unequal atoms (Δ ≠ 0) give an ionic solid like NaCl. Unequal bonds (t₁ ≠ t₂) give a covalent gap, as in polyacetylene.</li>
+        <li>Set t₂ = 0: the chain falls apart into isolated dimers, and the two flat bands at ±t₁ are the bonding and antibonding levels of the H₂ molecule from §2.3.</li>
+        <li>An insulator needs a gap and an even number of electrons per cell. The absorption edge is at λ = 1240 nm·eV / E_g, which is the threshold for optical transitions of Chapter 7.</li>
+      </ul>
+      <h3>Try this</h3>
+      <ul>
+        <li>Start from the uniform chain (Δ = 0, t₁ = t₂). This is the band of Tab 1 folded back into a zone of half the size, with no gap.</li>
+        <li>Load the "Odd electron count" preset: the gap is there, but the Fermi level cuts through a band and the material is a metal.</li>
+        <li>Swap t₁ and t₂: the bulk bands are identical. The difference shows up only at the chain ends, which is the starting point of topological insulators (SSH model).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ TAB 3 ============ -->
+<section id="tab-honey" class="tab">
+<div class="layout">
+  <div class="card"><div id="c3"></div></div>
+  <div class="right">
+    <div class="card">
+      <div class="plots">
+        <div><p class="cap">π-bands along Γ – M – K – Γ</p><canvas id="cv3a"></canvas></div>
+        <div><p class="cap">DOS (states / eV / cell)</p><canvas id="cv3b"></canvas></div>
+      </div>
+    </div>
+    <div class="card mapcard">
+      <div class="mapwrap">
+        <canvas id="cv3c"></canvas>
+        <p>Upper band E₊(kx, ky) over the plane. Light colours are high energy. The dark spots at the six corners of the hexagonal Brillouin zone are the Dirac points K and K′, where the two bands touch. Dashed triangle: the path in the band plot. When the material is doped, the white curve is the Fermi contour of the occupied pocket around K and K′.</p>
+      </div>
+    </div>
+    <div class="card"><dl class="readout" id="r3"></dl><p class="verdict" id="v3"></p></div>
+    <div class="card notes">
+      <h3>What is going on</h3>
+      <p>The honeycomb lattice has two atoms per cell, one on each sublattice. One π-orbital per atom gives</p>
+      <p class="eq">E±(k) = ± √( Δ² + t² |f(k)|² ),  f(k) = 1 + e<sup>ik·a₁</sup> + e<sup>ik·a₂</sup></p>
+      <p>with on-site energies ±Δ. In graphene Δ = 0 and f vanishes at K, so the bands touch linearly, E = ±ħv_F|δk| with v_F = √3·t·a / 2ħ (booklet §8.3.1). In h-BN the two sublattices are different atoms (B and N), which gives Δ ≠ 0 and a gap 2Δ. It is the same mechanism as the ionic chain in Tab 2.</p>
+      <p>Doping shifts the Fermi level. The band has 4 states per cell (2 bands, 2 spins), so neutral graphene has 2 electrons per cell and the lower band is exactly full. Changing that number moves E_F up or down; near the Dirac point E_F = ħv_F√(π|n|), where n is the extra carrier density. Gating and chemical doping reach about 10¹³ cm⁻², which is only 0.01 electrons per cell.</p>
+      <p>The saddle points at M produce the two peaks of the DOS at ±√(Δ² + t²): van Hove singularities of a 2D band.</p>
+      <h3>Try this</h3>
+      <ul>
+        <li>Turn Δ up from zero and follow the cone opening into a gap. Note the effective mass m* = Δ / v_F² appearing at K.</li>
+        <li>Compare the DOS at E = 0 for graphene (zero) and for a metal (finite).</li>
+        <li>Dope graphene with the n-doped and p-doped presets and read the Fermi energy. Compare it with the Dirac-cone estimate, then keep raising the electron count. At 2.5 electrons per cell E_F reaches the van Hove peak at E = t, the Fermi contour touches the zone edge at M, and the Dirac-cone estimate fails.</li>
+        <li>Dope the h-BN-like case. As soon as the electron count differs from 2, E_F jumps from midgap to a band edge and the material conducts. The energy price of about half the gap is why doping a wide-gap insulator is hard in practice.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ TAB 4 ============ -->
+<section id="tab-fcc" class="tab">
+<div class="layout">
+  <div class="card"><div id="c4"></div></div>
+  <div class="right">
+    <div class="card">
+      <div class="plots">
+        <div><p class="cap">s-band along Γ – X – K – Γ – L</p><canvas id="cv4a"></canvas></div>
+        <div><p class="cap">DOS (states / eV / atom)</p><canvas id="cv4b"></canvas></div>
+      </div>
+    </div>
+    <div class="card"><dl class="readout" id="r4"></dl><p class="verdict" id="v4"></p></div>
+    <div class="card notes">
+      <h3>What is going on</h3>
+      <p>This is the three-dimensional version of Tab 1, for an s-orbital on an fcc lattice. Summing over the 12 nearest neighbours at R = (a/2)(±1, ±1, 0) and permutations (HW6) gives the dispersion of HW5, Q4:</p>
+      <p class="eq">E(k) = E_s − β − 4γ [ cos(kₓa/2)cos(k_ya/2) + cos(k_ya/2)cos(k_za/2) + cos(k_za/2)cos(kₓa/2) ]</p>
+      <ul>
+        <li>The band minimum is at Γ, E_s − β − 12γ, and the maximum at X, E_s − β + 4γ, so the bandwidth is 16γ (HW5 4c).</li>
+        <li>The DOS is computed by sampling the Brillouin zone with half a million random k-points. The kinks and steps are 3D van Hove singularities.</li>
+        <li>The X–K segment is drawn with its true length in k-space.</li>
+      </ul>
+      <h3>Try this</h3>
+      <ul>
+        <li>Verify the reduced dispersions of HW5 4a: along Γ–X and along Γ–L.</li>
+        <li>Fill the band with 1 electron per atom and read off E_F. Then change γ and see how the effective mass at Γ, m* = ħ²/(2γa²), responds.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ TAB 5 ============ -->
+<section id="tab-sp" class="tab">
+<div class="layout">
+  <div class="card"><div id="c5"></div></div>
+  <div class="right">
+    <div class="card">
+      <div class="plots">
+        <div><p class="cap">Bands. Cyan: s-like, orange: p-like</p><canvas id="cv5a"></canvas></div>
+        <div><p class="cap">DOS (states / eV / atom)</p><canvas id="cv5b"></canvas></div>
+      </div>
+    </div>
+    <div class="card"><dl class="readout" id="r5"></dl><p class="verdict" id="v5"></p></div>
+    <div class="card notes">
+      <h3>What is going on</h3>
+      <p>A group 2 atom has two valence electrons, which completely fill the ns level. A chain built from this one orbital is an insulator (Tab 1 with 2 electrons per atom). The empty np level lies an energy ε_p above it (for Be, ε₂ₛ = 0 and ε₃ₚ ≈ 3.95 eV). With both orbitals on every site the Bloch Hamiltonian is a 2×2 matrix (booklet footnote 26, HW6 Q3):</p>
+      <p class="eq">H(k) = [ a(k), 2i t_sp sin ka ; −2i t_sp sin ka, b(k) ]</p>
+      <p class="eq">a = −2t_ss cos ka,  b = ε_p + 2σ t_pp cos ka,  E±(k) = (a+b)/2 ± √( ((a−b)/2)² + (2t_sp sin ka)² )</p>
+      <ul>
+        <li>Decoupled orbitals (t_sp = 0), as in HW6: an s-band of width 4t_ss and a p-band of width 4t_pp. They overlap in energy once ε_p &lt; 2(t_ss + t_pp), which for Be means t_eff = t_ss + t_pp &gt; 1.98 eV. Then the two electrons spill into both bands and the solid is a (semi)metal.</li>
+        <li>The sign σ decides where the p-band has its minimum. For p orbitals pointing along the chain the neighbouring lobes face each other with opposite signs, so the p-band has its minimum at the zone edge, right where the s-band has its maximum: a direct gap. With the opposite sign the minimum sits at Γ: an indirect gap (HW6 Q3d, Figures A and B).</li>
+        <li>If s–p hopping is switched on, the crossing becomes an avoided crossing and the colour along the bands shows the mixed orbital character. In this 1D model a hybridisation gap opens. In a 3D crystal the s-like and p-like states can overlap at different points in k-space, so a gap does not have to open and semimetallic behaviour survives (HW6 Q3d).</li>
+        <li>The compression slider scales all hoppings as 1/a², an illustrative Harrison-type rule. It shows how squeezing a chain drives the insulator into a metal.</li>
+      </ul>
+      <h3>Try this</h3>
+      <ul>
+        <li>Start from the Be-like preset (t_ss = t_pp = 0.8 eV). Raise t_pp until the gap closes. Compare the value of t_ss + t_pp to ε_p/2.</li>
+        <li>Flip the sign σ and repeat. The gap type changes from direct to indirect, and the bands can overlap even though no vertical transition is possible.</li>
+        <li>Switch on t_sp in the semimetal case. The crossing is avoided and a gap opens. Why can this not happen for decoupled orbitals?</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const TAU = 2*Math.PI;
+const HBAR = 1.054571817e-34, QE = 1.602176634e-19, ME = 9.1093837015e-31;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const FONT = () => css('--font-body') || 'system-ui, sans-serif';
+const col = c => (c && c.startsWith('--')) ? css(c) : c;
+
+/* ---------- small numerical helpers ---------- */
+function linspace(a,b,n){const r=new Float64Array(n);for(let i=0;i<n;i++)r[i]=a+(b-a)*i/(n-1);return r;}
+function niceTicks(lo,hi,n){
+  const raw=(hi-lo)/n, p=Math.pow(10,Math.floor(Math.log10(raw))), m=raw/p;
+  const step=(m<1.5?1:m<3.5?2:m<7.5?5:10)*p, out=[];
+  for(let v=Math.ceil(lo/step-1e-9)*step; v<=hi+1e-9; v+=step) out.push(Math.abs(v)<1e-12?0:v);
+  return {ticks:out,step};
+}
+const fmtTick=(v,step)=>v.toFixed(Math.max(0,Math.ceil(-Math.log10(step)-1e-9)));
+function histo(vals,lo,hi,nb,w){
+  const c=new Float64Array(nb), d=(hi-lo)/nb;
+  for(let i=0;i<vals.length;i++){
+    let j=Math.floor((vals[i]-lo)/d);
+    if(j===nb) j=nb-1;
+    if(j>=0&&j<nb) c[j]+=w;
+  }
+  const E=new Float64Array(nb), g=new Float64Array(nb);
+  for(let j=0;j<nb;j++){E[j]=lo+(j+.5)*d; g[j]=c[j]/d;}
+  return {E,g,d};
+}
+function buildPath(pts,dens){
+  const s=[],K=[],ticks=[0]; let acc=0;
+  for(let i=0;i<pts.length-1;i++){
+    const A=pts[i],B=pts[i+1];
+    const L=Math.hypot(...B.map((v,j)=>v-A[j]));
+    const n=Math.max(4,Math.ceil(L*dens));
+    for(let m=(i?1:0);m<=n;m++){const u=m/n; K.push(A.map((v,j)=>v+(B[j]-v)*u)); s.push(acc+L*u);}
+    acc+=L; ticks.push(acc);
+  }
+  return {s,K,ticks,total:acc};
+}
+function yrange(lo,hi){
+  const pad=Math.max(0.4,0.12*(hi-lo));
+  return [Math.floor(lo-pad),Math.ceil(hi+pad)];
+}
+
+/* ---------- canvas plotting ---------- */
+function setupCanvas(c){
+  const dpr=window.devicePixelRatio||1, r=c.getBoundingClientRect();
+  c.width=Math.max(1,Math.round(r.width*dpr)); c.height=Math.max(1,Math.round(r.height*dpr));
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,r.width,r.height);
+  return {ctx,w:r.width,h:r.height};
+}
+const MARG_T=14, MARG_B=30;
+
+function plotBands(canvas,o){
+  const {ctx,w,h}=setupCanvas(canvas);
+  const box={x:54,y:MARG_T,w:w-54-14,h:h-MARG_T-MARG_B};
+  const X=v=>box.x+(v-o.xr[0])/(o.xr[1]-o.xr[0])*box.w;
+  const Y=v=>box.y+box.h-(v-o.yr[0])/(o.yr[1]-o.yr[0])*box.h;
+  ctx.font='12px '+FONT();
+  const yt=niceTicks(o.yr[0],o.yr[1],6);
+  ctx.lineWidth=1; ctx.strokeStyle=css('--grid'); ctx.fillStyle=css('--muted');
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  yt.ticks.forEach(v=>{ctx.beginPath();ctx.moveTo(box.x,Y(v));ctx.lineTo(box.x+box.w,Y(v));ctx.stroke();ctx.fillText(fmtTick(v,yt.step),box.x-6,Y(v));});
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  o.xticks.forEach(t=>{ctx.beginPath();ctx.moveTo(X(t.x),box.y);ctx.lineTo(X(t.x),box.y+box.h);ctx.stroke();ctx.fillText(t.label,X(t.x),box.y+box.h+7);});
+  ctx.strokeStyle=css('--line'); ctx.strokeRect(box.x,box.y,box.w,box.h);
+  ctx.save(); ctx.beginPath(); ctx.rect(box.x,box.y,box.w,box.h); ctx.clip();
+  (o.shade||[]).forEach(s=>{ctx.fillStyle=col(s.color);ctx.fillRect(box.x,Y(s.y1),box.w,Y(s.y0)-Y(s.y1));});
+  (o.curves||[]).forEach(c=>{
+    ctx.lineWidth=c.lw||2.2;
+    if(c.cols){
+      ctx.lineCap='round';
+      for(let i=1;i<c.xs.length;i++){
+        ctx.strokeStyle=c.cols[i-1]; ctx.beginPath();
+        ctx.moveTo(X(c.xs[i-1]),Y(c.ys[i-1])); ctx.lineTo(X(c.xs[i]),Y(c.ys[i])); ctx.stroke();
+      }
+      ctx.lineCap='butt';
+    } else {
+      ctx.strokeStyle=col(c.color); ctx.beginPath();
+      for(let i=0;i<c.xs.length;i++){const px=X(c.xs[i]),py=Y(c.ys[i]); i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+      ctx.stroke();
+    }
+  });
+  (o.hlines||[]).forEach(l=>{
+    ctx.strokeStyle=col(l.color); ctx.lineWidth=1.5; ctx.setLineDash(l.dash||[6,4]);
+    ctx.beginPath(); ctx.moveTo(box.x,Y(l.y)); ctx.lineTo(box.x+box.w,Y(l.y)); ctx.stroke(); ctx.setLineDash([]);
+    if(l.label){ctx.fillStyle=col(l.color);ctx.textAlign=l.left?'left':'right';ctx.textBaseline='bottom';ctx.fillText(l.label,l.left?box.x+5:box.x+box.w-5,Y(l.y)-2);}
+  });
+  (o.points||[]).forEach(p=>{
+    const x=X(p.x),y=Y(p.y);
+    ctx.beginPath(); ctx.arc(x,y,4.6,0,TAU); ctx.lineWidth=1.6; ctx.strokeStyle=col(p.color);
+    if(p.occ===2){ctx.fillStyle=col(p.color);ctx.fill();}
+    else if(p.occ===1){ctx.fillStyle=col(p.color);ctx.globalAlpha=.45;ctx.fill();ctx.globalAlpha=1;}
+    else {ctx.fillStyle=css('--panel');ctx.fill();}
+    ctx.stroke();
+  });
+  ctx.restore();
+  ctx.save(); ctx.fillStyle=css('--muted'); ctx.translate(13,box.y+box.h/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Energy (eV)',0,0); ctx.restore();
+}
+
+function plotDOS(canvas,o){
+  const {ctx,w,h}=setupCanvas(canvas);
+  const box={x:12,y:MARG_T,w:w-12-14,h:h-MARG_T-MARG_B};
+  let gmax=0; for(let i=0;i<o.g.length;i++) if(o.g[i]>gmax) gmax=o.g[i];
+  gmax=(gmax||1)*1.08;
+  const X=v=>box.x+v/gmax*box.w;
+  const Y=v=>box.y+box.h-(v-o.yr[0])/(o.yr[1]-o.yr[0])*box.h;
+  ctx.font='12px '+FONT();
+  const yt=niceTicks(o.yr[0],o.yr[1],6), xt=niceTicks(0,gmax,3);
+  ctx.lineWidth=1; ctx.strokeStyle=css('--grid'); ctx.fillStyle=css('--muted');
+  yt.ticks.forEach(v=>{ctx.beginPath();ctx.moveTo(box.x,Y(v));ctx.lineTo(box.x+box.w,Y(v));ctx.stroke();});
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  xt.ticks.forEach(v=>{ctx.beginPath();ctx.moveTo(X(v),box.y);ctx.lineTo(X(v),box.y+box.h);ctx.stroke();ctx.fillText(fmtTick(v,xt.step),X(v),box.y+box.h+7);});
+  ctx.strokeStyle=css('--line'); ctx.strokeRect(box.x,box.y,box.w,box.h);
+  const poly=()=>{
+    ctx.beginPath(); ctx.moveTo(X(0),Y(o.E[0]));
+    for(let i=0;i<o.E.length;i++) ctx.lineTo(X(o.g[i]),Y(o.E[i]));
+    ctx.lineTo(X(0),Y(o.E[o.E.length-1])); ctx.closePath();
+  };
+  ctx.save(); ctx.beginPath(); ctx.rect(box.x,box.y,box.w,box.h); ctx.clip();
+  if(o.EF!==null){
+    ctx.save(); ctx.beginPath(); ctx.rect(box.x,Y(o.EF),box.w,box.y+box.h-Y(o.EF)); ctx.clip();
+    poly(); ctx.fillStyle=css('--fill'); ctx.fill(); ctx.restore();
+  }
+  ctx.strokeStyle=css('--band1'); ctx.lineWidth=1.8; ctx.beginPath();
+  for(let i=0;i<o.E.length;i++){const px=X(o.g[i]),py=Y(o.E[i]); i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+  ctx.stroke();
+  if(o.EF!==null){
+    ctx.strokeStyle=css('--ef'); ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(box.x,Y(o.EF)); ctx.lineTo(box.x+box.w,Y(o.EF)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+
+/* ---------- controls ---------- */
+function buildPanel(root,spec,onChange){
+  const st={}, inputs={};
+  const pre=document.createElement('div'); pre.className='presets';
+  root.appendChild(pre);
+  spec.sliders.forEach(s=>{
+    st[s.id]=s.val;
+    const row=document.createElement('div'); row.className='ctrl';
+    const lab=document.createElement('label'); lab.innerHTML=s.label+'<span class="val"></span>';
+    const out=lab.querySelector('.val');
+    const inp=document.createElement('input');
+    inp.type='range'; inp.min=s.min; inp.max=s.max; inp.step=s.step; inp.value=s.val;
+    inp.id=root.id+'_'+s.id; lab.htmlFor=inp.id;
+    const dec=Math.max(0,Math.ceil(-Math.log10(s.step)-1e-9));
+    const show=()=>{out.textContent=s.fmt?s.fmt(+inp.value):(+inp.value).toFixed(dec)+(s.unit?' '+s.unit:'');};
+    inp.addEventListener('input',()=>{st[s.id]=+inp.value;show();onChange();});
+    show(); row.appendChild(lab); row.appendChild(inp); root.appendChild(row);
+    inputs[s.id]={inp,show};
+  });
+  const setAll=v=>{
+    for(const k in v){st[k]=v[k];inputs[k].inp.value=v[k];inputs[k].show();}
+    onChange();
+  };
+  spec.presets.forEach(p=>{
+    const b=document.createElement('button'); b.type='button'; b.textContent=p.name;
+    b.addEventListener('click',()=>setAll(p.v)); pre.appendChild(b);
+  });
+  return {st,setAll};
+}
+function setReadout(id,rows){
+  $(id).innerHTML=rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
+}
+function setVerdict(id,text,cls){const e=$(id);e.textContent=text;e.className='verdict '+(cls||'');}
+const eV=(x,d=2)=>{const y=Math.abs(x)<0.5*Math.pow(10,-d)?0:x;return y.toFixed(d)+' eV';};
+
+/* ================= TAB 1: monatomic chain ================= */
+const chainE=(th,p)=>p.e0-2*p.t*Math.cos(th)-2*p.t2*Math.cos(2*th);
+
+const T1=buildPanel($('#c1'),{
+  sliders:[
+    {id:'e0',label:'On-site energy ε₀',min:-3,max:3,step:.1,val:0,unit:'eV'},
+    {id:'t',label:'Hopping t',min:.1,max:2.5,step:.05,val:.8,unit:'eV'},
+    {id:'t2',label:'Next-nearest hopping t′',min:-.5,max:.5,step:.05,val:0,unit:'eV'},
+    {id:'a',label:'Lattice constant a',min:.2,max:.6,step:.01,val:.37,unit:'nm'},
+    {id:'N',label:'Number of atoms N (ring)',min:3,max:40,step:1,val:12},
+    {id:'ne',label:'Electrons per atom',min:0,max:2,step:.1,val:1}
+  ],
+  presets:[
+    {name:'Na-like, 1 e⁻',v:{e0:0,t:.8,t2:0,a:.37,ne:1}},
+    {name:'Mg-like, 2 e⁻',v:{e0:0,t:1.2,t2:0,a:.32,ne:2}},
+    {name:'N = 4',v:{N:4}},
+    {name:'N = 40',v:{N:40}}
+  ]
+},render1);
+
+function render1(){
+  const p=T1.st, N=Math.round(p.N), nk=4000;
+  const th=linspace(-Math.PI,Math.PI,nk), E=new Float64Array(nk);
+  let Emin=1e9,Emax=-1e9,vmax=0;
+  for(let i=0;i<nk;i++){
+    E[i]=chainE(th[i],p);
+    if(E[i]<Emin)Emin=E[i]; if(E[i]>Emax)Emax=E[i];
+    vmax=Math.max(vmax,Math.abs(2*p.t*Math.sin(th[i])+4*p.t2*Math.sin(2*th[i])));
+  }
+  const sorted=Float64Array.from(E).sort();
+  const f=p.ne/2;
+  let EF=null;
+  if(f>1e-9) EF = f>=1-1e-9 ? Emax : sorted[Math.min(nk-1,Math.max(0,Math.round(f*nk)-1))];
+  const lv=[];
+  for(let n=0;n<N;n++){let t=TAU*n/N; if(t>Math.PI+1e-12)t-=TAU; lv.push({th:t,E:chainE(t,p)});}
+  lv.sort((a,b)=>a.E-b.E||Math.abs(a.th)-Math.abs(b.th));
+  let R=Math.round(p.ne*N);
+  lv.forEach(l=>{l.occ=Math.min(2,R);R-=l.occ;});
+  const yr=yrange(Emin,Emax);
+  const tk=[{x:-1,label:'−π/a'},{x:-.5,label:'−π/2a'},{x:0,label:'0'},{x:.5,label:'π/2a'},{x:1,label:'π/a'}];
+  plotBands($('#cv1a'),{
+    xr:[-1,1],yr,xticks:tk,
+    shade:EF!==null?[{y0:yr[0],y1:EF,color:'--fill'}]:[],
+    curves:[{xs:Array.from(th,v=>v/Math.PI),ys:E,color:'--band1'}],
+    hlines:EF!==null?[{y:EF,color:'--ef',label:'E_F'}]:[],
+    points:lv.map(l=>({x:l.th/Math.PI,y:l.E,occ:l.occ,color:'--band1'}))
+  });
+  const H=histo(E,Emin,Emax+1e-9,70,2/nk);
+  plotDOS($('#cv1b'),{yr,E:H.E,g:H.g,EF});
+  const d2=2*p.t+8*p.t2;
+  const mstar=d2>1e-9 ? HBAR*HBAR/(d2*QE*Math.pow(p.a*1e-9,2))/ME : null;
+  const v=vmax*QE*p.a*1e-9/HBAR;
+  setReadout('#r1',[
+    ['Bandwidth W',eV(Emax-Emin)],
+    ['Band edges',`${Emin.toFixed(2)} … ${Emax.toFixed(2)} eV`],
+    ['Effective mass at k = 0',mstar?`${mstar.toFixed(2)} mₑ`:'band maximum at k = 0'],
+    ['Maximum group velocity',`${(v/1e5).toFixed(1)}×10⁵ m/s`],
+    ['Band filling',`${(100*f).toFixed(0)} %`],
+    ['Fermi energy',EF===null?'no electrons':eV(EF)]
+  ]);
+  if(f<=1e-9) setVerdict('#v1','No electrons: the band is empty.','');
+  else if(f>=1-1e-9) setVerdict('#v1','Band completely filled: insulator, as long as no other band overlaps.','warn');
+  else setVerdict('#v1','Partially filled band: the Fermi level lies inside the band, so this is a metal.','ok');
+}
+
+/* ================= TAB 2: two atoms per cell ================= */
+const T2=buildPanel($('#c2'),{
+  sliders:[
+    {id:'dA',label:'On-site difference ε_A − ε_B',min:0,max:6,step:.1,val:0,unit:'eV'},
+    {id:'t1',label:'Hopping inside cell t₁',min:0,max:4,step:.05,val:1,unit:'eV'},
+    {id:'t2',label:'Hopping between cells t₂',min:0,max:4,step:.05,val:1,unit:'eV'},
+    {id:'ne',label:'Electrons per unit cell',min:0,max:4,step:.25,val:2}
+  ],
+  presets:[
+    {name:'Uniform chain',v:{dA:0,t1:1,t2:1,ne:2}},
+    {name:'Isolated dimers (H₂)',v:{dA:0,t1:1.5,t2:0,ne:2}},
+    {name:'Polyacetylene-like',v:{dA:0,t1:2.7,t2:2.2,ne:2}},
+    {name:'Ionic (NaCl-like)',v:{dA:4,t1:.6,t2:.6,ne:2}},
+    {name:'Odd electron count',v:{dA:0,t1:1.5,t2:.5,ne:1}}
+  ]
+},render2);
+
+function render2(){
+  const p=T2.st, D=p.dA/2, nk=3000;
+  const th=linspace(-Math.PI,Math.PI,nk), up=new Float64Array(nk), lo=new Float64Array(nk);
+  for(let i=0;i<nk;i++){
+    const r=Math.sqrt(D*D+p.t1*p.t1+p.t2*p.t2+2*p.t1*p.t2*Math.cos(th[i]));
+    up[i]=r; lo[i]=-r;
+  }
+  const rmin=Math.sqrt(D*D+(p.t1-p.t2)**2), rmax=Math.sqrt(D*D+(p.t1+p.t2)**2);
+  const gap=2*rmin, f=p.ne/4;
+  const all=new Float64Array(2*nk); all.set(up); all.set(lo,nk); all.sort();
+  let EF=null;
+  if(f>1e-9){
+    if(f>=1-1e-9) EF=rmax;
+    else if(Math.abs(f-.5)<1e-9 && gap>1e-6) EF=0;
+    else EF=all[Math.min(2*nk-1,Math.max(0,Math.round(f*2*nk)-1))];
+  }
+  const yr=yrange(-rmax,rmax);
+  const tk=[{x:-1,label:'−π/a'},{x:-.5,label:'−π/2a'},{x:0,label:'0'},{x:.5,label:'π/2a'},{x:1,label:'π/a'}];
+  const xs=Array.from(th,v=>v/Math.PI);
+  plotBands($('#cv2a'),{
+    xr:[-1,1],yr,xticks:tk,
+    shade:[
+      ...(gap>1e-6?[{y0:-rmin,y1:rmin,color:'--gap'}]:[]),
+      ...(EF!==null?[{y0:yr[0],y1:EF,color:'--fill'}]:[])
+    ],
+    curves:[{xs,ys:up,color:'--band2'},{xs,ys:lo,color:'--band1'}],
+    hlines:EF!==null?[{y:EF,color:'--ef',label:'E_F'}]:[]
+  });
+  const H=histo(all,-rmax,rmax+1e-9,90,2/nk);
+  plotDOS($('#cv2b'),{yr,E:H.E,g:H.g,EF});
+  const Wb=rmax-rmin;
+  setReadout('#r2',[
+    ['Band gap E_g',eV(gap)],
+    ['Width of each band',eV(Wb)],
+    ['Gap position',gap>1e-6?'k = π/a (zone edge)':'closed'],
+    ['Absorption edge',gap>1e-3?`${(1239.84/gap).toFixed(0)} nm`:'none'],
+    ['Electrons per cell',p.ne.toFixed(2)],
+    ['Fermi energy',EF===null?'no electrons':eV(EF)]
+  ]);
+  if(f<=1e-9) setVerdict('#v2','No electrons: both bands are empty.','');
+  else if(f>=1-1e-9) setVerdict('#v2','Both bands completely filled: trivial insulator, nothing can move.','warn');
+  else if(gap>1e-6 && Math.abs(p.ne-2)<1e-9) setVerdict('#v2',`Lower band exactly full, gap ${gap.toFixed(2)} eV: insulator. It is transparent for photons below ${gap.toFixed(2)} eV.`,'warn');
+  else if(gap>1e-6) setVerdict('#v2','A gap exists, but the Fermi level cuts through a band: metal. Only an even electron count can give an insulator here.','ok');
+  else setVerdict('#v2','No gap: metal. This is Tab 1 folded into a smaller zone.','ok');
+}
+
+/* ================= TAB 3: honeycomb ================= */
+function honeyE(qx,qy,D,t){
+  const s3=Math.sqrt(3);
+  const f2=3+2*Math.cos(qx)+2*Math.cos(qx/2+s3*qy/2)+2*Math.cos(qx/2-s3*qy/2);
+  return Math.sqrt(D*D+t*t*Math.max(0,f2));
+}
+const T3=buildPanel($('#c3'),{
+  sliders:[
+    {id:'t',label:'Hopping t',min:.5,max:4,step:.05,val:2.7,unit:'eV'},
+    {id:'D',label:'Sublattice on-site energy ±Δ',min:0,max:3.5,step:.05,val:0,unit:'eV'},
+    {id:'a',label:'Lattice constant a',min:.2,max:.3,step:.001,val:.246,unit:'nm'},
+    {id:'ne',label:'Electrons per unit cell (doping)',min:0,max:4,step:.01,val:2}
+  ],
+  presets:[
+    {name:'Graphene',v:{t:2.7,D:0,a:.246,ne:2}},
+    {name:'n-doped graphene',v:{t:2.7,D:0,a:.246,ne:2.02}},
+    {name:'p-doped graphene',v:{t:2.7,D:0,a:.246,ne:1.98}},
+    {name:'Van Hove filling',v:{t:2.7,D:0,a:.246,ne:2.5}},
+    {name:'Small gap (substrate)',v:{t:2.7,D:.1,a:.246,ne:2}},
+    {name:'h-BN-like',v:{t:2.3,D:2.9,a:.25,ne:2}},
+    {name:'Doped h-BN-like',v:{t:2.3,D:2.9,a:.25,ne:2.05}}
+  ]
+},render3);
+
+function render3(){
+  const p=T3.st, D=p.D, t=p.t, ne=p.ne;
+  const P=Math.PI, s3=Math.sqrt(3);
+  const path=buildPath([[0,0],[P,-P/s3],[4*P/3,0],[0,0]],40);
+  const n=path.K.length, up=new Float64Array(n), lo=new Float64Array(n);
+  for(let i=0;i<n;i++){const e=honeyE(path.K[i][0],path.K[i][1],D,t); up[i]=e; lo[i]=-e;}
+  const Emax=Math.sqrt(D*D+9*t*t), gap=2*D;
+  const yr=yrange(-Emax,Emax);
+  const M=160, samples=new Float64Array(2*M*M);
+  let idx=0;
+  for(let i=0;i<M;i++)for(let j=0;j<M;j++){
+    const u=(i+.5)/M, v=(j+.5)/M;
+    const qx=TAU*u, qy=TAU*(-u/s3+2*v/s3);
+    const e=honeyE(qx,qy,D,t);
+    samples[idx++]=e; samples[idx++]=-e;
+  }
+  const neutral=Math.abs(ne-2)<0.005, f=ne/4, sorted=Float64Array.from(samples).sort();
+  let EF;
+  if(neutral) EF=0;
+  else if(f<=1e-9) EF=null;
+  else if(f>=1-1e-9) EF=Emax;
+  else EF=sorted[Math.min(sorted.length-1,Math.max(0,Math.round(f*sorted.length)-1))];
+  plotBands($('#cv3a'),{
+    xr:[0,path.total],yr,
+    xticks:[{x:path.ticks[0],label:'Γ'},{x:path.ticks[1],label:'M'},{x:path.ticks[2],label:'K'},{x:path.ticks[3],label:'Γ'}],
+    shade:[
+      ...(gap>1e-6?[{y0:-D,y1:D,color:'--gap'}]:[]),
+      ...(EF!==null?[{y0:yr[0],y1:EF,color:'--fill'}]:[])
+    ],
+    curves:[{xs:path.s,ys:up,color:'--band2'},{xs:path.s,ys:lo,color:'--band1'}],
+    hlines:EF!==null?[{y:EF,color:'--ef',label:'E_F'}]:[]
+  });
+  const H=histo(samples,-Emax,Emax+1e-9,110,2/(M*M));
+  plotDOS($('#cv3b'),{yr,E:H.E,g:H.g,EF});
+  const inBand = EF!==null && !neutral && Math.abs(EF)>D+1e-6;
+  drawMap($('#cv3c'),D,t,Emax,inBand?Math.abs(EF):null);
+  const a=p.a*1e-9, vF=s3*t*QE*a/(2*HBAR);
+  const mstar=D>1e-6 ? D*QE/(vF*vF)/ME : null;
+  const area=s3/2*a*a*1e4, dn=(ne-2)/area;
+  const rows=[
+    ['Gap at K, K′',gap>1e-6?eV(gap):'0 (Dirac points)'],
+    ['Fermi velocity v_F',`${(vF/1e5).toFixed(1)}×10⁵ m/s`],
+    ['Effective mass at K',mstar?`${mstar.toFixed(3)} mₑ`:'0 (massless)'],
+    ['Van Hove peaks (M)',`±${Math.sqrt(D*D+t*t).toFixed(2)} eV`],
+    ['Electrons per cell',ne.toFixed(2)],
+    ['Fermi energy',EF===null?'no electrons':eV(EF)],
+    ['Carrier density',neutral?'0 (neutral)':`${(dn/1e13).toFixed(1)}×10¹³ cm⁻²`]
+  ];
+  if(D<1e-6 && !neutral && ne>0 && ne<4){
+    const est=HBAR*vF*Math.sqrt(Math.PI*Math.abs(dn)*1e4)/QE;
+    rows.push(['Dirac-cone estimate ħv_F√(π|n|)',eV(est)]);
+  }
+  setReadout('#r3',rows);
+  if(ne<=1e-9) setVerdict('#v3','No electrons: both bands are empty.','');
+  else if(ne>=4-1e-9) setVerdict('#v3','Both bands completely filled: nothing can move.','warn');
+  else if(neutral){
+    if(gap>1e-6) setVerdict('#v3',`Gapped: E_g = ${gap.toFixed(2)} eV. Semiconductor or insulator, depending on the size of the gap.`,'warn');
+    else setVerdict('#v3','Zero gap: valence and conduction bands touch at K and K′. A semimetal with massless electrons.','ok');
+  } else {
+    const kind=ne>2?'Electron-doped (n-type)':'Hole-doped (p-type)';
+    if(gap>1e-6) setVerdict('#v3',`${kind}: the Fermi level has moved into the ${ne>2?'conduction':'valence'} band, so the gapped material now conducts.`,'ok');
+    else setVerdict('#v3',`${kind}: the Fermi level sits ${Math.abs(EF).toFixed(2)} eV ${ne>2?'above':'below'} the Dirac point, so graphene becomes a metal with a Fermi surface.`,'ok');
+  }
+}
+function cmap(x){
+  const S=[[13,8,135],[126,3,168],[204,71,120],[248,149,64],[240,249,33]];
+  x=Math.min(1,Math.max(0,x))*(S.length-1);
+  const i=Math.min(S.length-2,Math.floor(x)), u=x-i;
+  return S[i].map((v,k)=>Math.round(v+(S[i+1][k]-v)*u));
+}
+function drawMap(canvas,D,t,Emax,level){
+  const {ctx,w,h}=setupCanvas(canvas);
+  const n=130, Rq=6.5, off=document.createElement('canvas'); off.width=off.height=n;
+  const oc=off.getContext('2d'), img=oc.createImageData(n,n);
+  for(let j=0;j<n;j++)for(let i=0;i<n;i++){
+    const qx=-Rq+2*Rq*(i+.5)/n, qy=Rq-2*Rq*(j+.5)/n;
+    const e=honeyE(qx,qy,D,t);
+    let c=cmap(e/Emax);
+    if(level!==null){
+      const h=2*Rq/n, gx=honeyE(qx+h,qy,D,t)-e, gy=honeyE(qx,qy+h,D,t)-e;
+      if(Math.abs(e-level)<0.75*Math.hypot(gx,gy)) c=[255,255,255];
+    }
+    const o=(j*n+i)*4;
+    img.data[o]=c[0]; img.data[o+1]=c[1]; img.data[o+2]=c[2]; img.data[o+3]=255;
+  }
+  oc.putImageData(img,0,0);
+  const s=Math.min(w,h);
+  ctx.imageSmoothingEnabled=true; ctx.drawImage(off,0,0,s,s);
+  const X=q=>(q+Rq)/(2*Rq)*s, Y=q=>(Rq-q)/(2*Rq)*s;
+  const P=Math.PI, s3=Math.sqrt(3), R=4*P/3;
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.beginPath();
+  for(let k=0;k<=6;k++){const a=k*P/3; const x=X(R*Math.cos(a)), y=Y(R*Math.sin(a)); k?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+  ctx.stroke();
+  ctx.setLineDash([5,4]); ctx.beginPath();
+  [[0,0],[P,-P/s3],[R,0],[0,0]].forEach((q,k)=>{const x=X(q[0]),y=Y(q[1]); k?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.font='600 13px '+FONT(); ctx.textAlign='center'; ctx.textBaseline='middle';
+  const lab=(txt,q,dx,dy)=>{
+    ctx.beginPath(); ctx.arc(X(q[0]),Y(q[1]),3,0,TAU); ctx.fillStyle='#fff'; ctx.fill();
+    ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.65)'; ctx.strokeText(txt,X(q[0])+dx,Y(q[1])+dy);
+    ctx.fillStyle='#fff'; ctx.fillText(txt,X(q[0])+dx,Y(q[1])+dy);
+  };
+  lab('Γ',[0,0],0,-13); lab('K',[R,0],14,0); lab('M',[P,-P/s3],13,10);
+  lab('K′',[R*Math.cos(P/3),R*Math.sin(P/3)],14,-8);
+}
+
+/* ================= TAB 4: fcc s-band ================= */
+const N4=500000, S4=new Float32Array(N4);
+(function(){
+  let a=123456789;
+  const rnd=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  for(let i=0;i<N4;i++){
+    const x=Math.cos(TAU*rnd()),y=Math.cos(TAU*rnd()),z=Math.cos(TAU*rnd());
+    S4[i]=x*y+y*z+z*x;
+  }
+})();
+const S4sorted=Float32Array.from(S4).sort();
+const NB4=64, C4=new Float64Array(NB4);
+for(let i=0;i<S4.length;i++){let j=Math.floor((S4[i]+1)/4*NB4); if(j>=NB4)j=NB4-1; if(j<0)j=0; C4[j]++;}
+
+const fccS=(k)=>{
+  const cx=Math.cos(Math.PI*k[0]),cy=Math.cos(Math.PI*k[1]),cz=Math.cos(Math.PI*k[2]);
+  return cx*cy+cy*cz+cz*cx;
+};
+const T4=buildPanel($('#c4'),{
+  sliders:[
+    {id:'Es',label:'Atomic level E_s',min:-6,max:0,step:.1,val:-3,unit:'eV'},
+    {id:'beta',label:'Offset β',min:0,max:.6,step:.01,val:.2,unit:'eV'},
+    {id:'gamma',label:'Overlap parameter γ',min:.02,max:.4,step:.01,val:.1,unit:'eV'},
+    {id:'a',label:'Lattice constant a',min:.2,max:.6,step:.001,val:.371,unit:'nm'},
+    {id:'ne',label:'Electrons per atom',min:0,max:2,step:.1,val:1}
+  ],
+  presets:[
+    {name:'HW5 parameters',v:{Es:-3,beta:.2,gamma:.1,a:.371,ne:1}},
+    {name:'Wide band, γ = 0.3',v:{gamma:.3}},
+    {name:'Filled band, 2 e⁻',v:{ne:2}}
+  ]
+},render4);
+
+function render4(){
+  const p=T4.st, E0=p.Es-p.beta, g=p.gamma;
+  const path=buildPath([[0,0,0],[1,0,0],[.75,.75,0],[0,0,0],[.5,.5,.5]],80);
+  const E=Float64Array.from(path.K,k=>E0-4*g*fccS(k));
+  const Emin=E0-12*g, Emax=E0+4*g, yr=yrange(Emin,Emax);
+  const f=p.ne/2;
+  let EF=null;
+  if(f>1e-9){
+    if(f>=1-1e-9) EF=Emax;
+    else{
+      const i=Math.min(S4sorted.length-1,Math.max(0,Math.floor((1-f)*S4sorted.length)));
+      EF=E0-4*g*S4sorted[i];
+    }
+  }
+  plotBands($('#cv4a'),{
+    xr:[0,path.total],yr,
+    xticks:[{x:path.ticks[0],label:'Γ'},{x:path.ticks[1],label:'X'},{x:path.ticks[2],label:'K'},{x:path.ticks[3],label:'Γ'},{x:path.ticks[4],label:'L'}],
+    shade:EF!==null?[{y0:yr[0],y1:EF,color:'--fill'}]:[],
+    curves:[{xs:path.s,ys:E,color:'--band1'}],
+    hlines:EF!==null?[{y:EF,color:'--ef',label:'E_F'}]:[]
+  });
+  const dS=4/NB4, Ed=[], gd=[];
+  for(let j=NB4-1;j>=0;j--){
+    const S=-1+(j+.5)*dS;
+    Ed.push(E0-4*g*S);
+    gd.push(2*(C4[j]/S4.length)/(4*g*dS));
+  }
+  plotDOS($('#cv4b'),{yr,E:Ed,g:gd,EF});
+  const mstar=HBAR*HBAR/(2*g*QE*Math.pow(p.a*1e-9,2))/ME;
+  setReadout('#r4',[
+    ['Bandwidth 16γ',eV(16*g)],
+    ['Bottom (Γ)',eV(Emin)],
+    ['Top (X)',eV(Emax)],
+    ['Energy at L',eV(E0)],
+    ['Effective mass at Γ',`${mstar.toFixed(2)} mₑ`],
+    ['Fermi energy',EF===null?'no electrons':eV(EF)]
+  ]);
+  if(f<=1e-9) setVerdict('#v4','No electrons: the band is empty.','');
+  else if(f>=1-1e-9) setVerdict('#v4','Band completely filled: insulator, unless another band overlaps.','warn');
+  else setVerdict('#v4',`Partially filled s-band: metal. Occupied width ${(EF-Emin).toFixed(2)} eV above the band bottom.`,'ok');
+}
+
+/* ================= TAB 5: s + p two-orbital chain ================= */
+function mixHex(c1,c2,w){
+  const P=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));
+  const a=P(c1),b=P(c2);
+  return 'rgb('+a.map((v,i)=>Math.round(b[i]+(v-b[i])*w)).join(',')+')';
+}
+const T5=buildPanel($('#c5'),{
+  sliders:[
+    {id:'ep',label:'p level ε_p (with ε_s = 0)',min:.5,max:8,step:.05,val:3.95,unit:'eV'},
+    {id:'tss',label:'s–s hopping t_ss',min:0,max:3,step:.025,val:.8,unit:'eV'},
+    {id:'tpp',label:'p–p hopping t_pp',min:0,max:3,step:.025,val:.8,unit:'eV'},
+    {id:'tsp',label:'s–p hopping t_sp',min:0,max:2,step:.05,val:0,unit:'eV'},
+    {id:'sg',label:'Sign σ of the p-band',min:-1,max:1,step:2,val:1,fmt:v=>v>0?'minimum at zone edge':'minimum at Γ'},
+    {id:'x',label:'Lattice spacing a/a₀ (t ∝ 1/a²)',min:.7,max:1.3,step:.01,val:1}
+  ],
+  presets:[
+    {name:'Be-like, weak hopping',v:{ep:3.95,tss:.8,tpp:.8,tsp:0,sg:1,x:1}},
+    {name:'Flipped sign (indirect)',v:{ep:3.95,tss:.8,tpp:.8,tsp:0,sg:-1,x:1}},
+    {name:'Threshold t_eff ≈ 1.98 eV',v:{ep:3.95,tss:1,tpp:.975,tsp:0,sg:1,x:1}},
+    {name:'Semimetal (overlap)',v:{ep:3.95,tss:1.2,tpp:1.2,tsp:0,sg:1,x:1}},
+    {name:'Add s–p mixing',v:{ep:3.95,tss:1.2,tpp:1.2,tsp:.6,sg:1,x:1}},
+    {name:'Compress the chain',v:{ep:3.95,tss:.8,tpp:.8,tsp:0,sg:1,x:.75}}
+  ]
+},render5);
+
+function render5(){
+  const p=T5.st, sc=1/(p.x*p.x), tss=p.tss*sc, tpp=p.tpp*sc, tsp=p.tsp*sc, ep=p.ep, sg=p.sg, nk=2000;
+  const th=linspace(-Math.PI,Math.PI,nk);
+  const A=new Float64Array(nk),B=new Float64Array(nk),lo=new Float64Array(nk),up=new Float64Array(nk),wLo=new Float64Array(nk);
+  let maxLo=-1e9,minUp=1e9,kLo=0,kUp=0,dMin=1e9,Emin=1e9,Emax=-1e9;
+  for(let i=0;i<nk;i++){
+    const c=Math.cos(th[i]), sn=Math.sin(th[i]);
+    const a=-2*tss*c, b=ep+2*sg*tpp*c, d=(a-b)/2, V=2*tsp*sn, R=Math.hypot(d,V), m=(a+b)/2;
+    A[i]=a; B[i]=b; lo[i]=m-R; up[i]=m+R;
+    wLo[i]=R>1e-12?(1-d/R)/2:(a<b?1:0);
+    if(lo[i]>maxLo){maxLo=lo[i];kLo=Math.abs(th[i]);}
+    if(up[i]<minUp){minUp=up[i];kUp=Math.abs(th[i]);}
+    dMin=Math.min(dMin,up[i]-lo[i]);
+    Emin=Math.min(Emin,lo[i]); Emax=Math.max(Emax,up[i]);
+  }
+  let gap=minUp-maxLo, crossing=false;
+  if(tsp<1e-9){
+    for(let i=0;i<nk-1;i++) if((A[i]-B[i])*(A[i+1]-B[i+1])<0){crossing=true;break;}
+    if(crossing&&gap>0) gap=0;
+  }
+  const all=new Float64Array(2*nk); all.set(lo); all.set(up,nk); all.sort();
+  const EF = gap>1e-6 ? (maxLo+minUp)/2 : all[nk-1];
+  const yr=yrange(Math.min(Emin,0),Math.max(Emax,ep));
+  const tk=[{x:-1,label:'−π/a'},{x:-.5,label:'−π/2a'},{x:0,label:'0'},{x:.5,label:'π/2a'},{x:1,label:'π/a'}];
+  const xs=Array.from(th,v=>v/Math.PI);
+  const cS=css('--band1'), cP=css('--band2');
+  let curves;
+  if(tsp<1e-9){
+    curves=[{xs,ys:A,color:'--band1'},{xs,ys:B,color:'--band2'}];
+  } else {
+    const colsLo=[],colsUp=[];
+    for(let i=1;i<nk;i++){
+      colsLo.push(mixHex(cS,cP,.5*(wLo[i]+wLo[i-1])));
+      colsUp.push(mixHex(cS,cP,1-.5*(wLo[i]+wLo[i-1])));
+    }
+    curves=[{xs,ys:lo,cols:colsLo},{xs,ys:up,cols:colsUp}];
+  }
+  plotBands($('#cv5a'),{
+    xr:[-1,1],yr,xticks:tk,
+    shade:[
+      ...(gap>1e-6?[{y0:maxLo,y1:minUp,color:'--gap'}]:[]),
+      {y0:yr[0],y1:EF,color:'--fill'}
+    ],
+    curves,
+    hlines:[
+      {y:0,color:'--muted',dash:[2,4],label:'ε_s',left:true},
+      {y:ep,color:'--muted',dash:[2,4],label:'ε_p',left:true},
+      {y:EF,color:'--ef',label:'E_F'}
+    ]
+  });
+  const H=histo(all,Emin,Emax+1e-9,90,2/nk);
+  plotDOS($('#cv5b'),{yr,E:H.E,g:H.g,EF});
+  const indirect = dMin-gap>0.02;
+  const gapTxt = gap>1e-3 ? eV(gap) : (gap<-1e-3 ? 'overlap of '+eV(-gap) : (crossing?'0 (bands cross)':'0 (bands touch)'));
+  setReadout('#r5',[
+    ['Band gap',gapTxt],
+    ['Gap type',gap>1e-3?(indirect?'indirect':'direct'):(crossing?'bands cross':'no gap')],
+    ['t_ss + t_pp (scaled)',eV(tss+tpp)],
+    ['Overlap threshold ε_p/2',eV(ep/2)],
+    ['s-band / p-band width',`${(4*tss).toFixed(2)} / ${(4*tpp).toFixed(2)} eV`],
+    ['Fermi energy (2 e⁻/atom)',eV(EF)]
+  ]);
+  if(gap>1e-3){
+    setVerdict('#v5',`${indirect?'Indirect':'Direct'} gap of ${gap.toFixed(2)} eV: the two electrons fill the s-like band completely, so this is ${gap<3?'a semiconductor':'an insulator'}.`,'warn');
+  } else if(gap<-1e-3){
+    setVerdict('#v5',`Bands overlap by ${(-gap).toFixed(2)} eV: semimetal. The two electrons now sit in both bands, leaving electron and hole pockets.`,'ok');
+  } else if(crossing){
+    setVerdict('#v5','The s- and p-bands cross: gapless. Electrons move from the top of the s-band into the bottom of the p-band, so this is a semimetal.','ok');
+  } else {
+    setVerdict('#v5','The bands just touch: this is the threshold between insulator and semimetal.','ok');
+  }
+}
+
+/* ================= tab switching and redraw ================= */
+const RENDER={chain:render1,dimer:render2,honey:render3,fcc:render4,sp:render5};
+let cur='chain';
+document.querySelectorAll('#tabs button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='tab-'+b.dataset.tab));
+    cur=b.dataset.tab; RENDER[cur]();
+  });
+});
+let pending=false;
+const redraw=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;RENDER[cur]();});};
+window.addEventListener('resize',redraw);
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw);
+render1();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

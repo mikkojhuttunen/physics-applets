@@ -14,9 +14,10 @@ Each course has its own folder with an `index.html` listing its applets.
   and AlGaAs composition), and a thermal transport explorer (Debye and sine
   phonon dispersions, heat capacity and thermal conductivity of diamond, Si,
   Ge, Al, Cu, and a coupled Einstein solid test material with the
-  conductivity-peak shift), and an orbitals applet (s, p, d, f clouds, sp3 and
+  conductivity-peak shift), an orbitals applet (s, p, d, f clouds, sp3 and
   sp2 hybrids in diamond and graphene, bonding and antibonding molecular
-  orbitals as two atoms approach).
+  orbitals as two atoms approach), and a tight-binding explorer (1D chain, two
+  atoms per cell, graphene and h-BN with doping, fcc s-band, s+p group 2 chain).
 - `fys501-laser-physics/` — laser gain media absorption/emission spectra, a
   Gaussian beam / ABCD-matrix optical cavity stability explorer, and a
   3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
