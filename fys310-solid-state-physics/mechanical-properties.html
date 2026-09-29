@@ -595,14 +595,16 @@ function drawSpecimen(ctx, g, st){
   var nuLocal = S.nu;
   var hUni = h0 * Math.sqrt(1 / (1 + e * 0.9));
   var neckAmt = 0;
-  if(!T2.fractured && st.onCurve && st.P.zone === 'neck') neckAmt = st.P.sn;
-  if(T2.fractured && !CV.brittle) neckAmt = 1;
+  if(!CV.brittle){
+    if(T2.fractured) neckAmt = 1;
+    else if(st.P.zone === 'neck') neckAmt = st.P.sn;
+  }
   /* body outline as function of x in [0,1] */
   function hAt(u){
     var base = hUni * (1 - Math.min(0.3, nuLocal * 0.05 * Math.min(e, 0.6)));
     if(neckAmt > 0){
       var dip = Math.exp(-Math.pow((u - 0.5) / 0.09, 2));
-      base = hUni * (1 - dip * (0.16 + 0.68 * neckAmt));
+      base *= 1 - dip * 0.8 * Math.pow(neckAmt, 0.7);
     }
     return base;
   }
@@ -675,7 +677,8 @@ function update2(){
   } else if(T2.dReach === 0){
     msg = 'Pick a material and pull. The elastic slope is the Young\u2019s modulus from the bond potential; the yield stress is set by defects.';
   } else if(!st.onCurve){
-    msg = st.epsP > 1e-9
+    if(st.P.zone === 'neck') msg = 'Unloading follows the elastic slope, but the neck stays: the thinning is plastic and cannot be undone. Reloading returns to the same point on the curve and the neck keeps growing from there.';
+    else msg = st.epsP > 1e-9
       ? 'Unloading follows the elastic slope, not the original curve. What remains is the plastic strain \u03b5p. Reload and the material stays elastic until \u03c3\u2032Y.'
       : 'Still elastic: release the load and the specimen returns to its original length.';
   } else if(st.P.zone === 'elastic'){
