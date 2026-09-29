@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%9A%A1%3C/text%3E%3C/svg%3E">
+<meta name="description" content="Interactive Q-switch build-up simulator for 3-level (ruby) and 4-level (Nd:YAG) lasers. FYS.501 Laser Physics — bonus material.">
+<title>Q-Switching Explorer — Giant-Pulse Build-Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#ECEDE9; --border:#D8DAD3;
+    --text:#1B1D1F; --text-dim:#5B5F63; --grid:#E2E3DE;
+    --ruby:#C4223A; --ruby-soft:#C4223A22;
+    --yag:#1E8A5F; --yag-soft:#1E8A5F22;
+    --amber:#A6650B; --amber-soft:#A6650B22;
+    --warn:#B4530A; --warn-soft:#B4530A1c;
+    --font-display:'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1115; --surface:#171A21; --surface-2:#1D212A; --border:#2A2E38;
+      --text:#E8E6E1; --text-dim:#9AA0AC; --grid:#242833;
+      --ruby:#FF5C74; --ruby-soft:#FF5C7422;
+      --yag:#4ADE80; --yag-soft:#4ADE8022;
+      --amber:#F4A94B; --amber-soft:#F4A94B22;
+      --warn:#F4A94B; --warn-soft:#F4A94B22;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1115; --surface:#171A21; --surface-2:#1D212A; --border:#2A2E38;
+    --text:#E8E6E1; --text-dim:#9AA0AC; --grid:#242833;
+    --ruby:#FF5C74; --ruby-soft:#FF5C7422;
+    --yag:#4ADE80; --yag-soft:#4ADE8022;
+    --amber:#F4A94B; --amber-soft:#F4A94B22;
+    --warn:#F4A94B; --warn-soft:#F4A94B22;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:inherit;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--font-body); line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:28px 18px 64px;}
+  header.page{margin-bottom:20px;}
+  .kicker{font-size:12.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em; font-weight:600; display:flex; align-items:center; gap:8px;}
+  .kicker .badge{
+    font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.02em;
+    color:var(--amber); background:var(--amber-soft); border:1px solid color-mix(in srgb, var(--amber) 40%, transparent);
+    padding:2px 8px; border-radius:20px; text-transform:none;
+  }
+  h1{font-family:var(--font-display); font-weight:600; font-size:clamp(24px,4vw,32px); margin:6px 0 6px; letter-spacing:-0.01em;}
+  .lede{color:var(--text-dim); max-width:70ch; font-size:14.5px; margin:0 0 4px;}
+
+  .grid{display:grid; grid-template-columns:1fr; gap:16px;}
+  @media (min-width:860px){ .grid{grid-template-columns: 340px 1fr;} }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:16px 16px 18px; box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .panel h2{
+    font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:700;
+    color:var(--text-dim); margin:0 0 12px;
+  }
+
+  .sys-toggle{display:flex; gap:8px; margin-bottom:14px;}
+  .sys-btn{
+    flex:1; padding:9px 10px; border-radius:9px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-family:var(--font-body);
+    font-weight:600; font-size:13.5px; cursor:pointer; text-align:center;
+  }
+  .sys-btn.active[data-sys="ruby"]{ border-color:var(--ruby); color:var(--ruby); background:var(--ruby-soft); }
+  .sys-btn.active[data-sys="yag"]{ border-color:var(--yag); color:var(--yag); background:var(--yag-soft); }
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:13px; font-weight:600; margin-bottom:6px;
+  }
+  .field label .val{font-family:var(--mono); font-weight:500; color:var(--text-dim); font-size:12.5px;}
+  input[type=range]{
+    width:100%; accent-color: var(--accent-current, var(--yag));
+  }
+  .field .hint{font-size:11.5px; color:var(--text-dim); margin-top:4px; line-height:1.4;}
+
+  .warning{
+    display:none; background:var(--warn-soft); border:1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+    color:var(--warn); border-radius:9px; padding:10px 12px; font-size:12.5px; line-height:1.45; margin-bottom:14px;
+  }
+  .warning.show{display:block;}
+
+  .plot-panel canvas{width:100%; display:block; border-radius:8px;}
+  .plot-title{font-size:12px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; margin:0 0 8px;}
+  .plot-block{margin-bottom:18px;}
+  .plot-block:last-child{margin-bottom:0;}
+
+  .readouts{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:16px;}
+  @media (min-width:560px){ .readouts{grid-template-columns:repeat(4,1fr);} }
+  .ro{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px;
+  }
+  .ro .k{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px;}
+  .ro .v{font-family:var(--mono); font-size:16px; font-weight:600;}
+  .ro .u{font-family:var(--mono); font-size:11.5px; color:var(--text-dim);}
+
+  footer.note{margin-top:18px; font-size:12px; color:var(--text-dim); line-height:1.6; max-width:74ch;}
+  footer.note b{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page">
+    <div class="kicker"><span>FYS.501 Laser Physics</span><span class="badge">⚡ bonus material</span></div>
+    <h1>Q-Switching Explorer</h1>
+    <p class="lede">Store inversion in the gain medium while the cavity is held lossy, then suddenly open the Q. Watch the giant pulse build up and dump the stored energy — and see what happens when the switch isn't fast enough.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel controls">
+      <h2>Setup</h2>
+      <div class="sys-toggle">
+        <button class="sys-btn active" data-sys="yag" onclick="setSystem('yag')">Nd:YAG <span style="font-weight:400;opacity:.7">(4-level)</span></button>
+        <button class="sys-btn" data-sys="ruby" onclick="setSystem('ruby')">Ruby <span style="font-weight:400;opacity:.7">(3-level)</span></button>
+      </div>
+
+      <div class="field">
+        <label>Initial inversion, N₂(0) / N₂,th <span class="val" id="v-x0">3.0×</span></label>
+        <input type="range" id="s-x0" min="1.02" max="10" step="0.01" value="3">
+        <div class="hint" id="hint-x0">How far above the final (high-Q) threshold the medium was pumped during hold-off. Not simulated directly — this stands in for the pump power × hold-off duration.</div>
+      </div>
+
+      <div class="field">
+        <label>Final cavity photon lifetime, τc <span class="val" id="v-tauc">20 ns</span></label>
+        <input type="range" id="s-tauc" min="5" max="50" step="1" value="20">
+        <div class="hint">Sets the round-trip loss <i>after</i> the switch opens — same quantity as in the CW rate-equation applet.</div>
+      </div>
+
+      <div class="field">
+        <label>Hold-off loss factor <span class="val" id="v-lm">30×</span></label>
+        <input type="range" id="s-lm" min="3" max="200" step="1" value="30">
+        <div class="hint">How much extra loss the closed switch adds (i.e. how much shorter τc is during hold-off). Bigger = safer margin before premature lasing.</div>
+      </div>
+
+      <div class="field">
+        <label>Switching time, τ<sub>switch</sub> <span class="val" id="v-sw">0 ns (instant)</span></label>
+        <input type="range" id="s-sw" min="0" max="1000" step="10" value="0">
+        <div class="hint">How long the loss takes to ramp from hold-off to final value. Real Pockels-cell / AOM switches are a few to a few tens of ns and barely register here — the buildup itself takes hundreds of ns, so a switch has to be genuinely sluggish (approaching this slider's upper end) before it visibly degrades the pulse. Multi-microsecond switch times would show a much bigger effect, but no real active Q-switch technology is that slow, so that regime isn't offered.</div>
+      </div>
+
+      <div class="warning" id="warn-box"></div>
+    </section>
+
+    <section class="panel plot-panel">
+      <div class="plot-block">
+        <div class="plot-title">Output power, P(t)</div>
+        <canvas id="cv-power" width="1200" height="260"></canvas>
+      </div>
+      <div class="plot-block">
+        <div class="plot-title">Upper-level inversion, N₂(t) / N₂,th</div>
+        <canvas id="cv-inv" width="1200" height="180"></canvas>
+      </div>
+
+      <div class="readouts">
+        <div class="ro"><div class="k">Peak power</div><div class="v" id="ro-peak">—</div><div class="u" id="ro-peak-u"></div></div>
+        <div class="ro"><div class="k">Pulse energy</div><div class="v" id="ro-energy">—</div><div class="u" id="ro-energy-u"></div></div>
+        <div class="ro"><div class="k">Pulse width (FWHM)</div><div class="v" id="ro-fwhm">—</div><div class="u">ns</div></div>
+        <div class="ro"><div class="k">Extraction efficiency</div><div class="v" id="ro-extr">—</div><div class="u">of stored inversion</div></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="note">
+    <b>Model &amp; approximations:</b> the hold-off (pumping) phase itself is not simulated — you set the stored inversion directly as a multiple of the final-Q threshold. From t = 0 the cavity loss ramps linearly from the hold-off value to the final value over τ<sub>switch</sub>, and the coupled photon-density / inversion rate equations are integrated numerically (RK4) with a small fixed spontaneous-emission source term seeding the build-up from noise. Single spatial mode, single pass, no saturable-absorber (passive) Q-switching — active switching only. Gain-medium parameters (σ, upper-level lifetime, ion density, mode volume, output coupling) are shared with the CW rate-equation applet's Nd:YAG / ruby presets.
+    <br><br>
+    <b>Draft / bonus content</b> — flagged for instructor review before wider distribution.
+  </footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Constants & presets (units match laser-rate-equations.html for consistency)
+--------------------------------------------------------------------- */
+const c_cm = 3e10;
+const h_J  = 6.62607e-34, c_m = 2.99792458e8;
+const BETA = 1e-7; // fixed spontaneous-emission coupling fraction into the lasing mode (noise seed)
+function photonEnergy(lambda_nm){ return h_J*c_m/(lambda_nm*1e-9); }
+
+const PRESETS = {
+  ruby:{ label:'Ruby', sigma1e20:2.5, tau2us:3000, Nt1e19:1.58, V:0.1, Toc:0.5, lambda:694 },
+  yag: { label:'Nd:YAG', sigma1e20:28,  tau2us:230,  Nt1e19:13.8, V:0.1, Toc:0.5, lambda:1064 }
+};
+
+let state = { system:'yag', x0:3, taucHighNs:20, lossMult:30, switchNs:0 };
+
+/* ---------------------------------------------------------------------
+   Physics
+--------------------------------------------------------------------- */
+function N2thOf(system, p, tauc){
+  const B = p.sigma1e20*1e-20*c_cm;
+  if(system==='yag') return 1/(B*tauc);
+  const Nt = p.Nt1e19*1e19;
+  return Nt/2 + 1/(2*B*tauc);
+}
+
+function simulate(system, opts){
+  const p = PRESETS[system];
+  const B = p.sigma1e20*1e-20*c_cm;
+  const tau2 = p.tau2us*1e-6;
+  const tauc_high = opts.taucHighNs*1e-9;
+  const tauc_low  = tauc_high/opts.lossMult;
+  const Lrate_high = 1/tauc_high, Lrate_low = 1/tauc_low;
+  const switchT = opts.switchNs*1e-9;
+
+  const N2th_high = N2thOf(system, p, tauc_high);
+  const N2th_low  = N2thOf(system, p, tauc_low);
+  const Nt = system==='ruby' ? p.Nt1e19*1e19 : Infinity;
+
+  let N2_0 = opts.x0*N2th_high;
+  let clampedByNt = false;
+  if(system==='ruby' && N2_0 >= Nt*0.999){ N2_0 = Nt*0.999; clampedByNt = true; }
+  const prematureLasing = N2_0 >= 0.98*N2th_low;
+
+  const S0 = (BETA*N2_0/tau2) / Math.max(Lrate_low - B*N2_0, Lrate_low*0.01);
+
+  function Lrate(t){
+    if(switchT<=0) return t<0?Lrate_low:Lrate_high;
+    if(t<=0) return Lrate_low;
+    if(t>=switchT) return Lrate_high;
+    return Lrate_low + (Lrate_high-Lrate_low)*(t/switchT);
+  }
+  function deriv(t,N2,S){
+    const dN2 = -N2/tau2 - B*N2*S;
+    const dS  = B*N2*S - Lrate(t)*S + BETA*N2/tau2;
+    return [dN2,dS];
+  }
+
+  const totalT = Math.max(80*tauc_high, 3*switchT, 5e-9);
+  const steps = 2000;
+  const dt = totalT/steps;
+  let tt=0, N2=N2_0, S=S0;
+  const rec = new Array(steps+1);
+  for(let i=0;i<=steps;i++){
+    rec[i] = [tt, N2, S];
+    const k1=deriv(tt,N2,S);
+    const k2=deriv(tt+dt/2, N2+dt/2*k1[0], S+dt/2*k1[1]);
+    const k3=deriv(tt+dt/2, N2+dt/2*k2[0], S+dt/2*k2[1]);
+    const k4=deriv(tt+dt,   N2+dt*k3[0],   S+dt*k3[1]);
+    N2 += dt/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]);
+    S  += dt/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]);
+    if(S<0) S=0; if(N2<0) N2=0;
+    tt += dt;
+  }
+
+  const hv = photonEnergy(p.lambda);
+  const Pt = rec.map(r => (p.Toc/tauc_high)*r[2]*p.V*hv);
+  let peak=0, peakIdx=0;
+  for(let i=0;i<Pt.length;i++){ if(Pt[i]>peak){ peak=Pt[i]; peakIdx=i; } }
+  let tHalfRise=null, tHalfFall=null;
+  for(let i=1;i<Pt.length;i++){
+    if(Pt[i-1]<peak/2 && Pt[i]>=peak/2 && i<=peakIdx && tHalfRise===null) tHalfRise=rec[i][0];
+    if(Pt[i-1]>=peak/2 && Pt[i]<peak/2 && i-1>=peakIdx && tHalfFall===null) tHalfFall=rec[i][0];
+  }
+  const fwhm = (tHalfRise!==null && tHalfFall!==null) ? (tHalfFall-tHalfRise) : NaN;
+  let energy=0;
+  for(let i=1;i<Pt.length;i++){ energy += 0.5*(Pt[i]+Pt[i-1])*(rec[i][0]-rec[i-1][0]); }
+  const N2final = rec[rec.length-1][1];
+  const extraction = (N2_0-N2final)/N2_0;
+
+  return { rec, Pt, peak, peakT:rec[peakIdx][0], fwhm, energy, extraction,
+           N2th_high, N2_0, clampedByNt, prematureLasing, totalT };
+}
+
+/* ---------------------------------------------------------------------
+   Formatting helpers
+--------------------------------------------------------------------- */
+function fmtPower(w){
+  if(w<=0 || !isFinite(w)) return {v:'0', u:'W'};
+  if(w>=1e6) return {v:(w/1e6).toFixed(2), u:'MW'};
+  if(w>=1e3) return {v:(w/1e3).toFixed(2), u:'kW'};
+  if(w>=1)   return {v:w.toFixed(2), u:'W'};
+  return {v:(w*1e3).toFixed(2), u:'mW'};
+}
+function fmtEnergy(j){
+  if(j<=0 || !isFinite(j)) return {v:'0', u:'J'};
+  if(j>=1e-3) return {v:(j*1e3).toFixed(2), u:'mJ'};
+  if(j>=1e-6) return {v:(j*1e6).toFixed(2), u:'µJ'};
+  return {v:(j*1e9).toFixed(2), u:'nJ'};
+}
+
+/* ---------------------------------------------------------------------
+   Canvas plotting (simple, dependency-free)
+--------------------------------------------------------------------- */
+function css(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
+
+function drawSeries(canvas, xs_ns, ys, opts){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const m = {l:56, r:16, t:10, b:34};
+  ctx.clearRect(0,0,W,H);
+  const text = css('--text'), dim = css('--text-dim'), grid = css('--grid'), accent = opts.color || css('--yag');
+
+  const xMin = xs_ns[0], xMax = xs_ns[xs_ns.length-1];
+  let yMax = opts.yMax !== undefined ? opts.yMax : Math.max(...ys);
+  let yMin = opts.yMin !== undefined ? opts.yMin : 0;
+  if(yMax<=yMin) yMax = yMin+1;
+
+  const xToPx = x => m.l + (x-xMin)/(xMax-xMin||1)*(W-m.l-m.r);
+  const yToPx = y => H-m.b - (y-yMin)/(yMax-yMin)*(H-m.t-m.b);
+
+  // grid + y ticks
+  ctx.strokeStyle = grid; ctx.fillStyle = dim;
+  ctx.font = '11px IBM Plex Mono, monospace';
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  const nY = 4;
+  for(let i=0;i<=nY;i++){
+    const yv = yMin + (yMax-yMin)*i/nY;
+    const py = yToPx(yv);
+    ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(W-m.r,py); ctx.stroke();
+    ctx.fillText(opts.yFmt ? opts.yFmt(yv) : yv.toFixed(1), m.l-8, py);
+  }
+  // x ticks
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  const nX = 5;
+  for(let i=0;i<=nX;i++){
+    const xv = xMin + (xMax-xMin)*i/nX;
+    const px = xToPx(xv);
+    ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,H-m.b); ctx.strokeStyle=grid; ctx.stroke();
+    ctx.fillText(xv.toFixed(0), px, H-m.b+6);
+  }
+  ctx.textAlign='center';
+  ctx.fillText('t (ns)', (W+m.l-m.r)/2, H-14);
+
+  // series
+  ctx.beginPath();
+  ctx.strokeStyle = accent; ctx.lineWidth = 2;
+  for(let i=0;i<xs_ns.length;i++){
+    const px = xToPx(xs_ns[i]), py = yToPx(Math.min(Math.max(ys[i],yMin),yMax));
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+
+  // axis frame
+  ctx.strokeStyle = css('--border');
+  ctx.strokeRect(m.l, m.t, W-m.l-m.r, H-m.t-m.b);
+}
+
+/* ---------------------------------------------------------------------
+   UI wiring
+--------------------------------------------------------------------- */
+const SYSTEM_DEFAULTS = {
+  yag:  { x0:3,   lossMult:5 },
+  ruby: { x0:1.5, lossMult:150 } // ruby's 3-level threshold expression leaves much less headroom
+                                 // before "premature lasing" than a 4-level medium, so it needs
+                                 // a larger hold-off margin by default
+};
+
+function setSystem(sys){
+  state.system = sys;
+  document.querySelectorAll('.sys-btn').forEach(b=>b.classList.toggle('active', b.dataset.sys===sys));
+  document.documentElement.style.setProperty('--accent-current', sys==='ruby' ? css('--ruby') : css('--yag'));
+  const d = SYSTEM_DEFAULTS[sys];
+  document.getElementById('s-x0').value = d.x0;
+  document.getElementById('s-lm').value = d.lossMult;
+  updateAll();
+}
+
+function readControls(){
+  state.x0         = parseFloat(document.getElementById('s-x0').value);
+  state.taucHighNs = parseFloat(document.getElementById('s-tauc').value);
+  state.lossMult   = parseFloat(document.getElementById('s-lm').value);
+  state.switchNs   = parseFloat(document.getElementById('s-sw').value);
+}
+
+function updateLabels(){
+  document.getElementById('v-x0').textContent   = state.x0.toFixed(2)+'×';
+  document.getElementById('v-tauc').textContent = state.taucHighNs.toFixed(0)+' ns';
+  document.getElementById('v-lm').textContent   = state.lossMult.toFixed(0)+'×';
+  document.getElementById('v-sw').textContent   = state.switchNs<=0 ? '0 ns (instant)' : state.switchNs.toFixed(0)+' ns';
+}
+
+function updateAll(){
+  readControls();
+  updateLabels();
+
+  const res = simulate(state.system, state);
+
+  // warnings
+  const warnBox = document.getElementById('warn-box');
+  let msgs = [];
+  if(res.prematureLasing) msgs.push('This inversion would already reach threshold under the hold-off loss — the medium would start lasing before you trigger the switch. Increase the hold-off loss factor or lower the initial inversion.');
+  if(res.clampedByNt) msgs.push('Initial inversion clamped: a 3-level medium cannot store more population than its total ion density.');
+  if(msgs.length){ warnBox.innerHTML = msgs.join('<br>'); warnBox.classList.add('show'); }
+  else { warnBox.classList.remove('show'); warnBox.innerHTML=''; }
+
+  // plots
+  const xs = res.rec.map(r=>r[0]*1e9);
+  drawSeries(document.getElementById('cv-power'), xs, res.Pt, {
+    color: state.system==='ruby'? css('--ruby') : css('--yag'),
+    yFmt: v => fmtPower(v).v
+  });
+  const invNorm = res.rec.map(r=>r[1]/res.N2th_high);
+  drawSeries(document.getElementById('cv-inv'), xs, invNorm, {
+    color: css('--amber'), yMin:0
+  });
+
+  // readouts — suppressed when the setup is physically invalid (premature lasing),
+  // since the numbers would otherwise look precise but mean nothing
+  if(res.prematureLasing){
+    document.getElementById('ro-peak').textContent = '—';
+    document.getElementById('ro-peak-u').textContent = '';
+    document.getElementById('ro-energy').textContent = '—';
+    document.getElementById('ro-energy-u').textContent = '';
+    document.getElementById('ro-fwhm').textContent = '—';
+    document.getElementById('ro-extr').textContent = '—';
+  } else {
+    const pk = fmtPower(res.peak);
+    document.getElementById('ro-peak').textContent = pk.v;
+    document.getElementById('ro-peak-u').textContent = pk.u;
+    const en = fmtEnergy(res.energy);
+    document.getElementById('ro-energy').textContent = en.v;
+    document.getElementById('ro-energy-u').textContent = en.u;
+    document.getElementById('ro-fwhm').textContent = isFinite(res.fwhm) ? (res.fwhm*1e9).toFixed(1) : '—';
+    document.getElementById('ro-extr').textContent = (res.extraction*100).toFixed(1)+'%';
+  }
+}
+
+['s-x0','s-tauc','s-lm','s-sw'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateAll);
+});
+
+setSystem('yag');
+</script>
+</body>
+</html>
