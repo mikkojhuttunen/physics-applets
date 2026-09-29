@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Heat Capacity &amp; Thermal Conductivity from Simple Dispersion Relations</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys310-solid-state-physics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+  :root{ --ink:var(--text); --muted:var(--text-dim); --line:var(--border); --c1:var(--blue); --c2:var(--red); --c3:var(--green); --c4:var(--orange); --soft:var(--accent-soft); }
+  header{padding:16px 22px 6px;max-width:1400px;margin:0 auto}
+  main{display:grid;grid-template-columns:320px 1fr;gap:18px;max-width:1400px;margin:14px auto 0;padding:0 22px;align-items:start}
+  @media (max-width:920px){main{grid-template-columns:1fr;padding:0 12px}header{padding:14px 14px 4px}}
+  .controls{position:sticky;top:10px}
+  @media (max-width:920px){.controls{position:static}}
+  .controls h2{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;margin:14px 0 6px}
+  .controls h2:first-child{margin-top:0}
+  label{display:block;font-size:.88rem;margin:8px 0 2px}
+  label .v{float:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
+  select{width:100%}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .radio{display:flex;flex-direction:column;gap:4px;font-size:.88rem}
+  .radio label{display:flex;gap:7px;align-items:flex-start;margin:0;cursor:pointer}
+  .row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+  .hint{font-size:.78rem;color:var(--muted);margin:3px 0 0}
+  .plots .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:1180px){.plots .grid{grid-template-columns:1fr}}
+  figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-panel);padding:10px 12px 8px}
+  figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600;font-size:.92rem;flex-wrap:wrap}
+  figcaption .tg{font-weight:400;font-size:.8rem;color:var(--muted)}
+  figcaption .tg label{display:inline;margin:0 0 0 8px;cursor:pointer}
+  canvas{width:100%;height:270px;display:block}
+  .cap{font-size:.78rem;color:var(--muted);margin:2px 0 0}
+  .readouts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:14px}
+  .readouts .card{padding:9px 12px;border-radius:10px}
+  .card .t{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .card .n{font-size:1.15rem;font-weight:650;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .card .s{font-size:.78rem;color:var(--muted)}
+  .card.hl{background:var(--soft);border-color:var(--accent)}
+  details{max-width:1400px;margin:18px auto 30px;padding:0 22px}
+  @media (max-width:920px){details{padding:0 12px}}
+  details>summary{cursor:pointer;font-weight:600;padding:8px 0}
+  .about{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-panel);padding:6px 18px 14px;font-size:.92rem}
+  .about h3{font-size:.95rem;margin:14px 0 4px;color:var(--text)}
+  .about p,.about li{margin:4px 0}
+  .eq{font-family:"Cambria Math","STIX Two Math",Georgia,serif;text-align:center;margin:8px 0;font-size:1.02rem;overflow-x:auto;white-space:nowrap;background:var(--accent-soft)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Heat capacity and thermal conductivity from simple dispersion relations</h1>
+  <p class="sub">FYS.310 Solid State Physics · Part 4 (Debye model, κ = ⅓ C l v) and Part 5 (free-electron gas). Linear “empty-lattice” phonon dispersion ω = v k vs. a zone-boundary-flattened dispersion.</p>
+</header>
+
+<main>
+<aside class="controls">
+  <h2>Material</h2>
+  <select id="mat">
+    <option value="diamond">Diamond</option>
+    <option value="si">Silicon</option>
+    <option value="ge">Germanium</option>
+    <option value="al">Aluminium</option>
+    <option value="cu">Copper</option>
+    <option value="einstein">Einstein solid (test)</option>
+  </select>
+
+  <h2 id="dispH">Phonon dispersion (3 acoustic branches)</h2>
+  <div class="radio" id="dispRadio">
+    <label><input type="radio" name="disp" value="debye" checked><span><b>Linear (Debye / empty lattice)</b><br>ω = v k up to k<sub>D</sub></span></label>
+    <label><input type="radio" name="disp" value="sine"><span><b>Born–von Kármán (sine)</b><br>ω = ω<sub>m</sub> sin(πk / 2k<sub>D</sub>), same v at k→0</span></label>
+  </div>
+
+  <div id="testCtl" style="display:none">
+    <h2>Einstein solid</h2>
+    <label>Einstein temperature θ<sub>E</sub> = ħω<sub>E</sub>/k<sub>B</sub> <span class="v" id="vthE"></span></label>
+    <input type="range" id="thE" min="100" max="1500" step="10" value="500">
+    <label>Coupling strength c <span class="v" id="vcpl"></span></label>
+    <input type="range" id="cpl" min="-2" max="1" step="0.01" value="0">
+    <p class="hint">c = nearest-neighbour / on-site spring constant. ω² = ω<sub>E</sub>²(1 + 4c sin²(πk/2k<sub>D</sub>)). c → 0 is the pure Einstein solid.</p>
+  </div>
+
+  <h2>Temperature</h2>
+  <label>T (cursor, readouts) <span class="v" id="vT"></span></label>
+  <input type="range" id="T" min="0.3" max="3.3" step="0.0001" value="2.4771">
+
+  <h2>Scattering of phonons</h2>
+  <label>Umklapp strength γ<sub>eff</sub> <span class="v" id="vg"></span></label>
+  <input type="range" id="g" min="0.3" max="8" step="0.01" value="2.2">
+  <div class="row">
+    <button id="calib" class="btn primary">Fit γ<sub>eff</sub> to κ(300 K)</button>
+    <button id="greset" class="btn">Reset</button>
+  </div>
+  <p class="hint" id="calibMsg">One effective number: it stands in for the real Grüneisen parameter and for everything the acoustic-only model leaves out.</p>
+
+  <label>Sample size L (boundary scattering) <span class="v" id="vL"></span></label>
+  <input type="range" id="L" min="-5" max="-1" step="0.05" value="-2.3">
+
+  <label>Isotope disorder (% of natural) <span class="v" id="viso"></span></label>
+  <input type="range" id="iso" min="0" max="100" step="1" value="100">
+  <div class="row" id="isoBtns">
+    <button class="btn" data-iso="100">Natural</button>
+    <button class="btn" data-iso="9" id="btnEnr">99.9 % ¹²C</button>
+    <button class="btn" data-iso="0">Pure</button>
+  </div>
+
+  <div id="metalCtl">
+    <h2>Electrons (metals)</h2>
+    <label>Residual resistivity ratio ρ(300 K)/ρ₀ <span class="v" id="vrrr"></span></label>
+    <input type="range" id="rrr" min="0.7" max="3.7" step="0.02" value="2">
+    <label>Thermal mass m*/m <span class="v" id="vms"></span></label>
+    <input type="range" id="ms" min="0.8" max="2" step="0.01" value="1">
+    <p class="hint">m*/m = 1 is the pure empty-lattice (free-electron) result.</p>
+  </div>
+</aside>
+
+<section class="plots">
+  <div class="grid">
+    <figure>
+      <figcaption>Heat capacity C(T)
+        <span class="tg">
+          <label><input type="radio" name="cmode" value="lin" checked> linear, T/θ (Fig. 4.14)</label>
+          <label><input type="radio" name="cmode" value="log"> log–log</label>
+        </span>
+      </figcaption>
+      <canvas id="cC"></canvas>
+      <p class="cap" id="capC"></p>
+    </figure>
+    <figure>
+      <figcaption>Thermal conductivity κ(T)</figcaption>
+      <canvas id="cK"></canvas>
+      <p class="cap" id="capK"></p>
+    </figure>
+    <figure>
+      <figcaption>Phonon dispersion used</figcaption>
+      <canvas id="cW"></canvas>
+      <p class="cap" id="capW"></p>
+    </figure>
+    <figure>
+      <figcaption>Which phonons carry the heat? (at cursor T)</figcaption>
+      <canvas id="cS"></canvas>
+      <p class="cap">Contribution to κ<sub>lattice</sub> per unit wavevector (normalised) and its cumulative sum.</p>
+    </figure>
+  </div>
+  <div class="grid" id="peakGrid" style="display:none;margin-top:14px">
+    <figure>
+      <figcaption>κ(T) for several couplings, and the peak locus</figcaption>
+      <canvas id="cF"></canvas>
+      <p class="cap">Thin coloured curves: fixed c values (legend). Thick blue: the current c. Circles mark the κ maxima, the dotted line is the peak locus for c = 0.01 … 10.</p>
+    </figure>
+    <figure>
+      <figcaption>Peak temperature vs. coupling</figcaption>
+      <canvas id="cP"></canvas>
+      <p class="cap">T<sub>peak</sub> (solid), the band top θ<sub>U</sub> = θ<sub>E</sub>√(1+4c) (dashed) and θ<sub>E</sub> (dotted).</p>
+    </figure>
+    <figure>
+      <figcaption>Peak height vs. coupling</figcaption>
+      <canvas id="cM"></canvas>
+      <p class="cap">κ<sub>max</sub> (solid) against a κ ∝ c² guide (dashed).</p>
+    </figure>
+    <figure>
+      <figcaption>Reading the plots</figcaption>
+      <div class="cap" id="peakText" style="font-size:.86rem;color:var(--ink);padding:6px 2px"></div>
+    </figure>
+  </div>
+  <div class="readouts" id="readouts"></div>
+</section>
+</main>
+
+<details>
+<summary>How the model works, and what it can and cannot predict</summary>
+<div class="about">
+  <h3>Heat capacity</h3>
+  <p>Only the dispersion enters. For each of the three acoustic branches (one longitudinal, two transverse; N modes each, common cut-off k<sub>D</sub> = (6π²n)<sup>1/3</sup>):</p>
+  <div class="eq">C = Σ<sub>branches</sub> ∫₀<sup>k<sub>D</sub></sup> (k²/2π²) k<sub>B</sub> x²eˣ/(eˣ−1)² dk, &nbsp; x = ħω(k)/k<sub>B</sub>T</div>
+  <p>For ω = v k this is exactly the Debye result of Sec. 4.2. In the empty-lattice picture the same linear ω = v|k| is only folded back into the first Brillouin zone, which moves the branches around but leaves the density of states unchanged, so the folded and the extended picture give the same C(T). For metals the free-electron (empty-lattice) gas adds C<sub>el</sub> = (π²/2) z R (T/T<sub>F</sub>) (m*/m), with T<sub>F</sub> from the valence-electron density.</p>
+
+  <h3>Thermal conductivity</h3>
+  <p>Kinetic theory of the phonon gas, Eq. (4.3.52), done mode by mode instead of with one average:</p>
+  <div class="eq">κ = ⅓ Σ ∫ (k²/2π²) c<sub>k</sub> v<sub>g</sub>² τ<sub>k</sub> dk, &nbsp; 1/τ = v<sub>g</sub>/L + A ω⁴ + B ω² T e<sup>−θ/3T</sup></div>
+  <p>The three terms are boundary (Casimir), isotope/point-defect (Rayleigh, with Tamura’s mass-variance parameter Γ) and Umklapp scattering. The dispersion by itself gives c<sub>k</sub> and v<sub>g</sub> but <em>not</em> the mean free path. The strength of the Umklapp term is controlled by one number, γ<sub>eff</sub>, in B = ħγ<sub>eff</sub>²/(M v² θ). Metals also get κ<sub>e</sub> = L₀T/ρ(T) (Wiedemann–Franz, ρ from Bloch–Grüneisen).</p>
+
+  <h3>Einstein solid (test material)</h3>
+  <p>Every atom sits in its own cage with the same frequency ω<sub>E</sub>, so the heat capacity is the Einstein function and, without coupling, nothing propagates (v<sub>g</sub> = 0, κ = 0). Nearest-neighbour coupling of relative strength c turns the flat level into a band, ω² = ω<sub>E</sub>²(1 + 4c sin²(πk/2k<sub>D</sub>)). The same scattering terms are used, with the band top θ<sub>U</sub> = ħω<sub>max</sub>/k<sub>B</sub> and v = ω<sub>max</sub>/k<sub>D</sub> taking the place of the Debye θ and v in the Umklapp and isotope rates. The model has a gap and no acoustic branch, so the low-temperature side of the κ peak is thermally activated (∝ e<sup>−θ<sub>E</sub>/T</sup>) instead of ∝ T³. It is a toy model for studying how bandwidth and group velocity control the position and height of the peak, not a description of a real crystal.</p>
+
+  <h3>What comes out</h3>
+  <ul>
+    <li><b>C(T):</b> predicted from the dispersion alone: T³ law, T/θ scaling, Dulong–Petit limit, γT for metals. Known weak point: the linear (acoustic-only) model gives C(300 K) ≈ 3.8 J/mol·K for diamond, the measured value is 6.1, because the real transverse branches flatten and optical phonons are already populated. The sine dispersion repairs most of this (≈ 6.6).</li>
+    <li><b>κ(T) shape:</b> reproduced without further input: rise ∝ T³ (boundary-limited), a maximum, then a fall ∝ 1/T at high T, and a peak position set by θ. Diamond’s peak lies near 100 K, silicon’s near 25–30 K.</li>
+    <li><b>κ(300 K) of diamond:</b> the ranking is predicted (a factor of ~25 above silicon) because θ is high (many fewer phonons excited, C small but v large, and Umklapp freezes out as e<sup>−θ/3T</sup>). The absolute value needs one calibrated γ<sub>eff</sub>. With γ<sub>eff</sub> = 2.2 fixed on silicon at 300 K the model gives roughly germanium 58 (exp. 60), silicon at 100 K about 910 (exp. ≈ 880), and diamond about 4000, i.e. the right order but ~1.7× too high.</li>
+    <li><b>Not captured:</b> normal (momentum-conserving) phonon processes, optical branches, real anisotropic dispersion, and the full size of the isotope effect (the model gives about +9 % at 300 K for pure ¹²C diamond; measured +44 %, Table 4.2). Peak heights at low T depend strongly on L and on defects; the model overestimates the 41 000 W/m·K of ¹²C-enriched diamond near 104 K.</li>
+  </ul>
+  <p>Reference points: diamond and metal values from Table 4.2 and footnote 39 of the booklet; silicon and germanium values are approximate handbook numbers.</p>
+</div>
+</details>
+
+<script>
+/*PHYS-START*/
+const K={hbar:1.054571817e-34,kB:1.380649e-23,NA:6.02214076e23,amu:1.66053907e-27,me:9.1093837015e-31,R:8.314462618,L0:2.443e-8};
+
+const MATS={
+  diamond:{name:'Diamond',n:1.763e29,M:12.011,vL:17500,vT:12600,Gam:7.5e-5,thetaLit:2230,k300:2300,C300:6.11,
+    refK:[[300,2300],[300,3320],[104,41000]],
+    refNote:'κ(300 K) = 2300 (natural) and 3320 (pure ¹²C) from Table 4.2; 41 000 near 104 K for ¹²C-enriched diamond (footnote 39).'},
+  si:{name:'Silicon',n:4.995e28,M:28.086,vL:8430,vT:5840,Gam:2.0e-4,thetaLit:645,k300:148,C300:19.8,
+    refK:[[100,884],[200,264],[300,148],[400,99],[600,62],[800,42],[1000,31]],
+    refNote:'Approximate handbook values for natural silicon (compare Fig. 4.16).'},
+  ge:{name:'Germanium',n:4.42e28,M:72.63,vL:4920,vT:3540,Gam:5.9e-4,thetaLit:374,k300:60,C300:23.3,
+    refK:[[300,60]],refNote:'Approximate handbook value at 300 K.'},
+  al:{name:'Aluminium',n:6.03e28,M:26.98,vL:6420,vT:3040,Gam:0,thetaLit:428,k300:237,C300:24.2,
+    metal:{z:3,rho300:2.7e-8,thetaR:395,gammaExp:1.35},
+    refK:[[300,237]],refNote:'Table 4.2.'},
+  einstein:{name:'Einstein solid (test)',test:true,n:5e28,M:28.086,thetaE:500,Gam:1e-4,vL:0,vT:0,thetaLit:0,k300:null,C300:null,
+    refK:[],refNote:'Test material, no experimental reference. Coupled Einstein oscillators: ω² = ω_E²(1 + 4c sin²(πk/2k_D)).'},
+  cu:{name:'Copper',n:8.49e28,M:63.55,vL:4760,vT:2320,Gam:2.1e-4,thetaLit:343,k300:386,C300:24.4,
+    metal:{z:1,rho300:1.7e-8,thetaR:320,gammaExp:0.695},
+    refK:[[300,386]],refNote:'Table 4.2.'}
+};
+
+function bose(x){
+  if(x>600) return 0;
+  if(x<1e-6) return 1;
+  const e=Math.exp(-x), d=1-e;
+  return x*x*e/(d*d);
+}
+
+function build(mat,disp,Nin,cpl){
+  const N=Nin||300, kD=Math.cbrt(6*Math.PI*Math.PI*mat.n), dk=kD/N;
+  const k=new Float64Array(N);
+  for(let i=0;i<N;i++) k[i]=(i+0.5)*dk;
+  if(mat.test){
+    const wE=K.kB*mat.thetaE/K.hbar, wmax=wE*Math.sqrt(1+4*cpl);
+    const w=new Float64Array(N), vg=new Float64Array(N);
+    for(let i=0;i<N;i++){
+      const ph=Math.PI*k[i]/(2*kD), sn=Math.sin(ph);
+      w[i]=wE*Math.sqrt(1+4*cpl*sn*sn);
+      vg[i]=2*Math.PI*cpl*wE*wE*sn*Math.cos(ph)/(kD*w[i]);
+    }
+    const b={v:0,w,vg};
+    return {N,kD,dk,k,br:[b,b,b],v3:wmax/kD,theta:K.hbar*wmax/K.kB,thetaNorm:mat.thetaE};
+  }
+  const br=[mat.vL,mat.vT,mat.vT].map(v=>{
+    const w=new Float64Array(N), vg=new Float64Array(N);
+    for(let i=0;i<N;i++){
+      if(disp==='debye'){ w[i]=v*k[i]; vg[i]=v; }
+      else{
+        const wm=2*v*kD/Math.PI, ph=Math.PI*k[i]/(2*kD);
+        w[i]=wm*Math.sin(ph); vg[i]=v*Math.cos(ph);
+      }
+    }
+    return {v,w,vg};
+  });
+  const v3=Math.cbrt(3/(1/Math.pow(mat.vL,3)+2/Math.pow(mat.vT,3)));
+  const theta=K.hbar*v3*kD/K.kB;
+  return {N,kD,dk,k,br,v3,theta,thetaNorm:theta};
+}
+
+function CphMolar(m,mat,T){
+  let s=0;
+  for(const b of m.br){
+    for(let i=0;i<m.N;i++) s+=m.k[i]*m.k[i]*bose(K.hbar*b.w[i]/(K.kB*T));
+  }
+  return s*m.dk*K.kB/(2*Math.PI*Math.PI)/mat.n*K.NA;
+}
+
+function kappaPh(m,mat,T,p,detail){
+  const Mm=mat.M*K.amu, V0=1/mat.n;
+  const pref=K.hbar*p.g*p.g/(Mm*m.v3*m.v3)*(T/m.theta)*Math.exp(-m.theta/(3*T));
+  const iso=V0*mat.Gam*p.iso/(4*Math.PI*Math.pow(m.v3,3));
+  let s=0, sB=0, sI=0, sU=0, sC=0, sV=0;
+  const per=detail?new Float64Array(m.N):null;
+  for(const b of m.br){
+    for(let i=0;i<m.N;i++){
+      const w=b.w[i], vg=b.vg[i];
+      const rU=pref*w*w, rI=iso*w*w*w*w, rB=vg/p.L, rt=rB+rI+rU+1e-30;
+      const c=K.kB*bose(K.hbar*w/(K.kB*T));
+      const con=m.k[i]*m.k[i]*c*vg*vg/rt;
+      s+=con;
+      if(detail){ per[i]+=con; sB+=con*rB/rt; sI+=con*rI/rt; sU+=con*rU/rt; sC+=m.k[i]*m.k[i]*c; sV+=m.k[i]*m.k[i]*c*vg*vg; }
+    }
+  }
+  const f=m.dk/(6*Math.PI*Math.PI);
+  const out={k:s*f};
+  if(detail){
+    for(let i=0;i<m.N;i++) per[i]*=f;
+    out.per=per;
+    out.share={B:sB/s,I:sI/s,U:sU/s};
+    out.vrms=Math.sqrt(sV/sC);
+  }
+  return out;
+}
+
+function peakFromCurve(Ts,ks){
+  let i=0;
+  for(let j=1;j<ks.length;j++) if(ks[j]>ks[i]) i=j;
+  if(i===0||i===ks.length-1||!(ks[i]>0)) return {T:Ts[i],k:ks[i]};
+  const x0=Math.log(Ts[i-1]),x1=Math.log(Ts[i]),x2=Math.log(Ts[i+1]);
+  const y0=Math.log(ks[i-1]),y1=Math.log(ks[i]),y2=Math.log(ks[i+1]);
+  const h=x1-x0, den=(y0-2*y1+y2);
+  if(!(den<0)) return {T:Ts[i],k:ks[i]};
+  const d=0.5*(y0-y2)/den;
+  return {T:Math.exp(x1+d*h),k:Math.exp(y1-0.25*(y0-y2)*d)};
+}
+
+function J5(z){
+  const zz=Math.min(z,40), n=200, h=zz/n;
+  let s=0;
+  for(let i=0;i<n;i++){ const x=(i+0.5)*h; s+=x*x*x*bose(x); }
+  return s*h;
+}
+
+function makeElec(mat,p){
+  if(!mat.metal) return T=>({C:0,ke:0});
+  const z=mat.metal.z, ne=z*mat.n;
+  const EF=K.hbar*K.hbar*Math.pow(3*Math.PI*Math.PI*ne,2/3)/(2*K.me), TF=EF/K.kB;
+  const th=mat.metal.thetaR;
+  const f=T=>Math.pow(T/th,5)*J5(th/T);
+  const A=mat.metal.rho300/f(300), rho0=mat.metal.rho300/p.rrr;
+  const fn=T=>({C:0.5*Math.PI*Math.PI*z*K.R*(T/TF)*p.mstar, ke:K.L0*T/(rho0+A*f(T))});
+  fn.TF=TF; fn.gammaS=0.5*Math.PI*Math.PI*z*K.R/TF*p.mstar;
+  return fn;
+}
+/*PHYS-END*/
+
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const ui={mat:$('mat'),T:$('T'),g:$('g'),L:$('L'),iso:$('iso'),rrr:$('rrr'),ms:$('ms'),thE:$('thE'),cpl:$('cpl')};
+const DEF_G={debye:2.2,sine:1.8};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+const sup=n=>String(n).split('').map(c=>SUP[c]||c).join('');
+
+function sci(x,d){
+  if(!isFinite(x)) return '–';
+  if(x===0) return '0';
+  const a=Math.abs(x);
+  if(a>=1e4||a<1e-2){
+    const e=Math.floor(Math.log10(a)); let m=x/Math.pow(10,e);
+    let ms=m.toFixed(d===undefined?2:d);
+    if(Math.abs(+ms)>=10){ ms=(m/10).toFixed(d===undefined?2:d); return ms+'×10'+sup(e+1); }
+    return ms+'×10'+sup(e);
+  }
+  return String(Number(x.toPrecision(d===undefined?3:d+1)));
+}
+function fmtLen(L){
+  if(L<1e-3) return (L*1e6).toFixed(0)+' µm';
+  if(L<1e-2) return (L*1e3).toFixed(1)+' mm';
+  return (L*100).toFixed(1)+' cm';
+}
+
+function state(){
+  return {
+    matId:ui.mat.value,
+    disp:document.querySelector('input[name=disp]:checked').value,
+    cmode:document.querySelector('input[name=cmode]:checked').value,
+    Tsel:Math.pow(10,+ui.T.value),
+    g:+ui.g.value,
+    L:Math.pow(10,+ui.L.value),
+    iso:+ui.iso.value/100,
+    rrr:Math.pow(10,+ui.rrr.value),
+    mstar:+ui.ms.value,
+    thE:+ui.thE.value,
+    cpl:Math.pow(10,+ui.cpl.value)
+  };
+}
+
+function niceStep(r){
+  const e=Math.floor(Math.log10(r)), f=r/Math.pow(10,e);
+  const n=f<1.5?1:f<3?2:f<7?5:10;
+  return n*Math.pow(10,e);
+}
+function tickLabel(n){
+  if(n>=-1&&n<=4) return String(Math.pow(10,n));
+  return '10'+sup(n);
+}
+
+function draw(cv,o){
+  const dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight;
+  if(!W||!H) return;
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  const g=cv.getContext('2d');
+  g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  const css=getComputedStyle(document.documentElement), col=n=>css.getPropertyValue(n).trim();
+  const cc=n=>(n&&n[0]==='-')?col(n):n;
+  const ml=54, mr=12, mt=10, mb=38, pw=W-ml-mr, ph=H-mt-mb;
+  const fx=o.xlog?Math.log10:(x=>x), fy=o.ylog?Math.log10:(y=>y);
+  const X=x=>ml+(fx(x)-fx(o.xmin))/(fx(o.xmax)-fx(o.xmin))*pw;
+  const Y=y=>mt+ph-(fy(y)-fy(o.ymin))/(fy(o.ymax)-fy(o.ymin))*ph;
+  g.font='11px system-ui,sans-serif'; g.textBaseline='middle';
+  g.lineWidth=1; g.strokeStyle=col('--grid'); g.fillStyle=col('--muted');
+
+  const xt=[], yt=[];
+  if(o.xlog){
+    for(let e=Math.ceil(Math.log10(o.xmin)-1e-9);e<=Math.floor(Math.log10(o.xmax)+1e-9);e++) xt.push({v:Math.pow(10,e),l:tickLabel(e)});
+    for(let e=Math.floor(Math.log10(o.xmin));e<Math.ceil(Math.log10(o.xmax));e++)
+      for(let j=2;j<10;j++){ const v=j*Math.pow(10,e); if(v>o.xmin&&v<o.xmax){ g.beginPath(); g.moveTo(X(v),mt); g.lineTo(X(v),mt+ph); g.globalAlpha=.4; g.stroke(); g.globalAlpha=1; } }
+  }else{
+    const st=niceStep((o.xmax-o.xmin)/6);
+    for(let v=Math.ceil(o.xmin/st)*st;v<=o.xmax+1e-9;v+=st) xt.push({v,l:String(Number(v.toPrecision(6)))});
+  }
+  if(o.ylog){
+    for(let e=Math.ceil(Math.log10(o.ymin)-1e-9);e<=Math.floor(Math.log10(o.ymax)+1e-9);e++) yt.push({v:Math.pow(10,e),l:tickLabel(e)});
+  }else{
+    const st=niceStep((o.ymax-o.ymin)/5);
+    for(let v=Math.ceil(o.ymin/st)*st;v<=o.ymax+1e-9;v+=st) yt.push({v,l:String(Number(v.toPrecision(6)))});
+  }
+  g.strokeStyle=col('--grid');
+  for(const t of xt){ g.beginPath(); g.moveTo(X(t.v),mt); g.lineTo(X(t.v),mt+ph); g.stroke(); }
+  for(const t of yt){ g.beginPath(); g.moveTo(ml,Y(t.v)); g.lineTo(ml+pw,Y(t.v)); g.stroke(); }
+  g.strokeStyle=col('--line'); g.strokeRect(ml,mt,pw,ph);
+  g.fillStyle=col('--muted');
+  g.textAlign='center';
+  for(const t of xt) g.fillText(t.l,X(t.v),mt+ph+11);
+  g.textAlign='right';
+  for(const t of yt) g.fillText(t.l,ml-6,Y(t.v));
+  g.fillStyle=col('--ink'); g.textAlign='center';
+  g.fillText(o.xlabel,ml+pw/2,H-8);
+  g.save(); g.translate(13,mt+ph/2); g.rotate(-Math.PI/2); g.fillText(o.ylabel,0,0); g.restore();
+
+  g.save(); g.beginPath(); g.rect(ml,mt,pw,ph); g.clip();
+  for(const h of (o.hlines||[])){
+    g.strokeStyle=cc(h.color||'--muted'); g.setLineDash(h.dash||[4,4]); g.lineWidth=1;
+    g.beginPath(); g.moveTo(ml,Y(h.y)); g.lineTo(ml+pw,Y(h.y)); g.stroke();
+  }
+  for(const v of (o.vlines||[])){
+    g.strokeStyle=cc(v.color||'--muted'); g.setLineDash(v.dash||[3,3]); g.lineWidth=1;
+    g.beginPath(); g.moveTo(X(v.x),mt); g.lineTo(X(v.x),mt+ph); g.stroke();
+  }
+  g.setLineDash([]);
+  for(const s of o.series){
+    g.strokeStyle=cc(s.color); g.lineWidth=s.width||1.8; g.setLineDash(s.dash||[]);
+    g.beginPath(); let pen=false;
+    for(let i=0;i<s.x.length;i++){
+      const xv=s.x[i], yv=s.y[i];
+      if(!isFinite(yv)||(o.ylog&&yv<=0)||(o.xlog&&xv<=0)){ pen=false; continue; }
+      const px=X(xv), py=Y(yv);
+      if(!pen){ g.moveTo(px,py); pen=true; } else g.lineTo(px,py);
+    }
+    g.stroke();
+  }
+  g.setLineDash([]);
+  for(const p of (o.points||[])){
+    g.beginPath(); g.arc(X(p.x),Y(p.y),4.2,0,2*Math.PI);
+    g.fillStyle=col('--panel'); g.fill(); g.lineWidth=1.8; g.strokeStyle=cc(p.color||'--c4'); g.stroke();
+  }
+  g.restore();
+
+  g.textAlign='left'; g.font='11px system-ui,sans-serif';
+  const leg=(o.series.filter(s=>s.label)).map(s=>({l:s.label,c:s.color,d:s.dash,pt:false}));
+  if(o.points&&o.points.length&&o.pointLabel) leg.push({l:o.pointLabel,c:'--c4',pt:true});
+  const bw=150, bh=leg.length*15+6;
+  const pos=o.legendPos||'tl';
+  const lx=(pos==='br'||pos==='tr')?ml+pw-bw-6:ml+8;
+  const ly0=(pos==='br')?mt+ph-bh-6:mt+6;
+  g.globalAlpha=.88; g.fillStyle=col('--panel'); g.fillRect(lx-4,ly0,bw,bh); g.globalAlpha=1;
+  let ly=ly0+12;
+  for(const e of leg){
+    if(e.pt){ g.beginPath(); g.arc(lx+9,ly,4,0,2*Math.PI); g.fillStyle=col('--panel'); g.fill(); g.lineWidth=1.8; g.strokeStyle=col(e.c); g.setLineDash([]); g.stroke(); }
+    else{ g.strokeStyle=cc(e.c); g.lineWidth=2; g.setLineDash(e.d||[]); g.beginPath(); g.moveTo(lx,ly); g.lineTo(lx+18,ly); g.stroke(); g.setLineDash([]); }
+    g.fillStyle=col('--ink'); g.fillText(e.l,lx+24,ly);
+    ly+=15;
+  }
+}
+
+function logspace(a,b,n){ const r=[]; for(let i=0;i<n;i++) r.push(Math.pow(10,Math.log10(a)+(Math.log10(b)-Math.log10(a))*i/(n-1))); return r; }
+
+let last=null, sweepCache=null;
+
+function einsteinSweep(mat,s){
+  const key=[s.thE,s.g,s.L,s.iso].join('|');
+  if(sweepCache&&sweepCache.key===key) return sweepCache;
+  const Ts=logspace(2,2000,100), cs=logspace(0.01,10,36), cT=[], cK=[], cU=[];
+  for(const c of cs){
+    const m=build(mat,'debye',120,c);
+    const pk=peakFromCurve(Ts,Ts.map(T=>kappaPh(m,mat,T,s).k));
+    cT.push(pk.T); cK.push(pk.k); cU.push(m.theta);
+  }
+  const fam=[0.03,0.1,0.3,1,3,10].map(c=>{
+    const m=build(mat,'debye',150,c), y=Ts.map(T=>kappaPh(m,mat,T,s).k);
+    return {c,y,pk:peakFromCurve(Ts,y)};
+  });
+  sweepCache={key,Ts,cs,cT,cK,cU,fam};
+  return sweepCache;
+}
+
+function run(){
+  const s=state();
+  let mat=MATS[s.matId];
+  if(mat.test) mat=Object.assign({},mat,{thetaE:s.thE});
+  const isTest=!!mat.test;
+  const m=build(mat,s.disp,300,s.cpl), el=makeElec(mat,s);
+  const isMetal=!!mat.metal;
+  const three=3*K.R;
+  const pt=T=>{ const Cp=CphMolar(m,mat,T), kp=kappaPh(m,mat,T,s).k, e=el(T); return {Cp,Ce:e.C,kp,ke:e.ke}; };
+  last={s,mat,m,el};
+
+  $('vT').textContent=sci(s.Tsel,3)+' K';
+  $('vg').textContent=s.g.toFixed(2);
+  $('vL').textContent=fmtLen(s.L);
+  $('viso').textContent=Math.round(s.iso*100)+' %';
+  $('vrrr').textContent=Math.round(s.rrr);
+  $('vms').textContent=s.mstar.toFixed(2);
+  $('vthE').textContent=s.thE+' K';
+  $('vcpl').textContent=sci(s.cpl,2);
+  $('metalCtl').style.display=isMetal?'block':'none';
+  $('testCtl').style.display=isTest?'block':'none';
+  $('dispH').style.display=$('dispRadio').style.display=isTest?'none':'';
+  $('calib').style.display=isTest?'none':'';
+  $('peakGrid').style.display=isTest?'grid':'none';
+  $('btnEnr').style.display=(s.matId==='diamond')?'inline-block':'none';
+  ui.iso.disabled=(mat.Gam===0);
+
+  const thN=m.thetaNorm;
+  const einC=T=>three*bose(mat.thetaE/T);
+
+  let cx=[], cP=[], cE=[], cT=[], cpoint, cvl;
+  const cptList=mat.C300?[{x:300/thN,y:mat.C300}]:[];
+  if(s.cmode==='lin'){
+    const tmax=isTest?Math.max(1.6,1.25*m.theta/thN):1.6;
+    for(let i=0;i<150;i++){
+      const t=0.004+(tmax-0.004)*i/149, T=t*thN;
+      const Cp=CphMolar(m,mat,T), Ce=el(T).C;
+      cx.push(t); cP.push(Cp); cE.push(Ce); cT.push(Cp+Ce);
+    }
+    const ymax=Math.max(three*1.08,Math.max(...cT)*1.05);
+    const ser=[{x:cx,y:cP,color:'--c1',label:isTest?'coupled (current c)':'phonons'}];
+    if(isMetal){ ser.push({x:cx,y:cE,color:'--c3',dash:[5,3],label:'electrons'}); ser.push({x:cx,y:cT,color:'--ink',width:2.2,label:'total'}); }
+    if(isTest) ser.push({x:cx,y:cx.map(t=>einC(t*thN)),color:'--c4',dash:[5,3],label:'Einstein (c = 0)'});
+    draw($('cC'),{xmin:0,xmax:tmax,ymin:0,ymax:ymax,xlabel:isTest?'T / θ_E':'T / θ  (θ = '+Math.round(m.theta)+' K)',ylabel:'C  (J mol⁻¹ K⁻¹)',
+      series:ser,hlines:[{y:three,dash:[5,4]}],vlines:[{x:s.Tsel/thN,color:'--accent'}],points:cptList,pointLabel:cptList.length?'measured, 300 K':undefined,legendPos:'br'});
+  }else{
+    const Ts=logspace(1,2000,130);
+    for(const T of Ts){ const Cp=CphMolar(m,mat,T), Ce=el(T).C; cx.push(T); cP.push(Cp); cE.push(Ce); cT.push(Cp+Ce); }
+    const ser=[{x:cx,y:cP,color:'--c1',label:isTest?'coupled (current c)':'phonons'}];
+    if(isMetal){ ser.push({x:cx,y:cE,color:'--c3',dash:[5,3],label:'electrons'}); ser.push({x:cx,y:cT,color:'--ink',width:2.2,label:'total'}); }
+    if(isTest) ser.push({x:cx,y:cx.map(einC),color:'--c4',dash:[5,3],label:'Einstein (c = 0)'});
+    draw($('cC'),{xlog:true,ylog:true,xmin:1,xmax:2000,ymin:1e-5,ymax:100,xlabel:'T (K)',ylabel:'C  (J mol⁻¹ K⁻¹)',
+      series:ser,hlines:[{y:three,dash:[5,4]}],vlines:[{x:s.Tsel,color:'--accent'}],points:mat.C300?[{x:300,y:mat.C300}]:[],pointLabel:mat.C300?'measured, 300 K':undefined,legendPos:'br'});
+  }
+  $('capC').innerHTML='Dashed horizontal line: Dulong–Petit 3R = '+three.toFixed(2)+' J/mol·K. '+
+    (isTest?('Band top θ<sub>U</sub> = '+Math.round(m.theta)+' K, θ<sub>E</sub> = '+s.thE+' K.'):('Model θ = '+Math.round(m.theta)+' K (literature '+mat.thetaLit+' K).'))+
+    (isMetal?' Electronic part: free-electron γT with γ = '+sci(el.gammaS*1e3,2)+' mJ/mol·K² (measured '+mat.metal.gammaExp+').':'');
+
+  const Ts=logspace(2,2000,120), kP=[], kE=[], kT=[];
+  for(const T of Ts){ const r=pt(T); kP.push(r.kp); kE.push(r.ke); kT.push(r.kp+r.ke); }
+  const pkCur=peakFromCurve(Ts,kT);
+  const maxAll=Math.max(...kT, ...mat.refK.map(r=>r[1]));
+  const ymaxE=Math.ceil(Math.log10(maxAll*1.2)), ymin=Math.pow(10,ymaxE-6);
+  const ser2=[];
+  if(isMetal){
+    ser2.push({x:Ts,y:kT,color:'--ink',width:2.2,label:'κ total'});
+    ser2.push({x:Ts,y:kP,color:'--c1',dash:[5,3],label:'lattice'});
+    ser2.push({x:Ts,y:kE,color:'--c3',dash:[5,3],label:'electrons'});
+  }else{
+    ser2.push({x:Ts,y:kP,color:'--c1',width:2.2,label:'κ lattice (model)'});
+  }
+  const kpts=isTest?[{x:pkCur.T,y:pkCur.k}]:mat.refK.map(r=>({x:r[0],y:r[1]}));
+  draw($('cK'),{xlog:true,ylog:true,xmin:2,xmax:2000,ymin:ymin,ymax:Math.pow(10,ymaxE),xlabel:'T (K)',ylabel:'κ  (W m⁻¹ K⁻¹)',
+    series:ser2,vlines:[{x:s.Tsel,color:'--accent'}],points:kpts,pointLabel:isTest?'κ maximum':'reference values',legendPos:'br'});
+  $('capK').textContent=mat.refNote;
+
+  const kk=[], nu=[[],[],[]];
+  for(let i=0;i<m.N;i++){ kk.push(m.k[i]/m.kD); for(let b=0;b<3;b++) nu[b].push(m.br[b].w[i]/(2*Math.PI)/1e12); }
+  kk.unshift(0); for(let b=0;b<3;b++) nu[b].unshift(isTest?nu[b][0]:0);
+  const numax=Math.max(...nu[0])*1.05;
+  const nuT=K.kB*s.Tsel/K.hbar/(2*Math.PI)/1e12;
+  const dser=isTest?[{x:kk,y:nu[0],color:'--c1',label:'3 degenerate branches'}]:[{x:kk,y:nu[0],color:'--c1',label:'LA'},{x:kk,y:nu[1],color:'--c2',dash:[5,3],label:'TA (×2)'}];
+  const dh=[{y:nuT,color:'--accent',dash:[2,3]}];
+  if(isTest) dh.push({y:K.kB*s.thE/K.hbar/(2*Math.PI)/1e12,color:'--c4',dash:[5,3]});
+  $('capW').innerHTML=isTest?'Blue: the coupled-oscillator band (three degenerate branches). Dashed orange: the uncoupled Einstein level ω<sub>E</sub>. Dotted blue: k<sub>B</sub>T at the cursor temperature.':'Longitudinal (solid) and two transverse branches (dashed). The dotted line marks k<sub>B</sub>T at the cursor temperature.';
+  draw($('cW'),{xmin:0,xmax:1,ymin:0,ymax:numax,xlabel:'k / k_D',ylabel:'ν = ω/2π  (THz)',series:dser,hlines:dh});
+
+  const T0=s.Tsel, dK=kappaPh(m,mat,T0,s,true), C0=CphMolar(m,mat,T0);
+  const per=dK.per; let tot=0; for(const v of per) tot+=v;
+  const cum=[], nrm=[]; let acc=0, mx=Math.max(...per);
+  const kx=[];
+  for(let i=0;i<m.N;i++){ acc+=per[i]; cum.push(tot>0?acc/tot:0); nrm.push(mx>0?per[i]/mx:0); kx.push(m.k[i]/m.kD); }
+  draw($('cS'),{xmin:0,xmax:1,ymin:0,ymax:1.05,xlabel:'k / k_D',ylabel:'normalised',
+    series:[{x:kx,y:nrm,color:'--c1',width:2,label:'dκ/dk'},{x:kx,y:cum,color:'--c2',dash:[5,3],label:'cumulative'}],legendPos:'tr'});
+
+  const e0=el(T0), kp0=dK.k, kTot=kp0+e0.ke;
+  const Cv=(C0/K.NA)*mat.n;
+  const vUse=isTest?dK.vrms:m.v3;
+  const leff=3*kp0/(Cv*vUse);
+  const card=(t,n,sub,hl)=>'<div class="card'+(hl?' hl':'')+'"><div class="t">'+t+'</div><div class="n">'+n+'</div><div class="s">'+sub+'</div></div>';
+  let h='';
+  if(isTest) h+=card('Band top θ_U',Math.round(m.theta)+' K','θ_E = '+s.thE+' K; v = ω_max/k_D = '+sci(m.v3,3)+' m/s');
+  else h+=card('θ from dispersion',Math.round(m.theta)+' K','v̄ = '+sci(m.v3,3)+' m/s; literature '+mat.thetaLit+' K');
+  h+=card('C at '+sci(T0,3)+' K',sci(C0+e0.C,3)+' J/mol·K',sci((C0+e0.C)/three*100,3)+' % of 3R');
+  h+=card('κ at '+sci(T0,3)+' K',sci(kTot,3)+' W/m·K',isMetal?('lattice '+sci(kp0,2)+' + electrons '+sci(e0.ke,2)):'lattice only',true);
+  const mfp=!isFinite(leff)?'–':leff<1e-6?sci(leff*1e9,3)+' nm':leff<1e-3?sci(leff*1e6,3)+' µm':sci(leff*1e3,3)+' mm';
+  h+=card('Phonon mean free path',mfp,isTest?'l = 3κ/(C v_rms), v_rms = '+sci(dK.vrms,3)+' m/s':'l = 3κ/(C v̄), Eq. (4.3.52)');
+  h+=card('What limits l at this T',Math.round(dK.share.U*100)+' % Umklapp','isotope '+Math.round(dK.share.I*100)+' %, boundary '+Math.round(dK.share.B*100)+' %');
+  if(isTest){
+    h+=card('κ maximum',sci(pkCur.k,3)+' W/m·K','at T_peak = '+sci(pkCur.T,3)+' K',true);
+    h+=card('T_peak / θ_U',(pkCur.T/m.theta).toFixed(3),'T_peak / θ_E = '+(pkCur.T/s.thE).toFixed(2));
+  }else{
+    const r300=pt(300), tot300=r300.kp+r300.ke;
+    h+=card('Model vs. reference, 300 K',sci(tot300,3)+' vs '+mat.k300,'ratio '+(tot300/mat.k300).toFixed(2)+' (W/m·K)');
+  }
+  $('readouts').innerHTML=h;
+
+  if(isTest){
+    const sw=einsteinSweep(mat,s);
+    const nf=sw.fam.length;
+    const fser=sw.fam.map((f,i)=>({x:sw.Ts,y:f.y,color:'hsl('+Math.round(215-200*i/(nf-1))+' 65% 52%)',width:1.4,label:'c = '+f.c}));
+    fser.push({x:sw.cT,y:sw.cK,color:'--ink',dash:[2,3],width:1.6});
+    fser.push({x:Ts,y:kT,color:'--accent',width:3,label:'current c = '+sci(s.cpl,2)});
+    const allMax=Math.max(...sw.cK,pkCur.k);
+    const fmaxE=Math.ceil(Math.log10(allMax*1.3)), fminE=Math.floor(Math.log10(Math.min(...sw.cK)))-1;
+    const fpts=sw.fam.map(f=>({x:f.pk.T,y:f.pk.k}));
+    fpts.push({x:pkCur.T,y:pkCur.k,color:'--accent'});
+    draw($('cF'),{xlog:true,ylog:true,xmin:2,xmax:2000,ymin:Math.pow(10,fminE),ymax:Math.pow(10,fmaxE),xlabel:'T (K)',ylabel:'κ  (W m⁻¹ K⁻¹)',
+      series:fser,points:fpts,pointLabel:'κ maxima',vlines:[{x:s.Tsel,color:'--accent'}],legendPos:'tl'});
+
+    const csEnds=[sw.cs[0],sw.cs[sw.cs.length-1]];
+    const tmin=Math.min(...sw.cT,pkCur.T), tmaxU=Math.max(...sw.cU);
+    draw($('cP'),{xlog:true,ylog:true,xmin:0.01,xmax:10,ymin:Math.pow(10,Math.floor(Math.log10(tmin*0.9))),ymax:Math.pow(10,Math.ceil(Math.log10(tmaxU*1.1))),
+      xlabel:'coupling c',ylabel:'temperature (K)',
+      series:[{x:sw.cs,y:sw.cT,color:'--c1',width:2.2,label:'T_peak'},{x:sw.cs,y:sw.cU,color:'--muted',dash:[5,3],label:'θ_U'},{x:csEnds,y:[s.thE,s.thE],color:'--c4',dash:[2,3],label:'θ_E'}],
+      points:[{x:s.cpl,y:pkCur.T,color:'--accent'}],pointLabel:'current c',legendPos:'tl'});
+
+    const guide=sw.cs.map(c=>sw.cK[0]*Math.pow(c/sw.cs[0],2));
+    draw($('cM'),{xlog:true,ylog:true,xmin:0.01,xmax:10,ymin:Math.pow(10,Math.floor(Math.log10(Math.min(...sw.cK)*0.7))),ymax:Math.pow(10,Math.ceil(Math.log10(Math.max(...sw.cK,...guide)*1.2))),
+      xlabel:'coupling c',ylabel:'κ_max  (W m⁻¹ K⁻¹)',
+      series:[{x:sw.cs,y:sw.cK,color:'--c1',width:2.2,label:'κ_max'},{x:sw.cs,y:guide,color:'--muted',dash:[5,3],label:'∝ c²'}],
+      points:[{x:s.cpl,y:pkCur.k,color:'--accent'}],pointLabel:'current c',legendPos:'br'});
+
+    $('peakText').innerHTML=
+      '<p style="margin:0 0 6px"><b>c = 0</b>: pure Einstein solid. All modes sit at ω<sub>E</sub>, v<sub>g</sub> = 0, C is the Einstein function, κ = 0.</p>'+
+      '<p style="margin:0 0 6px">Raising <b>c</b> opens a band and gives the modes a group velocity (∝ c), so κ<sub>max</sub> ∝ c² at weak coupling. The band top θ<sub>U</sub> = θ<sub>E</sub>√(1+4c) also pushes the Umklapp freeze-out e<sup>−θ<sub>U</sub>/3T</sup> to higher T, so the maximum moves up.</p>'+
+      '<p style="margin:0 0 6px">With these L, γ<sub>eff</sub> and isotope settings, T<sub>peak</sub> goes from '+sci(sw.cT[0],3)+' K (c = 0.01, ≈ '+(sw.cT[0]/s.thE).toFixed(2)+' θ<sub>E</sub>) to '+sci(sw.cT[sw.cT.length-1],3)+' K (c = 10), while κ<sub>max</sub> rises by a factor '+sci(sw.cK[sw.cK.length-1]/sw.cK[0],2)+'.</p>'+
+      '<p style="margin:0">There is no acoustic branch, so below the peak κ is activated (∝ e<sup>−θ<sub>E</sub>/T</sup>), not ∝ T³.</p>';
+  }
+}
+
+function calibrate(){
+  const s=state(), mat=MATS[s.matId]; if(mat.test) return;
+  const m=build(mat,s.disp), el=makeElec(mat,s);
+  const target=mat.k300-el(300).ke;
+  if(target<=0.5){ $('calibMsg').textContent='Electrons already carry all of κ(300 K) here; nothing left for the lattice to fit.'; return; }
+  let lo=Math.log(0.05), hi=Math.log(80);
+  for(let it=0;it<40;it++){
+    const mid=(lo+hi)/2, kk=kappaPh(m,mat,300,Object.assign({},s,{g:Math.exp(mid)})).k;
+    if(kk>target) lo=mid; else hi=mid;
+  }
+  const g=Math.exp((lo+hi)/2);
+  if(g>8||g<0.3){ $('calibMsg').textContent='Required γ_eff = '+g.toFixed(2)+' is outside the slider range; the lattice part of this model cannot match κ(300 K) here.'; ui.g.value=Math.min(8,Math.max(0.3,g)); }
+  else{ ui.g.value=g.toFixed(2); $('calibMsg').textContent='Fitted: γ_eff = '+g.toFixed(2)+' reproduces κ(300 K) = '+mat.k300+' W/m·K for '+mat.name.toLowerCase()+' with the current L and isotope settings.'; }
+  schedule();
+}
+
+let raf=0;
+function schedule(){ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; run(); }); }
+
+document.querySelectorAll('input[type=range],select').forEach(e=>e.addEventListener('input',schedule));
+document.querySelectorAll('input[name=cmode]').forEach(e=>e.addEventListener('change',schedule));
+document.querySelectorAll('input[name=disp]').forEach(e=>e.addEventListener('change',()=>{
+  ui.g.value=DEF_G[document.querySelector('input[name=disp]:checked').value];
+  $('calibMsg').textContent='Umklapp strength reset to the default for this dispersion.';
+  schedule();
+}));
+ui.mat.addEventListener('change',()=>{ $('calibMsg').textContent='One effective number: it stands in for the real Grüneisen parameter and for everything the acoustic-only model leaves out.'; });
+$('isoBtns').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; ui.iso.value=b.dataset.iso; schedule(); });
+$('calib').addEventListener('click',calibrate);
+$('greset').addEventListener('click',()=>{ ui.g.value=DEF_G[document.querySelector('input[name=disp]:checked').value]; $('calibMsg').textContent='Reset.'; schedule(); });
+window.addEventListener('resize',schedule);
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',schedule);
+run();
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

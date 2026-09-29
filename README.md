@@ -11,7 +11,10 @@ Each course has its own folder with an `index.html` listing its applets.
 - `fys240-optics/`
 - `fys310-solid-state-physics/` — lattice viewer (3D lattices with primitive vectors, Brillouin zones with empty-lattice bands, 2D Bravais lattices), Van Hove and DOS explorer,
   band structure explorer (empty lattice, weak potential, Al/Si/Ge/GaAs/diamond
-  and AlGaAs composition).
+  and AlGaAs composition), and a thermal transport explorer (Debye and sine
+  phonon dispersions, heat capacity and thermal conductivity of diamond, Si,
+  Ge, Al, Cu, and a coupled Einstein solid test material with the
+  conductivity-peak shift).
 - `fys501-laser-physics/` — laser gain media absorption/emission spectra, a
   Gaussian beam / ABCD-matrix optical cavity stability explorer, and a
   3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
