@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FYS.310 Atomic orbitals, hybrids and bonds</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys310-solid-state-physics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+:root{
+  --ink:var(--text); --muted:var(--text-dim); --rule:var(--border); --canvas:var(--panel);
+  --pos:var(--blue); --neg:var(--orange);
+  --c1:var(--blue); --c2:var(--orange); --c3:var(--green); --c4:var(--violet); --grey:var(--text-dim);
+}
+.app{max-width:1120px;margin:0 auto;padding:14px 14px 40px}
+.sub{margin:0 0 14px}
+.tabs{display:flex;border:1px solid var(--border);border-radius:var(--radius-ctl);overflow:hidden;background:var(--panel-2);margin-bottom:14px}
+.tabs button{flex:1;padding:10px 6px;border:0;border-right:1px solid var(--border);background:transparent;color:var(--text-dim);font:inherit;font-size:var(--fs-label);font-weight:500;cursor:pointer}
+.tabs button:last-child{border-right:0}
+.tabs button:hover{color:var(--text)}
+.tabs button[aria-selected=true]{background:var(--accent);color:#fff;font-weight:600}
+.panel{display:none;background:none;border:0;padding:0;border-radius:0}
+.panel.on{display:block}
+.stage{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.stage{grid-template-columns:minmax(0,1fr)}}
+.cwrap{position:relative;background:var(--canvas);border:1px solid var(--border);border-radius:var(--radius-panel);overflow:hidden}
+.cwrap canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.sq{aspect-ratio:1/1}
+.wide{aspect-ratio:4/3}
+.fixed{height:260px}
+.badge{position:absolute;left:14px;top:10px;font:italic 600 1.6rem/1.1 var(--font-body);pointer-events:none}
+.badge small{font:500 .78rem var(--font-body);font-style:normal;color:var(--text-dim);display:block;margin-top:2px}
+.hint{color:var(--text-dim);font-size:var(--fs-small);margin:8px 2px 0}
+.group{margin-bottom:12px}
+.glabel{display:block;font-size:var(--fs-small);color:var(--text-dim);margin-bottom:4px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts button{font-family:inherit;font-size:var(--fs-label);font-weight:500;line-height:1.25;padding:7px 11px;border-radius:var(--radius-ctl);border:1px solid var(--border);background:var(--panel-2);color:var(--text);cursor:pointer;transition:border-color .15s,background .15s}
+.opts button:hover{border-color:var(--accent)}
+.opts button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.opts button:disabled{opacity:.35;cursor:not-allowed}
+.opts .dot{display:inline-block;width:.75em;height:.75em;border-radius:50%;margin-right:.45em}
+.opts button[aria-pressed=false] .dot{opacity:.4}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.row label{display:flex;align-items:center;gap:8px;font-size:var(--fs-label);color:var(--text)}
+.row input[type=range]{min-width:120px;flex:1;width:auto}
+.card p{margin:0 0 8px;font-size:var(--fs-body)}
+.card p:last-child{margin-bottom:0}
+.card b{font-weight:600}
+.card .eq{display:block}
+sub,sup{line-height:0}
+.mo-top{display:grid;gap:10px;margin-bottom:12px}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:12px}
+.pair h3{margin:0 0 6px;color:var(--text)}
+.lower{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.lower{grid-template-columns:minmax(0,1fr)}}
+.readout{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Atomic orbitals, hybrids and bonds</h1>
+  <p class="sub">FYS.310 Solid State Physics. From a single atom to the crystal.</p>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="atomic" aria-selected="true">Atomic orbitals</button>
+    <button role="tab" data-tab="lattice" aria-selected="false">Hybrids in a lattice</button>
+    <button role="tab" data-tab="mo" aria-selected="false">Molecular orbitals</button>
+  </nav>
+
+  <section id="tab-atomic" class="panel on">
+    <div class="stage">
+      <div>
+        <div class="cwrap sq"><canvas id="cv-atomic" aria-label="3D view of an atomic orbital"></canvas><div class="badge" id="badge-atomic"></div></div>
+        <p class="hint">Drag to rotate, scroll or pinch to zoom. Blue and orange are opposite signs of the wavefunction.</p>
+      </div>
+      <div>
+        <div class="group"><span class="glabel">Principal quantum number n</span><div class="opts" id="seg-n"></div></div>
+        <div class="group"><span class="glabel">Shape (angular momentum l)</span><div class="opts" id="seg-l"></div></div>
+        <div class="group"><span class="glabel">Real orbital</span><div class="opts" id="seg-orb"></div></div>
+        <div class="group"><span class="glabel">Display</span><div class="opts" id="seg-amode"></div></div>
+        <div class="group row">
+          <label>Points <input type="range" id="rng-pts" min="2000" max="20000" step="1000" value="9000"></label>
+          <label><input type="checkbox" id="chk-rot-a"> Auto-rotate</label>
+        </div>
+        <div class="card" id="info-atomic"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-lattice" class="panel">
+    <div class="stage">
+      <div>
+        <div class="cwrap sq"><canvas id="cv-lat" aria-label="3D view of a crystal lattice with hybrid orbitals"></canvas><div class="badge" id="badge-lat"></div></div>
+        <p class="hint">Drag to rotate, scroll or pinch to zoom. Toggle the orbitals below to isolate them.</p>
+      </div>
+      <div>
+        <div class="group"><span class="glabel">Material</span><div class="opts" id="seg-mat"></div></div>
+        <div class="group"><span class="glabel">Basis on the highlighted atom</span><div class="opts" id="seg-basis"></div></div>
+        <div class="group"><span class="glabel">Orbitals (tap to show or hide)</span><div class="opts" id="legend-lat"></div></div>
+        <div class="group"><span class="glabel">Display</span><div class="opts" id="seg-lmode"></div></div>
+        <div class="group"><span class="glabel">Scope</span><div class="opts" id="seg-scope"></div></div>
+        <div class="group row">
+          <label id="wrap-pi"><input type="checkbox" id="chk-pi"> p<sub>z</sub> on every atom (π network)</label>
+          <label><input type="checkbox" id="chk-rot-l"> Auto-rotate</label>
+        </div>
+        <div class="card" id="info-lat"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-mo" class="panel">
+    <div class="mo-top">
+      <div class="group" style="margin:0"><span class="glabel">Orbital on each atom</span><div class="opts" id="seg-pair"></div></div>
+      <div class="row">
+        <label style="flex:1;min-width:220px">Separation R <input type="range" id="rng-R" min="0.5" max="9" step="0.05" value="2.9"> <b class="readout" id="out-R"></b></label>
+        <button type="button" class="btn" id="btn-play">Bring atoms together</button>
+      </div>
+      <div class="row">
+        <div class="opts" id="seg-view"></div>
+        <label id="wrap-phi">Cut plane angle <input type="range" id="rng-phi" min="0" max="90" step="5" value="0" style="min-width:110px"> <b class="readout" id="out-phi"></b></label>
+      </div>
+    </div>
+    <div class="pair">
+      <div><h3 id="ttl-mo-b"></h3><div class="cwrap wide"><canvas id="cv-mo-b"></canvas></div></div>
+      <div><h3 id="ttl-mo-a"></h3><div class="cwrap wide"><canvas id="cv-mo-a"></canvas></div></div>
+    </div>
+    <p class="hint" style="margin:-4px 2px 12px" id="hint-mo"></p>
+    <div class="lower">
+      <div>
+        <div class="cwrap fixed"><canvas id="cv-en"></canvas></div>
+        <div class="group row" style="margin-top:10px"><span class="glabel" style="margin:0">Electrons in this pair</span><div class="opts" id="seg-ne"></div></div>
+      </div>
+      <div class="card" id="info-mo"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* MATH-BEGIN */
+const PI=Math.PI, TAU=2*PI;
+
+function rng(seed){
+  let a=seed>>>0;
+  return function(){
+    a=(a+0x6D2B79F5)|0;
+    let t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+
+function laguerre(k,alpha,x){
+  if(k===0) return 1;
+  let l0=1,l1=1+alpha-x;
+  for(let i=1;i<k;i++){
+    const l2=((2*i+1+alpha-x)*l1-(i+alpha)*l0)/(i+1);
+    l0=l1; l1=l2;
+  }
+  return l1;
+}
+function hydRadial(n,l){
+  return r=>{ const rho=2*r/n; return Math.pow(rho,l)*Math.exp(-rho/2)*laguerre(n-l-1,2*l+1,rho); };
+}
+function STO(n,zeta){ return r=>Math.pow(r,n-1)*Math.exp(-zeta*r); }
+
+const ANG={
+  s:()=>1,
+  px:(x)=>x, py:(x,y)=>y, pz:(x,y,z)=>z,
+  dz2:(x,y,z)=>3*z*z-1, dxz:(x,y,z)=>x*z, dyz:(x,y,z)=>y*z, dxy:(x,y,z)=>x*y, dx2y2:(x,y,z)=>x*x-y*y,
+  fz3:(x,y,z)=>z*(5*z*z-3), fxz2:(x,y,z)=>x*(5*z*z-1), fyz2:(x,y,z)=>y*(5*z*z-1),
+  fzx2y2:(x,y,z)=>z*(x*x-y*y), fxyz:(x,y,z)=>x*y*z,
+  fxx3y:(x,y,z)=>x*(x*x-3*y*y), fyy3x:(x,y,z)=>y*(3*x*x-y*y)
+};
+
+class Orbital{
+  constructor(radial,angular,opts){
+    opts=opts||{};
+    this.R=radial; this.g=angular;
+    const M=3000, rS=opts.rScan||40, dr=rS/M;
+    this.M=M; this.dr=dr;
+    const cdf=new Float64Array(M+1);
+    let acc=0, prev=0;
+    for(let i=1;i<=M;i++){
+      const r=i*dr, v=radial(r), f=r*r*v*v;
+      acc+=0.5*(prev+f)*dr; cdf[i]=acc; prev=f;
+    }
+    this.cdf=cdf; this.Nr=acc;
+    const nt=64, np=128; let sum=0, gmax=0;
+    for(let i=0;i<nt;i++){
+      const th=(i+0.5)*PI/nt, st=Math.sin(th), ct=Math.cos(th);
+      for(let j=0;j<np;j++){
+        const ph=(j+0.5)*TAU/np;
+        const v=angular(st*Math.cos(ph),st*Math.sin(ph),ct);
+        sum+=v*v*st*(PI/nt)*(TAU/np);
+        if(v*v>gmax) gmax=v*v;
+      }
+    }
+    this.gmax2=gmax*1.03;
+    this.angN=1/Math.sqrt(sum);
+    this.N=1/Math.sqrt(acc*sum);
+  }
+  eval(x,y,z){
+    const r=Math.sqrt(x*x+y*y+z*z);
+    if(r<1e-9) return this.N*this.R(0)*this.g(0,0,1);
+    return this.N*this.R(r)*this.g(x/r,y/r,z/r);
+  }
+  angEval(ux,uy,uz){ return this.angN*this.g(ux,uy,uz); }
+  quantile(q){
+    const t=q*this.Nr; let lo=0, hi=this.M;
+    while(hi-lo>1){ const mid=(lo+hi)>>1; if(this.cdf[mid]<t) lo=mid; else hi=mid; }
+    return hi*this.dr;
+  }
+  sample(rand,out){
+    const u=rand()*this.Nr, cdf=this.cdf;
+    let lo=0, hi=this.M;
+    while(hi-lo>1){ const mid=(lo+hi)>>1; if(cdf[mid]<=u) lo=mid; else hi=mid; }
+    const c0=cdf[lo], c1=cdf[hi];
+    const r=(lo+(c1>c0?(u-c0)/(c1-c0):0))*this.dr;
+    let ux,uy,uz,gv;
+    do{
+      uz=2*rand()-1;
+      const ph=TAU*rand(), s=Math.sqrt(1-uz*uz);
+      ux=s*Math.cos(ph); uy=s*Math.sin(ph);
+      gv=this.g(ux,uy,uz);
+    }while(rand()*this.gmax2>gv*gv);
+    out[0]=r*ux; out[1]=r*uy; out[2]=r*uz;
+  }
+}
+
+function makeCloud(terms,n,rand){
+  const K=terms.length; let C2=0;
+  for(const t of terms) C2+=t.c*t.c;
+  const X=new Float32Array(n), Y=new Float32Array(n), Z=new Float32Array(n), S=new Int8Array(n);
+  const tmp=new Float64Array(3);
+  let count=0, guard=0;
+  while(count<n && guard<n*300){
+    guard++;
+    const t=terms[(rand()*K)|0];
+    t.orb.sample(rand,tmp);
+    const x=tmp[0]+t.cx, y=tmp[1]+t.cy, z=tmp[2]+t.cz;
+    let psi=0, sum=0;
+    for(let q=0;q<K;q++){
+      const u=terms[q], v=u.orb.eval(x-u.cx,y-u.cy,z-u.cz);
+      psi+=u.c*v; sum+=v*v;
+    }
+    if(rand()*C2*sum<=psi*psi){
+      X[count]=x; Y[count]=y; Z[count]=z; S[count]=psi>=0?1:-1; count++;
+    }
+  }
+  return {n:count,x:X,y:Y,z:Z,s:S};
+}
+
+function fibDirs(n){
+  const d=new Float32Array(n*3), ga=PI*(3-Math.sqrt(5));
+  for(let i=0;i<n;i++){
+    const z=1-2*(i+0.5)/n, r=Math.sqrt(1-z*z), a=ga*i;
+    d[3*i]=r*Math.cos(a); d[3*i+1]=r*Math.sin(a); d[3*i+2]=z;
+  }
+  return d;
+}
+
+function angAmp(terms,ux,uy,uz){
+  let a=0;
+  for(const t of terms) a+=t.c*t.orb.angEval(ux,uy,uz);
+  return a;
+}
+function lobeShell(terms,dirs,scale,ref){
+  const n=dirs.length/3, cx=terms[0].cx, cy=terms[0].cy, cz=terms[0].cz;
+  if(!ref){
+    ref=0;
+    for(let i=0;i<n;i++){ const a=Math.abs(angAmp(terms,dirs[3*i],dirs[3*i+1],dirs[3*i+2])); if(a>ref) ref=a; }
+  }
+  const X=[],Y=[],Z=[],S=[];
+  for(let i=0;i<n;i++){
+    const ux=dirs[3*i], uy=dirs[3*i+1], uz=dirs[3*i+2];
+    const a=angAmp(terms,ux,uy,uz), m=Math.abs(a)/ref;
+    if(m<0.03) continue;
+    const r=scale*m;
+    X.push(cx+r*ux); Y.push(cy+r*uy); Z.push(cz+r*uz); S.push(a>=0?1:-1);
+  }
+  return {n:X.length,x:Float32Array.from(X),y:Float32Array.from(Y),z:Float32Array.from(Z),s:Int8Array.from(S)};
+}
+
+function overlapTable(orb,m,Rlo,Rhi,steps){
+  const cm=(m===0)?TAU:PI, h=0.15, rc=12, nr=Math.round(rc/h);
+  const Rs=[], Ss=[];
+  for(let k=0;k<=steps;k++){
+    const R=Rlo+(Rhi-Rlo)*k/steps, zmax=R/2+rc, nz=Math.round(2*zmax/h);
+    let sum=0;
+    for(let iz=0;iz<nz;iz++){
+      const z=-zmax+(iz+0.5)*h;
+      for(let ir=0;ir<nr;ir++){
+        const rho=(ir+0.5)*h;
+        sum+=orb.eval(rho,0,z+R/2)*orb.eval(rho,0,z-R/2)*rho;
+      }
+    }
+    Rs.push(R); Ss.push(cm*sum*h*h);
+  }
+  return {R:Rs,S:Ss};
+}
+function interpTab(tab,R){
+  const Rs=tab.R, n=Rs.length;
+  if(R<=Rs[0]) return tab.S[0];
+  if(R>=Rs[n-1]) return tab.S[n-1];
+  let lo=0, hi=n-1;
+  while(hi-lo>1){ const mid=(lo+hi)>>1; if(Rs[mid]<=R) lo=mid; else hi=mid; }
+  const t=(R-Rs[lo])/(Rs[hi]-Rs[lo]);
+  return tab.S[lo]*(1-t)+tab.S[hi]*t;
+}
+/* MATH-END */
+
+/* ---------- helpers ---------- */
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const rgba=(c,a)=>'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
+const mixc=(a,b,t)=>[0,1,2].map(i=>Math.round(a[i]*(1-t)+b[i]*t));
+
+function readTheme(){
+  const probe=document.createElement('span');
+  document.body.appendChild(probe);
+  const tok=(name,fb)=>{
+    probe.style.color=''; probe.style.color='var('+name+')';
+    const c=getComputedStyle(probe).color, m=c.match(/[\d.]+/g);
+    if(m && m.length>=3 && c.indexOf('var')<0) return [Math.round(+m[0]),Math.round(+m[1]),Math.round(+m[2])];
+    const h=getComputedStyle(document.documentElement).getPropertyValue(name).trim().replace('#','');
+    if(/^[0-9a-f]{6}$/i.test(h)) return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+    return fb;
+  };
+  const T={
+    bgRGB:tok('--canvas',[23,24,30]), inkRGB:tok('--ink',[236,238,242]), mutedRGB:tok('--muted',[146,150,163]),
+    pos:tok('--pos',[62,142,247]), neg:tok('--neg',[242,145,75]),
+    c:[tok('--c1',[62,142,247]),tok('--c2',[242,145,75]),tok('--c3',[62,207,110]),tok('--c4',[123,92,250])],
+    grey:tok('--grey',[146,150,163])
+  };
+  document.body.removeChild(probe);
+  T.bg=rgba(T.bgRGB,1); T.ink=rgba(T.inkRGB,1); T.muted=rgba(T.mutedRGB,1);
+  return T;
+}
+let TH=null;
+
+function fitCanvas(cv){
+  const dpr=Math.min(window.devicePixelRatio||1,2.5);
+  const r=cv.getBoundingClientRect();
+  const w=Math.max(40,Math.round(r.width*dpr)), h=Math.max(40,Math.round(r.height*dpr));
+  if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; }
+  return dpr;
+}
+
+function makeSeg(host,opts,cur,cb){
+  host.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.type='button'; b.innerHTML=o.html;
+    if(o.disabled) b.disabled=true;
+    b.setAttribute('aria-pressed',String(o.v===cur));
+    b.addEventListener('click',()=>{
+      if(b.disabled) return;
+      Array.prototype.forEach.call(host.children,c=>c.setAttribute('aria-pressed',String(c===b)));
+      cb(o.v);
+    });
+    host.appendChild(b);
+  });
+}
+
+/* ---------- redraw scheduling ---------- */
+let curTab='atomic', needs=false;
+const TABS={};
+function invalidate(){ if(!needs){ needs=true; requestAnimationFrame(frame); } }
+function frame(t){
+  needs=false;
+  const T=TABS[curTab];
+  if(T.tick) T.tick(t);
+  T.render();
+  if(T.cam && T.cam.auto){ T.cam.yaw+=0.006; invalidate(); }
+}
+
+/* ---------- 3D view ---------- */
+class View3D{
+  constructor(cv,cam){
+    this.cv=cv; this.ctx=cv.getContext('2d'); this.cam=cam;
+    this.buf={n:0};
+    this.attach();
+  }
+  attach(){
+    const cv=this.cv, cam=this.cam, pts=new Map();
+    let lastD=0;
+    const dist=()=>{ const a=Array.from(pts.values()); return Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]); };
+    cv.addEventListener('pointerdown',e=>{
+      try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+      pts.set(e.pointerId,[e.clientX,e.clientY]);
+      if(pts.size===2) lastD=dist();
+    });
+    const up=e=>{ pts.delete(e.pointerId); };
+    cv.addEventListener('pointerup',up);
+    cv.addEventListener('pointercancel',up);
+    cv.addEventListener('pointermove',e=>{
+      if(!pts.has(e.pointerId)) return;
+      const p=pts.get(e.pointerId), dx=e.clientX-p[0], dy=e.clientY-p[1];
+      pts.set(e.pointerId,[e.clientX,e.clientY]);
+      if(pts.size===1){
+        cam.yaw+=dx*0.009; cam.pitch=clamp(cam.pitch+dy*0.009,-1.45,1.45);
+      }else if(pts.size===2){
+        const d=dist(); if(lastD>0) cam.zoom=clamp(cam.zoom*d/lastD,0.4,4); lastD=d;
+      }
+      invalidate();
+    });
+    cv.addEventListener('wheel',e=>{
+      e.preventDefault();
+      cam.zoom=clamp(cam.zoom*Math.exp(-e.deltaY*0.0015),0.4,4);
+      invalidate();
+    },{passive:false});
+  }
+  render(sc){
+    const cv=this.cv, ctx=this.ctx, cam=this.cam, dpr=fitCanvas(cv), W=cv.width, H=cv.height;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.fillStyle=sc.bg; ctx.fillRect(0,0,W,H);
+    const cyw=Math.cos(cam.yaw), syw=Math.sin(cam.yaw), cp=Math.cos(cam.pitch), sp=Math.sin(cam.pitch);
+    const rad=sc.radius, S=Math.min(W,H)*0.46/rad*cam.zoom, D=rad*6, zh=!!sc.zHoriz;
+    const P=[0,0,0,0];
+    const proj=(x,y,z)=>{
+      if(zh){ const t=x; x=z; z=-t; }
+      const x1=x*cyw-y*syw, y1=x*syw+y*cyw;
+      const dep=-y1*cp+z*sp, f=D/(D-dep);
+      P[0]=W/2+S*f*x1; P[1]=H/2-S*f*(y1*sp+z*cp); P[2]=dep; P[3]=f;
+    };
+    const B=18, span=rad*2.4;
+    const binOf=d=>clamp(Math.floor((d/span+0.5)*B),0,B-1);
+
+    if(sc.axes){
+      const L=sc.axes.L;
+      ctx.save();
+      ctx.strokeStyle=sc.axes.color; ctx.fillStyle=sc.axes.color;
+      ctx.lineWidth=dpr; ctx.setLineDash([4*dpr,4*dpr]);
+      ctx.font=(12*dpr)+'px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      const ax=[[1,0,0,'x'],[0,1,0,'y'],[0,0,1,'z']];
+      for(const a of ax){
+        proj(-a[0]*L,-a[1]*L,-a[2]*L); const x0=P[0], y0=P[1];
+        proj(a[0]*L,a[1]*L,a[2]*L);
+        ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(P[0],P[1]); ctx.stroke();
+        proj(a[0]*L*1.09,a[1]*L*1.09,a[2]*L*1.09);
+        ctx.fillText(a[3],P[0],P[1]);
+      }
+      ctx.restore();
+    }
+
+    const pal=[], palMap=new Map();
+    const pid=s=>{ let i=palMap.get(s); if(i===undefined){ i=pal.length; pal.push(s); palMap.set(s,i); } return i; };
+    let total=0;
+    for(const g of sc.groups){ total+=g.n; g._p=pid(g.cp); g._n=pid(g.cn); }
+    const NP=Math.max(1,pal.length);
+    const bf=this.buf;
+    if(bf.n<total){
+      bf.n=Math.ceil(total*1.2)+16;
+      bf.sx=new Float32Array(bf.n); bf.sy=new Float32Array(bf.n); bf.sz=new Float32Array(bf.n);
+      bf.key=new Uint32Array(bf.n); bf.order=new Uint32Array(bf.n);
+    }
+    const sx=bf.sx, sy=bf.sy, sz=bf.sz, key=bf.key, order=bf.order;
+    const start=new Uint32Array(B*NP+1);
+    let idx=0;
+    for(const g of sc.groups){
+      const gx=g.x, gy=g.y, gz=g.z, gs=g.s, size=g.size*dpr;
+      for(let i=0;i<g.n;i++){
+        proj(gx[i],gy[i],gz[i]);
+        const k=binOf(P[2])*NP+(gs[i]>0?g._p:g._n);
+        key[idx]=k; sx[idx]=P[0]; sy[idx]=P[1]; sz[idx]=size*P[3];
+        start[k+1]++; idx++;
+      }
+    }
+    for(let k=0;k<B*NP;k++) start[k+1]+=start[k];
+    const ptr=start.slice(0,B*NP);
+    for(let i=0;i<total;i++){ order[ptr[key[i]]++]=i; }
+
+    const objBins=[]; for(let b=0;b<B;b++) objBins.push([]);
+    if(sc.lines){
+      for(const ln of sc.lines){
+        proj(ln.a[0],ln.a[1],ln.a[2]); const ax=P[0], ay=P[1], ad=P[2], af=P[3];
+        proj(ln.b[0],ln.b[1],ln.b[2]); const bx=P[0], by=P[1], bd=P[2], bfc=P[3];
+        const w=ln.w*dpr*(af+bfc)/2;
+        objBins[binOf((ad+bd)/2)].push(()=>{
+          ctx.strokeStyle=ln.color; ctx.lineWidth=w; ctx.lineCap='round';
+          ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+        });
+      }
+    }
+    if(sc.atoms){
+      for(const a of sc.atoms){
+        proj(a.x,a.y,a.z); const px=P[0], py=P[1], rr=a.r*S*P[3];
+        objBins[binOf(P[2])].push(()=>{
+          const gr=ctx.createRadialGradient(px-rr*0.3,py-rr*0.3,rr*0.1,px,py,rr);
+          gr.addColorStop(0,a.hi); gr.addColorStop(1,a.fill);
+          ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(px,py,rr,0,TAU); ctx.fill();
+          if(a.ring){ ctx.strokeStyle=a.ring; ctx.lineWidth=2*dpr; ctx.stroke(); }
+        });
+      }
+    }
+    for(let b=0;b<B;b++){
+      for(let p=0;p<NP;p++){
+        const k=b*NP+p, s0=start[k], s1=start[k+1];
+        if(s1>s0){
+          ctx.fillStyle=pal[p];
+          for(let j=s0;j<s1;j++){
+            const o=order[j], z=sz[o];
+            ctx.fillRect(sx[o]-z/2,sy[o]-z/2,z,z);
+          }
+        }
+      }
+      const ob=objBins[b];
+      for(let j=0;j<ob.length;j++) ob[j]();
+    }
+    if(sc.note){
+      ctx.fillStyle=sc.noteColor||'#888'; ctx.font=(12*dpr)+'px system-ui,sans-serif';
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+      ctx.fillText(sc.note,12*dpr,H-12*dpr);
+    }
+  }
+}
+
+/* =====================================================
+   TAB 1: atomic orbitals
+   ===================================================== */
+const ORBS={
+  0:[['s','s']],
+  1:[['px','p<sub>x</sub>'],['py','p<sub>y</sub>'],['pz','p<sub>z</sub>']],
+  2:[['dz2','d<sub>z²</sub>','e<sub>g</sub>'],['dxz','d<sub>xz</sub>','t<sub>2g</sub>'],['dyz','d<sub>yz</sub>','t<sub>2g</sub>'],['dxy','d<sub>xy</sub>','t<sub>2g</sub>'],['dx2y2','d<sub>x²−y²</sub>','e<sub>g</sub>']],
+  3:[['fz3','f<sub>z³</sub>'],['fxz2','f<sub>xz²</sub>'],['fyz2','f<sub>yz²</sub>'],['fzx2y2','f<sub>z(x²−y²)</sub>'],['fxyz','f<sub>xyz</sub>'],['fxx3y','f<sub>x(x²−3y²)</sub>'],['fyy3x','f<sub>y(3x²−y²)</sub>']]
+};
+const LNAME='spdf';
+const CTX_L={
+  0:'No angular node. The conduction-band minimum of GaAs is s-like.',
+  1:'One angular node. With s it builds the sp³ hybrids of diamond, Si and Ge. The valence-band maximum of Si, Ge and GaAs is p-like.',
+  2:'Two angular nodes. In a cubic crystal field the five d orbitals split into t<sub>2g</sub> (three) and e<sub>g</sub> (two), for example Ti in SrTiO<sub>3</sub>.',
+  3:'Three angular nodes. The 4f electrons of the rare earths stay close to the nucleus, so their magnetism is atom-like.'
+};
+const camA={yaw:0.6,pitch:0.4,zoom:1,auto:false};
+const A={n:2,l:1,key:'pz',mode:'cloud',npts:9000,radius:10,orb:null,cloud:null,shell:null,scene:null,view:null};
+const DIRS_BIG=fibDirs(3400);
+
+function orbEntry(){ return ORBS[A.l].find(o=>o[0]===A.key)||ORBS[A.l][0]; }
+
+function atomicBuild(){
+  if(A.l>=A.n) A.l=A.n-1;
+  if(!ORBS[A.l].some(o=>o[0]===A.key)) A.key=ORBS[A.l][ORBS[A.l].length>2?2:0][0];
+  const orb=new Orbital(hydRadial(A.n,A.l),ANG[A.key],{rScan:8*A.n*A.n+24});
+  A.orb=orb;
+  A.radius=Math.max(2.5,orb.quantile(0.99)*1.12);
+  const terms=[{orb,cx:0,cy:0,cz:0,c:1}];
+  const seed=A.n*1009+A.l*131+A.key.length*17+A.key.charCodeAt(A.key.length-1);
+  A.cloud=makeCloud(terms,A.npts,rng(seed));
+  A.shell=lobeShell(terms,DIRS_BIG,A.radius*0.82,0);
+  atomicScene();
+  atomicInfo();
+}
+function atomicScene(){
+  const cl=A.mode==='cloud'?A.cloud:A.shell;
+  const g=Object.assign({},cl,{
+    size:A.mode==='cloud'?2.1:2.3,
+    cp:rgba(TH.pos,A.mode==='cloud'?0.62:0.85),
+    cn:rgba(TH.neg,A.mode==='cloud'?0.62:0.85)
+  });
+  A.scene={
+    radius:A.radius, bg:TH.bg, groups:[g],
+    axes:{L:A.radius*1.02,color:rgba(TH.mutedRGB,0.55)},
+    note:A.mode==='cloud'?('axes end at ±'+A.radius.toFixed(A.radius<10?1:0)+' a₀'):'angular part only, radius ∝ |amplitude|',
+    noteColor:TH.muted
+  };
+}
+function atomicInfo(){
+  const e=orbEntry(), n=A.n, l=A.l;
+  const name=n+e[1];
+  el('badge-atomic').innerHTML=name+'<small>n = '+n+', l = '+l+(e[2]?', '+e[2]:'')+'</small>';
+  const rn=n-l-1;
+  el('info-atomic').innerHTML=
+    '<p><b>'+name+'</b>: '+rn+' radial node'+(rn===1?'':'s')+' and '+l+' angular node'+(l===1?'':'s')+' (nodal surfaces total '+(n-1)+').</p>'+
+    '<p>Hydrogen-like energy E = −13.6 eV / n² = '+(-13.6/(n*n)).toFixed(2)+' eV. In a many-electron atom the different l of one n are no longer degenerate.</p>'+
+    '<p>'+CTX_L[l]+'</p>'+
+    '<p style="color:var(--text-dim)">Points are sampled from |ψ|² of the hydrogen radial function with the real angular function shown. 99% of the density lies within '+A.orb.quantile(0.99).toFixed(1)+' a₀.</p>';
+}
+function atomicControls(){
+  makeSeg(el('seg-n'),[1,2,3,4].map(v=>({v,html:String(v)})),A.n,v=>{ A.n=v; atomicControls(); atomicBuild(); invalidate(); });
+  makeSeg(el('seg-l'),[0,1,2,3].map(v=>({v,html:LNAME[v]+' ('+v+')',disabled:v>=A.n})),A.l,v=>{ A.l=v; atomicControls(); atomicBuild(); invalidate(); });
+  makeSeg(el('seg-orb'),ORBS[A.l].map(o=>({v:o[0],html:o[1]+(o[2]?'<span style="opacity:.6;font-size:.8em"> '+o[2]+'</span>':'')})),A.key,v=>{ A.key=v; atomicBuild(); invalidate(); });
+  makeSeg(el('seg-amode'),[{v:'cloud',html:'Probability cloud'},{v:'lobes',html:'Angular shape'}],A.mode,v=>{ A.mode=v; atomicScene(); invalidate(); });
+}
+TABS.atomic={
+  cam:camA,
+  render(){ A.view.render(A.scene); },
+  rebuild(){ atomicBuild(); }
+};
+
+/* =====================================================
+   TAB 2: hybrids in a lattice
+   ===================================================== */
+const camL={yaw:0.75,pitch:0.5,zoom:1,auto:false};
+const L={mat:'diamond',basis:'hyb',mode:'lobes',scope:'one',vis:[true,true,true,true],piAll:false,slots:null,scene:null,view:null};
+const AREF=0.5642;
+const DIRS_1=fibDirs(1700), DIRS_2=fibDirs(700);
+let SL=null;
+function slaterOrbitals(){
+  if(SL) return SL;
+  const rad=STO(2,1.625), o={rScan:30};
+  SL={s:new Orbital(rad,ANG.s,o),px:new Orbital(rad,ANG.px,o),py:new Orbital(rad,ANG.py,o),pz:new Orbital(rad,ANG.pz,o)};
+  return SL;
+}
+
+function geoDiamond(){
+  const a=6.74, h=a/2, atoms=[];
+  const add=(x,y,z,inner)=>atoms.push({p:[x*a-h,y*a-h,z*a-h],inner:!!inner});
+  for(const i of [0,1]) for(const j of [0,1]) for(const k of [0,1]) add(i,j,k,false);
+  [[.5,.5,0],[.5,.5,1],[.5,0,.5],[.5,1,.5],[0,.5,.5],[1,.5,.5]].forEach(q=>add(q[0],q[1],q[2],false));
+  [[.25,.25,.25],[.75,.75,.25],[.75,.25,.75],[.25,.75,.75]].forEach(q=>add(q[0],q[1],q[2],true));
+  const bond=a*Math.sqrt(3)/4;
+  const bonds=bondsOf(atoms,bond);
+  const edges=[];
+  for(let i=0;i<8;i++) for(let j=i+1;j<8;j++){ const x=i^j; if(x===1||x===2||x===4) edges.push([i,j]); }
+  const inner=[]; atoms.forEach((q,i)=>{ if(q.inner) inner.push(i); });
+  return {name:'diamond',atoms,bonds,edges,bond,radius:6.7,center:inner[0],many:inner,ar:0.5};
+}
+function geoGraphene(){
+  const d=2.68, s3=Math.sqrt(3), R=3.4*d, atoms=[];
+  const a1=[d*s3,0], a2=[d*s3/2,1.5*d];
+  for(let n=-4;n<=4;n++) for(let m=-4;m<=4;m++){
+    const ax=n*a1[0]+m*a2[0], ay=n*a1[1]+m*a2[1];
+    if(Math.hypot(ax,ay)<=R) atoms.push({p:[ax,ay,0]});
+    if(Math.hypot(ax,ay+d)<=R) atoms.push({p:[ax,ay+d,0]});
+  }
+  const bonds=bondsOf(atoms,d);
+  const center=atoms.findIndex(q=>Math.abs(q.p[0])<1e-6&&Math.abs(q.p[1])<1e-6);
+  const c=[-s3*d/2,d/2];
+  const ring=[]; atoms.forEach((q,i)=>{ if(Math.abs(Math.hypot(q.p[0]-c[0],q.p[1]-c[1])-d)<0.05) ring.push(i); });
+  return {name:'graphene',atoms,bonds,edges:[],bond:d,radius:R+0.6,center,many:ring,ar:0.45};
+}
+function bondsOf(atoms,d){
+  const out=[];
+  for(let i=0;i<atoms.length;i++) for(let j=i+1;j<atoms.length;j++){
+    const a=atoms[i].p, b=atoms[j].p;
+    if(Math.abs(Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])-d)<0.05*d) out.push([i,j]);
+  }
+  return out;
+}
+let GEO=null;
+function geo(){
+  if(!GEO) GEO={diamond:geoDiamond(),graphene:geoGraphene()};
+  return GEO[L.mat];
+}
+function dirsOf(g,i){
+  const out=[], p=g.atoms[i].p;
+  for(const b of g.bonds){
+    let j=-1;
+    if(b[0]===i) j=b[1]; else if(b[1]===i) j=b[0];
+    if(j<0) continue;
+    const q=g.atoms[j].p, v=[q[0]-p[0],q[1]-p[1],q[2]-p[2]], n=Math.hypot(v[0],v[1],v[2]);
+    out.push([v[0]/n,v[1]/n,v[2]/n]);
+  }
+  out.sort((u,v)=>Math.atan2(u[1],u[0])-Math.atan2(v[1],v[0]));
+  return out;
+}
+const sgn=v=>v>0.1?'+':v<-0.1?'−':'0';
+
+function latticeBuild(){
+  const g=geo(), O=slaterOrbitals();
+  const many=L.scope==='many', hyb=L.basis==='hyb';
+  const nCloud=many?450:1300, dirs=many?DIRS_2:DIRS_1;
+  const lam=g.name==='diamond'?{a:0.5,b:Math.sqrt(3)/2}:{a:1/Math.sqrt(3),b:Math.sqrt(2/3)};
+  const Lb=g.bond*0.92;
+  const shown=many?g.many:[g.center];
+  const slots=[[],[],[],[]];
+  const orbs=[O.s,O.px,O.py,O.pz];
+  let seed=101;
+  const build=(P,c)=>{
+    const terms=[];
+    for(let q=0;q<4;q++) if(Math.abs(c[q])>1e-6) terms.push({orb:orbs[q],cx:P[0],cy:P[1],cz:P[2],c:c[q]});
+    seed+=7;
+    if(L.mode==='cloud') return Object.assign({size:1.7,kind:'cloud'},makeCloud(terms,nCloud,rng(seed)));
+    return Object.assign({size:2.0,kind:'lobes'},lobeShell(terms,dirs,Lb,AREF));
+  };
+  shown.forEach(ai=>{
+    const P=g.atoms[ai].p;
+    let defs;
+    if(hyb){
+      defs=dirsOf(g,ai).map(u=>[lam.a,lam.b*u[0],lam.b*u[1],lam.b*u[2]]);
+      if(g.name==='graphene') defs.push([0,0,0,1]);
+    }else{
+      defs=[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+    }
+    defs.forEach((c,q)=>slots[q].push(build(P,c)));
+  });
+  if(L.piAll && g.name==='graphene'){
+    g.atoms.forEach((a,i)=>{
+      if(shown.indexOf(i)>=0) return;
+      const terms=[{orb:O.pz,cx:a.p[0],cy:a.p[1],cz:0,c:1}];
+      seed+=3;
+      const grp=L.mode==='cloud'
+        ?Object.assign({size:1.5,kind:'cloud'},makeCloud(terms,220,rng(seed)))
+        :Object.assign({size:1.8,kind:'lobes'},lobeShell(terms,DIRS_2,Lb*0.85,AREF));
+      slots[3].push(grp);
+    });
+  }
+  L.slots=slots;
+  latticeScene();
+}
+function slotColour(q){
+  if(L.basis==='hyb') return TH.c[q];
+  return q===0?TH.grey:TH.c[q-1];
+}
+function latticeScene(){
+  const g=geo(), groups=[];
+  const cloud=L.mode==='cloud';
+  L.slots.forEach((arr,q)=>{
+    if(!L.vis[q]) return;
+    const base=slotColour(q);
+    arr.forEach(gr=>{
+      gr.cp=rgba(base,cloud?0.6:0.9);
+      gr.cn=rgba(mixc(base,TH.bgRGB,0.5),cloud?0.5:0.75);
+      groups.push(gr);
+    });
+  });
+  const shown=L.scope==='many'?g.many:[g.center];
+  const atoms=g.atoms.map((a,i)=>({
+    x:a.p[0],y:a.p[1],z:a.p[2],r:g.ar,
+    fill:rgba(mixc(TH.mutedRGB,TH.bgRGB,0.15),1),
+    hi:rgba(mixc(TH.mutedRGB,[255,255,255],0.5),1),
+    ring:shown.indexOf(i)>=0?TH.ink:null
+  }));
+  const lines=[];
+  g.bonds.forEach(b=>lines.push({a:g.atoms[b[0]].p,b:g.atoms[b[1]].p,w:3.2,color:rgba(TH.mutedRGB,0.85)}));
+  g.edges.forEach(e=>lines.push({a:g.atoms[e[0]].p,b:g.atoms[e[1]].p,w:1,color:rgba(TH.mutedRGB,0.35)}));
+  L.scene={
+    radius:g.radius, bg:TH.bg, groups, atoms, lines,
+    note:g.name==='diamond'?'conventional cubic cell, a = 3.567 Å':'C–C bond length 1.42 Å',
+    noteColor:TH.muted
+  };
+}
+function latticeInfo(){
+  const g=geo(), hyb=L.basis==='hyb', dia=g.name==='diamond';
+  el('badge-lat').innerHTML=dia?'Diamond<small>sp³ hybrids on carbon</small>':'Graphene<small>sp² hybrids and π orbitals</small>';
+  let h='';
+  if(dia){
+    h+='<p>Each carbon has four valence orbitals, 2s and 2p<sub>x,y,z</sub>. Mixing them gives four equivalent hybrids:</p>'+
+       '<p class="eq">h = ½ (s ± p<sub>x</sub> ± p<sub>y</sub> ± p<sub>z</sub>)</p>'+
+       '<p>Each h points at one of four neighbours, 109.47° apart, and overlaps with the hybrid of that neighbour to form a σ bond. The same set of four orbitals also describes the atom in the s, p basis; hybridisation is only a change of basis.</p>'+
+       '<p>Bonding σ combinations broaden into the valence band and antibonding σ* into the conduction band, separated by the 5.5 eV gap of diamond. Si and Ge follow the same pattern with 3s, 3p and 4s, 4p.</p>';
+  }else{
+    h+='<p>Carbon in graphene keeps one p<sub>z</sub> orbital and mixes s with p<sub>x</sub>, p<sub>y</sub>:</p>'+
+       '<p class="eq">h = (1/√3) s + √(2/3) p<sub>in-plane</sub></p>'+
+       '<p>The three sp² hybrids lie in the plane, 120° apart, and form the σ skeleton. The p<sub>z</sub> lobes above and below the plane overlap sideways into the π bands, which touch at the Dirac points.</p>'+
+       '<p>Turn on p<sub>z</sub> on every atom to see the π network.</p>';
+  }
+  h+='<p style="color:var(--text-dim)">Radial part: Slater 2s, 2p with ζ = 1.625 (carbon). Lobes drawn as |amplitude|; the negative back lobe of an sp³ hybrid is light.</p>';
+  el('info-lat').innerHTML=h;
+  el('wrap-pi').style.display=dia?'none':'flex';
+}
+function latticeLegend(){
+  const g=geo(), hyb=L.basis==='hyb', dia=g.name==='diamond';
+  const host=el('legend-lat'); host.innerHTML='';
+  let items=[];
+  if(hyb){
+    const ds=dirsOf(g,g.center);
+    ds.forEach((u,k)=>{
+      const tag=dia?'('+sgn(u[0])+','+sgn(u[1])+','+sgn(u[2])+')':(Math.round(Math.atan2(u[1],u[0])*180/PI))+'°';
+      items.push({q:k,html:'h<sub>'+(k+1)+'</sub> '+tag});
+    });
+    if(!dia) items.push({q:3,html:'p<sub>z</sub> (π)'});
+  }else{
+    items=[{q:0,html:'s'},{q:1,html:'p<sub>x</sub>'},{q:2,html:'p<sub>y</sub>'},{q:3,html:'p<sub>z</sub>'}];
+  }
+  items.forEach(it=>{
+    const b=document.createElement('button');
+    b.type='button';
+    const col=slotColour(it.q);
+    b.innerHTML='<span class="dot" style="background:'+rgba(col,1)+'"></span>'+it.html;
+    b.setAttribute('aria-pressed',String(L.vis[it.q]));
+    b.addEventListener('click',()=>{
+      L.vis[it.q]=!L.vis[it.q];
+      b.setAttribute('aria-pressed',String(L.vis[it.q]));
+      latticeScene(); invalidate();
+    });
+    host.appendChild(b);
+  });
+}
+function latticeControls(){
+  makeSeg(el('seg-mat'),[{v:'diamond',html:'Diamond (sp³)'},{v:'graphene',html:'Graphene (sp²)'}],L.mat,v=>{
+    L.mat=v; L.vis=[true,true,true,true]; latticeControls(); latticeBuild(); latticeInfo(); latticeLegend();
+    camL.pitch=v==='graphene'?0.85:0.5; invalidate();
+  });
+  makeSeg(el('seg-basis'),[{v:'hyb',html:'Hybrids'},{v:'atomic',html:'Atomic s, p'}],L.basis,v=>{
+    L.basis=v; L.vis=[true,true,true,true]; latticeBuild(); latticeLegend(); invalidate();
+  });
+  makeSeg(el('seg-lmode'),[{v:'lobes',html:'Lobe shape'},{v:'cloud',html:'Probability cloud'}],L.mode,v=>{
+    L.mode=v; latticeBuild(); invalidate();
+  });
+  const dia=L.mat==='diamond';
+  makeSeg(el('seg-scope'),[{v:'one',html:'One atom'},{v:'many',html:dia?'Four inner atoms':'One hexagon'}],L.scope,v=>{
+    L.scope=v; latticeBuild(); invalidate();
+  });
+}
+TABS.lattice={
+  cam:camL,
+  render(){ L.view.render(L.scene); },
+  rebuild(){ latticeControls(); latticeBuild(); latticeInfo(); latticeLegend(); }
+};
+
+/* =====================================================
+   TAB 3: molecular orbitals
+   ===================================================== */
+const PAIRS=[
+  {id:'ss',   html:'1s – 1s',                                   kind:'σ',m:0,n:1,zeta:1.0,  ang:'s',   half:8, Rmax:8, Rdef:1.4,note:'hydrogen-like, H<sub>2</sub> equilibrium near 1.4 a₀'},
+  {id:'pz',   html:'2p<sub>z</sub> – 2p<sub>z</sub> (end-on)',  kind:'σ',m:0,n:2,zeta:1.625,ang:'pz',  half:9, Rmax:9, Rdef:2.9,note:'carbon-like ζ, C–C bond near 2.9 a₀'},
+  {id:'px',   html:'2p<sub>x</sub> – 2p<sub>x</sub> (side-on)', kind:'π',m:1,n:2,zeta:1.625,ang:'px',  half:9, Rmax:9, Rdef:2.9,note:'carbon-like ζ, C–C bond near 2.9 a₀'},
+  {id:'dz2',  html:'3d<sub>z²</sub> – 3d<sub>z²</sub>',         kind:'σ',m:0,n:3,zeta:2.0,  ang:'dz2', half:10,Rmax:10,Rdef:4.5,note:'transition-metal-like, bond near 4.5 a₀'},
+  {id:'dxz',  html:'3d<sub>xz</sub> – 3d<sub>xz</sub>',         kind:'π',m:1,n:3,zeta:2.0,  ang:'dxz', half:10,Rmax:10,Rdef:4.5,note:'transition-metal-like, bond near 4.5 a₀'},
+  {id:'dx2y2',html:'3d<sub>x²−y²</sub> – 3d<sub>x²−y²</sub>',   kind:'δ',m:2,n:3,zeta:2.0,  ang:'dx2y2',half:10,Rmax:10,Rdef:4.5,note:'transition-metal-like, bond near 4.5 a₀'}
+];
+const camM={yaw:0.35,pitch:0.45,zoom:1,auto:false};
+const MO={pair:1,R:2.9,view:'cloud',phi:0,ne:2,orb:null,tab:null,sigma0:1,Rmin:0.5,anim:null,npts:4500,vb:null,va:null,off:null};
+
+function moSelect(i){
+  MO.pair=i;
+  const P=PAIRS[i];
+  MO.orb=new Orbital(STO(P.n,P.zeta),ANG[P.ang],{rScan:30});
+  MO.tab=null;
+  MO.anim=null; el('btn-play').classList.remove('on'); el('btn-play').textContent='Bring atoms together';
+  MO.R=P.Rdef;
+  const sl=el('rng-R'); sl.min='0.5'; sl.max=String(P.Rmax); sl.value=String(P.Rdef);
+  moUpdateLabels();
+  setTimeout(()=>{
+    if(MO.pair!==i) return;
+    MO.tab=overlapTable(MO.orb,P.m,0.3,P.Rmax,60);
+    MO.sigma0=interpTab(MO.tab,P.Rdef)>=0?1:-1;
+    let k=0;
+    for(let q=0;q<MO.tab.R.length;q++) if(MO.tab.R[q]<=P.Rdef) k=q;
+    let kmin=k;
+    while(kmin>0 && MO.sigma0*MO.tab.S[kmin-1]>0.03) kmin--;
+    MO.Rmin=Math.max(0.3,Math.ceil(MO.tab.R[kmin]*20)/20);
+    sl.min=String(MO.Rmin);
+    if(MO.R<MO.Rmin) moSetR(MO.Rmin);
+    invalidate();
+  },15);
+  invalidate();
+}
+function moSetR(R){
+  MO.R=R; el('rng-R').value=String(R); moUpdateLabels();
+}
+function moUpdateLabels(){
+  el('out-R').textContent=MO.R.toFixed(2)+' a₀ = '+(MO.R*0.529177).toFixed(2)+' Å';
+  el('out-phi').textContent=MO.phi+'°';
+}
+function moTerms(R,bonding){
+  const s=MO.sigma0, o=MO.orb;
+  return [{orb:o,cx:0,cy:0,cz:-R/2,c:1},{orb:o,cx:0,cy:0,cz:R/2,c:bonding?s:-s}];
+}
+function levels(){
+  if(!MO.tab) return null;
+  const S=Math.min(MO.sigma0*interpTab(MO.tab,MO.R),0.75);
+  const Sp=Math.max(S,0);
+  return {S,Eb:-Sp/(1+Sp),Ea:Sp/(1-Sp)};
+}
+
+function moSliceValues(terms,half,phiDeg,SW,SH){
+  const vals=new Float32Array(SW*SH), ph=phiDeg*PI/180, cph=Math.cos(ph), sph=Math.sin(ph);
+  const zh=half*SW/SH;
+  let k=0;
+  for(let j=0;j<SH;j++){
+    const s=(0.5-(j+0.5)/SH)*2*half, x=s*cph, y=s*sph;
+    for(let i=0;i<SW;i++){
+      const z=((i+0.5)/SW-0.5)*2*zh;
+      let psi=0;
+      for(const t of terms) psi+=t.c*t.orb.eval(x-t.cx,y-t.cy,z-t.cz);
+      vals[k++]=psi;
+    }
+  }
+  return vals;
+}
+function moPaintSlice(cv,vals,amax,SW,SH,half,R){
+  if(!MO.off){ MO.off=document.createElement('canvas'); }
+  const off=MO.off; off.width=SW; off.height=SH;
+  const octx=off.getContext('2d'), img=octx.createImageData(SW,SH), d=img.data;
+  const bg=TH.bgRGB, pos=TH.pos, neg=TH.neg;
+  for(let i=0;i<vals.length;i++){
+    const v=vals[i]/amax, t=Math.min(1,Math.pow(Math.abs(v),0.55)*1.05), base=v>=0?pos:neg;
+    d[4*i]=bg[0]+(base[0]-bg[0])*t; d[4*i+1]=bg[1]+(base[1]-bg[1])*t; d[4*i+2]=bg[2]+(base[2]-bg[2])*t; d[4*i+3]=255;
+  }
+  octx.putImageData(img,0,0);
+  const dpr=fitCanvas(cv), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(off,0,0,W,H);
+  const zh=half*SW/SH, pxPer=W/(2*zh);
+  ctx.strokeStyle=rgba(TH.mutedRGB,0.55); ctx.lineWidth=dpr; ctx.setLineDash([4*dpr,4*dpr]);
+  ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=TH.ink;
+  for(const sgnZ of [-1,1]){
+    ctx.beginPath(); ctx.arc(W/2+sgnZ*R/2*pxPer,H/2,4*dpr,0,TAU); ctx.fill();
+  }
+  const bar=2*pxPer;
+  ctx.fillStyle=TH.muted; ctx.strokeStyle=TH.muted; ctx.lineWidth=2*dpr;
+  ctx.beginPath(); ctx.moveTo(12*dpr,H-14*dpr); ctx.lineTo(12*dpr+bar,H-14*dpr); ctx.stroke();
+  ctx.font=(12*dpr)+'px system-ui,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillText('2 a₀',12*dpr,H-20*dpr);
+}
+
+function moRender(){
+  const P=PAIRS[MO.pair], R=MO.R;
+  const tb=moTerms(R,true), ta=moTerms(R,false);
+  if(MO.view==='cloud'){
+    const cb=makeCloud(tb,MO.npts,rng(4242)), ca=makeCloud(ta,MO.npts,rng(4242));
+    const mk=c=>({
+      radius:P.half, bg:TH.bg, zHoriz:true,
+      groups:[Object.assign({},c,{size:1.9,cp:rgba(TH.pos,0.62),cn:rgba(TH.neg,0.62)})],
+      atoms:[-1,1].map(s=>({x:0,y:0,z:s*R/2,r:P.half*0.03,fill:TH.ink,hi:TH.ink,ring:null})),
+      note:'scale: axes span '+(2*P.half)+' a₀', noteColor:TH.muted
+    });
+    MO.vb.render(mk(cb)); MO.va.render(mk(ca));
+  }else{
+    const SW=200, SH=150;
+    const vb=moSliceValues(tb,P.half,MO.phi,SW,SH), va=moSliceValues(ta,P.half,MO.phi,SW,SH);
+    let amax=1e-9;
+    for(let i=0;i<vb.length;i++){ const a=Math.abs(vb[i]), b=Math.abs(va[i]); if(a>amax) amax=a; if(b>amax) amax=b; }
+    moPaintSlice(el('cv-mo-b'),vb,amax,SW,SH,P.half,R);
+    moPaintSlice(el('cv-mo-a'),va,amax,SW,SH,P.half,R);
+  }
+  moEnergy();
+  moText();
+}
+
+function moEnergy(){
+  const cv=el('cv-en'), dpr=fitCanvas(cv), ctx=cv.getContext('2d');
+  const w=cv.width/dpr, h=cv.height/dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=TH.bg; ctx.fillRect(0,0,w,h);
+  ctx.font='12px system-ui,sans-serif';
+  if(!MO.tab){ ctx.fillStyle=TH.muted; ctx.textAlign='center'; ctx.fillText('computing overlap…',w/2,h/2); return; }
+  const P=PAIRS[MO.pair], lv=levels();
+  const yMin=-0.8, yMax=3.2, top=26, bot=h-32;
+  const yOf=E=>bot-(E-yMin)/(yMax-yMin)*(bot-top);
+  const Lw=Math.min(240,w*0.44);
+  const px0=Lw+46, px1=w-14;
+  const cB=rgba(TH.pos,1), cA=rgba(TH.neg,1);
+
+  ctx.fillStyle=TH.muted; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillText('One-electron levels, qualitative',10,16);
+
+  const y0=yOf(0), yb=yOf(lv.Eb), ya=yOf(Math.min(lv.Ea,yMax-0.05));
+  const lx=[10,40], rx=[Lw-40,Lw-10], mx=[Lw/2-24,Lw/2+24];
+  ctx.strokeStyle=TH.ink; ctx.lineWidth=2;
+  const seg=(a,y)=>{ ctx.beginPath(); ctx.moveTo(a[0],y); ctx.lineTo(a[1],y); ctx.stroke(); };
+  seg(lx,y0); seg(rx,y0);
+  ctx.strokeStyle=cB; seg(mx,yb);
+  ctx.strokeStyle=cA; seg(mx,ya);
+  ctx.strokeStyle=rgba(TH.mutedRGB,0.6); ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  const conn=(x0,y0_,x1,y1)=>{ ctx.beginPath(); ctx.moveTo(x0,y0_); ctx.lineTo(x1,y1); ctx.stroke(); };
+  conn(lx[1],y0,mx[0],yb); conn(lx[1],y0,mx[0],ya); conn(rx[0],y0,mx[1],yb); conn(rx[0],y0,mx[1],ya);
+  ctx.setLineDash([]);
+  ctx.fillStyle=TH.ink; ctx.textAlign='center';
+  ctx.fillText('A',(lx[0]+lx[1])/2,y0+16); ctx.fillText('B',(rx[0]+rx[1])/2,y0+16);
+  ctx.fillStyle=cB; ctx.fillText(P.kind,Lw/2,yb+16);
+  ctx.fillStyle=cA; ctx.fillText(P.kind+'*',Lw/2,ya-6);
+  const nb=Math.min(MO.ne,2), na=Math.max(0,MO.ne-2);
+  ctx.fillStyle=TH.ink; ctx.font='15px system-ui,sans-serif';
+  ctx.fillText(nb===2?'↑↓':nb===1?'↑':'',Lw/2,yb-5);
+  ctx.fillText(na===2?'↑↓':na===1?'↑':'',Lw/2,ya-22);
+  ctx.font='12px system-ui,sans-serif';
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(px0,top,px1-px0,bot-top); ctx.clip();
+  const Rlo=MO.Rmin, Rhi=P.Rmax;
+  const xOf=R=>px0+(R-Rlo)/(Rhi-Rlo)*(px1-px0);
+  ctx.setLineDash([3,3]); ctx.strokeStyle=rgba(TH.mutedRGB,0.6); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(px0,y0); ctx.lineTo(px1,y0); ctx.stroke(); ctx.setLineDash([]);
+  const curve=(col,fn)=>{
+    ctx.strokeStyle=col; ctx.lineWidth=2; ctx.beginPath(); let first=true;
+    for(let q=0;q<MO.tab.R.length;q++){
+      const R=MO.tab.R[q]; if(R<Rlo-1e-9) continue;
+      const S=Math.max(0,Math.min(MO.sigma0*MO.tab.S[q],0.75));
+      const x=xOf(R), y=yOf(fn(S));
+      if(first){ ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  };
+  curve(cB,S=>-S/(1+S)); curve(cA,S=>S/(1-S));
+  ctx.strokeStyle=TH.ink; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(xOf(MO.R),top); ctx.lineTo(xOf(MO.R),bot); ctx.stroke();
+  ctx.fillStyle=cB; ctx.beginPath(); ctx.arc(xOf(MO.R),yb,4,0,TAU); ctx.fill();
+  ctx.fillStyle=cA; ctx.beginPath(); ctx.arc(xOf(MO.R),Math.max(top+2,ya),4,0,TAU); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle=TH.muted; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(px0,top); ctx.lineTo(px0,bot); ctx.lineTo(px1,bot); ctx.stroke();
+  ctx.fillStyle=TH.muted; ctx.textAlign='center';
+  const step=Rhi>9?2:1;
+  for(let R=Math.ceil(Rlo);R<=Rhi+1e-9;R+=step){ ctx.fillText(String(R),xOf(R),bot+14); }
+  ctx.fillText('R (a₀)',(px0+px1)/2,h-6);
+  ctx.textAlign='left'; ctx.fillText('E',px0+6,top+10);
+}
+
+function moText(){
+  const P=PAIRS[MO.pair], lv=levels();
+  const sg=MO.sigma0>0?'+':'−', sg2=MO.sigma0>0?'−':'+';
+  el('ttl-mo-b').innerHTML='Bonding '+P.kind+': φ<sub>A</sub> '+sg+' φ<sub>B</sub>';
+  el('ttl-mo-a').innerHTML='Antibonding '+P.kind+'*: φ<sub>A</sub> '+sg2+' φ<sub>B</sub>';
+  const nb=Math.min(MO.ne,2), na=Math.max(0,MO.ne-2), bo=(nb-na)/2;
+  const along=P.m===0?'no nodal plane through the axis':(P.m+' nodal plane'+(P.m>1?'s':'')+' containing the axis');
+  let h='<p><b>'+P.html+'</b>: '+P.kind+' type, '+along+'. '+P.note+'.</p>';
+  if(lv){
+    h+='<p class="readout">Overlap S = '+lv.S.toFixed(2)+'. Levels: E<sub>b</sub> = '+lv.Eb.toFixed(2)+', E<sub>a</sub> = '+(lv.Ea>9?'>9':lv.Ea.toFixed(2))+' in units of |β| (β ≈ −S).</p>';
+  }
+  h+='<p>Adding the orbitals piles amplitude between the nuclei and lowers the energy. The subtracting combination gains one extra nodal plane between the nuclei, costs kinetic energy and is pushed up more than the bonding one is pushed down.</p>';
+  h+='<p><b>Bond order '+(bo%1===0?bo:bo.toFixed(1))+'</b> for '+MO.ne+' electron'+(MO.ne===1?'':'s')+' in this pair.</p>';
+  h+='<p style="color:var(--text-dim)">With N atoms the N bonding and N antibonding combinations spread into a lower and an upper band. Levels here are E = (α ± β)/(1 ± S), a qualitative one-electron picture without nuclear repulsion.</p>';
+  el('info-mo').innerHTML=h;
+  el('hint-mo').textContent=MO.view==='cloud'
+    ?'Drag either view to rotate both. Blue and orange are opposite signs of ψ.'
+    :'Cut through the bond axis. Blue and orange are opposite signs of ψ; the dashed line is the axis and the dots are the nuclei.';
+}
+
+function moControls(){
+  makeSeg(el('seg-pair'),PAIRS.map((p,i)=>({v:i,html:p.html})),MO.pair,v=>{ moSelect(v); });
+  makeSeg(el('seg-view'),[{v:'cloud',html:'3D cloud'},{v:'slice',html:'Cross-section'}],MO.view,v=>{
+    MO.view=v; el('wrap-phi').style.display=v==='slice'?'flex':'none';
+    document.querySelectorAll('#tab-mo .cwrap canvas').forEach(c=>{ c.style.cursor=v==='cloud'?'grab':'default'; });
+    invalidate();
+  });
+  makeSeg(el('seg-ne'),[0,1,2,3,4].map(v=>({v,html:String(v)})),MO.ne,v=>{ MO.ne=v; invalidate(); });
+  el('wrap-phi').style.display=MO.view==='slice'?'flex':'none';
+}
+TABS.mo={
+  cam:camM,
+  tick(t){
+    if(MO.anim){
+      const a=MO.anim;
+      if(a.t0===null) a.t0=t;
+      const u=clamp((t-a.t0)/a.dur,0,1), e=1-Math.pow(1-u,2.2);
+      moSetR(Math.max(MO.Rmin,a.from+(a.to-a.from)*e));
+      if(u>=1){ MO.anim=null; el('btn-play').classList.remove('on'); el('btn-play').textContent='Bring atoms together'; }
+      else invalidate();
+    }
+  },
+  render(){ moRender(); },
+  rebuild(){ moControls(); if(!MO.orb) moSelect(MO.pair); }
+};
+
+/* =====================================================
+   wiring
+   ===================================================== */
+function setTab(name){
+  curTab=name;
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name)));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='tab-'+name));
+  invalidate();
+}
+function init(){
+  TH=readTheme();
+  A.view=new View3D(el('cv-atomic'),camA);
+  L.view=new View3D(el('cv-lat'),camL);
+  MO.vb=new View3D(el('cv-mo-b'),camM);
+  MO.va=new View3D(el('cv-mo-a'),camM);
+
+  document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+
+  el('rng-pts').addEventListener('change',e=>{ A.npts=+e.target.value; atomicBuild(); invalidate(); });
+  el('chk-rot-a').addEventListener('change',e=>{ camA.auto=e.target.checked; invalidate(); });
+  el('chk-rot-l').addEventListener('change',e=>{ camL.auto=e.target.checked; invalidate(); });
+  el('chk-pi').addEventListener('change',e=>{ L.piAll=e.target.checked; latticeBuild(); invalidate(); });
+
+  el('rng-R').addEventListener('input',e=>{
+    MO.anim=null; el('btn-play').classList.remove('on'); el('btn-play').textContent='Bring atoms together';
+    MO.R=Math.max(MO.Rmin,+e.target.value); moUpdateLabels(); invalidate();
+  });
+  el('rng-phi').addEventListener('input',e=>{ MO.phi=+e.target.value; moUpdateLabels(); invalidate(); });
+  el('btn-play').addEventListener('click',()=>{
+    const b=el('btn-play');
+    if(MO.anim){ MO.anim=null; b.classList.remove('on'); b.textContent='Bring atoms together'; return; }
+    const P=PAIRS[MO.pair];
+    MO.anim={t0:null,from:P.Rmax,to:P.Rdef,dur:5000};
+    b.classList.add('on'); b.textContent='Stop';
+    invalidate();
+  });
+
+  atomicControls(); atomicBuild();
+  TABS.lattice.rebuild();
+  TABS.mo.rebuild();
+  moUpdateLabels();
+
+  const rebuildAll=()=>{ TH=readTheme(); atomicScene(); latticeBuild(); latticeLegend(); invalidate(); };
+  if(window.matchMedia){
+    const mq=window.matchMedia('(prefers-color-scheme: dark)');
+    if(mq.addEventListener) mq.addEventListener('change',rebuildAll);
+  }
+  new MutationObserver(rebuildAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  if(window.ResizeObserver){
+    const ro=new ResizeObserver(()=>invalidate());
+    document.querySelectorAll('.cwrap').forEach(w=>ro.observe(w));
+  }else window.addEventListener('resize',invalidate);
+  invalidate();
+}
+init();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
