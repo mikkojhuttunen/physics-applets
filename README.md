@@ -9,7 +9,7 @@ Each course has its own folder with an `index.html` listing its applets.
 
 - `fys232-structure-of-matter/`
 - `fys240-optics/`
-- `fys310-solid-state-physics/` — 3D lattice viewer, Van Hove and DOS explorer,
+- `fys310-solid-state-physics/` — lattice viewer (3D lattices with primitive vectors, Brillouin zones with empty-lattice bands, 2D Bravais lattices), Van Hove and DOS explorer,
   band structure explorer (empty lattice, weak potential, Al/Si/Ge/GaAs/diamond
   and AlGaAs composition).
 - `fys501-laser-physics/` — laser gain media absorption/emission spectra, a
