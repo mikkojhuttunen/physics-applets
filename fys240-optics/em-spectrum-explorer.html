@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Electromagnetic Spectrum Explorer — FYS.240 Optics</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys240-optics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+  :root{
+    --band-radio:#64748b; --band-micro:var(--blue); --band-thz:var(--cyan);
+    --band-ir:var(--red); --band-uv:var(--violet); --band-euv:#c026d3;
+    --band-xray:var(--orange); --band-gamma:#f472b6;
+    --natural:var(--green); --engineered:var(--accent); --telecom:var(--yellow);
+  }
+
+  html, body{ height:100%; margin:0; scroll-padding-top: env(safe-area-inset-top, 0px); }
+  #app{ min-height:100%; display:flex; flex-direction:column; }
+  header{ padding:14px 16px 10px; border-bottom:1px solid var(--border); }
+  header h1{ margin:0 0 2px; }
+  header p{ margin:0; }
+
+  main{ flex:1; display:flex; flex-direction:column; gap:0; }
+  @media (min-width: 900px){
+    main{ flex-direction:row; align-items:flex-start; }
+    #stageWrap{ flex:1 1 66%; min-width:0; }
+    #panel{ flex:1 1 34%; max-width:380px; border-left:1px solid var(--border);
+      position:sticky; top:0; max-height:100vh; overflow-y:auto; }
+  }
+
+  #stageWrap{ padding:16px; display:flex; flex-direction:column; gap:14px; }
+  #panel{ padding:14px 16px 24px; display:flex; flex-direction:column; gap:14px; }
+
+  h2.card-title{ margin:0 0 10px; font-size:var(--fs-label); color:var(--text-dim);
+    text-transform:uppercase; letter-spacing:.04em; }
+
+  /* ---------- spectrum bar ---------- */
+  #barOuter{ position:relative; user-select:none; touch-action:none; padding-top:18px; padding-bottom:46px; }
+  #barTicks{ position:relative; height:16px; margin-bottom:2px; }
+  .tick{ position:absolute; top:0; transform:translateX(-50%); font-family:var(--font-mono);
+    font-size:var(--fs-tiny); color:var(--text-faint); white-space:nowrap; }
+  .tick::before{ content:""; position:absolute; left:50%; top:14px; width:1px; height:6px; background:var(--border); }
+
+  #barTrack{ position:relative; height:48px; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  .band{ position:absolute; top:0; bottom:0; display:flex; align-items:center; justify-content:center;
+    font-size:var(--fs-tiny); font-weight:600; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35);
+    overflow:hidden; white-space:nowrap; cursor:pointer; }
+  .band.narrow{ color:transparent; }
+  #visibleGradient{ background:linear-gradient(90deg,
+      #7d1fa8 0%, #4c3df0 14%, #2f7bf5 28%, #23c7d9 42%, #3ecf6e 56%,
+      #e8d44d 70%, #f2914b 84%, #d1382c 100%); }
+
+  .narrowLabels{ position:relative; height:26px; }
+  .narrowLabel{ position:absolute; top:0; transform:translateX(-50%); text-align:center; }
+  .narrowLabel .leader{ width:1px; height:8px; background:var(--border); margin:0 auto; }
+  .narrowLabel .txt{ font-size:var(--fs-tiny); color:var(--text-dim); font-weight:600; white-space:nowrap; }
+
+  #cursor{ position:absolute; top:-18px; bottom:-46px; width:2px; background:var(--accent);
+    transform:translateX(-50%); cursor:ew-resize; pointer-events:none; z-index:5; }
+  #cursor::before{ content:""; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:12px; height:12px; border-radius:50%; background:var(--accent); border:2px solid var(--panel); }
+
+  /* ---------- blackbody chart ---------- */
+  #bbChart{ position:relative; height:120px; border:1px solid var(--border); border-radius:8px;
+    background:var(--panel); overflow:hidden; }
+  #bbSvg{ position:absolute; inset:0; width:100%; height:100%; }
+  .bbToggles{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .bbToggles label{ display:flex; align-items:center; gap:5px; font-size:var(--fs-small);
+    color:var(--text-dim); padding:4px 8px; border:1px solid var(--border); border-radius:999px; cursor:pointer; }
+  .bbToggles label.on{ color:var(--text); }
+  .swatch{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  /* ---------- readout ---------- */
+  .readoutGrid{ display:grid; grid-template-columns:1fr auto; gap:6px 10px; font-size:var(--fs-body); }
+  .readoutGrid dt{ color:var(--text-dim); }
+  .readoutGrid dd{ margin:0; font-family:var(--font-mono); font-variant-numeric:tabular-nums;
+    text-align:right; color:var(--accent); font-weight:600; }
+  #bandName{ font-size:1.05rem; font-weight:700; margin:0 0 2px; }
+  #sizeCompare{ font-size:var(--fs-small); color:var(--text-dim); margin-top:6px; line-height:1.45; }
+
+  .presets{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .presets .btn{ text-align:left; font-size:var(--fs-small); }
+
+  /* ---------- sources ---------- */
+  #sourcesCard .seg{ margin-bottom:10px; }
+  #sourceList{ display:flex; flex-direction:column; gap:8px; max-height:360px; overflow-y:auto;
+    padding-right:2px; }
+  .src{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; opacity:.45;
+    transition:opacity .15s, border-color .15s, background .15s; cursor:pointer; }
+  .src.active{ opacity:1; border-color:var(--accent); background:var(--accent-soft); }
+  .src-head{ display:flex; align-items:center; gap:7px; }
+  .src-dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+  .src-name{ font-weight:600; font-size:var(--fs-body); }
+  .src-range{ margin-left:auto; font-family:var(--font-mono); font-size:var(--fs-tiny); color:var(--text-faint); }
+  .src-desc{ font-size:var(--fs-small); color:var(--text-dim); margin:4px 0 0 15px; line-height:1.4; }
+  .src.quiz .src-name{ filter:blur(5px); }
+  .src.quiz.revealed .src-name{ filter:none; }
+  .src.quiz .src-desc{ filter:blur(3px); }
+  .src.quiz.revealed .src-desc{ filter:none; }
+
+  footer.hint{ font-size:11.5px; color:var(--text-faint); padding:10px 16px 18px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Electromagnetic Spectrum Explorer</h1>
+    <p class="sub">Drag the marker across the full electromagnetic spectrum — from long-wave radio to gamma rays — and see which real sources radiate at that wavelength.</p>
+  </header>
+
+  <main>
+    <div id="stageWrap">
+      <section class="card" id="spectrumCard">
+        <h2 class="card-title">Spectrum — drag or click to explore</h2>
+        <div id="barOuter">
+          <div id="barTicks"></div>
+          <div id="barTrack">
+            <div id="cursor"></div>
+          </div>
+          <div class="narrowLabels" id="narrowLabels"></div>
+        </div>
+      </section>
+
+      <section class="card" id="bbCard">
+        <h2 class="card-title">Blackbody spectra (normalized, aligned to the axis above)</h2>
+        <div id="bbChart"><svg id="bbSvg" viewBox="0 0 1000 120" preserveAspectRatio="none"></svg></div>
+        <div class="bbToggles" id="bbToggles"></div>
+        <p class="note" style="margin-top:8px;">Each curve is a Planck blackbody spectrum, individually height-normalized so the very different intensities of the Sun and the cosmic microwave background can be compared on one axis. Only the <em>peak position</em> (Wien's law) is meaningful across curves — not the relative heights.</p>
+      </section>
+
+      <section class="card" id="sourcesCard">
+        <h2 class="card-title">Real sources at this wavelength</h2>
+        <div class="seg" id="filterSeg">
+          <button data-f="all" class="active">All</button>
+          <button data-f="natural">Natural</button>
+          <button data-f="engineered">Engineered</button>
+          <button data-f="telecom">Telecom / applied</button>
+        </div>
+        <div class="row" style="margin-bottom:8px;">
+          <button class="btn small" id="quizBtn">Quiz mode: hide names</button>
+        </div>
+        <div id="sourceList"></div>
+      </section>
+    </div>
+
+    <div id="panel">
+      <section class="card">
+        <h2 class="card-title">Reading</h2>
+        <p id="bandName">—</p>
+        <dl class="readoutGrid">
+          <dt>Wavelength λ</dt><dd id="rLambda">—</dd>
+          <dt>Frequency ν</dt><dd id="rFreq">—</dd>
+          <dt>Photon energy</dt><dd id="rEnergy">—</dd>
+        </dl>
+        <p id="sizeCompare"></p>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">Jump to a region</h2>
+        <div class="presets" id="presets"></div>
+      </section>
+
+      <p class="note">Tip: click anywhere on the bar, drag the marker, or use the ← / → arrow keys after clicking it for fine control.</p>
+    </div>
+  </main>
+
+  <footer class="hint">Band boundaries and source wavelength ranges are representative, not sharply defined — real emitters, atmospheric windows and engineering categories overlap. Photon energies use E = hc/λ; blackbody curves use Planck's law, each normalized to its own peak.</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const h = 6.62607015e-34, c = 2.99792458e8, kB = 1.380649e-23, eV = 1.602176634e-19;
+
+  // Display range: 10^5 m (100 km) down to 10^-15 m (1 am) — 20 decades
+  const LOG_MAX = 5, LOG_MIN = -15;
+  const xPercent = (lambda) => (LOG_MAX - Math.log10(lambda)) / (LOG_MAX - LOG_MIN) * 100;
+  const xToLambda = (frac) => Math.pow(10, LOG_MAX - frac * (LOG_MAX - LOG_MIN));
+
+  const BANDS = [
+    { id:'radio',  name:'Radio',       hi:1e5,    lo:1e-1,   color:'var(--band-radio)' },
+    { id:'micro',  name:'Microwave',   hi:1e-1,   lo:1e-3,   color:'var(--band-micro)' },
+    { id:'thz',    name:'THz',         hi:1e-3,   lo:1e-4,   color:'var(--band-thz)', narrow:true },
+    { id:'ir',     name:'Infrared',    hi:1e-4,   lo:7e-7,   color:'var(--band-ir)' },
+    { id:'vis',    name:'Visible',     hi:7e-7,   lo:4e-7,   color:null, narrow:true, gradient:true },
+    { id:'uv',     name:'Ultraviolet', hi:4e-7,   lo:1.21e-7,color:'var(--band-uv)' },
+    { id:'euv',    name:'EUV',         hi:1.21e-7,lo:1e-8,   color:'var(--band-euv)', narrow:true },
+    { id:'xray',   name:'X-ray',       hi:1e-8,   lo:1e-11,  color:'var(--band-xray)' },
+    { id:'gamma',  name:'Gamma ray',   hi:1e-11,  lo:1e-15,  color:'var(--band-gamma)' },
+  ];
+
+  const SOURCES = [
+    { name:'AM / FM / TV broadcast', tag:'telecom', lo:1, hi:1e3,
+      desc:'Long-wavelength radio carries broadcast signals around the globe and beyond the horizon.' },
+    { name:'Pulsars', tag:'natural', lo:3e-2, hi:10,
+      desc:'Rotating neutron stars sweep a radio beam past us like a lighthouse.' },
+    { name:'Radar', tag:'engineered', lo:3e-3, hi:3e-1,
+      desc:'Pulsed radio/microwaves reflected off aircraft, weather, or terrain to measure range and speed.' },
+    { name:'Masers', tag:'engineered', lo:1e-2, hi:3e-2,
+      desc:'Stimulated microwave emission — the ancestor of the laser (e.g. ammonia maser, 1.25 cm).' },
+    { name:'5G / 6G wireless', tag:'telecom', lo:1e-3, hi:1e-1,
+      desc:'5G reaches into mmWave (24–100 GHz); 6G research pushes toward the sub-THz band.' },
+    { name:'Cosmic microwave background', tag:'natural', lo:5e-4, hi:5e-3,
+      desc:'The 2.725 K afterglow of the Big Bang, filling the whole sky. Peak intensity near 1.9 mm.' },
+    { name:'Free-electron lasers (THz/IR)', tag:'engineered', lo:3e-5, hi:3e-3,
+      desc:'Relativistic electrons wiggling through a magnetic undulator generate tunable, high-power radiation.' },
+    { name:'THz quantum-cascade lasers', tag:'engineered', lo:6e-5, hi:3e-4,
+      desc:"Engineered semiconductor superlattices reach into the elusive 'THz gap' between electronics and optics." },
+    { name:'Mid-IR quantum-cascade lasers', tag:'engineered', lo:3e-6, hi:2e-5,
+      desc:'Intersubband semiconductor lasers, widely used for trace-gas spectroscopy.' },
+    { name:'Thermal / blackbody emitters', tag:'natural', lo:2e-6, hi:2e-5,
+      desc:'Warm objects glow in the infrared — including the human body (~310 K, peak ≈ 9.4 µm).' },
+    { name:'Solar spectrum', tag:'natural', lo:2.8e-7, hi:2.5e-6,
+      desc:"The Sun's ≈5778 K blackbody spectrum peaks near 500 nm (green) — right in the middle of our visible window." },
+    { name:'LEDs', tag:'engineered', lo:4e-7, hi:7e-7,
+      desc:'Semiconductor p–n junctions convert current directly into visible photons.' },
+    { name:'Diode & gas lasers', tag:'engineered', lo:4e-7, hi:7e-7,
+      desc:'HeNe (632.8 nm), Ar-ion, and laser-diode sources used across the optics lab.' },
+    { name:'UV LEDs', tag:'engineered', lo:2.8e-7, hi:4e-7,
+      desc:'Wide-bandgap semiconductors (AlGaN) generate near- and mid-UV light.' },
+    { name:'Excimer lasers', tag:'engineered', lo:1.5e-7, hi:3.1e-7,
+      desc:'Noble-gas halide discharges (ArF 193 nm, KrF 248 nm, XeCl 308 nm) for lithography and refractive eye surgery.' },
+    { name:'High-harmonic generation', tag:'engineered', lo:1e-9, hi:1e-7,
+      desc:"An intense femtosecond laser reshapes an atom's electron cloud, radiating odd harmonics up into the XUV." },
+    { name:'EUV lithography sources', tag:'engineered', lo:1.2e-8, hi:1.4e-8,
+      desc:'Tin droplets blasted by a CO₂ laser create the 13.5 nm plasma light used to print modern computer chips.' },
+    { name:'Röntgen tubes', tag:'engineered', lo:1e-11, hi:1e-8,
+      desc:'Electrons slam into a metal target; bremsstrahlung plus characteristic lines — the original 1895 X-ray source.' },
+    { name:'Synchrotrons', tag:'engineered', lo:1e-11, hi:1e-8,
+      desc:'Storage-ring electrons bent by magnets emit bright, continuously tunable X-rays for crystallography and imaging.' },
+    { name:'X-ray free-electron lasers', tag:'engineered', lo:1e-11, hi:1e-9,
+      desc:'Kilometer-scale accelerators (e.g. LCLS, European XFEL) produce coherent, femtosecond hard X-ray pulses.' },
+    { name:'Supernovae', tag:'natural', lo:1e-14, hi:1e-11,
+      desc:'Core-collapse and thermonuclear explosions flood space with gamma rays and X-rays — plus every other band.' },
+    { name:'Gamma-ray bursts', tag:'natural', lo:1e-15, hi:1e-12,
+      desc:'The most energetic known events in the universe — merging neutron stars, collapsing massive stars.' },
+    { name:'Nuclear decay', tag:'natural', lo:1e-13, hi:1e-11,
+      desc:'Radioactive isotopes emit gamma photons with sharp, characteristic energies.' },
+  ];
+
+  const PRESETS = [
+    { label:'Radio · 1 m',      lambda:1 },
+    { label:'Microwave · 1 cm', lambda:1e-2 },
+    { label:'THz · 200 µm',     lambda:2e-4 },
+    { label:'Infrared · 10 µm', lambda:1e-5 },
+    { label:'Visible · 550 nm', lambda:5.5e-7 },
+    { label:'Ultraviolet · 250 nm', lambda:2.5e-7 },
+    { label:'EUV · 30 nm',      lambda:3e-8 },
+    { label:'X-ray · 0.1 nm',   lambda:1e-10 },
+    { label:'Gamma ray · 1 fm', lambda:1e-15 },
+  ];
+
+  const BB_CURVES = [
+    { id:'sun',   label:'Sun (5778 K)',        T:5778,  color:'var(--yellow)', on:true },
+    { id:'bulb',  label:'Incandescent bulb (2856 K)', T:2856, color:'var(--orange)', on:false },
+    { id:'body',  label:'Human body (310 K)',  T:310,   color:'var(--red)', on:false },
+    { id:'cmb',   label:'CMB (2.725 K)',       T:2.725, color:'var(--band-micro)', on:true },
+  ];
+
+  const SIZE_SCALE = [
+    { max: 1e5,  text:'longer than several football fields, end to end' },
+    { max: 1e2,  text:'about the size of a football field to a small building' },
+    { max: 1,    text:'room-sized — a car, a doorway' },
+    { max: 1e-2, text:'hand-sized, like a basketball or a dinner plate' },
+    { max: 1e-3, text:'about the width of a grain of rice' },
+    { max: 1e-4, text:'roughly the diameter of a human hair (~50–100 µm)' },
+    { max: 1e-5, text:'the size of a typical living cell' },
+    { max: 1e-6, text:'the size of a bacterium' },
+    { max: 1e-7, text:'the size of a large virus' },
+    { max: 1e-8, text:'the size of a small virus or a large protein' },
+    { max: 1e-9, text:'about the width of a DNA double helix (~2 nm)' },
+    { max: 1e-10,text:'molecular scale — a few chemical bond lengths' },
+    { max: 1e-11,text:'the size of a single atom (~1 Å)' },
+    { max: 1e-13,text:'smaller than an atom — probing the electron cloud' },
+    { max: 1e-15,text:'approaching the scale of an atomic nucleus' },
+    { max: 0,    text:'inside the nucleus — subnuclear scale' },
+  ];
+
+  // ---------- helpers ----------
+  function trimmed(value, digits){
+    return parseFloat(value.toFixed(digits)).toString();
+  }
+  const LEN_PREFIXES = [
+    {exp:-15,sym:'f'},{exp:-12,sym:'p'},{exp:-9,sym:'n'},{exp:-6,sym:'µ'},
+    {exp:-3,sym:'m'},{exp:0,sym:''},{exp:3,sym:'k'},
+  ].sort((a,b)=>a.exp-b.exp);
+  const FREQ_PREFIXES = [
+    {exp:0,sym:''},{exp:3,sym:'k'},{exp:6,sym:'M'},{exp:9,sym:'G'},
+    {exp:12,sym:'T'},{exp:15,sym:'P'},{exp:18,sym:'E'},{exp:21,sym:'Z'},
+  ].sort((a,b)=>a.exp-b.exp);
+
+  function pickPrefix(value, prefixes){
+    const exp = Math.floor(Math.log10(Math.abs(value)));
+    let best = prefixes[0];
+    for (const p of prefixes) if (exp >= p.exp) best = p; else break;
+    return best;
+  }
+  function formatLambda(lambda){
+    const best = pickPrefix(lambda, LEN_PREFIXES);
+    const scaled = lambda / Math.pow(10, best.exp);
+    const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
+    return trimmed(scaled, digits) + ' ' + best.sym + 'm';
+  }
+  function formatFreq(freq){
+    const best = pickPrefix(freq, FREQ_PREFIXES);
+    const scaled = freq / Math.pow(10, best.exp);
+    const digits = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
+    return trimmed(scaled, digits) + ' ' + best.sym + 'Hz';
+  }
+  function formatEnergy(eVvalue){
+    if (eVvalue >= 1e6) return trimmed(eVvalue/1e6, 2) + ' MeV';
+    if (eVvalue >= 1e3) return trimmed(eVvalue/1e3, 2) + ' keV';
+    if (eVvalue >= 1) return trimmed(eVvalue, eVvalue>=10?1:3) + ' eV';
+    if (eVvalue >= 1e-3) return trimmed(eVvalue*1e3, 2) + ' meV';
+    if (eVvalue >= 1e-6) return trimmed(eVvalue*1e6, 2) + ' µeV';
+    return trimmed(eVvalue*1e9, 2) + ' neV';
+  }
+  function sizeCompare(lambda){
+    for (const row of SIZE_SCALE) if (lambda >= row.max) return row.text;
+    return SIZE_SCALE[SIZE_SCALE.length-1].text;
+  }
+  function bandFor(lambda){
+    for (const b of BANDS) if (lambda <= b.hi && lambda >= b.lo) return b;
+    return lambda > BANDS[0].hi ? BANDS[0] : BANDS[BANDS.length-1];
+  }
+
+  // ---------- build spectrum bar ----------
+  const barTrack = document.getElementById('barTrack');
+  const barTicks = document.getElementById('barTicks');
+  const narrowLabels = document.getElementById('narrowLabels');
+  const cursorEl = document.getElementById('cursor');
+
+  BANDS.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'band' + (b.narrow ? ' narrow' : '');
+    const left = xPercent(b.hi), right = xPercent(b.lo);
+    div.style.left = left + '%';
+    div.style.width = (right - left) + '%';
+    if (b.gradient) { div.id = 'visibleGradient'; }
+    else { div.style.background = b.color; }
+    if (!b.narrow) div.textContent = b.name;
+    div.title = b.name;
+    div.addEventListener('click', () => setLambda(Math.sqrt(b.hi*b.lo)));
+    barTrack.appendChild(div);
+  });
+
+  BANDS.filter(b => b.narrow).forEach(b => {
+    const mid = Math.sqrt(b.hi * b.lo);
+    const pct = xPercent(mid);
+    const wrap = document.createElement('div');
+    wrap.className = 'narrowLabel';
+    wrap.style.left = pct + '%';
+    wrap.innerHTML = '<div class="leader"></div><div class="txt">' + b.name + '</div>';
+    narrowLabels.appendChild(wrap);
+  });
+
+  // decade tick marks
+  for (let e = LOG_MIN; e <= LOG_MAX; e++){
+    const lambda = Math.pow(10, e);
+    const pct = xPercent(lambda);
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.style.left = pct + '%';
+    tick.textContent = formatLambda(lambda);
+    barTicks.appendChild(tick);
+  }
+
+  // ---------- blackbody chart ----------
+  const bbSvg = document.getElementById('bbSvg');
+  const bbToggles = document.getElementById('bbToggles');
+  const N_SAMPLES = 300;
+  const sampleLambdas = [];
+  for (let i = 0; i <= N_SAMPLES; i++){
+    sampleLambdas.push(xToLambda(i / N_SAMPLES));
+  }
+
+  function planckLnShape(lambda, T){
+    const x = (h*c) / (lambda*kB*T);
+    let lnDenom;
+    if (x > 50) lnDenom = x;
+    else if (x < 1e-6) lnDenom = Math.log(x);
+    else lnDenom = Math.log(Math.expm1(x));
+    return -5*Math.log(lambda) - lnDenom;
+  }
+  function curvePath(T){
+    const lns = sampleLambdas.map(l => planckLnShape(l, T));
+    const maxLn = Math.max(...lns);
+    const vals = lns.map(v => Math.exp(v - maxLn));
+    let d = '';
+    vals.forEach((v, i) => {
+      const x = (i / N_SAMPLES) * 1000;
+      const y = 116 - v * 108;
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    });
+    return d;
+  }
+
+  function renderBB(){
+    bbSvg.innerHTML = '';
+    BB_CURVES.forEach(curve => {
+      if (!curve.on) return;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', curvePath(curve.T));
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke', curve.color);
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('vector-effect','non-scaling-stroke');
+      bbSvg.appendChild(path);
+    });
+  }
+  function renderBBToggles(){
+    bbToggles.innerHTML = '';
+    BB_CURVES.forEach(curve => {
+      const label = document.createElement('label');
+      label.className = curve.on ? 'on' : '';
+      label.innerHTML = '<span class="swatch" style="background:' + curve.color + '"></span>' + curve.label;
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = curve.on;
+      cb.style.display = 'none';
+      label.prepend(cb);
+      label.addEventListener('click', (e) => {
+        e.preventDefault();
+        curve.on = !curve.on;
+        renderBBToggles();
+        renderBB();
+      });
+      bbToggles.appendChild(label);
+    });
+  }
+
+  // ---------- sources ----------
+  const sourceList = document.getElementById('sourceList');
+  let filterTag = 'all';
+  let quizMode = false;
+
+  function renderSources(lambda){
+    sourceList.innerHTML = '';
+    SOURCES.filter(s => filterTag === 'all' || s.tag === filterTag)
+      .sort((a,b) => a.lo - b.lo)
+      .forEach(s => {
+        const active = lambda >= s.lo && lambda <= s.hi;
+        const el = document.createElement('div');
+        el.className = 'src' + (active ? ' active' : '') + (quizMode ? ' quiz' : '');
+        const dotColor = s.tag === 'natural' ? 'var(--natural)' : s.tag === 'telecom' ? 'var(--telecom)' : 'var(--engineered)';
+        el.innerHTML =
+          '<div class="src-head">' +
+            '<span class="src-dot" style="background:' + dotColor + '"></span>' +
+            '<span class="src-name">' + s.name + '</span>' +
+            '<span class="src-range">' + formatLambda(s.hi) + ' – ' + formatLambda(s.lo) + '</span>' +
+          '</div>' +
+          '<div class="src-desc">' + s.desc + '</div>';
+        if (quizMode){
+          el.addEventListener('click', () => el.classList.toggle('revealed'));
+        } else {
+          el.addEventListener('click', () => setLambda(Math.sqrt(s.lo*s.hi)));
+        }
+        sourceList.appendChild(el);
+      });
+  }
+
+  document.getElementById('filterSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#filterSeg button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterTag = btn.dataset.f;
+    renderSources(currentLambda);
+  });
+  const quizBtn = document.getElementById('quizBtn');
+  quizBtn.addEventListener('click', () => {
+    quizMode = !quizMode;
+    quizBtn.textContent = quizMode ? 'Quiz mode: show names' : 'Quiz mode: hide names';
+    quizBtn.classList.toggle('active', quizMode);
+    renderSources(currentLambda);
+  });
+
+  // ---------- presets ----------
+  const presetsEl = document.getElementById('presets');
+  PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = p.label;
+    btn.addEventListener('click', () => setLambda(p.lambda));
+    presetsEl.appendChild(btn);
+  });
+
+  // ---------- readouts + cursor ----------
+  const rLambda = document.getElementById('rLambda');
+  const rFreq = document.getElementById('rFreq');
+  const rEnergy = document.getElementById('rEnergy');
+  const bandNameEl = document.getElementById('bandName');
+  const sizeCompareEl = document.getElementById('sizeCompare');
+
+  let currentLambda = 5.5e-7;
+
+  function setLambda(lambda){
+    currentLambda = Math.min(Math.pow(10,LOG_MAX), Math.max(Math.pow(10,LOG_MIN), lambda));
+    const pct = xPercent(currentLambda);
+    cursorEl.style.left = pct + '%';
+
+    const freq = c / currentLambda;
+    const energyEV = (h*c) / (currentLambda*eV);
+    rLambda.textContent = formatLambda(currentLambda);
+    rFreq.textContent = formatFreq(freq);
+    rEnergy.textContent = formatEnergy(energyEV);
+
+    const band = bandFor(currentLambda);
+    bandNameEl.textContent = band.name;
+    sizeCompareEl.textContent = 'For scale: this wavelength is ' + sizeCompare(currentLambda) + '.';
+
+    renderSources(currentLambda);
+  }
+
+  // pointer interaction
+  function fracFromEvent(evt){
+    const rect = barTrack.getBoundingClientRect();
+    const x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+    return Math.min(1, Math.max(0, x / rect.width));
+  }
+  let dragging = false;
+  function startDrag(evt){
+    dragging = true;
+    setLambda(xToLambda(fracFromEvent(evt)));
+    evt.preventDefault();
+  }
+  function moveDrag(evt){
+    if (!dragging) return;
+    setLambda(xToLambda(fracFromEvent(evt)));
+    evt.preventDefault();
+  }
+  function endDrag(){ dragging = false; }
+
+  barTrack.addEventListener('pointerdown', (e) => { barTrack.setPointerCapture(e.pointerId); startDrag(e); });
+  barTrack.addEventListener('pointermove', moveDrag);
+  barTrack.addEventListener('pointerup', endDrag);
+  barTrack.addEventListener('pointercancel', endDrag);
+  cursorEl.style.pointerEvents = 'none';
+
+  barTrack.tabIndex = 0;
+  barTrack.addEventListener('keydown', (e) => {
+    const factor = e.shiftKey ? 1.02 : 1.08;
+    if (e.key === 'ArrowRight'){ setLambda(currentLambda / factor); e.preventDefault(); }
+    if (e.key === 'ArrowLeft'){ setLambda(currentLambda * factor); e.preventDefault(); }
+  });
+
+  // ---------- init ----------
+  renderBBToggles();
+  renderBB();
+  setLambda(currentLambda);
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
