@@ -27,7 +27,9 @@ Each course has its own folder with an `index.html` listing its applets.
   applet (linear vs ring cavity), and a mode-competition applet (homogeneous vs
   inhomogeneous gain, intracavity etalon, cavity length), a laser-condition and
   logarithmic-losses applet (threshold inversion, round-trip gain waterfall), and
-  a coherence explorer (Michelson and Young, temporal vs spatial coherence).
+  a coherence explorer (Michelson and Young, temporal vs spatial coherence),
+  and an output-coupler optimization applet (output power vs mirror
+  transmission, optimum for given gain and loss).
 - `finnmath-app/`
 
 Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course

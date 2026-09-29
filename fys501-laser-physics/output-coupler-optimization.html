@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Optimum output coupling</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
+  --out:#1f6feb; --ext:#5b6570; --lost:#e03131; --opt:#2f9e44; --you:#d9480f; --accent:#1f6feb;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+    --out:#5c9dff; --ext:#9aa4af; --lost:#ff6b6b; --opt:#51cf66; --you:#ff8a4c; --accent:#5c9dff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+  --out:#5c9dff; --ext:#9aa4af; --lost:#ff6b6b; --opt:#51cf66; --you:#ff8a4c; --accent:#5c9dff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:940px;margin:0 auto;padding:16px 16px 28px;}
+h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+.sub{color:var(--muted);margin:0 0 14px;font-size:.9rem}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 14px;overflow-x:auto;line-height:1.9}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+.presets .lab{font-size:.82rem;color:var(--muted);margin-right:2px}
+.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.84rem;padding:5px 10px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-bottom:12px}
+.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:10px 14px 12px;display:flex;flex-direction:column;gap:11px}
+.grp h2{margin:0;font-size:.95rem;font-weight:650;color:var(--gc,var(--accent))}
+.grp.med{--gc:var(--opt)}
+.grp.loss{--gc:var(--lost)}
+.grp.oc{--gc:var(--you)}
+.ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+.hint{font-size:.76rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:5px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.82rem;cursor:pointer;border-right:1px solid var(--border)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--sc,var(--muted));border-radius:0 10px 10px 0}
+.status .pill{font-weight:650;color:var(--sc,var(--muted))}
+.status .txt{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:0 0 12px}
+.read{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.read .k{font-size:.76rem;color:var(--muted)}
+.read .v{font-size:1.25rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+.read .s{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.plotbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 10px 6px;margin-bottom:12px}
+.plotbox .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:0 4px 2px}
+.plotbox h3{margin:0;font-size:.92rem;font-weight:650}
+.plotbox .cap{margin:0 4px 6px;font-size:.8rem;color:var(--muted)}
+.plotbox .seg{flex:0 0 auto}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:2px 4px 4px;font-size:.78rem;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:5px}
+.legend i.dash{border-top-style:dashed}
+.legend i.blk{height:9px;border:0;opacity:.35}
+canvas{display:block;width:100%}
+details{margin-top:14px;color:var(--muted);font-size:.88rem}
+summary{cursor:pointer;color:var(--fg)}
+details p{margin:8px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Optimum output coupling</h1>
+  <p class="sub">FYS.501 Laser Physics · Ch. 4, Sect. 4.2.5 · CW output power of a four-level laser against output-mirror transmission</p>
+  <div class="eq">P<sub>out</sub> = (γ₂/2) A<sub>b</sub>I<sub>s</sub> [ x<sub>m</sub>/(1+s) − 1 ], &nbsp; s = γ₂/(γ₁+2γ<sub>i</sub>), &nbsp; x<sub>m</sub> = P/P<sub>th</sub><sup>min</sup> &nbsp;⇒&nbsp; s<sub>opt</sub> = √x<sub>m</sub> − 1, &nbsp; P<sub>out</sub><sup>max</sup> = (γ₁/2 + γ<sub>i</sub>) A<sub>b</sub>I<sub>s</sub> (√x<sub>m</sub> − 1)²</div>
+
+  <div class="presets" id="presets"><span class="lab">Presets:</span></div>
+
+  <div class="groups">
+    <section class="grp med">
+      <h2>Gain (pumping)</h2>
+      <div class="ctl">
+        <span class="lab">Specify the pumping as</span>
+        <div class="seg" id="segMode">
+          <button data-v="g" aria-pressed="true">Small-signal gain g₀ℓ</button>
+          <button data-v="x" aria-pressed="false">Pump ratio x<sub>m</sub></button>
+        </div>
+        <div class="hint" id="hMode"></div>
+      </div>
+      <div class="ctl" id="ctlG">
+        <label for="sG">Small-signal single-pass gain g₀ℓ = σN<sub>0</sub>ℓ: <span class="val" id="vG"></span></label>
+        <input id="sG" type="range" min="-3" max="0.4" step="0.001" value="-0.82">
+        <div class="hint" id="hG"></div>
+      </div>
+      <div class="ctl" id="ctlX" hidden>
+        <label for="sX">Pump ratio x<sub>m</sub> = P / P<sub>th</sub><sup>min</sup>: <span class="val" id="vX"></span></label>
+        <input id="sX" type="range" min="-0.3" max="2.5" step="0.001" value="1">
+        <div class="hint" id="hX"></div>
+      </div>
+      <div class="ctl">
+        <label for="sA">Saturation power A<sub>b</sub>I<sub>s</sub>: <span class="val" id="vA"></span></label>
+        <input id="sA" type="range" min="-2" max="4" step="0.01" value="1.36">
+        <div class="hint">sets the power scale only; Nd:YAG with a 1 mm beam: ≈ 23 W</div>
+      </div>
+    </section>
+    <section class="grp loss">
+      <h2>Unavoidable losses</h2>
+      <div class="ctl">
+        <label for="sLi">Internal loss per pass L<sub>i</sub>: <span class="val" id="vLi"></span></label>
+        <input id="sLi" type="range" min="0" max="20" step="0.01" value="1">
+        <div class="hint" id="hLi"></div>
+      </div>
+      <div class="ctl">
+        <label for="sR1">Back-mirror reflectivity ρ₁: <span class="val" id="vR1"></span></label>
+        <input id="sR1" type="range" min="90" max="100" step="0.01" value="99.9">
+        <div class="hint" id="hR1"></div>
+      </div>
+      <div class="hint" id="hMin" style="margin-top:-2px"></div>
+    </section>
+    <section class="grp oc">
+      <h2>Your output coupler</h2>
+      <div class="ctl">
+        <label for="sT">Transmission T = 1 − ρ₂: <span class="val" id="vT"></span></label>
+        <input id="sT" type="range" min="-2" max="1.975" step="0.001" value="0.7">
+        <div class="hint" id="hT"></div>
+      </div>
+      <div class="presets" style="margin:0">
+        <button class="btn" id="bOpt">Set T to the optimum</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="status" id="status"><span class="pill" id="pill"></span><span class="txt" id="stxt"></span></div>
+
+  <div class="reads" id="reads"></div>
+
+  <div class="plotbox">
+    <div class="head">
+      <h3>Output power against output coupling</h3>
+      <div class="seg" id="segAx">
+        <button data-v="T" aria-pressed="true">T = 1 − ρ₂</button>
+        <button data-v="g" aria-pressed="false">γ₂ = −ln ρ₂</button>
+      </div>
+    </div>
+    <p class="cap">Small T: the photons stay inside and are lost to the internal loss. Large T: the gain saturates less, but threshold rises until lasing stops. The optimum lies between.</p>
+    <div class="legend">
+      <span><i style="border-color:var(--out)"></i>P<sub>out</sub></span>
+      <span><i class="dash" style="border-color:var(--ext)"></i>power extracted from the medium, A<sub>b</sub>I<sub>s</sub>(g₀ℓ − γ)</span>
+      <span><i class="blk" style="background:var(--lost)"></i>dissipated in L<sub>i</sub> and ρ₁</span>
+      <span><i class="blk" style="background:var(--opt)"></i>within 90 % of the maximum</span>
+    </div>
+    <canvas id="cMain" role="img" aria-label="Output power as a function of output-mirror transmission, with the optimum marked"></canvas>
+  </div>
+
+  <div class="plotbox">
+    <h3>How critical is the choice? Normalised curves</h3>
+    <p class="cap">P<sub>out</sub>/P<sub>out</sub><sup>max</sup> against γ₂/γ₂<sup>opt</sup> on a log axis, for several pump ratios. Close to threshold the peak is narrow; far above threshold it is broad and flat.</p>
+    <canvas id="cNorm" role="img" aria-label="Normalised output power against normalised output coupling for several pump ratios"></canvas>
+  </div>
+
+  <details>
+    <summary>Model and notation</summary>
+    <p>Space-independent rate-equation model of a four-level, homogeneously broadened laser (Ch. 4). Per-pass logarithmic losses γ<sub>i</sub> = −ln(1 − L<sub>i</sub>), γ₁ = −ln ρ₁, γ₂ = −ln ρ₂, and total loss per pass γ = γ<sub>i</sub> + (γ₁ + γ₂)/2. Above threshold the output power is P<sub>out</sub> = (γ₂/2) A<sub>b</sub>I<sub>s</sub>(R<sub>p</sub>/R<sub>cp</sub> − 1) (Eq. 4.26).</p>
+    <p>Since R<sub>cp</sub> ∝ γ, the pump ratio is R<sub>p</sub>/R<sub>cp</sub> = g₀ℓ/γ, where g₀ℓ = σN<sub>0</sub>ℓ is the single-pass gain the medium would have with no lasing (N<sub>0</sub> = R<sub>p</sub>τ). With γ₂ = 0 the threshold is lowest, so x<sub>m</sub> = P/P<sub>th</sub><sup>min</sup> = g₀ℓ/(γ₁/2 + γ<sub>i</sub>). Setting dP<sub>out</sub>/ds = 0 gives s<sub>opt</sub> = √x<sub>m</sub> − 1 (Eq. 4.36). At the optimum the clamped gain equals γ = √(g₀ℓ·γ<sub>min</sub>), the geometric mean of the small-signal gain and the unavoidable loss.</p>
+    <p>The dashed curve is the total power drawn from the inversion by stimulated emission, A<sub>b</sub>I<sub>s</sub>(g₀ℓ − γ). A fraction γ₂/(2γ) of it (the output coupling efficiency η<sub>out</sub>) leaves through the output coupler; the rest is dissipated in the internal loss and the back mirror. The extracted power is largest for T → 0, but then none of it comes out.</p>
+    <p>The plot is drawn against T, but γ₂ = −ln(1 − T) is used in the formulas, as in the lecture notes. For large T the intracavity intensity is no longer uniform along the cavity, and the space-independent model becomes only qualitative.</p>
+  </details>
+</div>
+
+<script>
+"use strict";
+(function(){
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  const S = { mode:'g', ax:'T', logG:-0.82, logX:1, logA:1.36, Li:1, R1:99.9, logT:0.7 };
+
+  const PRESETS = [
+    { name:'Diode-pumped Nd:YAG', g0l:0.15, Li:1,   R1:99.9,  A:23 },
+    { name:'Near threshold (xₘ ≈ 1.5)', xm:1.5, Li:1, R1:99.9, A:23 },
+    { name:'Far above threshold (xₘ ≈ 50)', xm:50, Li:1, R1:99.9, A:23 },
+    { name:'Low gain, low loss', g0l:0.02, Li:0.1, R1:99.95, A:1 },
+    { name:'Lossy cavity', g0l:0.15, Li:8, R1:99.9, A:23 }
+  ];
+
+  function losses(){
+    const Li = S.Li/100, R1 = S.R1/100;
+    const gi = -Math.log(1-Li), g1 = R1 >= 1 ? 0 : -Math.log(R1);
+    return { Li, R1, gi, g1, gmin: g1/2 + gi };
+  }
+
+  function derive(){
+    const L = losses();
+    let g0l, xm;
+    if (S.mode === 'g'){ g0l = Math.pow(10, S.logG); xm = L.gmin > 0 ? g0l/L.gmin : Infinity; }
+    else { xm = Math.pow(10, S.logX); g0l = xm*L.gmin; }
+    const A = Math.pow(10, S.logA);
+    const T = Math.pow(10, S.logT)/100;
+    const g2 = -Math.log(1-T);
+    const d = Object.assign({}, L, { g0l, xm, A, T, g2 });
+    d.lases = xm > 1;
+    d.g2opt = d.lases ? 2*L.gmin*(Math.sqrt(xm)-1) : 0;
+    d.Topt = 1 - Math.exp(-d.g2opt);
+    d.Pmax = d.lases ? L.gmin*A*Math.pow(Math.sqrt(xm)-1, 2) : 0;
+    d.g2cut = d.lases ? 2*(g0l - L.gmin) : 0;
+    d.Tcut = 1 - Math.exp(-d.g2cut);
+    d.Pyou = pout(d, g2);
+    d.gam = L.gmin + g2/2;
+    d.ext = extracted(d, g2);
+    d.etaOut = g2/(2*d.gam);
+    d.gamOpt = L.gmin + d.g2opt/2;
+    if (d.lases){
+      const lo = bisect(g => pout(d,g) - 0.9*d.Pmax, 0, d.g2opt);
+      const hi = bisect(g => pout(d,g) - 0.9*d.Pmax, d.g2cut, d.g2opt);
+      d.w90 = [lo, hi];
+    }
+    return d;
+  }
+  function pout(d, g2){ const gam = d.gmin + g2/2; return Math.max(0, (g2/2)*d.A*(d.g0l/gam - 1)); }
+  function extracted(d, g2){ const gam = d.gmin + g2/2; return Math.max(0, d.A*(d.g0l - gam)); }
+  function bisect(f, a, b){
+    let fa = f(a);
+    for (let i=0; i<80; i++){ const m = 0.5*(a+b), fm = f(m); if ((fm>0) === (fa>0)){ a = m; fa = fm; } else b = m; }
+    return 0.5*(a+b);
+  }
+
+  function fmtP(W){
+    if (!isFinite(W)) return '—';
+    if (W === 0) return '0 W';
+    const a = Math.abs(W);
+    if (a >= 1000) return (W/1000).toPrecision(3)+' kW';
+    if (a >= 1) return W.toPrecision(3)+' W';
+    if (a >= 1e-3) return (W*1e3).toPrecision(3)+' mW';
+    return (W*1e6).toPrecision(3)+' µW';
+  }
+  function pct(x){ const v = x*100; return (v >= 10 ? v.toFixed(1) : v >= 1 ? v.toFixed(2) : v.toPrecision(2))+' %'; }
+  function num(x){ return x >= 100 ? x.toFixed(0) : x >= 10 ? x.toFixed(1) : x >= 1 ? x.toFixed(2) : x.toPrecision(3); }
+
+  function prep(cv, aspect, minH){
+    const dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 600, h = Math.max(minH||0, Math.round(w*aspect));
+    cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); cv.style.height = h+'px';
+    const c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+    return { c, w, h };
+  }
+  function font(c, px, wt){ c.font = (wt||400)+' '+px+'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'; }
+  function niceStep(span, target){
+    const raw = span/target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
+    return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;
+  }
+  function ticks(lo, hi, n){ const s = niceStep(hi-lo, n), a = []; for (let v = Math.ceil(lo/s)*s; v <= hi+1e-12; v += s) a.push(+v.toPrecision(10)); return a; }
+  function frame(c, box, xs, ys, mx, my, o){
+    c.save(); c.lineWidth = 1; c.strokeStyle = css('--grid'); c.fillStyle = css('--muted'); font(c, 11);
+    ys.forEach(v => { const y = my(v); c.beginPath(); c.moveTo(box.x,y); c.lineTo(box.x+box.w,y); c.stroke();
+      c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillText(o.yfmt ? o.yfmt(v) : String(v), box.x-6, y); });
+    xs.forEach(v => { const x = mx(v); c.beginPath(); c.moveTo(x,box.y); c.lineTo(x,box.y+box.h); c.stroke();
+      c.textAlign = 'center'; c.textBaseline = 'top'; c.fillText(o.xfmt ? o.xfmt(v) : String(v), x, box.y+box.h+5); });
+    c.strokeStyle = css('--border'); c.strokeRect(box.x, box.y, box.w, box.h);
+    c.textAlign = 'center'; c.textBaseline = 'bottom'; c.fillText(o.xlabel, box.x+box.w/2, box.y+box.h+36);
+    c.save(); c.translate(12, box.y+box.h/2); c.rotate(-Math.PI/2); c.textBaseline = 'top'; c.fillText(o.ylabel, 0, 0); c.restore();
+    c.restore();
+  }
+
+  function drawMain(d){
+    const p = prep($('cMain'), 0.5, 280), c = p.c, w = p.w, h = p.h;
+    const box = { x:62, y:14, w:w-78, h:h-58 };
+    const useT = S.ax === 'T';
+    const xOf = g2 => useT ? 100*(1-Math.exp(-g2)) : g2;
+    const g2Of = x => useT ? -Math.log(1-x/100) : x;
+
+    let xmax;
+    const xCut = xOf(d.g2cut), xYou = xOf(d.g2);
+    if (d.lases) xmax = Math.max(xCut*1.15, xYou*1.08);
+    else xmax = Math.max(xYou*1.2, useT ? 5 : 0.05);
+    xmax = useT ? Math.min(xmax, 99) : xmax;
+    const extMax = d.lases ? extracted(d, 0) : d.A*0.1;
+    const ymax = Math.max(extMax, d.Pmax, 1e-30)*1.12;
+    const yScale = ymax >= 1000 ? 1000 : ymax >= 1 ? 1 : ymax >= 1e-3 ? 1e-3 : 1e-6;
+    const yUnit = { 1000:'kW', 1:'W', 0.001:'mW', 0.000001:'µW' }[yScale];
+
+    const mx = v => box.x + box.w*v/xmax, my = v => box.y + box.h*(1 - v/ymax);
+    const xt = ticks(0, xmax, 7), yt = ticks(0, ymax/yScale, 5).map(v => v*yScale);
+    frame(c, box, xt, yt, mx, my, {
+      xlabel: useT ? 'output-coupler transmission T = 1 − ρ₂ (%)' : 'output-coupler loss γ₂ = −ln ρ₂',
+      ylabel: 'power ('+yUnit+')',
+      yfmt: v => String(+(v/yScale).toPrecision(4)),
+      xfmt: v => String(+v.toPrecision(4))
+    });
+
+    c.save(); c.beginPath(); c.rect(box.x, box.y, box.w, box.h); c.clip();
+    const N = 400, xsArr = [];
+    for (let i=0; i<=N; i++) xsArr.push(xmax*i/N);
+
+    if (d.lases){
+      c.fillStyle = css('--opt'); c.globalAlpha = 0.12;
+      const a = mx(xOf(d.w90[0])), b = mx(xOf(d.w90[1]));
+      c.fillRect(a, box.y, b-a, box.h); c.globalAlpha = 1;
+
+      c.fillStyle = css('--lost'); c.globalAlpha = 0.16; c.beginPath();
+      xsArr.forEach((x,i) => { const g = g2Of(x); const y = my(extracted(d,g)); i ? c.lineTo(mx(x),y) : c.moveTo(mx(x),y); });
+      for (let i=N; i>=0; i--){ const x = xsArr[i]; c.lineTo(mx(x), my(pout(d, g2Of(x)))); }
+      c.closePath(); c.fill(); c.globalAlpha = 1;
+
+      c.strokeStyle = css('--ext'); c.lineWidth = 1.8; c.setLineDash([6,4]); c.beginPath();
+      xsArr.forEach((x,i) => { const y = my(extracted(d, g2Of(x))); i ? c.lineTo(mx(x),y) : c.moveTo(mx(x),y); });
+      c.stroke(); c.setLineDash([]);
+
+      c.strokeStyle = css('--out'); c.lineWidth = 2.8; c.beginPath();
+      xsArr.forEach((x,i) => { const y = my(pout(d, g2Of(x))); i ? c.lineTo(mx(x),y) : c.moveTo(mx(x),y); });
+      c.stroke();
+
+      const xo = mx(xOf(d.g2opt)), yo = my(d.Pmax);
+      c.strokeStyle = css('--opt'); c.lineWidth = 1; c.setLineDash([4,4]);
+      c.beginPath(); c.moveTo(xo, box.y+box.h); c.lineTo(xo, yo); c.stroke();
+      c.beginPath(); c.moveTo(box.x, yo); c.lineTo(xo, yo); c.stroke(); c.setLineDash([]);
+    }
+    c.restore();
+
+    if (d.lases){
+      const xo = mx(xOf(d.g2opt)), yo = my(d.Pmax);
+      c.fillStyle = css('--opt'); c.strokeStyle = css('--card'); c.lineWidth = 2;
+      c.beginPath(); c.arc(xo, yo, 6, 0, 7); c.fill(); c.stroke();
+      font(c, 11.5, 650); c.textBaseline = 'bottom';
+      const right = xo < box.x + box.w*0.6;
+      c.textAlign = right ? 'left' : 'right';
+      c.fillText('optimum: '+(useT ? 'T = '+pct(d.Topt) : 'γ₂ = '+num(d.g2opt))+', '+fmtP(d.Pmax), xo + (right?9:-9), yo - 6);
+
+      if (xCut <= xmax){
+        const xc = mx(xCut);
+        c.fillStyle = css('--muted'); font(c, 10.5); c.textAlign = 'right'; c.textBaseline = 'bottom';
+        c.fillText('lasing stops', xc - 4, box.y + box.h - 4);
+        c.fillStyle = css('--muted'); c.beginPath(); c.arc(xc, box.y+box.h, 3.5, 0, 7); c.fill();
+      }
+    } else {
+      font(c, 13, 600); c.fillStyle = css('--lost'); c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('g₀ℓ ≤ γ₁/2 + γᵢ: below threshold even with T = 0', box.x + box.w/2, box.y + box.h/2);
+    }
+
+    if (xYou <= xmax){
+      const xu = mx(xYou), yu = my(d.Pyou);
+      c.strokeStyle = css('--you'); c.lineWidth = 1.2; c.setLineDash([2,3]);
+      c.beginPath(); c.moveTo(xu, box.y+box.h); c.lineTo(xu, yu); c.stroke(); c.setLineDash([]);
+      c.fillStyle = css('--you'); c.strokeStyle = css('--card'); c.lineWidth = 2;
+      c.beginPath(); c.arc(xu, yu, 5.5, 0, 7); c.fill(); c.stroke();
+      font(c, 11, 650); c.textBaseline = 'top';
+      const right = xu < box.x + box.w*0.72;
+      c.textAlign = right ? 'left' : 'right';
+      const yl = Math.min(yu + 8, box.y + box.h - 30);
+      c.fillText('your T', xu + (right?8:-8), yl);
+    }
+  }
+
+  function drawNorm(d){
+    const p = prep($('cNorm'), 0.42, 240), c = p.c, w = p.w, h = p.h;
+    const box = { x:52, y:12, w:w-66, h:h-56 };
+    const lx0 = Math.log10(0.03), lx1 = Math.log10(30);
+    const mx = r => box.x + box.w*(Math.log10(r)-lx0)/(lx1-lx0), my = v => box.y + box.h*(1 - v/1.08);
+    const xt = [0.03,0.1,0.3,1,3,10,30], yt = [0,0.25,0.5,0.75,1];
+    frame(c, box, xt, yt, mx, my, { xlabel:'γ₂ / γ₂ᵒᵖᵗ  (log scale)', ylabel:'Pout / Pout,max', yfmt: v => String(v), xfmt: v => String(v) });
+
+    const family = [1.2, 2, 5, 20, 100];
+    function curve(xm){
+      const sOpt = Math.sqrt(xm) - 1, Pm = sOpt*sOpt;
+      const pts = [];
+      for (let i=0; i<=300; i++){
+        const r = Math.pow(10, lx0 + (lx1-lx0)*i/300), s = r*sOpt;
+        pts.push([r, Math.max(0, s*(xm/(1+s) - 1))/Pm]);
+      }
+      return pts;
+    }
+    c.save(); c.beginPath(); c.rect(box.x, box.y, box.w, box.h); c.clip();
+    c.strokeStyle = css('--grid'); c.setLineDash([4,4]); c.beginPath(); c.moveTo(box.x, my(0.9)); c.lineTo(box.x+box.w, my(0.9)); c.stroke(); c.setLineDash([]);
+    family.forEach(xm => {
+      c.strokeStyle = css('--muted'); c.globalAlpha = 0.55; c.lineWidth = 1.4; c.beginPath();
+      curve(xm).forEach((q,i) => i ? c.lineTo(mx(q[0]), my(q[1])) : c.moveTo(mx(q[0]), my(q[1])));
+      c.stroke(); c.globalAlpha = 1;
+    });
+    if (d.lases){
+      c.strokeStyle = css('--out'); c.lineWidth = 2.8; c.beginPath();
+      curve(d.xm).forEach((q,i) => i ? c.lineTo(mx(q[0]), my(q[1])) : c.moveTo(mx(q[0]), my(q[1])));
+      c.stroke();
+    }
+    c.restore();
+
+    font(c, 10.5); c.fillStyle = css('--muted');
+    family.forEach((xm, k) => {
+      const lv = [0.14, 0.3, 0.46, 0.62, 0.78][k];
+      const sOpt = Math.sqrt(xm) - 1, Pm = sOpt*sOpt;
+      const f = r => { const s = r*sOpt; return Math.max(0, s*(xm/(1+s) - 1))/Pm - lv; };
+      const r = bisect(f, Math.sqrt(xm)+1, 1);
+      c.textAlign = 'left'; c.textBaseline = 'middle';
+      c.fillText('xₘ = '+xm, mx(r)+5, my(lv));
+    });
+    c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText('90 %', box.x+4, my(0.9)-2);
+
+    if (d.lases){
+      const r = d.g2/d.g2opt;
+      if (r >= 0.03 && r <= 30){
+        const v = d.Pyou/d.Pmax;
+        c.fillStyle = css('--you'); c.strokeStyle = css('--card'); c.lineWidth = 2;
+        c.beginPath(); c.arc(mx(r), my(v), 5.5, 0, 7); c.fill(); c.stroke();
+      }
+      font(c, 11, 650); c.fillStyle = css('--out'); c.textAlign = 'right'; c.textBaseline = 'top';
+      c.fillText('your laser: xₘ = '+num(d.xm), box.x+box.w-6, box.y+6);
+    }
+  }
+
+  function reads(d){
+    const items = [
+      ['unavoidable loss γ₁/2 + γᵢ', d.gmin.toFixed(4), 'γᵢ = '+d.gi.toFixed(4)+', γ₁ = '+d.g1.toFixed(4)],
+      ['pump ratio xₘ = g₀ℓ / (γ₁/2 + γᵢ)', isFinite(d.xm) ? num(d.xm) : '∞', 'g₀ℓ = '+d.g0l.toPrecision(3)],
+      ['optimum transmission Tₒₚₜ', d.lases ? pct(d.Topt) : '—', d.lases ? 'γ₂ᵒᵖᵗ = '+d.g2opt.toFixed(4)+', sₒₚₜ = √xₘ − 1 = '+(Math.sqrt(d.xm)-1).toFixed(3) : 'no lasing'],
+      ['maximum output P<sub>out</sub><sup>max</sup>', d.lases ? fmtP(d.Pmax) : '—', d.lases ? 'η<sub>out</sub> = γ₂/2γ = '+pct(d.g2opt/(2*d.gamOpt)) : ''],
+      ['clamped gain at optimum', d.lases ? d.gamOpt.toFixed(4) : '—', '= √(g₀ℓ · (γ₁/2 + γᵢ))'],
+      ['90 % window in T', d.lases ? pct(1-Math.exp(-d.w90[0]))+' – '+pct(1-Math.exp(-d.w90[1])) : '—', d.lases ? 'width ×'+num(d.w90[1]/d.w90[0])+' in γ₂' : ''],
+      ['lasing stops at T', d.lases ? pct(d.Tcut) : '—', d.lases ? 'γ₂ = 2(g₀ℓ − γ₁/2 − γᵢ) = '+d.g2cut.toFixed(4) : '']
+    ];
+    $('reads').innerHTML = items.map(a => '<div class="read"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+'</div><div class="s">'+a[2]+'</div></div>').join('');
+  }
+
+  function status(d){
+    const st = $('status'), pill = $('pill'), tx = $('stxt');
+    if (!d.lases){ st.style.setProperty('--sc', css('--lost')); pill.textContent = 'No lasing'; tx.textContent = 'the small-signal gain does not even cover the internal and back-mirror losses; pump harder or reduce the losses'; return; }
+    if (d.Pyou <= 0){ st.style.setProperty('--sc', css('--lost')); pill.textContent = 'Below threshold'; tx.textContent = 'T = '+pct(d.T)+' is beyond the cut-off at '+pct(d.Tcut)+'; the output coupler alone exceeds the available gain'; return; }
+    const f = d.Pyou/d.Pmax, rel = d.g2/d.g2opt;
+    let col, lab, msg;
+    if (f >= 0.99){ col = '--opt'; lab = 'At the optimum'; msg = 'Pout = '+fmtP(d.Pyou)+' ('+(100*f).toFixed(1)+' % of the maximum)'; }
+    else {
+      col = f >= 0.9 ? '--out' : '--you';
+      lab = rel < 1 ? 'Under-coupled' : 'Over-coupled';
+      msg = 'Pout = '+fmtP(d.Pyou)+' ('+(100*f).toFixed(1)+' % of the maximum); '+(rel < 1 ? 'more light is lost inside the cavity than needed — increase T' : 'threshold is raised too much — decrease T')+' toward '+pct(d.Topt);
+    }
+    st.style.setProperty('--sc', css(col)); pill.textContent = lab; tx.textContent = msg;
+  }
+
+  function labels(d){
+    $('vG').textContent = d.g0l.toPrecision(3);
+    $('hG').textContent = 'single-pass small-signal power gain exp(g₀ℓ) = ×'+Math.exp(d.g0l).toFixed(3);
+    $('vX').textContent = num(d.xm);
+    $('hX').textContent = 'corresponds to g₀ℓ = '+d.g0l.toPrecision(3);
+    $('hMode').textContent = S.mode === 'g' ? 'Fixed pump: changing the losses changes xₘ.' : 'Fixed xₘ: changing the losses rescales g₀ℓ.';
+    $('vA').textContent = fmtP(d.A);
+    $('vLi').textContent = S.Li.toFixed(2)+' %';
+    $('hLi').textContent = 'γᵢ = −ln(1 − Lᵢ) = '+d.gi.toFixed(4);
+    $('vR1').textContent = S.R1.toFixed(2)+' %';
+    $('hR1').textContent = 'γ₁ = −ln ρ₁ = '+d.g1.toFixed(4);
+    $('hMin').textContent = 'minimum-threshold loss γ₁/2 + γᵢ = '+d.gmin.toFixed(4)+' per pass';
+    $('vT').textContent = pct(d.T);
+    $('hT').textContent = 'ρ₂ = '+pct(1-d.T)+', γ₂ = '+d.g2.toFixed(4)+', s = γ₂/(γ₁ + 2γᵢ) = '+(d.gmin>0 ? (d.g2/(2*d.gmin)).toFixed(3) : '∞');
+  }
+
+  function render(){
+    const d = derive();
+    $('ctlG').hidden = S.mode !== 'g'; $('ctlX').hidden = S.mode !== 'x';
+    labels(d); reads(d); status(d); drawMain(d); drawNorm(d);
+  }
+
+  function sync(){
+    $('sG').value = S.logG; $('sX').value = S.logX; $('sA').value = S.logA;
+    $('sLi').value = S.Li; $('sR1').value = S.R1; $('sT').value = S.logT;
+  }
+  function clamp(v, a, b){ return Math.min(b, Math.max(a, v)); }
+  function setFromG0l(g0l){
+    const L = losses();
+    S.logG = clamp(Math.log10(g0l), -3, 0.4);
+    S.logX = clamp(Math.log10(L.gmin > 0 ? Math.pow(10,S.logG)/L.gmin : 316), -0.3, 2.5);
+  }
+
+  function bind(id, key){
+    $(id).addEventListener('input', e => {
+      S[key] = parseFloat(e.target.value);
+      const L = losses();
+      if (S.mode === 'g'){ S.logX = clamp(Math.log10(L.gmin > 0 ? Math.pow(10,S.logG)/L.gmin : 316), -0.3, 2.5); }
+      else { S.logG = clamp(Math.log10(Math.pow(10,S.logX)*L.gmin), -3, 0.4); }
+      sync(); render();
+    });
+  }
+  bind('sG','logG'); bind('sX','logX'); bind('sA','logA'); bind('sLi','Li'); bind('sR1','R1'); bind('sT','logT');
+
+  function segBind(id, key){
+    const el = $(id);
+    el.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      S[key] = b.dataset.v;
+      el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+      render();
+    });
+  }
+  segBind('segMode','mode'); segBind('segAx','ax');
+
+  $('bOpt').addEventListener('click', () => {
+    const d = derive(); if (!d.lases) return;
+    S.logT = clamp(Math.log10(100*d.Topt), -2, 1.975); sync(); render();
+  });
+
+  const pr = $('presets');
+  PRESETS.forEach(p => {
+    const b = document.createElement('button'); b.className = 'btn'; b.textContent = p.name;
+    b.addEventListener('click', () => {
+      applyPreset(p); sync(); render();
+    });
+    pr.appendChild(b);
+  });
+
+  function applyPreset(p){
+    S.Li = p.Li; S.R1 = p.R1; S.logA = Math.log10(p.A);
+    setFromG0l(p.g0l != null ? p.g0l : p.xm*losses().gmin);
+    const d = derive();
+    S.logT = clamp(Math.log10(100*(d.lases ? 0.5*d.Topt : 0.01)), -2, 1.975);
+  }
+  applyPreset(PRESETS[0]); sync(); render();
+
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 80); });
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

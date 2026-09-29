@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v20";
+const CACHE_NAME = "physics-applets-v21";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -30,6 +30,7 @@ const APP_SHELL = [
   "fys501-laser-physics/laser-rate-equations.html",
   "fys501-laser-physics/spatial-hole-burning.html",
   "fys501-laser-physics/mode-competition.html",
+  "fys501-laser-physics/output-coupler-optimization.html",
   "finnmath-app/index.html"
 ];
 
