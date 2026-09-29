@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v26";
+const CACHE_NAME = "physics-applets-v27";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -26,6 +26,7 @@ const APP_SHELL = [
   "fys310-solid-state-physics/orbitals-hybrids-bonds.html",
   "fys310-solid-state-physics/tight-binding-explorer.html",
   "fys310-solid-state-physics/semiconductor-doping-explorer.html",
+  "fys310-solid-state-physics/mechanical-properties.html",
   "fys501-laser-physics/index.html",
   "fys501-laser-physics/laser-condition-losses.html",
   "fys501-laser-physics/coherence-explorer.html",
