@@ -9,23 +9,53 @@
 <style>
   body { max-width: 720px; margin: 40px auto; padding: 0 16px; }
   h1 { font-size: 1.4rem; }
-  ul { padding-left: 1.2rem; line-height: 2.2; }
+  h2 { font-size: 1rem; font-weight: 600; margin: 28px 0 6px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  h2:first-of-type { margin-top: 24px; }
+  ul { padding-left: 1.2rem; line-height: 2.2; margin: 0 0 4px; }
   a { color: var(--violet); text-decoration: none; }
   a:hover { text-decoration: underline; }
   .back { display: inline-block; margin-bottom: 24px; color: var(--text-dim); }
+  .empty { color: var(--text-faint); font-style: italic; }
 </style>
 </head>
 <body>
   <a class="back" href="../index.html">&larr; All courses</a>
   <h1>FYS.310 Solid-State Physics</h1>
+
+  <h2>Crystal Structures</h2>
   <ul>
     <li><a href="FYS310_lattice_viewer.html">Lattice Viewer (3D lattices, BZ with empty-lattice bands, 2D Bravais lattices)</a></li>
+  </ul>
+
+  <h2>Bonding in Solids</h2>
+  <ul>
+    <li><a href="orbitals-hybrids-bonds.html">Orbitals, Hybrids &amp; Bonds (s, p, d, f orbitals, sp<sup>3</sup> and sp<sup>2</sup> in diamond and graphene, bonding and antibonding molecular orbitals)</a></li>
+  </ul>
+
+  <h2>Mechanical Properties</h2>
+  <ul>
+    <li class="empty">Stress&ndash;strain applets coming soon</li>
+  </ul>
+
+  <h2>Thermal Properties of the Lattice</h2>
+  <ul>
+    <li><a href="thermal-transport-explorer.html">Thermal Transport Explorer (heat capacity and thermal conductivity from simple dispersions, Einstein solid)</a></li>
+  </ul>
+
+  <h2>Electronic Properties of Solids</h2>
+  <ul>
     <li><a href="van-hove-dos-explorer.html">Van Hove &amp; DOS Explorer</a></li>
     <li><a href="band-structure-explorer.html">Band Structure Explorer (empty lattice to Si, GaAs, AlGaAs)</a></li>
-    <li><a href="thermal-transport-explorer.html">Thermal Transport Explorer (heat capacity and thermal conductivity from simple dispersions, Einstein solid)</a></li>
-    <li><a href="orbitals-hybrids-bonds.html">Orbitals, Hybrids &amp; Bonds (s, p, d, f orbitals, sp<sup>3</sup> and sp<sup>2</sup> in diamond and graphene, bonding and antibonding molecular orbitals)</a></li>
-    <li><a href="tight-binding-explorer.html">Tight-Binding Explorer (chain, two atoms per cell, graphene and h-BN with doping, fcc s-band, s+p chain)</a></li>
+  </ul>
+
+  <h2>Semiconductors</h2>
+  <ul>
     <li><a href="semiconductor-doping-explorer.html">Semiconductor Doping &amp; Hall Effect Explorer (carrier densities, Fermi level and R<sub>H</sub> against temperature)</a></li>
+  </ul>
+
+  <h2>Dielectric Materials</h2>
+  <ul>
+    <li><a href="tight-binding-explorer.html">Tight-Binding Explorer (chain, two atoms per cell, graphene and h-BN with doping, fcc s-band, s+p chain)</a></li>
   </ul>
 </body>
 </html>
