@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quantum distributions: Fermi–Dirac, Bose–Einstein, Maxwell–Boltzmann</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys232-structure-of-matter.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+:root{ --fd:var(--blue); --be:var(--orange); --mb:var(--text-dim); }
+.wrap{max-width:1180px;margin:0 auto;padding:16px 16px 32px}
+.sub{margin:0 0 14px}
+.eq{margin:0 0 14px;line-height:2.3;display:flex;flex-wrap:wrap;gap:0 28px}
+.eq .m{font-family:var(--font-body);font-size:var(--fs-small);font-weight:600;margin-left:8px}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.2;margin:0 2px}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.layout{display:grid;grid-template-columns:minmax(270px,320px) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:12px}
+.main{min-width:0;display:flex;flex-direction:column;gap:12px}
+.ctl{margin-bottom:14px}
+.ctl:last-child{margin-bottom:0}
+.ctl .lab{display:block;font-size:var(--fs-label);color:var(--text-dim);margin-bottom:6px}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+#chips{display:flex;flex-wrap:wrap;gap:6px}
+#chips .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px}
+#chips .chip i{width:10px;height:10px;border-radius:50%;background:var(--c);opacity:.4}
+#chips .chip.active{background:var(--panel-2);border-color:var(--c);color:var(--text)}
+#chips .chip.active i{opacity:1}
+#chips .chip:not(.active){color:var(--text-dim)}
+.seg{display:flex;width:100%}
+.seg button{white-space:nowrap;padding:7px 8px;font-size:var(--fs-small)}
+.figure-box{padding:8px 8px 6px}
+.chartbox{position:relative}
+canvas{display:block;width:100%}
+#cMain{height:400px;touch-action:none;cursor:crosshair}
+#cE{height:210px}
+@media (max-width:520px){#cMain{height:320px}}
+.fig-title{font-size:var(--fs-small);color:var(--text-dim);margin:2px 4px 6px;display:flex;justify-content:space-between;align-items:center;gap:6px 14px;flex-wrap:wrap}
+.fig-title b{color:var(--text);font-weight:600}
+.fig-note{font-size:var(--fs-small);color:var(--text-dim);margin:4px 6px 4px}
+.tip{position:absolute;pointer-events:none;display:none;z-index:3;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 9px;font-size:var(--fs-small);line-height:1.5;box-shadow:0 2px 10px rgba(0,0,0,.25);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tip i,td i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--c)}
+table.stats th:not(:first-child),table.stats td:not(:first-child){text-align:right}
+table.stats th:first-child,table.stats td:first-child{text-align:left;font-family:var(--font-body)}
+table.stats tr.off td{opacity:.35}
+table.stats tr:last-child td{border-bottom:0}
+.msg{padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 8px 8px 0;font-size:var(--fs-body);line-height:1.5}
+.msg b{font-weight:600}
+[hidden]{display:none!important}
+details{color:var(--text-dim);font-size:var(--fs-body)}
+summary{cursor:pointer;color:var(--text)}
+details p{margin:8px 0;max-width:80ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Quantum distributions: Fermi–Dirac, Bose–Einstein, Maxwell–Boltzmann</h1>
+  <p class="sub">FYS.232 Structure of Matter · Ch. 1, Sect. 1.6 · where indistinguishability matters and where all three occupation numbers collapse onto the Boltzmann curve</p>
+  <div class="eq">
+    <div>ℕ(E) = <span class="frac"><span>1</span><span>B e<sup>E/k<sub>B</sub>T</sup> + 1</span></span><span class="m" style="color:var(--fd)">Fermi–Dirac</span></div>
+    <div>ℕ(E) = <span class="frac"><span>1</span><span>B e<sup>E/k<sub>B</sub>T</sup> − 1</span></span><span class="m" style="color:var(--be)">Bose–Einstein</span></div>
+    <div>ℕ(E) = <span class="frac"><span>1</span><span>B e<sup>E/k<sub>B</sub>T</sup></span></span><span class="m">Maxwell–Boltzmann</span></div>
+  </div>
+
+  <div class="layout">
+    <div class="side">
+      <section class="card">
+        <h2>Temperature</h2>
+        <div class="ctl">
+          <label class="slider-label" for="temp"><span>k<sub>B</sub>T / ε</span><span class="val" id="tval"></span></label>
+          <input id="temp" type="range" min="0" max="1000" value="380" step="1">
+          <div class="presets" style="margin-top:6px">
+            <button class="btn small" data-t="0.2">Low (0.2)</button>
+            <button class="btn small" data-t="1">Intermediate (1)</button>
+            <button class="btn small" data-t="5">High (5)</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <span class="lab">Show</span>
+          <div id="chips">
+            <button class="chip active" data-k="fd" aria-pressed="true" style="--c:var(--fd)"><i></i>Fermi–Dirac</button>
+            <button class="chip active" data-k="be" aria-pressed="true" style="--c:var(--be)"><i></i>Bose–Einstein</button>
+            <button class="chip active" data-k="mb" aria-pressed="true" style="--c:var(--mb)"><i></i>Maxwell–Boltzmann</button>
+          </div>
+          <p class="note" style="margin:6px 0 0">Tap a name to hide or show its curve.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Normalisation</h2>
+        <div class="ctl">
+          <div class="seg" id="segMode">
+            <button data-m="N" class="active" aria-pressed="true">Fixed N</button>
+            <button data-m="mu" aria-pressed="false">Fixed B (μ)</button>
+          </div>
+          <p class="note" id="modeNote" style="margin:6px 0 0"></p>
+        </div>
+        <div class="ctl" id="ctlN">
+          <label class="slider-label" for="nn"><span>Particles N</span><span class="val" id="nval"></span></label>
+          <input id="nn" type="range" min="3" max="25" value="11" step="1">
+          <p class="note" style="margin:2px 0 0">Levels E<sub>n</sub> = n·δE (n = 0, 1, 2, …) as in the oscillator example. ε = (N−1)δE is the top level a full Fermi ladder fills.</p>
+        </div>
+        <div class="ctl" id="ctlMu" hidden>
+          <label class="slider-label" for="mu"><span>Chemical potential μ / ε</span><span class="val" id="muval"></span></label>
+          <input id="mu" type="range" min="-300" max="150" value="100" step="1">
+          <p class="warn" id="muwarn" hidden>Bose–Einstein needs μ &lt; 0, so its curve uses μ = −0.02 ε here.</p>
+        </div>
+      </section>
+
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="main">
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Occupation number ℕ(E)</b> against energy</span><span id="hoverHint">hover or touch for values</span></div>
+        <div class="chartbox">
+          <canvas id="cMain" aria-label="Occupation number versus energy for the three distributions"></canvas>
+          <div class="tip" id="tip"></div>
+        </div>
+        <p class="fig-note">Markers: discrete levels. Curves: the same formula evaluated continuously. ▲ marks k<sub>B</sub>T on the energy axis.</p>
+      </div>
+
+      <section class="card">
+        <table class="stats" id="tbl">
+          <thead><tr><th>Distribution</th><th>ℕ(0)</th><th>ℕ(ε)</th><th>⟨E⟩/ε</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="note" id="spread" style="margin:8px 0 0"></p>
+      </section>
+
+      <div class="figure-box" id="boxE">
+        <div class="fig-title"><span><b>Mean energy per particle</b> against temperature (fixed N)</span></div>
+        <canvas id="cE" aria-label="Mean energy per particle versus temperature"></canvas>
+        <p class="fig-note">Dashed line: classical ⟨E⟩ = k<sub>B</sub>T. Bosons lie below it and fermions above; all three merge at high T. At low T, ⟨E⟩ → 0 for bosons and → ½ε for fermions.</p>
+      </div>
+
+      <details>
+        <summary>Model and notes</summary>
+        <p>B is fixed by the particle number: B = e<sup>−μ/k<sub>B</sub>T</sup>. For fermions at T → 0, μ → E<sub>F</sub> = ε, so ℕ(E) becomes a step at ε. In Fixed N mode each distribution gets its own B such that Σℕ(Eₙ) = N over the equally spaced levels, which reproduces the three-temperature comparison in the lecture example.</p>
+        <p>In Fixed B mode all three curves use the same μ. This isolates the effect of the +1, −1 and 0 in the denominators. Bose–Einstein requires μ below the ground-state energy, so the slider is clamped for that curve only.</p>
+        <p>The classical limit holds when every occupation number is far below 1. That is the case for k<sub>B</sub>T ≫ ε and it fails for cold, dense systems such as the conduction electron gas.</p>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const S = { kT: 1, N: 11, mode: 'N', mu: 1.0, show: { fd: true, be: true, mb: true }, hover: null, M: null, spread: 0 };
+  const KEYS = ['fd', 'be', 'mb'];
+  const NAMES = { fd: 'Fermi–Dirac', be: 'Bose–Einstein', mb: 'Maxwell–Boltzmann' };
+  const $ = id => document.getElementById(id);
+  const cs = () => getComputedStyle(document.documentElement);
+  const cssv = n => cs().getPropertyValue(n).trim();
+  const font = px => px + 'px ' + (cssv('--font-body') || 'system-ui, sans-serif');
+  function palette() {
+    const st = cs(), v = n => st.getPropertyValue(n).trim();
+    return { fd: v('--blue'), be: v('--orange'), mb: v('--text-dim'), text: v('--text'), dim: v('--text-dim'),
+             grid: v('--grid'), border: v('--border'), panel: v('--panel') };
+  }
+
+  /* ---------- physics ---------- */
+  function occ(k, e, lnB, kT) {
+    const y = lnB + e / kT;
+    if (k === 'fd') return 1 / (Math.exp(y) + 1);
+    if (k === 'be') { const d = Math.expm1(y); return d > 0 ? 1 / d : Infinity; }
+    return Math.exp(-y);
+  }
+  function ladder(N, kT) {
+    const nl = Math.min(4000, Math.ceil((N - 1) * (1 + 32 * kT)) + 10);
+    const e = new Float64Array(nl);
+    for (let i = 0; i < nl; i++) e[i] = i / (N - 1);
+    return e;
+  }
+  function solveB(k, e, N, kT) {
+    if (k === 'mb') {
+      let Z = 0; for (let i = 0; i < e.length; i++) Z += Math.exp(-e[i] / kT);
+      return Math.log(Z / N);
+    }
+    const total = lnB => { let s = 0; for (let i = 0; i < e.length; i++) s += occ(k, e[i], lnB, kT); return s; };
+    let lo = k === 'be' ? 1e-15 : -120, hi = 120;
+    for (let it = 0; it < 70; it++) { const mid = 0.5 * (lo + hi); if (total(mid) > N) lo = mid; else hi = mid; }
+    return 0.5 * (lo + hi);
+  }
+  function meanE(e, n, N) { let s = 0; for (let i = 0; i < e.length; i++) s += e[i] * n[i]; return s / N; }
+
+  function model(kT) {
+    const M = { lnB: {}, occ: {}, e: null, mean: {}, clamped: false };
+    if (S.mode === 'N') {
+      const e = ladder(S.N, kT); M.e = e;
+      for (const k of KEYS) {
+        const lnB = solveB(k, e, S.N, kT); M.lnB[k] = lnB;
+        const o = new Float64Array(e.length);
+        for (let i = 0; i < e.length; i++) o[i] = occ(k, e[i], lnB, kT);
+        M.occ[k] = o; M.mean[k] = meanE(e, o, S.N);
+      }
+    } else {
+      const lnB = -S.mu / kT;
+      M.lnB.fd = lnB; M.lnB.mb = lnB;
+      M.lnB.be = Math.max(lnB, 0.02 / kT);
+      M.clamped = S.mu > -0.02;
+    }
+    return M;
+  }
+
+  let eCache = null;
+  function buildECurves() {
+    const pts = 64, xs = [], ys = { fd: [], be: [], mb: [] };
+    for (let j = 0; j <= pts; j++) {
+      const kT = 0.05 + (10 - 0.05) * j / pts, e = ladder(S.N, kT);
+      xs.push(kT);
+      for (const k of KEYS) {
+        const lnB = solveB(k, e, S.N, kT), o = new Float64Array(e.length);
+        for (let i = 0; i < e.length; i++) o[i] = occ(k, e[i], lnB, kT);
+        ys[k].push(meanE(e, o, S.N));
+      }
+    }
+    eCache = { N: S.N, xs, ys };
+  }
+
+  /* ---------- canvas helpers ---------- */
+  function fit(c) {
+    const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+    return { g, w, h };
+  }
+  function niceStep(range, target) {
+    const raw = range / target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
+  }
+  const tick = v => (Math.abs(v) < 1e-9 ? '0' : String(+v.toFixed(2)));
+  const num = v => !isFinite(v) ? '∞' : v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v >= 0.01 ? v.toFixed(3) : v.toExponential(1);
+  function marker(g, k, x, y) {
+    g.beginPath();
+    if (k === 'fd') { g.arc(x, y, 3.6, 0, 6.2832); g.fill(); }
+    else if (k === 'be') { g.rect(x - 3.2, y - 3.2, 6.4, 6.4); g.stroke(); }
+    else { g.moveTo(x, y - 4); g.lineTo(x + 4, y); g.lineTo(x, y + 4); g.lineTo(x - 4, y); g.closePath(); g.stroke(); }
+  }
+
+  /* ---------- main plot ---------- */
+  let geom = null;
+  function drawMain() {
+    const { g, w, h } = fit($('cMain')), P = palette(), kT = S.kT, M = S.M;
+    const L = 52, R = 16, T = 14, B = 42, pw = w - L - R, ph = h - T - B;
+    const xr = Math.max(2.5, 1 + 3 * kT);
+
+    const cols = Math.max(2, Math.floor(pw / 2)), curves = {};
+    let ymax = 1.15;
+    for (const k of KEYS) {
+      const a = new Float64Array(cols + 1);
+      for (let i = 0; i <= cols; i++) {
+        const v = occ(k, xr * i / cols, M.lnB[k], kT); a[i] = v;
+        if (S.show[k] && isFinite(v) && v > ymax) ymax = v;
+      }
+      curves[k] = a;
+    }
+    if (S.mode === 'mu') ymax = Math.min(ymax, 4);
+    const ystep = niceStep(ymax, 5);
+    ymax = Math.ceil(ymax / ystep - 1e-9) * ystep;
+    const X = e => L + pw * e / xr, Y = v => T + ph * (1 - v / ymax);
+    geom = { L, T, pw, ph, xr, ymax, w, h };
+
+    g.font = font(12); g.lineWidth = 1;
+    g.textAlign = 'right'; g.textBaseline = 'middle';
+    for (let v = 0; v <= ymax + 1e-9; v += ystep) {
+      const y = Math.round(Y(v)) + .5;
+      g.strokeStyle = P.grid; g.beginPath(); g.moveTo(L, y); g.lineTo(L + pw, y); g.stroke();
+      g.fillStyle = P.dim; g.fillText(tick(v), L - 8, y);
+    }
+    const xstep = niceStep(xr, 7);
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    for (let v = 0; v <= xr + 1e-9; v += xstep) {
+      const x = Math.round(X(v)) + .5;
+      g.strokeStyle = P.grid; g.beginPath(); g.moveTo(x, T); g.lineTo(x, T + ph); g.stroke();
+      g.fillStyle = P.dim; g.fillText(tick(v), x, T + ph + 6);
+    }
+    g.strokeStyle = P.border; g.strokeRect(L + .5, T + .5, pw, ph);
+    g.fillStyle = P.text; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.fillText('Energy E / ε', L + pw / 2, h - 6);
+    g.save(); g.translate(14, T + ph / 2); g.rotate(-Math.PI / 2); g.fillText('Occupation number ℕ(E)', 0, 0); g.restore();
+
+    // ε marker
+    g.setLineDash([2, 4]); g.strokeStyle = P.dim; g.beginPath();
+    g.moveTo(Math.round(X(1)) + .5, T); g.lineTo(Math.round(X(1)) + .5, T + ph); g.stroke(); g.setLineDash([]);
+    g.fillStyle = P.dim; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText('ε', X(1) + 4, T + 3);
+
+    // kT marker
+    if (kT <= xr) {
+      const xk = X(kT);
+      g.fillStyle = P.text; g.beginPath();
+      g.moveTo(xk, T + ph); g.lineTo(xk - 5, T + ph - 8); g.lineTo(xk + 5, T + ph - 8); g.closePath(); g.fill();
+      g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillText('k\u1d2eT', xk, T + ph - 10);
+    }
+
+    g.save(); g.beginPath(); g.rect(L, T - 2, pw, ph + 4); g.clip();
+    const order = ['mb', 'be', 'fd'];
+    for (const k of order) {
+      if (!S.show[k]) continue;
+      g.strokeStyle = P[k]; g.lineWidth = 2.2; g.globalAlpha = S.mode === 'N' ? 0.55 : 1;
+      g.setLineDash(k === 'mb' ? [7, 5] : []); g.beginPath();
+      let pen = false;
+      for (let i = 0; i <= cols; i++) {
+        const v = curves[k][i];
+        if (!isFinite(v)) { pen = false; continue; }
+        const x = L + pw * i / cols, y = Math.max(T - 20, Y(v));
+        if (!pen) { g.moveTo(x, y); pen = true; } else g.lineTo(x, y);
+      }
+      g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+    }
+    if (S.mode === 'N' && M.e && pw / xr / (S.N - 1) > 5) {
+      for (const k of order) {
+        if (!S.show[k]) continue;
+        g.fillStyle = P[k]; g.strokeStyle = P[k]; g.lineWidth = 1.8;
+        for (let i = 0; i < M.e.length && M.e[i] <= xr; i++) marker(g, k, X(M.e[i]), Y(M.occ[k][i]));
+      }
+    }
+    g.restore();
+
+    if (S.hover != null) {
+      const e = S.hover, x = X(e);
+      g.strokeStyle = P.text; g.globalAlpha = .35; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(Math.round(x) + .5, T); g.lineTo(Math.round(x) + .5, T + ph); g.stroke(); g.globalAlpha = 1;
+      for (const k of KEYS) {
+        if (!S.show[k]) continue;
+        const v = occ(k, e, M.lnB[k], kT);
+        if (!isFinite(v) || v > ymax) continue;
+        g.fillStyle = P[k]; g.beginPath(); g.arc(x, Y(v), 4, 0, 6.2832); g.fill();
+        g.strokeStyle = P.panel; g.lineWidth = 1.5; g.stroke();
+      }
+    }
+
+    let spread = 0;
+    if (S.show.fd && S.show.be) for (let i = 0; i <= cols; i++) {
+      const d = Math.abs(Math.min(curves.be[i], 1e6) - curves.fd[i]); if (d > spread) spread = d;
+    }
+    S.spread = spread;
+  }
+
+  /* ---------- mean-energy plot ---------- */
+  function drawE() {
+    const box = $('boxE');
+    if (S.mode !== 'N') { box.hidden = true; return; }
+    box.hidden = false;
+    if (!eCache || eCache.N !== S.N) buildECurves();
+    const { g, w, h } = fit($('cE')), P = palette();
+    const L = 52, R = 16, T = 10, B = 34, pw = w - L - R, ph = h - T - B, xr = 10, yr = 10;
+    const X = v => L + pw * v / xr, Y = v => T + ph * (1 - v / yr);
+    g.font = font(12); g.lineWidth = 1;
+    g.textAlign = 'right'; g.textBaseline = 'middle';
+    for (let v = 0; v <= yr; v += 2) {
+      const y = Math.round(Y(v)) + .5;
+      g.strokeStyle = P.grid; g.beginPath(); g.moveTo(L, y); g.lineTo(L + pw, y); g.stroke();
+      g.fillStyle = P.dim; g.fillText(v, L - 8, y);
+    }
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    for (let v = 0; v <= xr; v += 2) {
+      const x = Math.round(X(v)) + .5;
+      g.strokeStyle = P.grid; g.beginPath(); g.moveTo(x, T); g.lineTo(x, T + ph); g.stroke();
+      g.fillStyle = P.dim; g.fillText(v, x, T + ph + 5);
+    }
+    g.strokeStyle = P.border; g.strokeRect(L + .5, T + .5, pw, ph);
+    g.fillStyle = P.text; g.textBaseline = 'alphabetic'; g.fillText('k\u1d2eT / ε', L + pw / 2, h - 4);
+    g.save(); g.translate(14, T + ph / 2); g.rotate(-Math.PI / 2); g.fillText('⟨E⟩ / ε', 0, 0); g.restore();
+
+    g.setLineDash([3, 4]); g.strokeStyle = P.dim; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(X(0), Y(0)); g.lineTo(X(10), Y(10)); g.stroke(); g.setLineDash([]);
+    for (const k of ['mb', 'be', 'fd']) {
+      if (!S.show[k]) continue;
+      g.strokeStyle = P[k]; g.lineWidth = 2; g.setLineDash(k === 'mb' ? [6, 4] : []); g.beginPath();
+      eCache.xs.forEach((x, i) => { const px = X(x), py = Y(eCache.ys[k][i]); i ? g.lineTo(px, py) : g.moveTo(px, py); });
+      g.stroke(); g.setLineDash([]);
+    }
+    const xk = X(Math.min(S.kT, xr));
+    g.strokeStyle = P.text; g.globalAlpha = .5; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(Math.round(xk) + .5, T); g.lineTo(Math.round(xk) + .5, T + ph); g.stroke(); g.globalAlpha = 1;
+    for (const k of KEYS) {
+      if (!S.show[k]) continue;
+      g.fillStyle = P[k]; g.beginPath(); g.arc(xk, Y(Math.min(S.M.mean[k], yr)), 4, 0, 6.2832); g.fill();
+    }
+  }
+
+  /* ---------- readouts ---------- */
+  const at = (k, e) => occ(k, e, S.M.lnB[k], S.kT);
+  function updateTable() {
+    const P = palette(), tb = document.querySelector('#tbl tbody'); tb.innerHTML = '';
+    for (const k of KEYS) {
+      const tr = document.createElement('tr'); if (!S.show[k]) tr.className = 'off';
+      tr.innerHTML = `<td><i style="--c:${P[k]}"></i>${NAMES[k]}</td><td>${num(at(k, 0))}</td><td>${num(at(k, 1))}</td><td>${S.mode === 'N' ? S.M.mean[k].toFixed(2) : '–'}</td>`;
+      tb.appendChild(tr);
+    }
+    $('spread').textContent = (S.show.fd && S.show.be)
+      ? `Largest gap between the Bose–Einstein and Fermi–Dirac curves in view: ${num(S.spread)} particles per level.`
+      : 'Show both quantum curves to see how far apart they are.';
+  }
+  function updateMsg() {
+    const t = S.kT, n0 = at('be', 0);
+    let html;
+    if (S.mode === 'mu' && t < 0.35)
+      html = `<b>Low temperature.</b> With μ fixed, Fermi–Dirac becomes a sharp step at μ: levels below are full (ℕ → 1) and levels above are empty. Bose–Einstein has no such ceiling and grows without bound as E approaches μ.`;
+    else if (t < 0.35)
+      html = `<b>Low temperature, quantum regime.</b> Fermi–Dirac approaches a step at ε because the Pauli principle caps every level at ℕ ≤ 1. Bosons pile into the ground state (ℕ(0) ≈ ${num(n0)}). Maxwell–Boltzmann is far from both, so distinguishable-particle statistics fail for cold, dense systems.`;
+    else if (t < 2.5)
+      html = `<b>Intermediate temperature.</b> The curves are already fairly similar. Bose–Einstein lies above the classical curve at low energy and below it at intermediate energy, while Fermi–Dirac is pushed below it at low energy. Ground-state occupation: ${num(n0)} (BE) against ${num(at('mb', 0))} (MB).`;
+    else
+      html = `<b>High temperature, classical limit.</b> All occupation numbers are far below 1 (ℕ(0) ≈ ${num(at('mb', 0))}), so boson, fermion or distinguishable makes little difference. The three curves collapse onto the Boltzmann curve and ⟨E⟩ ≈ k<sub>B</sub>T.`;
+    $('msg').innerHTML = html;
+  }
+  function refresh() {
+    S.M = model(S.kT);
+    $('tval').textContent = S.kT.toFixed(2);
+    $('nval').textContent = S.N;
+    $('muval').textContent = S.mu.toFixed(2);
+    $('muwarn').hidden = !(S.mode === 'mu' && S.M.clamped);
+    drawMain(); drawE(); updateTable(); updateMsg();
+  }
+
+  /* ---------- controls ---------- */
+  const sToT = s => 0.05 * Math.pow(200, s / 1000);
+  const tToS = t => 1000 * Math.log(t / 0.05) / Math.log(200);
+  $('temp').addEventListener('input', e => { S.kT = sToT(+e.target.value); refresh(); });
+  document.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+    S.kT = +b.dataset.t; $('temp').value = tToS(S.kT); refresh();
+  }));
+  document.querySelectorAll('#chips .chip').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.k; S.show[k] = !S.show[k];
+    b.classList.toggle('active', S.show[k]); b.setAttribute('aria-pressed', S.show[k]); refresh();
+  }));
+  $('nn').addEventListener('input', e => { S.N = +e.target.value; refresh(); });
+  $('mu').addEventListener('input', e => { S.mu = +e.target.value / 100; refresh(); });
+  function modeNote() {
+    $('modeNote').textContent = S.mode === 'N'
+      ? 'Each curve gets its own B so that the same N particles fill the levels (the lecture example).'
+      : 'All curves share B = e^(−μ/kT), with no particle-number constraint. This isolates the +1, −1 and 0 in the denominators.';
+  }
+  document.querySelectorAll('#segMode button').forEach(b => b.addEventListener('click', () => {
+    S.mode = b.dataset.m;
+    document.querySelectorAll('#segMode button').forEach(x => { const on = x === b; x.classList.toggle('active', on); x.setAttribute('aria-pressed', on); });
+    $('ctlN').hidden = S.mode !== 'N'; $('ctlMu').hidden = S.mode !== 'mu';
+    modeNote(); refresh();
+  }));
+
+  /* ---------- hover ---------- */
+  const tip = $('tip');
+  function hoverAt(ev) {
+    if (!geom) return;
+    const r = $('cMain').getBoundingClientRect(), px = ev.clientX - r.left;
+    let e = (px - geom.L) / geom.pw * geom.xr;
+    if (e < 0 || e > geom.xr) { leave(); return; }
+    if (S.mode === 'N') { const d = 1 / (S.N - 1); if (geom.pw / geom.xr * d > 8) e = Math.round(e / d) * d; }
+    S.hover = e; drawMain();
+    const P = palette();
+    let html = `<div>E = ${e.toFixed(2)} ε</div>`;
+    for (const k of KEYS) if (S.show[k]) html += `<div><i style="--c:${P[k]}"></i>${NAMES[k]}: ${num(at(k, e))}</div>`;
+    tip.innerHTML = html; tip.style.display = 'block';
+    const bw = tip.offsetWidth;
+    tip.style.left = (px + 14 > r.width - bw ? px - bw - 14 : px + 14) + 'px';
+    tip.style.top = (geom.T + 8) + 'px';
+  }
+  function leave() { S.hover = null; tip.style.display = 'none'; if (S.M) drawMain(); }
+  const mc = $('cMain');
+  mc.addEventListener('pointermove', hoverAt);
+  mc.addEventListener('pointerdown', hoverAt);
+  mc.addEventListener('pointerleave', leave);
+
+  /* ---------- lifecycle ---------- */
+  let raf = 0;
+  const redraw = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { if (S.M) { drawMain(); drawE(); updateTable(); } }); };
+  window.addEventListener('resize', redraw);
+  if (window.ResizeObserver) new ResizeObserver(redraw).observe(document.querySelector('.wrap'));
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', redraw);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+
+  S.kT = sToT(380); $('temp').value = 380; modeNote();
+  refresh();
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
