@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Doping, Carrier Densities &amp; the Hall Effect</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys310-solid-state-physics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+  main{max-width:1240px;margin:0 auto;padding:16px 14px 40px}
+  header{margin-bottom:12px}
+  sub,sup{line-height:0}
+  .strip{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-ctl);padding:6px 10px;margin:0 0 10px;font-size:var(--fs-small);font-family:var(--font-mono)}
+  .strip .en{color:var(--blue)} .strip .ho{color:var(--red)}
+  .layout{display:grid;gap:12px}
+  .controls{display:grid;gap:12px}
+  .grp{border-top:1px solid var(--border);padding-top:12px}
+  .grp:first-child{border-top:0;padding-top:0}
+  .field{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:var(--fs-label);color:var(--text-dim);margin:6px 0 0}
+  .field:first-child{margin-top:0}
+  .field output{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent);white-space:nowrap}
+  .hint{font-size:var(--fs-small);color:var(--text-dim);margin:2px 0 0}
+  select{width:100%}
+  .btns{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{display:inline-block;padding:2px 10px;border-radius:99px;border:1px solid var(--border);font-size:var(--fs-small);font-weight:600;background:var(--accent-soft)}
+  .typerow{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:var(--fs-label);color:var(--text-dim)}
+  .chk{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .readouts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .ro{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+  .ro small{display:block;color:var(--text-dim);font-size:var(--fs-tiny)}
+  .ro span{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:.95rem}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:10px 0 8px}
+  .tabs button{flex:0 0 auto}
+  .panel{display:none}
+  .panel.on{display:block}
+  canvas{display:block;width:100%;touch-action:pan-y}
+  #cA,#cF,#cH1,#cH2{height:280px}
+  #cB{height:340px}
+  .cap{color:var(--text-dim);font-size:var(--fs-small);line-height:1.5;margin:6px 0 0}
+  .pair{display:grid;gap:8px}
+  .hallro{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+  .note{margin-top:14px;max-width:95ch}
+  .warn{min-height:1.1em;margin:0}
+  @media (min-width:640px){
+    .readouts{grid-template-columns:repeat(3,1fr)}
+    .hallro{grid-template-columns:repeat(5,1fr)}
+  }
+  @media (min-width:980px){
+    .layout{grid-template-columns:330px 1fr;align-items:start}
+    .controls{position:sticky;top:12px}
+    .strip,.tabs{display:none}
+    .plots{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .panel{display:block}
+    #pH{grid-column:1/-1}
+    .pair{grid-template-columns:1fr 1fr}
+    .readouts{grid-template-columns:repeat(6,1fr);margin-bottom:12px}
+    .ro span{font-size:.88rem}
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Doping, carrier densities and the Hall effect</h1>
+    <p class="sub">FYS.310 Solid State Physics · doped semiconductors. Add donors and acceptors, set how deeply they bind, and sweep the temperature. The Fermi level is solved from charge neutrality at every temperature; the Hall coefficient follows from the resulting n and p.</p>
+  </header>
+
+  <div class="strip" id="strip" aria-live="off">
+    <span><b id="sT2">300 K</b></span>
+    <span class="en">n = <b id="sN"></b></span>
+    <span class="ho">p = <b id="sP"></b></span>
+    <span id="sReg"></span>
+  </div>
+
+  <div class="layout">
+    <section class="card controls" aria-label="Controls">
+      <div class="grp">
+        <label class="field" for="mat">Semiconductor</label>
+        <select id="mat">
+          <option value="Si">Silicon</option>
+          <option value="Ge">Germanium</option>
+          <option value="GaAs">Gallium arsenide</option>
+        </select>
+      </div>
+
+      <div class="grp">
+        <div class="typerow"><span>Doping type</span><span class="tag" id="chip">n-type</span></div>
+        <div class="btns" id="presets">
+          <button class="btn" data-p="n">n-type</button>
+          <button class="btn" data-p="p">p-type</button>
+          <button class="btn" data-p="comp">Compensated</button>
+          <button class="btn" data-p="none">Undoped</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <label class="field" for="sD"><span>Donor density N<sub>D</sub> </span><output id="oD"></output></label>
+        <input type="range" id="sD" min="9" max="20" step="0.1" value="16">
+        <label class="field" for="sED"><span>Donor level below E<sub>c</sub> </span><output id="oED"></output></label>
+        <input type="range" id="sED" min="1" max="250" step="1" value="45">
+        <p class="hint" id="hD"></p>
+      </div>
+
+      <div class="grp">
+        <label class="field" for="sA"><span>Acceptor density N<sub>A</sub> </span><output id="oA"></output></label>
+        <input type="range" id="sA" min="9" max="20" step="0.1" value="9">
+        <label class="field" for="sEA"><span>Acceptor level above E<sub>v</sub> </span><output id="oEA"></output></label>
+        <input type="range" id="sEA" min="1" max="250" step="1" value="45">
+        <p class="hint" id="hA"></p>
+      </div>
+
+      <div class="grp">
+        <label class="field" for="sT"><span>Temperature </span><output id="oT"></output></label>
+        <input type="range" id="sT" min="30" max="1000" step="1" value="300">
+        <p class="hint">You can also drag across any temperature plot.</p>
+      </div>
+
+      <div class="grp">
+        <div class="typerow"><span>Horizontal axis</span></div>
+        <div class="seg">
+          <button id="xInv" class="active">1000 / T</button>
+          <button id="xLin">T</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="cmu"> Constant mobilities (Hall panel)</label>
+      </div>
+      <p class="warn" id="warn"></p>
+    </section>
+
+    <div>
+      <div class="readouts">
+        <div class="ro"><small>Electrons n</small><span id="rN"></span></div>
+        <div class="ro"><small>Holes p</small><span id="rP"></span></div>
+        <div class="ro"><small>E<sub>F</sub> above E<sub>v</sub></small><span id="rEF"></span></div>
+        <div class="ro"><small>Donors ionized</small><span id="rDI"></span></div>
+        <div class="ro"><small>Acceptors ionized</small><span id="rAI"></span></div>
+        <div class="ro"><small>Regime</small><span id="rReg"></span></div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="btn" data-t="A" aria-pressed="true">Carriers</button>
+        <button class="btn" data-t="F" aria-pressed="false">Fermi level</button>
+        <button class="btn" data-t="B" aria-pressed="false">Bands</button>
+        <button class="btn" data-t="H" aria-pressed="false">Hall effect</button>
+      </div>
+
+      <div class="plots">
+        <section class="panel on" id="pA">
+          <h2>Carrier densities</h2>
+          <canvas id="cA" aria-label="Electron and hole density versus temperature"></canvas>
+          <p class="cap">Cold: dopants freeze out. Middle: every dopant ionized, majority density ≈ |N<sub>D</sub> − N<sub>A</sub>|. Hot: thermal pairs take over and n → p → n<sub>i</sub>.</p>
+        </section>
+
+        <section class="panel" id="pF">
+          <h2>Fermi level against temperature</h2>
+          <canvas id="cF" aria-label="Fermi level and band edges versus temperature"></canvas>
+          <p class="cap">E<sub>F</sub> starts between the dopant level and the band edge, then drifts to midgap as n<sub>i</sub> overtakes the doping.</p>
+        </section>
+
+        <section class="panel" id="pB">
+          <h2>Bands at the chosen temperature</h2>
+          <canvas id="cB" aria-label="Band diagram with dopant levels, Fermi level and Fermi–Dirac function"></canvas>
+          <p class="cap">Filled donor sites hold their electron (neutral); open sites with + are ionized. Acceptors are the reverse. Dots show carriers on a log scale. The right curve is f(E); it crosses ½ at E<sub>F</sub>.</p>
+        </section>
+
+        <section class="panel" id="pH">
+          <h2>Hall coefficient and resistivity</h2>
+          <div class="pair">
+            <div><canvas id="cH1" aria-label="Magnitude of the Hall coefficient versus temperature"></canvas></div>
+            <div><canvas id="cH2" aria-label="Resistivity versus temperature"></canvas></div>
+          </div>
+          <div class="hallro">
+            <div class="ro"><small>R<sub>H</sub> (cm³/C)</small><span id="hRH"></span></div>
+            <div class="ro"><small>1 / (e R<sub>H</sub>) (cm⁻³)</small><span id="hNH"></span></div>
+            <div class="ro"><small>ρ (Ω cm)</small><span id="hRho"></span></div>
+            <div class="ro"><small>Hall mobility (cm²/Vs)</small><span id="hMu"></span></div>
+            <div class="ro"><small>V<sub>H</sub> at 1 T, 1 mA, 0.5 mm</small><span id="hVH"></span></div>
+          </div>
+          <p class="cap">R<sub>H</sub> = (p μ<sub>h</sub>² − n μ<sub>e</sub>²) / [e (p μ<sub>h</sub> + n μ<sub>e</sub>)²]. In the saturation range R<sub>H</sub> = ±1/(e|N<sub>D</sub> − N<sub>A</sub>|), so the sign gives the doping type and the magnitude the net doping. A p-type sample flips sign at high T because μ<sub>e</sub> &gt; μ<sub>h</sub>.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Model: parabolic bands with density-of-states masses and a Varshni gap E<sub>g</sub>(T); Fermi–Dirac statistics for the bands (Bednarczyk–Bednarczyk approximation of F<sub>1/2</sub>); one level per dopant with spin degeneracy 2 (donor) and 4 (acceptor); neutrality p + N<sub>D</sub><sup>+</sup> = n + N<sub>A</sub><sup>−</sup> solved by bisection. Mobility: lattice scattering ∝ T<sup>−3/2</sup> plus ionized-impurity scattering ∝ T<sup>3/2</sup> (Matthiessen), qualitative only; Hall factor set to 1. Left out: impurity band and Mott transition, band-gap narrowing, excited dopant states, magnetic freeze-out.</p>
+</main>
+
+<script>
+(()=>{
+'use strict';
+const K=8.617333e-5, Q=1.602177e-19;
+const FONT='"Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif';
+
+//<physics>
+const MAT={
+  Si:{Eg0:1.170,al:4.73e-4,be:636,me:1.08,mh:0.81,mue:1400,muh:450,Nref:1e17,ED:45,EA:45,
+      hD:'P 45 · As 54 · Sb 43 meV',hA:'B 45 · Al 57 · Ga 65 meV'},
+  Ge:{Eg0:0.7437,al:4.774e-4,be:235,me:0.56,mh:0.29,mue:3900,muh:1900,Nref:3e17,ED:12,EA:10,
+      hD:'P 12.0 · As 12.7 · Sb 9.6 meV',hA:'B 10.4 · Al 10.2 · Ga 10.8 meV'},
+  GaAs:{Eg0:1.519,al:5.405e-4,be:204,me:0.067,mh:0.53,mue:8500,muh:400,Nref:3e17,ED:6,EA:30,
+      hD:'Si 5.8 · Se 5.9 meV',hA:'Zn 31 · Be 28 · C 26 meV'}
+};
+const S={mat:'Si',lgD:16,ED:45,lgA:9,EA:45,T:300,inv:true,cmu:false};
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const ND0=()=>S.lgD<=9.05?0:Math.pow(10,S.lgD);
+const NA0=()=>S.lgA<=9.05?0:Math.pow(10,S.lgA);
+function Egap(T){const m=MAT[S.mat];return m.Eg0-m.al*T*T/(T+m.be);}
+function Nc(T){return 2.5093e19*Math.pow(MAT[S.mat].me,1.5)*Math.pow(T/300,1.5);}
+function Nv(T){return 2.5093e19*Math.pow(MAT[S.mat].mh,1.5)*Math.pow(T/300,1.5);}
+function fd(eta){
+  eta=clamp(eta,-700,700);
+  const xi=3*Math.sqrt(Math.PI)/4*Math.pow(Math.pow(eta,4)+50+33.6*eta*(1-0.68*Math.exp(-0.17*Math.pow(eta+1,2))),-0.375);
+  return 1/(Math.exp(-eta)+xi);
+}
+function solve(T){
+  const kT=K*T, eg=Egap(T), nc=Nc(T), nv=Nv(T);
+  const ed=eg-S.ED/1000, ea=S.EA/1000, ND=ND0(), NA=NA0();
+  const parts=EF=>{
+    const n=nc*fd((EF-eg)/kT), p=nv*fd(-EF/kT);
+    const Dp=ND/(1+2*Math.exp(clamp((EF-ed)/kT,-700,700)));
+    const Am=NA/(1+4*Math.exp(clamp((ea-EF)/kT,-700,700)));
+    return {n,p,Dp,Am};
+  };
+  let lo=-0.6, hi=eg+0.6, r;
+  for(let i=0;i<100;i++){
+    const mid=0.5*(lo+hi); r=parts(mid);
+    if(r.p+r.Dp-r.n-r.Am>0) lo=mid; else hi=mid;
+  }
+  const EF=0.5*(lo+hi); r=parts(EF);
+  const ni=Math.sqrt(nc*nv)*Math.exp(-eg/(2*kT));
+  return {T,EF,eg,ed,ea,ND,NA,n:r.n,p:r.p,Dp:r.Dp,Am:r.Am,ni,kT};
+}
+function transport(r){
+  const m=MAT[S.mat]; let mue=m.mue, muh=m.muh;
+  if(!S.cmu){
+    const t=Math.pow(300/r.T,1.5), NI=r.Dp+r.Am;
+    mue=1/(1/(m.mue*t)+NI*t/(m.Nref*m.mue));
+    muh=1/(1/(m.muh*t)+NI*t/(m.Nref*m.muh));
+  }
+  const s=Q*(r.n*mue+r.p*muh);
+  const den=Q*Math.pow(r.p*muh+r.n*mue,2);
+  const RH=den>0?(r.p*muh*muh-r.n*mue*mue)/den:0;
+  const rho=s>0?1/s:Infinity;
+  return {mue,muh,sigma:s,RH,rho,muH:Math.abs(RH)*s};
+}
+function regime(r){
+  const kT=r.kT;
+  if(r.ND===0&&r.NA===0) return 'Intrinsic';
+  if(r.EF>r.eg||r.EF<0) return 'Degenerate';
+  const net=Math.abs(r.ND-r.NA);
+  if(net<1e-3*Math.max(r.ND,r.NA)) return 'Intrinsic';
+  const ratio=Math.max(r.n,r.p)/net;
+  if(ratio<0.9) return 'Freeze-out';
+  if(ratio<1.1) return 'Saturation';
+  return 'Intrinsic';
+}
+//</physics>
+
+const $=id=>document.getElementById(id);
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+const sup=k=>String(k).split('').map(c=>SUP[c]||c).join('');
+function sci(x,d=2){
+  if(!isFinite(x)) return '—'; if(x===0) return '0';
+  const s=x<0?'−':''; x=Math.abs(x);
+  let e=Math.floor(Math.log10(x)), ms=(x/Math.pow(10,e)).toFixed(d-1);
+  if(parseFloat(ms)>=10){ms=(1).toFixed(d-1);e++;}
+  return s+ms+'×10<sup>'+e+'</sup>';
+}
+const pct=x=>x>=0.1?x.toFixed(1)+' %':x.toPrecision(2)+' %';
+function fmtV(v){
+  const a=Math.abs(v), s=v<0?'−':'+';
+  if(!isFinite(v)) return '—';
+  if(a>=1) return s+a.toFixed(2)+' V';
+  if(a>=1e-3) return s+(a*1e3).toFixed(2)+' mV';
+  if(a>=1e-6) return s+(a*1e6).toFixed(2)+' µV';
+  return s+(a*1e9).toFixed(1)+' nV';
+}
+
+let COL={};
+function loadColors(){
+  const cs=getComputedStyle(document.documentElement);
+  const map={ink:'--text',muted:'--text-dim',line:'--border',grid:'--grid',e:'--blue',h:'--red',ef:'--green',don:'--orange',acc:'--violet',band:'--border',panel:'--panel'};
+  Object.keys(map).forEach(k=>COL[k]=cs.getPropertyValue(map[k]).trim());
+}
+
+/* ---------- curves ---------- */
+let cache={key:''};
+function range(){return S.inv?{inv:true,s0:1,s1:30,xt:[1,5,10,15,20,25,30]}:{inv:false,s0:30,s1:1000,xt:[200,400,600,800,1000]};}
+function curves(){
+  const key=[S.mat,S.lgD,S.ED,S.lgA,S.EA,S.inv,S.cmu].join('|');
+  if(key===cache.key) return cache;
+  const D=range(), N=260, pts=[];
+  for(let i=0;i<=N;i++){
+    const s=D.s0+(D.s1-D.s0)*i/N, T=D.inv?1000/s:s;
+    const r=solve(T), tr=transport(r);
+    pts.push({s,T,r,tr});
+  }
+  cache={key,pts,D};
+  return cache;
+}
+
+/* ---------- canvas helpers ---------- */
+function prep(cv){
+  const rc=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  const w=Math.round(rc.width), h=Math.round(rc.height);
+  if(w<20||h<20) return null;
+  if(cv.width!==w*dpr||cv.height!==h*dpr){cv.width=w*dpr;cv.height=h*dpr;}
+  const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+  c.font='12px '+FONT;
+  return {c,w,h};
+}
+function geom(w,h){const l=54,r=14,t=14,b=52;return {l,r,t,b,pw:w-l-r,ph:h-t-b,w,h};}
+const xp=(g,D,s)=>g.l+(s-D.s0)/(D.s1-D.s0)*g.pw;
+function tl(c,main,subs,x,y,align,size){
+  size=size||13;
+  c.font=size+'px '+FONT; const w1=c.measureText(main).width;
+  c.font=(size*0.74)+'px '+FONT; const w2=subs?c.measureText(subs).width:0;
+  const tot=w1+w2, x0=align==='right'?x-tot:align==='center'?x-tot/2:x;
+  c.textAlign='left'; c.font=size+'px '+FONT; c.fillText(main,x0,y);
+  if(subs){c.font=(size*0.74)+'px '+FONT;c.fillText(subs,x0+w1,y+size*0.25);}
+  c.font='12px '+FONT;
+}
+function legend(c,items,x,y){
+  c.textBaseline='middle'; c.textAlign='left';
+  items.forEach(it=>{
+    c.strokeStyle=it.color; c.lineWidth=it.w||2; c.setLineDash(it.dash||[]);
+    c.beginPath(); c.moveTo(x,y); c.lineTo(x+18,y); c.stroke(); c.setLineDash([]);
+    c.fillStyle=COL.ink; tl(c,it.main,it.sub,x+23,y+4,'left',12);
+    c.font='12px '+FONT;
+    const wm=c.measureText(it.main).width+(it.sub?c.measureText(it.sub).width*0.74:0);
+    x+=23+wm+14;
+  });
+}
+function frame(c,g,D,yt,ytitle){
+  c.lineWidth=1; c.strokeStyle=COL.grid; c.fillStyle=COL.muted; c.textBaseline='middle'; c.textAlign='right'; c.font='12px '+FONT;
+  yt.forEach(t=>{c.beginPath();c.moveTo(g.l,t.y);c.lineTo(g.l+g.pw,t.y);c.stroke();c.fillText(t.label,g.l-6,t.y);});
+  c.textAlign='center'; c.textBaseline='alphabetic';
+  D.xt.forEach(s=>{
+    const x=xp(g,D,s);
+    c.strokeStyle=COL.grid; c.beginPath();c.moveTo(x,g.t);c.lineTo(x,g.t+g.ph);c.stroke();
+    c.fillStyle=COL.muted; c.fillText(String(s),x,g.t+g.ph+15);
+    if(D.inv) c.fillText(Math.round(1000/s)+' K',x,g.t+g.ph+28);
+  });
+  c.fillStyle=COL.ink;
+  c.fillText(D.inv?'1000 / T  (K⁻¹),  temperature in K below':'T  (K)',g.l+g.pw/2,g.h-6);
+  c.save(); c.translate(13,g.t+g.ph/2); c.rotate(-Math.PI/2); c.textAlign='center'; c.fillText(ytitle,0,0); c.restore();
+  c.strokeStyle=COL.line; c.strokeRect(g.l+0.5,g.t+0.5,g.pw,g.ph);
+}
+function clipPlot(c,g){c.save();c.beginPath();c.rect(g.l,g.t,g.pw,g.ph);c.clip();}
+function marker(c,g,D,T){
+  const s=D.inv?1000/T:T, x=xp(g,D,s);
+  c.save(); c.strokeStyle=COL.ink; c.globalAlpha=0.55; c.setLineDash([4,3]); c.lineWidth=1;
+  c.beginPath();c.moveTo(x,g.t);c.lineTo(x,g.t+g.ph);c.stroke(); c.restore(); return x;
+}
+function dot(c,x,y,color){c.fillStyle=COL.panel;c.strokeStyle=color;c.lineWidth=2;c.beginPath();c.arc(x,y,4.5,0,7);c.fill();c.stroke();}
+function logticks(lo,hi){
+  const step=Math.max(1,Math.ceil((hi-lo)/6)), out=[];
+  for(let k=Math.ceil(lo/step)*step;k<=hi;k+=step) out.push(k);
+  return out;
+}
+function lineSeries(c,g,D,pts,val,color,w,dash,ymap){
+  c.strokeStyle=color; c.lineWidth=w; c.setLineDash(dash||[]); c.lineJoin='round';
+  c.beginPath(); let pen=false;
+  for(const p of pts){
+    const y=ymap(val(p));
+    if(y===null){pen=false;continue;}
+    const x=xp(g,D,p.s);
+    if(pen) c.lineTo(x,y); else c.moveTo(x,y);
+    pen=true;
+  }
+  c.stroke(); c.setLineDash([]);
+}
+
+/* ---------- panel: carriers ---------- */
+function drawCarriers(rNow){
+  const P=prep($('cA')); if(!P) return; const {c,w,h}=P; const g=geom(w,h);
+  const {pts,D}=curves(), lo=0, hi=21;
+  const Y=lv=>g.t+(hi-lv)/(hi-lo)*g.ph;
+  const yt=[]; for(let k=lo;k<=hi;k+=3) yt.push({y:Y(k),label:'10'+sup(k)});
+  frame(c,g,D,yt,'density  (cm⁻³)');
+  const ym=v=>{const lv=Math.log10(v); return (isFinite(lv)&&lv>=lo)?Y(Math.min(lv,hi)):null;};
+  clipPlot(c,g);
+  lineSeries(c,g,D,pts,p=>p.r.ni,COL.muted,1.4,[5,4],ym);
+  const net=Math.abs(rNow.ND-rNow.NA);
+  if(net>0) lineSeries(c,g,D,pts,()=>net,COL.ink,1.2,[2,3],ym);
+  lineSeries(c,g,D,pts,p=>p.r.p,COL.h,2.4,null,ym);
+  lineSeries(c,g,D,pts,p=>p.r.n,COL.e,2.4,null,ym);
+  c.restore();
+  const x=marker(c,g,D,rNow.T);
+  const yn=ym(rNow.n), yp=ym(rNow.p);
+  if(yn!==null) dot(c,x,yn,COL.e);
+  if(yp!==null) dot(c,x,yp,COL.h);
+  const items=[{main:'n',color:COL.e,w:2.4},{main:'p',color:COL.h,w:2.4},{main:'n',sub:'i',color:COL.muted,w:1.4,dash:[5,4]}];
+  if(net>0) items.push({main:'|N',sub:'D−A|',color:COL.ink,w:1.2,dash:[2,3]});
+  legend(c,items,g.l+8,g.t+12);
+}
+
+/* ---------- panel: Fermi level ---------- */
+function drawFermi(rNow){
+  const P=prep($('cF')); if(!P) return; const {c,w,h}=P; const g=geom(w,h);
+  const {pts,D}=curves(), m=MAT[S.mat], lo=-0.15, hi=m.Eg0+0.15;
+  const Y=E=>g.t+(hi-E)/(hi-lo)*g.ph;
+  const yt=[]; for(let e=0;e<=m.Eg0+0.01;e+=0.2) yt.push({y:Y(e),label:e.toFixed(1)});
+  frame(c,g,D,yt,'energy above E_v  (eV)');
+  clipPlot(c,g);
+  c.save(); c.globalAlpha=0.55; c.fillStyle=COL.band;
+  c.beginPath(); c.moveTo(g.l,g.t);
+  pts.forEach(p=>c.lineTo(xp(g,D,p.s),Y(p.r.eg)));
+  c.lineTo(g.l+g.pw,g.t); c.closePath(); c.fill();
+  c.fillRect(g.l,Y(0),g.pw,g.t+g.ph-Y(0)); c.restore();
+  c.fillStyle=COL.muted; c.textAlign='left'; c.textBaseline='middle';
+  c.fillText('conduction band',g.l+8,g.t+11); c.fillText('valence band',g.l+8,g.t+g.ph-11);
+  lineSeries(c,g,D,pts,p=>p.r.eg,COL.ink,1.6,null,v=>Y(v));
+  lineSeries(c,g,D,pts,()=>0,COL.ink,1.6,null,v=>Y(v));
+  if(rNow.ND>0) lineSeries(c,g,D,pts,p=>p.r.ed,COL.don,1.6,[6,4],v=>Y(v));
+  if(rNow.NA>0) lineSeries(c,g,D,pts,p=>p.r.ea,COL.acc,1.6,[6,4],v=>Y(v));
+  lineSeries(c,g,D,pts,p=>p.r.EF,COL.ef,2.6,null,v=>Y(v));
+  c.restore();
+  const x=marker(c,g,D,rNow.T);
+  dot(c,x,clamp(Y(rNow.EF),g.t+4,g.t+g.ph-4),COL.ef);
+  const items=[{main:'E',sub:'F',color:COL.ef,w:2.6}];
+  if(rNow.ND>0) items.push({main:'E',sub:'D',color:COL.don,dash:[6,4]});
+  if(rNow.NA>0) items.push({main:'E',sub:'A',color:COL.acc,dash:[6,4]});
+  legend(c,items,g.l+8,Y(0.5));
+}
+
+/* ---------- panel: band diagram ---------- */
+const RND=(()=>{let a=7,o=[];for(let i=0;i<60;i++){a=(a*1664525+1013904223)>>>0;o.push(a/4294967296);}return o;})();
+function drawBands(r){
+  const P=prep($('cB')); if(!P) return; const {c,w,h}=P;
+  const eg=r.eg, e0=-0.32, e1=eg+0.32;
+  const top=12, bot=h-30, left=50, sx=Math.round(w*0.64), fL=sx+34, fR=w-16;
+  const Y=E=>top+(e1-E)/(e1-e0)*(bot-top);
+  c.save(); c.globalAlpha=0.55; c.fillStyle=COL.band; c.fillRect(left,top,sx-left,Y(eg)-top); c.fillRect(left,Y(0),sx-left,bot-Y(0)); c.restore();
+  c.fillStyle=COL.muted; c.textAlign='left'; c.textBaseline='middle';
+  c.fillText('conduction band',left+8,top+12); c.fillText('valence band',left+8,bot-12);
+  c.strokeStyle=COL.ink; c.lineWidth=2;
+  c.beginPath(); c.moveTo(left,Y(eg)); c.lineTo(sx,Y(eg)); c.moveTo(left,Y(0)); c.lineTo(sx,Y(0)); c.stroke();
+  c.fillStyle=COL.ink; tl(c,'E','c',left+6,Y(eg)-8,'left',13); tl(c,'E','v',left+6,Y(0)+14,'left',13);
+  c.textBaseline='middle';
+  c.fillStyle=COL.muted; c.textAlign='right';
+  for(let e=Math.ceil(e0*5)/5;e<=e1;e+=0.2){c.fillText(e.toFixed(1),left-8,Y(e)); c.strokeStyle=COL.line; c.lineWidth=1; c.beginPath();c.moveTo(left-4,Y(e));c.lineTo(left,Y(e));c.stroke();}
+  c.save(); c.translate(12,(top+bot)/2); c.rotate(-Math.PI/2); c.textAlign='center'; c.fillStyle=COL.ink; c.fillText('E  (eV)',0,0); c.restore();
+  c.strokeStyle=COL.line; c.beginPath(); c.moveTo(left+0.5,top); c.lineTo(left+0.5,bot); c.stroke();
+
+  const NS=12, x0=left+46, x1=sx-22;
+  const siteX=i=>x0+(x1-x0)*i/(NS-1);
+  if(r.ND>0){
+    const y=Y(r.ed), ion=Math.round(r.Dp/r.ND*NS);
+    c.strokeStyle=COL.don; c.lineWidth=1.4; c.setLineDash([6,4]);
+    c.beginPath(); c.moveTo(left,y); c.lineTo(sx,y); c.stroke(); c.setLineDash([]);
+    c.fillStyle=COL.don; tl(c,'E','D',left+6,y+15,'left',13);
+    for(let i=0;i<NS;i++){
+      const x=siteX(i); c.lineWidth=1.6; c.strokeStyle=COL.don;
+      c.beginPath(); c.arc(x,y,5.5,0,7);
+      if(i>=ion){c.fillStyle=COL.don;c.fill();} else {c.fillStyle=COL.panel;c.fill();c.stroke();
+        c.beginPath();c.moveTo(x-3,y);c.lineTo(x+3,y);c.moveTo(x,y-3);c.lineTo(x,y+3);c.stroke();}
+    }
+  }
+  if(r.NA>0){
+    const y=Y(r.ea), ion=Math.round(r.Am/r.NA*NS);
+    c.strokeStyle=COL.acc; c.lineWidth=1.4; c.setLineDash([6,4]);
+    c.beginPath(); c.moveTo(left,y); c.lineTo(sx,y); c.stroke(); c.setLineDash([]);
+    c.fillStyle=COL.acc; tl(c,'E','A',left+6,y-8,'left',13);
+    for(let i=0;i<NS;i++){
+      const x=siteX(i); c.lineWidth=1.6; c.strokeStyle=COL.acc;
+      c.beginPath(); c.arc(x,y,5.5,0,7);
+      if(i<ion){c.fillStyle=COL.acc;c.fill();c.strokeStyle=COL.panel;c.beginPath();c.moveTo(x-3,y);c.lineTo(x+3,y);c.stroke();}
+      else {c.fillStyle=COL.panel;c.fill();c.stroke();}
+    }
+  }
+  const ne=clamp(Math.round(Math.max(0,Math.log10(Math.max(r.n,1)))*1.3),0,28);
+  const nh=clamp(Math.round(Math.max(0,Math.log10(Math.max(r.p,1)))*1.3),0,28);
+  for(let i=0;i<ne;i++){
+    const x=left+16+RND[i]*(sx-left-32), y=Y(eg+0.02+RND[i+30]*0.11);
+    c.fillStyle=COL.e; c.beginPath(); c.arc(x,y,3.2,0,7); c.fill();
+  }
+  for(let i=0;i<nh;i++){
+    const x=left+16+RND[i+7]*(sx-left-32), y=Y(-0.02-RND[i+37]*0.11);
+    c.strokeStyle=COL.h; c.lineWidth=1.8; c.fillStyle=COL.panel; c.beginPath(); c.arc(x,y,3.2,0,7); c.fill(); c.stroke();
+  }
+  const yF=Y(r.EF);
+  c.strokeStyle=COL.ef; c.lineWidth=2.6; c.beginPath(); c.moveTo(left,yF); c.lineTo(fR,yF); c.stroke();
+  c.fillStyle=COL.ef; tl(c,'E','F',fR,yF-7,'right',13);
+
+  c.strokeStyle=COL.line; c.lineWidth=1; c.strokeRect(fL+0.5,top+0.5,fR-fL,bot-top);
+  c.setLineDash([3,3]); c.beginPath(); c.moveTo((fL+fR)/2,top); c.lineTo((fL+fR)/2,bot); c.stroke(); c.setLineDash([]);
+  c.strokeStyle=COL.ink; c.lineWidth=1.8; c.beginPath();
+  for(let i=0;i<=120;i++){
+    const E=e0+(e1-e0)*i/120, f=1/(Math.exp(clamp((E-r.EF)/r.kT,-700,700))+1);
+    const x=fL+f*(fR-fL), y=Y(E); if(i) c.lineTo(x,y); else c.moveTo(x,y);
+  }
+  c.stroke();
+  c.fillStyle=COL.muted; c.textAlign='center'; c.textBaseline='alphabetic';
+  c.fillText('0',fL,bot+14); c.fillText('½',(fL+fR)/2,bot+14); c.fillText('1',fR,bot+14);
+  c.fillStyle=COL.ink; c.fillText('f(E)',(fL+fR)/2,bot+27);
+  c.fillText('states',(left+sx)/2,bot+27);
+}
+
+/* ---------- panel: Hall ---------- */
+function drawHall(rNow,trNow){
+  const {pts,D}=curves();
+  const P1=prep($('cH1'));
+  if(P1){
+    const {c,w,h}=P1, g=geom(w,h);
+    const logs=pts.map(p=>Math.log10(Math.abs(p.tr.RH))).filter(isFinite).sort((a,b)=>a-b);
+    let hi=Math.ceil(logs[logs.length-1]), lo=Math.floor(logs[Math.floor(logs.length*0.03)]);
+    if(hi-lo<3) lo=hi-3; if(hi-lo>10) lo=hi-10;
+    const Y=lv=>g.t+(hi-lv)/(hi-lo)*g.ph;
+    const yt=logticks(lo,hi).map(k=>({y:Y(k),label:'10'+sup(k)}));
+    frame(c,g,D,yt,'|R_H|  (cm³/C)');
+    clipPlot(c,g);
+    for(let i=0;i<pts.length-1;i++){
+      const a=pts[i], b=pts[i+1], sa=Math.sign(a.tr.RH), sb=Math.sign(b.tr.RH);
+      const la=Math.log10(Math.abs(a.tr.RH)), lb=Math.log10(Math.abs(b.tr.RH));
+      if(sa!==sb){
+        const x=(xp(g,D,a.s)+xp(g,D,b.s))/2;
+        c.strokeStyle=COL.ink; c.globalAlpha=0.5; c.setLineDash([2,3]); c.lineWidth=1;
+        c.beginPath(); c.moveTo(x,g.t); c.lineTo(x,g.t+g.ph); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+        continue;
+      }
+      if(!isFinite(la)||!isFinite(lb)) continue;
+      c.strokeStyle=sa<0?COL.e:COL.h; c.lineWidth=2.6;
+      c.beginPath(); c.moveTo(xp(g,D,a.s),Y(la)); c.lineTo(xp(g,D,b.s),Y(lb)); c.stroke();
+    }
+    c.restore();
+    const x=marker(c,g,D,rNow.T), lv=Math.log10(Math.abs(trNow.RH));
+    if(isFinite(lv)) dot(c,x,clamp(Y(lv),g.t+4,g.t+g.ph-4),trNow.RH<0?COL.e:COL.h);
+    legend(c,[{main:'R',sub:'H < 0  (n-like)',color:COL.e,w:2.6},{main:'R',sub:'H > 0  (p-like)',color:COL.h,w:2.6}],g.l+8,g.t+12);
+  }
+  const P2=prep($('cH2'));
+  if(P2){
+    const {c,w,h}=P2, g=geom(w,h);
+    const logs=pts.map(p=>Math.log10(p.tr.rho)).filter(isFinite);
+    let hi=Math.ceil(Math.min(14,Math.max(...logs))), lo=Math.floor(Math.max(-4,Math.min(...logs)));
+    if(hi-lo<3) hi=lo+3; if(hi-lo>12) hi=lo+12;
+    const Y=lv=>g.t+(hi-lv)/(hi-lo)*g.ph;
+    const yt=logticks(lo,hi).map(k=>({y:Y(k),label:'10'+sup(k)}));
+    frame(c,g,D,yt,'ρ  (Ω cm)');
+    clipPlot(c,g);
+    lineSeries(c,g,D,pts,p=>p.tr.rho,COL.ink,2.4,null,v=>{const lv=Math.log10(v);return isFinite(lv)?Y(lv):null;});
+    c.restore();
+    const x=marker(c,g,D,rNow.T), lv=Math.log10(trNow.rho);
+    if(isFinite(lv)) dot(c,x,clamp(Y(lv),g.t+4,g.t+g.ph-4),COL.ink);
+  }
+}
+
+/* ---------- update ---------- */
+function update(){
+  const r=solve(S.T), tr=transport(r);
+  const reg=regime(r), net=r.ND-r.NA;
+  $('rN').innerHTML=sci(r.n); $('rP').innerHTML=sci(r.p);
+  $('rEF').innerHTML=r.EF.toFixed(3)+' eV <small style="display:inline;color:var(--text-dim)">of '+r.eg.toFixed(3)+'</small>';
+  $('rDI').textContent=r.ND>0?pct(r.Dp/r.ND*100):'—';
+  $('rAI').textContent=r.NA>0?pct(r.Am/r.NA*100):'—';
+  $('rReg').textContent=reg;
+  $('sT2').textContent=S.T+' K'; $('sN').innerHTML=sci(r.n,2); $('sP').innerHTML=sci(r.p,2); $('sReg').textContent=reg;
+  let chip='Undoped';
+  if(r.ND>0||r.NA>0){
+    if(Math.abs(net)<1e-3*Math.max(r.ND,r.NA)) chip='Fully compensated';
+    else if(net>0) chip=r.NA>0?'n-type, compensated':'n-type';
+    else chip=r.ND>0?'p-type, compensated':'p-type';
+  }
+  $('chip').textContent=chip;
+  $('warn').textContent=(Math.max(r.ND,r.NA)>1e18)?'Above about 10¹⁸ cm⁻³ dopants form an impurity band (Mott transition) and stop freezing out; this single-level model no longer applies.':'';
+  $('hRH').innerHTML=sci(tr.RH,3); $('hNH').innerHTML=(tr.RH<0?'−':'+')+sci(1/(Q*Math.abs(tr.RH)),3);
+  $('hRho').innerHTML=sci(tr.rho,3); $('hMu').innerHTML=sci(tr.muH,3);
+  $('hVH').textContent=fmtV(tr.RH*1e-6*2*1);
+  drawCarriers(r); drawFermi(r); drawBands(r); drawHall(r,tr);
+}
+let pending=false;
+function schedule(){if(!pending){pending=true;requestAnimationFrame(()=>{pending=false;update();});}}
+
+/* ---------- controls ---------- */
+const fmtLg=lg=>lg<=9.05?'none':'10<sup>'+lg.toFixed(1)+'</sup> cm⁻³';
+function sync(){
+  $('oD').innerHTML=fmtLg(S.lgD); $('oA').innerHTML=fmtLg(S.lgA);
+  $('oED').textContent=S.ED+' meV'; $('oEA').textContent=S.EA+' meV'; $('oT').textContent=S.T+' K';
+  $('sD').value=S.lgD; $('sA').value=S.lgA; $('sED').value=S.ED; $('sEA').value=S.EA; $('sT').value=S.T;
+  $('xInv').classList.toggle('active',S.inv); $('xLin').classList.toggle('active',!S.inv);
+}
+[['sD','lgD'],['sA','lgA'],['sED','ED'],['sEA','EA'],['sT','T']].forEach(([id,k])=>{
+  $(id).addEventListener('input',e=>{S[k]=parseFloat(e.target.value);sync();schedule();});
+});
+const PRE={n:{lgD:16,lgA:9},p:{lgD:9,lgA:16},comp:{lgD:16,lgA:15.5},none:{lgD:9,lgA:9}};
+$('presets').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  Object.assign(S,PRE[b.dataset.p]); sync(); schedule();
+});
+function setMat(k){
+  S.mat=k; const m=MAT[k]; S.ED=m.ED; S.EA=m.EA;
+  $('hD').textContent='Typical: '+m.hD; $('hA').textContent='Typical: '+m.hA;
+  sync(); schedule();
+}
+$('mat').addEventListener('change',e=>setMat(e.target.value));
+$('xInv').addEventListener('click',()=>{S.inv=true;sync();schedule();});
+$('xLin').addEventListener('click',()=>{S.inv=false;sync();schedule();});
+$('cmu').addEventListener('change',e=>{S.cmu=e.target.checked;schedule();});
+document.querySelector('.tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='p'+b.dataset.t));
+  schedule();
+});
+['cA','cF','cH1','cH2'].forEach(id=>{
+  const cv=$(id); let down=false;
+  const set=e=>{
+    const rc=cv.getBoundingClientRect(), g=geom(rc.width,rc.height), D=range();
+    const u=clamp((e.clientX-rc.left-g.l)/g.pw,0,1), s=D.s0+u*(D.s1-D.s0);
+    S.T=clamp(Math.round(D.inv?1000/s:s),30,1000); sync(); schedule();
+  };
+  cv.addEventListener('pointerdown',e=>{down=true;cv.setPointerCapture(e.pointerId);set(e);});
+  cv.addEventListener('pointermove',e=>{if(down)set(e);});
+  ['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,()=>{down=false;}));
+});
+window.addEventListener('resize',schedule);
+if(window.ResizeObserver) new ResizeObserver(schedule).observe(document.querySelector('.plots'));
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{loadColors();schedule();});
+new MutationObserver(()=>{loadColors();schedule();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+loadColors(); setMat('Si');
+})();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>

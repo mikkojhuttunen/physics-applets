@@ -17,7 +17,10 @@ Each course has its own folder with an `index.html` listing its applets.
   conductivity-peak shift), an orbitals applet (s, p, d, f clouds, sp3 and
   sp2 hybrids in diamond and graphene, bonding and antibonding molecular
   orbitals as two atoms approach), and a tight-binding explorer (1D chain, two
-  atoms per cell, graphene and h-BN with doping, fcc s-band, s+p group 2 chain).
+  atoms per cell, graphene and h-BN with doping, fcc s-band, s+p group 2
+  chain), and a semiconductor doping and Hall effect explorer (donor/acceptor
+  freeze-out, Fermi level, n(T), p(T), R_H(T) and resistivity for Si, Ge and
+  GaAs).
 - `fys501-laser-physics/` — laser gain media absorption/emission spectra, a
   Gaussian beam / ABCD-matrix optical cavity stability explorer, and a
   3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
