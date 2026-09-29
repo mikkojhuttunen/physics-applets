@@ -29,9 +29,11 @@ Each course has its own folder with an `index.html` listing its applets.
   logarithmic-losses applet (threshold inversion, round-trip gain waterfall),
   a coherence explorer (Michelson and Young, temporal vs spatial coherence),
   an output-coupler optimization applet (output power vs mirror
-  transmission, optimum for given gain and loss), and a transverse-mode
+  transmission, optimum for given gain and loss), a transverse-mode
   explorer (Hermite–Gauss and Laguerre–Gauss field, phase and intensity, mode
-  superpositions, ABCD propagation and M² focusing).
+  superpositions, ABCD propagation and M² focusing), and a Fabry–Pérot etalon
+  explorer (Airy function with phasor sum, free spectral range and scanning,
+  finesse, photon lifetime and resolution).
 - `finnmath-app/`
 
 Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course

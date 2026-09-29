@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fabry–Pérot Etalon Explorer</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys501-laser-physics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+.wrap{max-width:1040px;margin:0 auto;padding:16px 16px 32px}
+.sub{margin:0 0 14px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px 22px}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px}
+.presets .lab{font-size:var(--fs-small);color:var(--text-dim);margin-right:4px}
+.tabs{display:flex;width:100%;margin:16px 0 12px}
+.tabs button{white-space:nowrap}
+#segZoom button{white-space:nowrap;padding:5px 10px;font-size:var(--fs-small)}
+.pane[hidden]{display:none}
+.eq{margin:0 0 12px;line-height:2.2}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.2;margin:0 2px}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;margin-bottom:12px}
+.figure-box{padding:8px 8px 4px;margin-bottom:12px}
+.grid2 .figure-box{margin-bottom:0}
+.fig-title{font-size:var(--fs-small);color:var(--text-dim);margin:2px 4px 6px;display:flex;justify-content:space-between;align-items:center;gap:8px 14px;flex-wrap:wrap}
+.fig-title b{color:var(--text);font-weight:600}
+canvas{display:block;width:100%}
+#cAiry{touch-action:none;cursor:crosshair}
+.inline-ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 22px;align-items:end;margin:0 4px 6px}
+.chk{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.fig-note{font-size:var(--fs-small);color:var(--text-dim);margin:4px 6px 6px}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin:12px 0}
+.read{padding:10px 12px}
+.read .k{font-size:var(--fs-small);color:var(--text-dim)}
+.read .v{font-family:var(--font-mono);font-size:1.25rem;font-weight:600;line-height:1.35;font-variant-numeric:tabular-nums}
+.read .s{font-size:var(--fs-tiny);color:var(--text-dim);font-family:var(--font-mono)}
+.msg{margin:10px 0 0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 8px 8px 0;font-size:var(--fs-body)}
+details{margin-top:16px;color:var(--text-dim);font-size:var(--fs-body)}
+summary{cursor:pointer;color:var(--text)}
+details p{margin:8px 0}
+@media (max-width:760px){
+  .grid2{grid-template-columns:1fr}
+  .tabs button{font-size:var(--fs-small);padding:8px 4px;white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Fabry–Pérot Etalon Explorer</h1>
+  <p class="sub">FYS.501 Laser Physics · Ch. 3.2 · multiple-beam interference, the Airy function, free spectral range and finesse</p>
+
+  <div class="card">
+    <div class="controls">
+      <div class="ctrl">
+        <label for="sR"><span>Surface reflectance R</span> <span class="val" id="vR"></span></label>
+        <input id="sR" type="range" min="0" max="1000" step="1" value="207">
+      </div>
+      <div class="ctrl">
+        <label for="sD"><span>Thickness d</span> <span class="val" id="vD"></span></label>
+        <input id="sD" type="range" min="-5" max="-1" step="0.005" value="-3">
+      </div>
+      <div class="ctrl">
+        <label for="sN"><span>Refractive index n</span> <span class="val" id="vN"></span></label>
+        <input id="sN" type="range" min="1" max="3.6" step="0.01" value="1.45">
+      </div>
+      <div class="ctrl">
+        <label for="sTh"><span>Internal angle θ<sub>t</sub></span> <span class="val" id="vTh"></span></label>
+        <input id="sTh" type="range" min="0" max="40" step="0.5" value="0">
+      </div>
+      <div class="ctrl">
+        <label for="sL"><span>Wavelength λ₀</span> <span class="val" id="vL"></span></label>
+        <input id="sL" type="range" min="400" max="2000" step="1" value="1064">
+      </div>
+    </div>
+    <div class="presets">
+      <span class="lab">Examples:</span>
+      <button class="btn small" data-p="plate">Uncoated glass plate</button>
+      <button class="btn small" data-p="etalon">Intracavity solid etalon</button>
+      <button class="btn small" data-p="scan">Scanning FP (air, 5 cm)</button>
+      <button class="btn small" data-p="ref">High-finesse cavity</button>
+    </div>
+  </div>
+
+  <div class="seg tabs" id="tabs">
+    <button data-t="trans" class="active">Transmission function</button>
+    <button data-t="fsr">Free spectral range</button>
+    <button data-t="fin">Finesse</button>
+  </div>
+
+  <!-- ===================== TAB 1: TRANSMISSION ===================== -->
+  <section class="pane" id="pane-trans">
+    <div class="eq">
+      T = 𝒜(δφ) = <span class="frac"><span>1</span><span>1 + <span class="frac"><span>4R</span><span>(1 − R)²</span></span> sin²(δφ/2)</span></span>
+      &nbsp;&nbsp;with&nbsp;&nbsp; δφ = <span class="frac"><span>2πν</span><span>c</span></span> · 2n d cos θ<sub>t</sub>
+    </div>
+
+    <div class="grid2">
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Multiple-beam picture</b> · brightness ∝ field amplitude of each partial wave</span></div>
+        <canvas id="cSch"></canvas>
+      </div>
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Phasor sum</b> E<sub>t</sub>/E₀ = Σ (1−R) R<sup>k</sup> e<sup>ikδφ</sup></span></div>
+        <canvas id="cPh"></canvas>
+      </div>
+    </div>
+
+    <div class="figure-box">
+      <div class="fig-title">
+        <span><b>Airy function</b> · click or drag on the plot to move the marker</span>
+        <span style="display:flex;gap:14px;flex-wrap:wrap">
+          <label class="chk"><input type="checkbox" id="cFam"> R-family (0.2, 0.5, 0.8, 0.95)</label>
+          <label class="chk"><input type="checkbox" id="cRef"> reflectance 1 − T</label>
+        </span>
+      </div>
+      <div class="inline-ctl">
+        <div class="ctrl">
+          <label for="sDet"><span>Phase detuning δφ − 2πm</span> <span class="val" id="vDet"></span></label>
+          <input id="sDet" type="range" min="-180" max="180" step="0.25" value="15">
+        </div>
+      </div>
+      <canvas id="cAiry"></canvas>
+    </div>
+
+    <div class="reads">
+      <div class="card read"><div class="k">Transmission at marker</div><div class="v" id="rT"></div><div class="s" id="rTs"></div></div>
+      <div class="card read"><div class="k">Coefficient 4R/(1−R)²</div><div class="v" id="rCoef"></div><div class="s">sets how fast T drops off resonance</div></div>
+      <div class="card read"><div class="k">Minimum transmission T<sub>min</sub></div><div class="v" id="rTmin"></div><div class="s">= (1−R)²/(1+R)² at δφ = (2m+1)π</div></div>
+      <div class="card read"><div class="k">Beams that matter</div><div class="v" id="rN99"></div><div class="s">until partial-wave amplitude &lt; 1 % of the first</div></div>
+    </div>
+    <div class="msg" id="msgTrans"></div>
+  </section>
+
+  <!-- ===================== TAB 2: FSR ===================== -->
+  <section class="pane" id="pane-fsr" hidden>
+    <div class="eq">
+      Δν<sub>FSR</sub> = <span class="frac"><span>c</span><span>2n d cos θ<sub>t</sub></span></span>
+      &nbsp;&nbsp;·&nbsp;&nbsp; Δλ<sub>FSR</sub> ≈ <span class="frac"><span>λ₀²</span><span>2n d cos θ<sub>t</sub></span></span>
+      &nbsp;&nbsp;·&nbsp;&nbsp; peaks where δφ = 2πm &nbsp;⇔&nbsp; ν<sub>m</sub> = m Δν<sub>FSR</sub>
+    </div>
+
+    <div class="figure-box">
+      <div class="fig-title">
+        <span><b>Transmission vs frequency</b> around ν₀ = c/λ₀</span>
+        <label class="chk"><input type="checkbox" id="cLock"> lock frequency axis (then change d, n or θ<sub>t</sub>)</label>
+      </div>
+      <canvas id="cFsr"></canvas>
+    </div>
+
+    <div class="figure-box">
+      <div class="fig-title"><span><b>Scanning the etalon over a two-line spectrum</b> · ν₁ (blue, strong) and ν₂ = ν₁ + Δν<sub>s</sub> (orange, weaker)</span></div>
+      <div class="inline-ctl">
+        <div class="ctrl">
+          <label for="sSep"><span>Line separation Δν<sub>s</sub> / Δν<sub>FSR</sub></span> <span class="val" id="vSep"></span></label>
+          <input id="sSep" type="range" min="0" max="2.5" step="0.005" value="0.3">
+        </div>
+      </div>
+      <canvas id="cScan"></canvas>
+      <div class="fig-note">Changing d by λ₀/(2n cos θ<sub>t</sub>) moves every resonance through one full FSR. The detector sees the solid trace; the dashed traces show each line's contribution.</div>
+    </div>
+
+    <div class="reads">
+      <div class="card read"><div class="k">Free spectral range Δν<sub>FSR</sub></div><div class="v" id="rFsr"></div><div class="s" id="rFsrS"></div></div>
+      <div class="card read"><div class="k">In wavelength Δλ<sub>FSR</sub></div><div class="v" id="rDl"></div><div class="s">at λ₀</div></div>
+      <div class="card read"><div class="k">Round-trip time 1/Δν<sub>FSR</sub></div><div class="v" id="rTrt"></div><div class="s">= 2n d cos θ<sub>t</sub> / c</div></div>
+      <div class="card read"><div class="k">Interference order at λ₀</div><div class="v" id="rOrd"></div><div class="s">m = 2n d cos θ<sub>t</sub> / λ₀</div></div>
+      <div class="card read"><div class="k">Apparent separation in scan</div><div class="v" id="rApp"></div><div class="s" id="rAppS"></div></div>
+    </div>
+    <div class="msg" id="msgFsr"></div>
+  </section>
+
+  <!-- ===================== TAB 3: FINESSE ===================== -->
+  <section class="pane" id="pane-fin" hidden>
+    <div class="eq">
+      Δν<sub>c</sub> ≈ Δν<sub>FSR</sub> <span class="frac"><span>1 − R</span><span>π√R</span></span>
+      &nbsp;&nbsp;·&nbsp;&nbsp; F = <span class="frac"><span>Δν<sub>FSR</sub></span><span>Δν<sub>c</sub></span></span> = <span class="frac"><span>π√R</span><span>1 − R</span></span>
+      &nbsp;&nbsp;·&nbsp;&nbsp; exact: F = <span class="frac"><span>π</span><span>2 arcsin[(1−R)/(2√R)]</span></span>
+    </div>
+
+    <div class="figure-box">
+      <div class="fig-title">
+        <span><b>One transmission peak</b> · shaded: exact FWHM · dashed: slide approximation</span>
+        <span class="seg" id="segZoom">
+          <button data-z="fsr" class="active">±½ FSR</button>
+          <button data-z="peak">±3 Δν<sub>c</sub></button>
+        </span>
+      </div>
+      <canvas id="cPeak"></canvas>
+    </div>
+
+    <div class="grid2">
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Finesse vs R</b> · violet: π√R/(1−R) · green: exact</span></div>
+        <canvas id="cFR"></canvas>
+      </div>
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Stored light</b> · transmitted beam k: I<sub>k</sub>/I₀ = R<sup>2k</sup></span></div>
+        <canvas id="cRing"></canvas>
+      </div>
+    </div>
+
+    <div class="figure-box">
+      <div class="fig-title"><span><b>Resolving two equal lines</b> by scanning the etalon (units of Δν<sub>c</sub>)</span></div>
+      <div class="inline-ctl">
+        <div class="ctrl">
+          <label for="sRho"><span>Line separation Δν<sub>s</sub> / Δν<sub>c</sub></span> <span class="val" id="vRho"></span></label>
+          <input id="sRho" type="range" min="0.2" max="4" step="0.01" value="1.5">
+        </div>
+      </div>
+      <canvas id="cRes"></canvas>
+      <div class="fig-note" id="resNote"></div>
+    </div>
+
+    <div class="reads">
+      <div class="card read"><div class="k">Finesse (slide formula)</div><div class="v" id="rFa"></div><div class="s" id="rFaS"></div></div>
+      <div class="card read"><div class="k">Finesse (exact FWHM)</div><div class="v" id="rFe"></div><div class="s" id="rFeS"></div></div>
+      <div class="card read"><div class="k">Peak width Δν<sub>c</sub></div><div class="v" id="rDnc"></div><div class="s" id="rDncS"></div></div>
+      <div class="card read"><div class="k">Round trips to 1/e, N<sub>e</sub></div><div class="v" id="rNe"></div><div class="s" id="rNeS"></div></div>
+      <div class="card read"><div class="k">Q = ν₀/Δν<sub>c</sub> = m·F</div><div class="v" id="rQ"></div><div class="s">resolving power of the etalon</div></div>
+    </div>
+    <div class="msg" id="msgFin"></div>
+  </section>
+
+  <details>
+    <summary>Model and conventions</summary>
+    <p>Lossless plane-parallel etalon with identical surfaces, r = r′ and R = |r|², |r|² + |t|² = 1, illuminated by a plane wave. θ<sub>t</sub> is the propagation angle inside the medium; the round-trip phase difference between successive transmitted partial waves is δφ = (2πν/c)·2n d cos θ<sub>t</sub>, and dispersion of n is neglected. The k-th transmitted partial wave has field amplitude (1−R)R<sup>k</sup>E₀ relative to the incident field (tt′ = 1 − R); the constant propagation phase common to all of them is dropped. Summing the geometric series gives the Airy function T = 1/[1 + 4R/(1−R)² sin²(δφ/2)], derived in FYS.240 Optics, Ch. 8.</p>
+    <p>The ray schematic is qualitative: the zig-zag angle is exaggerated to at least 14° so that the beams separate, and brightness shows amplitude relative to the first transmitted beam.</p>
+    <p>FWHM: T = ½ requires sin²(δφ<sub>c</sub>/2) = (1−R)²/(4R). The exact full width is Δν<sub>c</sub> = Δν<sub>FSR</sub>·(2/π)·arcsin[(1−R)/(2√R)], which exists only when T<sub>min</sub> &lt; ½, i.e. R &gt; 3 − 2√2 ≈ 0.172. Linearising sin gives the slide result Δν<sub>c</sub> ≈ Δν<sub>FSR</sub>(1−R)/(π√R) and F = π√R/(1−R).</p>
+    <p>Stored light: each round trip multiplies the intensity by R², so the intensity falls to 1/e after N<sub>e</sub> = 1/(−2 ln R) round trips, and the photon lifetime is τ = N<sub>e</sub>/Δν<sub>FSR</sub>. For R → 1, N<sub>e</sub> ≈ 1/[2(1−R)] and F ≈ 2πN<sub>e</sub>, equivalently Δν<sub>c</sub> ≈ 1/(2πτ).</p>
+    <p>Scans: the horizontal axis is the offset of an etalon resonance from ν₁ in units of Δν<sub>FSR</sub> (or Δν<sub>c</sub>); the small change of Δν<sub>FSR</sub> during the scan is neglected. The resolution criterion used is Δν<sub>s</sub> ≥ Δν<sub>c</sub>; for two equal Lorentzians this leaves a dip to about 83 % of the maximum between them.</p>
+  </details>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C0 = 299792458, TAU = 2*Math.PI, PI = Math.PI;
+const LOMR0 = Math.log10(0.96), LOMR1 = Math.log10(0.0005);
+const RMIN_FWHM = 3 - 2*Math.SQRT2;
+const st = { tab:'trans', zoom:'fsr', lockSpan:null };
+let airyF = null;
+
+const PRESETS = {
+  plate:  { R:0.04,   d:1e-3, n:1.50, th:0, lam:633 },
+  etalon: { R:0.80,   d:1e-3, n:1.45, th:0, lam:1064 },
+  scan:   { R:0.99,   d:0.05, n:1.00, th:0, lam:633 },
+  ref:    { R:0.9995, d:0.10, n:1.00, th:0, lam:1064 }
+};
+
+/* ---------- parameters ---------- */
+function P(){
+  const omr = Math.pow(10, LOMR0 + (LOMR1-LOMR0)*(+$('sR').value/1000));
+  const R = 1 - omr;
+  const d = Math.pow(10, +$('sD').value), n = +$('sN').value;
+  const th = +$('sTh').value*PI/180, lam = +$('sL').value*1e-9;
+  const Lopt = 2*n*d*Math.cos(th);
+  const fsr = C0/Lopt, nu0 = C0/lam, m = Lopt/lam;
+  const coef = 4*R/(omr*omr);
+  const Fa = PI*Math.sqrt(R)/omr;
+  const arg = omr/(2*Math.sqrt(R));
+  const Fe = arg <= 1 ? PI/(2*Math.asin(arg)) : NaN;
+  const Tmin = Math.pow(omr/(1+R), 2);
+  return { R, omr, d, n, th, lam, Lopt, fsr, nu0, m, fm: m - Math.floor(m), coef, Fa, Fe, Tmin,
+           dnc: fsr/Fa, dnce: fsr/Fe, Ne: 1/(-2*Math.log(R)) };
+}
+const T = (p, phi) => { const s = Math.sin(phi/2); return 1/(1 + p.coef*s*s); };
+const TR = (R, phi) => { const s = Math.sin(phi/2); return 1/(1 + 4*R/((1-R)*(1-R))*s*s); };
+
+/* ---------- formatting ---------- */
+function sig(x, n){
+  n = n || 3; if(!isFinite(x)) return '—'; const a = Math.abs(x); if(a === 0) return '0';
+  const dg = Math.max(0, n - 1 - Math.floor(Math.log10(a)));
+  return x.toFixed(Math.min(dg, 6));
+}
+const HZ = [['THz',1e12],['GHz',1e9],['MHz',1e6],['kHz',1e3],['Hz',1]];
+const LEN = [['m',1],['cm',1e-2],['mm',1e-3],['µm',1e-6],['nm',1e-9],['pm',1e-12],['fm',1e-15]];
+const TIME = [['s',1],['ms',1e-3],['µs',1e-6],['ns',1e-9],['ps',1e-12],['fs',1e-15]];
+function unit(v, list, n){
+  const a = Math.abs(v);
+  for(const [u, s] of list) if(a >= s*0.9995) return sig(v/s, n) + ' ' + u;
+  const [u, s] = list[list.length-1]; return sig(v/s, n) + ' ' + u;
+}
+function pickUnit(span, list){ for(const [u, s] of list) if(span >= s) return [u, s]; return list[list.length-1]; }
+function big(x){ return x >= 1e5 ? x.toExponential(2).replace('e+', ' × 10^') : x >= 100 ? Math.round(x).toLocaleString('en-US') : sig(x, 3); }
+function piFmt(r){ const v = r/PI; return (Math.abs(v) < 0.005 ? '0' : v.toFixed(2)) + 'π'; }
+
+/* ---------- plotting helpers ---------- */
+function frame(c, h, m, xr, yr){
+  const dpr = window.devicePixelRatio || 1, w = c.clientWidth;
+  c.width = Math.round(w*dpr); c.height = Math.round(h*dpr); c.style.height = h + 'px';
+  const ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.font = '12px ' + (css('--font-body') || 'system-ui');
+  return { ctx, w, h, m, xr, yr,
+    X: x => m.l + (x - xr[0])/(xr[1] - xr[0])*(w - m.l - m.r),
+    Y: y => h - m.b - (y - yr[0])/(yr[1] - yr[0])*(h - m.t - m.b),
+    iX: px => xr[0] + (px - m.l)/(w - m.l - m.r)*(xr[1] - xr[0]) };
+}
+function niceStep(range, n){
+  const raw = range/n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10)*p;
+}
+function ticks(a, b, n){
+  const s = niceStep(b - a, n), out = [], i0 = Math.ceil(a/s - 1e-9);
+  for(let i = i0; i*s <= b + s*1e-9; i++) out.push(Math.abs(i*s) < s*1e-9 ? 0 : i*s);
+  return out;
+}
+const fmtTick = v => String(+v.toPrecision(6));
+function axes(f, o){
+  const { ctx, m, w, h } = f;
+  ctx.lineWidth = 1; ctx.strokeStyle = css('--grid'); ctx.fillStyle = css('--text-dim');
+  const xt = o.xt || ticks(f.xr[0], f.xr[1], o.nx || 6).map(v => ({ v, t: (o.xf || fmtTick)(v) }));
+  const yt = o.yt || ticks(f.yr[0], f.yr[1], o.ny || 4).map(v => ({ v, t: (o.yf || fmtTick)(v) }));
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for(const t of xt){ const x = f.X(t.v); if(x < m.l - 1 || x > w - m.r + 1) continue;
+    ctx.beginPath(); ctx.moveTo(x, m.t); ctx.lineTo(x, h - m.b); ctx.stroke(); ctx.fillText(t.t, x, h - m.b + 4); }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for(const t of yt){ const y = f.Y(t.v); if(y < m.t - 1 || y > h - m.b + 1) continue;
+    ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(w - m.r, y); ctx.stroke(); ctx.fillText(t.t, m.l - 5, y); }
+  ctx.strokeStyle = css('--border'); ctx.strokeRect(m.l, m.t, w - m.l - m.r, h - m.t - m.b);
+  if(o.xl){ ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(o.xl, (m.l + w - m.r)/2, h - 2); }
+  if(o.yl){ ctx.save(); ctx.translate(11, (m.t + h - m.b)/2); ctx.rotate(-PI/2);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(o.yl, 0, 0); ctx.restore(); }
+}
+function clip(f){ const { ctx, m, w, h } = f; ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t, w - m.l - m.r, h - m.t - m.b); ctx.clip(); }
+function peakList(x0, x1, xp, per, cap){
+  const k0 = Math.ceil((x0 - xp)/per), k1 = Math.floor((x1 - xp)/per);
+  if(k1 - k0 > (cap || 20000)) return null;
+  const out = []; for(let k = k0; k <= k1; k++) out.push(xp + k*per); return out;
+}
+function curve(f, fn, peaks, color, lw, dash, alpha){
+  const { ctx } = f, x0 = f.xr[0], x1 = f.xr[1];
+  const N = Math.max(150, Math.round((f.w - f.m.l - f.m.r)*3));
+  let xs = []; for(let i = 0; i <= N; i++) xs.push(x0 + (x1 - x0)*i/N);
+  if(peaks && peaks.length){ xs = xs.concat(peaks.filter(x => x > x0 && x < x1)); xs.sort((a, b) => a - b); }
+  clip(f); ctx.beginPath(); let pen = false;
+  for(const x of xs){ const y = fn(x); if(!isFinite(y)){ pen = false; continue; }
+    const X = f.X(x), Y = f.Y(y); if(pen) ctx.lineTo(X, Y); else { ctx.moveTo(X, Y); pen = true; } }
+  ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.strokeStyle = color; ctx.lineWidth = lw || 2;
+  ctx.setLineDash(dash || []); ctx.lineJoin = 'round'; ctx.stroke(); ctx.restore();
+}
+function arrow(ctx, x0, y0, x1, y1, hs, both){
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  const head = (xa, ya, xb, yb) => { const a = Math.atan2(yb - ya, xb - xa);
+    ctx.beginPath(); ctx.moveTo(xb, yb); ctx.lineTo(xb - hs*Math.cos(a - 0.45), yb - hs*Math.sin(a - 0.45));
+    ctx.lineTo(xb - hs*Math.cos(a + 0.45), yb - hs*Math.sin(a + 0.45)); ctx.closePath(); ctx.fill(); };
+  if(Math.hypot(x1 - x0, y1 - y0) > hs*1.2){ head(x0, y0, x1, y1); if(both) head(x1, y1, x0, y0); }
+}
+function label(ctx, txt, x, y, col, align, base){
+  ctx.fillStyle = col; ctx.textAlign = align || 'center'; ctx.textBaseline = base || 'middle'; ctx.fillText(txt, x, y);
+}
+const COL = () => ({ acc: css('--violet'), c1: css('--blue'), c2: css('--orange'), c3: css('--green'),
+  tx: css('--text'), dim: css('--text-dim'), faint: css('--text-faint'), yel: css('--yellow'), panel: css('--panel') });
+
+/* ---------- TAB 1: transmission ---------- */
+function detRad(){ return +$('sDet').value*PI/180; }
+
+function drawSchematic(p, K){
+  const c = $('cSch'), f = frame(c, 270, {l:0,r:0,t:0,b:0}, [0,1], [0,1]), { ctx, w, h } = f;
+  const x1 = w*0.40, x2 = w*0.60, top = 16, bot = h - 26;
+  ctx.fillStyle = K.acc; ctx.globalAlpha = 0.10; ctx.fillRect(x1, top, x2 - x1, bot - top); ctx.globalAlpha = 1;
+  ctx.strokeStyle = K.yel; ctx.lineWidth = 1 + 4*p.R; ctx.globalAlpha = 0.25 + 0.75*p.R;
+  ctx.beginPath(); ctx.moveTo(x1, top); ctx.lineTo(x1, bot); ctx.moveTo(x2, top); ctx.lineTo(x2, bot); ctx.stroke();
+  ctx.globalAlpha = 1;
+  const thd = Math.max(p.th, 14*PI/180);
+  const thi = Math.asin(Math.min(0.85, p.n*Math.sin(thd)));
+  const dy = (x2 - x1)*Math.tan(thd), y0 = top + 30, L = Math.min(x1 - 10, 150);
+  const cs = Math.cos(thi), sn = Math.sin(thi), sr = Math.sqrt(p.R);
+  const seg = (xa, ya, xb, yb, col, a) => { ctx.globalAlpha = 0.07 + 0.93*a; ctx.strokeStyle = col;
+    ctx.lineWidth = 0.8 + 2.4*a; ctx.beginPath(); ctx.moveTo(xa, ya); ctx.lineTo(xb, yb); ctx.stroke(); };
+  seg(x1 - L*cs, y0 - L*sn, x1, y0, K.tx, 1);
+  seg(x1, y0, x1 - L*cs, y0 + L*sn, K.dim, sr);
+  let y = y0, ends = [];
+  for(let k = 0; k < 60; k++){
+    const a = Math.pow(p.R, k), yb = y + dy; if(yb > bot) break;
+    seg(x1, y, x2, yb, K.acc, a);
+    seg(x2, yb, x2 + L*cs, yb + L*sn, K.acc, a);
+    ends.push([x2 + L*cs, yb + L*sn, k]);
+    const yc = yb + dy; if(yc > bot) break;
+    seg(x2, yb, x1, yc, K.acc, a*sr);
+    seg(x1, yc, x1 - L*cs, yc + L*sn, K.dim, a);
+    y = yc;
+  }
+  ctx.globalAlpha = 1; ctx.font = '12px ' + css('--font-body');
+  label(ctx, 'E₀', x1 - L*cs - 4, y0 - L*sn, K.tx, 'right');
+  const sub = ['₁','₂','₃'];
+  ends.slice(0, 3).forEach(([ex, ey, k]) => label(ctx, 'E' + sub[k] + 't', Math.min(ex + 4, w - 26), ey, K.acc, 'left'));
+  label(ctx, 'reflected', x1 - L*cs*0.55, y0 + L*sn*0.55 + 16, K.dim, 'center');
+  ctx.strokeStyle = K.dim; ctx.fillStyle = K.dim; ctx.lineWidth = 1;
+  arrow(ctx, x1 + 2, bot + 12, x2 - 2, bot + 12, 6, true);
+  label(ctx, 'd', (x1 + x2)/2, bot + 12, K.dim, 'center', 'bottom');
+  label(ctx, 'n', (x1 + x2)/2, bot - 12, K.tx);
+  label(ctx, 'R', x1, top - 7, K.yel); label(ctx, 'R', x2, top - 7, K.yel);
+  ctx.setLineDash([3, 3]); ctx.strokeStyle = K.faint;
+  ctx.beginPath(); ctx.moveTo(x1, y0); ctx.lineTo(x1 + 34, y0); ctx.stroke(); ctx.setLineDash([]);
+  label(ctx, 'θₜ', x1 + 38, y0 + 8, K.dim, 'left');
+  if(p.th < 14*PI/180) label(ctx, 'angle exaggerated', 6, h - 8, K.faint, 'left');
+}
+
+function drawPhasor(p, K){
+  const c = $('cPh'), h = 270, w = c.clientWidth, m = {l:8, r:8, t:8, b:8};
+  const pw = w - m.l - m.r, ph = h - m.t - m.b, s = Math.min(pw/1.5, ph/1.5), cx = 0.42;
+  const f = frame(c, h, m, [cx - pw/(2*s), cx + pw/(2*s)], [-ph/(2*s), ph/(2*s)]), { ctx } = f;
+  ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(m.l, f.Y(0)); ctx.lineTo(w - m.r, f.Y(0)); ctx.moveTo(f.X(0), m.t); ctx.lineTo(f.X(0), h - m.b); ctx.stroke();
+  ctx.setLineDash([4, 4]); ctx.strokeStyle = K.faint;
+  ctx.beginPath(); ctx.arc(f.X(0), f.Y(0), s, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  label(ctx, 'Re', w - m.r - 4, f.Y(0) - 9, K.dim, 'right');
+  label(ctx, 'Im', f.X(0) + 5, m.t + 8, K.dim, 'left');
+  label(ctx, '|E| = E₀', f.X(0) + s*0.72, f.Y(0) - s*0.72 - 6, K.faint, 'left');
+  const dl = detRad();
+  const den = { re: 1 - p.R*Math.cos(dl), im: -p.R*Math.sin(dl) }, dd = den.re*den.re + den.im*den.im;
+  const S = { re: p.omr*den.re/dd, im: -p.omr*den.im/dd };
+  ctx.strokeStyle = K.acc; ctx.fillStyle = K.acc; ctx.lineWidth = 5; ctx.globalAlpha = 0.45;
+  arrow(ctx, f.X(0), f.Y(0), f.X(S.re), f.Y(S.im), 13);
+  ctx.globalAlpha = 1;
+  let zr = 0, zi = 0;
+  const Kmax = Math.min(4000, Math.ceil(Math.log(1e-4)/Math.log(p.R)) + 1);
+  for(let k = 0; k < Kmax; k++){
+    const a = p.omr*Math.pow(p.R, k), nr = zr + a*Math.cos(k*dl), ni = zi + a*Math.sin(k*dl);
+    const al = 0.2 + 0.8*Math.pow(p.R, k);
+    ctx.globalAlpha = al; ctx.strokeStyle = K.c1; ctx.fillStyle = K.c1; ctx.lineWidth = k < 3 ? 2 : 1.3;
+    const X0 = f.X(zr), Y0 = f.Y(zi), X1 = f.X(nr), Y1 = f.Y(ni);
+    if(k < 12 && Math.hypot(X1 - X0, Y1 - Y0) > 9) arrow(ctx, X0, Y0, X1, Y1, 6);
+    else { ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke(); }
+    zr = nr; zi = ni;
+  }
+  ctx.globalAlpha = 1;
+  const amp = Math.hypot(S.re, S.im);
+  ctx.font = '12px ' + css('--font-mono');
+  label(ctx, '|Eₜ|/E₀ = √T = ' + amp.toFixed(3), m.l + 4, h - m.b - 8, K.acc, 'left');
+  ctx.font = '12px ' + css('--font-body');
+}
+
+function drawAiry(p, K){
+  const c = $('cAiry'), f = frame(c, 260, {l:56, r:12, t:12, b:40}, [-3*PI, 3*PI], [0, 1.05]);
+  airyF = f; const { ctx } = f;
+  const xt = []; for(let k = -3; k <= 3; k++) xt.push({ v: k*PI, t: k === 0 ? '0' : (k < 0 ? '−' : '') + (Math.abs(k) === 1 ? '' : Math.abs(k)) + 'π' });
+  axes(f, { xt, xl: 'Phase detuning  δφ − 2πm', yl: 'T', yt: [0, .25, .5, .75, 1].map(v => ({ v, t: v.toFixed(2) })) });
+  const pk = [-TAU, 0, TAU];
+  if($('cFam').checked) [0.2, 0.5, 0.8, 0.95].forEach(r => curve(f, x => TR(r, x), pk, K.dim, 1, [4, 3], 0.7));
+  if($('cRef').checked) curve(f, x => 1 - T(p, x), null, K.c2, 1.6, [6, 4]);
+  curve(f, x => T(p, x), pk, K.acc, 2.4);
+  clip(f); ctx.setLineDash([2, 4]); ctx.strokeStyle = K.dim; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(f.m.l, f.Y(p.Tmin)); ctx.lineTo(f.w - f.m.r, f.Y(p.Tmin)); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+  label(ctx, 'T min', f.w - f.m.r - 4, f.Y(p.Tmin) - 8, K.dim, 'right');
+  const dl = detRad(), tv = T(p, dl), X = f.X(dl);
+  ctx.strokeStyle = K.tx; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(X, f.m.t); ctx.lineTo(X, f.h - f.m.b); ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.fillStyle = K.acc; ctx.beginPath(); ctx.arc(X, f.Y(tv), 5, 0, TAU); ctx.fill();
+  ctx.strokeStyle = K.panel; ctx.lineWidth = 2; ctx.stroke();
+  const right = X < f.w - 110;
+  label(ctx, 'T = ' + tv.toFixed(3), X + (right ? 9 : -9), Math.max(f.m.t + 10, f.Y(tv) - 12), K.tx, right ? 'left' : 'right');
+}
+
+function drawTrans(p, K){
+  drawSchematic(p, K); drawPhasor(p, K); drawAiry(p, K);
+  const dl = detRad(), tv = T(p, dl);
+  $('vDet').textContent = piFmt(dl);
+  $('rT').textContent = tv.toFixed(4);
+  $('rTs').textContent = 'reflected 1 − T = ' + (1 - tv).toFixed(4);
+  $('rCoef').textContent = big(p.coef);
+  $('rTmin').textContent = p.Tmin < 1e-3 ? p.Tmin.toExponential(2) : p.Tmin.toFixed(4);
+  const n99 = Math.ceil(Math.log(0.01)/Math.log(p.R)) + 1;
+  $('rN99').textContent = n99.toLocaleString('en-US');
+  let msg;
+  if(p.R < RMIN_FWHM) msg = `With R = ${p.R.toFixed(3)} the second partial wave is already ${(p.R*100).toFixed(1)} % of the first in amplitude and the rest hardly matter: this is essentially two-beam interference. The Airy function is almost a sinusoid with low contrast (T<sub>min</sub> = ${p.Tmin.toFixed(3)}), as for an uncoated glass plate.`;
+  else if(Math.abs(dl) < 0.01*PI) msg = `On resonance (δφ = 2πm) every transmitted partial wave arrives in phase: the phasors line up along the real axis and their lengths (1−R)R<sup>k</sup> add up to exactly 1. So T = 1 for any R in a lossless etalon, even though each surface reflects ${(p.R*100).toFixed(1)} % of the light.`;
+  else msg = `Off resonance each round trip rotates the next phasor by δφ = ${piFmt(dl)} and shrinks it by R. The phasors curl into a spiral and the resultant is shorter than on resonance: T = ${tv.toFixed(3)}. About ${n99.toLocaleString('en-US')} beams contribute before the partial waves become negligible; the more beams take part, the smaller the phase error needed to spoil the sum, which is why high R gives sharp peaks.`;
+  $('msgTrans').innerHTML = msg;
+}
+
+/* ---------- TAB 2: free spectral range ---------- */
+function drawFsrPlot(p, K){
+  const c = $('cFsr');
+  if($('cLock').checked && st.lockSpan == null) st.lockSpan = 3.2*p.fsr;
+  if(!$('cLock').checked) st.lockSpan = null;
+  const span = st.lockSpan || 3.2*p.fsr, x0 = -span/2, x1 = span/2;
+  const [un, us] = pickUnit(span/2, HZ);
+  const f = frame(c, 280, {l:56, r:12, t:30, b:40}, [x0, x1], [0, 1.2]), { ctx } = f;
+  axes(f, { xf: v => fmtTick(v/us), xl: `ν − ν₀  (${un}),   ν₀ = ${unit(p.nu0, HZ)}`, yl: 'T',
+            yt: [0, .25, .5, .75, 1].map(v => ({ v, t: v.toFixed(2) })) });
+  const kA = Math.ceil(p.m + x0/p.fsr), kB = Math.floor(p.m + x1/p.fsr), count = kB - kA + 1;
+  const xOf = k => (k - p.m)*p.fsr;
+  const pxPer = (f.w - f.m.l - f.m.r)/(span/p.fsr);
+  if(count > 20000 || pxPer < 1.2){
+    clip(f); ctx.fillStyle = K.acc; ctx.globalAlpha = 0.45;
+    ctx.fillRect(f.m.l, f.Y(1), f.w - f.m.l - f.m.r, f.Y(p.Tmin) - f.Y(1)); ctx.restore(); ctx.globalAlpha = 1;
+    label(ctx, `${big(count)} peaks in this window: too dense to draw individually`, (f.m.l + f.w - f.m.r)/2, f.m.t - 14, K.tx);
+  } else {
+    const pk = []; for(let k = kA; k <= kB; k++) pk.push(xOf(k));
+    curve(f, x => T(p, TAU*(p.fm + x/p.fsr)), pk, K.acc, 2.2);
+    if(count <= 8 && pxPer > 75){
+      ctx.font = '11px ' + css('--font-mono');
+      for(let k = kA; k <= kB; k++){ const X = f.X(xOf(k)); if(X > f.m.l + 40 && X < f.w - f.m.r - 40) label(ctx, 'm=' + k.toLocaleString('en-US'), X, f.Y(0) - 8, K.dim); }
+      ctx.font = '12px ' + css('--font-body');
+    }
+    const k0 = Math.floor(p.m), kL = xOf(k0) < x0 ? k0 + 1 : k0, kR = kL + 1;
+    if(xOf(kR) <= x1 && pxPer > 40){
+      const XL = f.X(xOf(kL)), XR = f.X(xOf(kR)), yA = f.Y(1.09);
+      ctx.strokeStyle = K.tx; ctx.fillStyle = K.tx; ctx.lineWidth = 1.2;
+      ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(XL, f.Y(1)); ctx.lineTo(XL, yA - 6); ctx.moveTo(XR, f.Y(1)); ctx.lineTo(XR, yA - 6); ctx.stroke(); ctx.setLineDash([]);
+      arrow(ctx, XL, yA, XR, yA, 7, true);
+      label(ctx, 'FSR = ' + unit(p.fsr, HZ), (XL + XR)/2, yA - 11, K.tx);
+    }
+  }
+  if(0 >= x0 && 0 <= x1){
+    ctx.strokeStyle = K.c3; ctx.lineWidth = 1; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(f.X(0), f.m.t); ctx.lineTo(f.X(0), f.h - f.m.b); ctx.stroke(); ctx.setLineDash([]);
+    label(ctx, 'ν₀', f.X(0) + 4, f.m.t - 14, K.c3, 'left');
+  }
+}
+
+function drawScan(p, K){
+  const sep = +$('sSep').value;
+  const f = frame($('cScan'), 230, {l:56, r:12, t:12, b:40}, [-0.25, 2.25], [0, 1.75]), { ctx } = f;
+  axes(f, { xl: 'Etalon resonance offset from ν₁, in units of the FSR', yl: 'Detector signal', ny: 4 });
+  const c1 = s => T(p, TAU*s), c2 = s => 0.6*T(p, TAU*(s - sep));
+  const p1 = peakList(-0.25, 2.25, 0, 1), p2 = peakList(-0.25, 2.25, sep, 1);
+  curve(f, c1, p1, K.c1, 1.4, [5, 3]);
+  curve(f, c2, p2, K.c2, 1.4, [5, 3]);
+  curve(f, s => c1(s) + c2(s), p1.concat(p2), K.tx, 2);
+  ctx.font = '12px ' + css('--font-body');
+  label(ctx, 'ν₁', f.X(0) + 6, f.Y(1.0) - 8, K.c1, 'left');
+  const s2 = p2.find(x => x > -0.2);
+  if(s2 != null) label(ctx, 'ν₂', f.X(s2) + 6, f.Y(0.6 + c1(s2)) - 8, K.c2, 'left');
+}
+
+function drawFsr(p, K){
+  drawFsrPlot(p, K); drawScan(p, K);
+  const sep = +$('sSep').value, app = sep - Math.floor(sep + 1e-9);
+  $('vSep').textContent = sep.toFixed(3) + '  (' + unit(sep*p.fsr, HZ) + ')';
+  $('rFsr').textContent = unit(p.fsr, HZ);
+  $('rFsrS').textContent = sig(p.fsr/C0/100, 3) + ' cm⁻¹';
+  $('rDl').textContent = unit(p.lam*p.lam/p.Lopt, LEN);
+  $('rTrt').textContent = unit(1/p.fsr, TIME);
+  $('rOrd').textContent = big(p.m);
+  $('rApp').textContent = app.toFixed(3) + ' FSR';
+  $('rAppS').textContent = 'true: ' + sep.toFixed(3) + ' FSR = ' + unit(sep*p.fsr, HZ);
+  let msg;
+  if(sep > 1.0005 && Math.abs(app) > 0.002) msg = `ν₂ is ${sep.toFixed(2)} FSR above ν₁, but in the scan it appears only ${app.toFixed(2)} FSR from a ν₁ peak. Neighbouring orders overlap, so the etalon cannot tell Δν<sub>s</sub> = ${sep.toFixed(2)} FSR from ${app.toFixed(2)} FSR. The spectrum being analysed must be narrower than Δν<sub>FSR</sub> = ${unit(p.fsr, HZ)}.`;
+  else if(sep > 0.998 && (Math.abs(app) <= 0.002 || app > 0.998)) msg = `With Δν<sub>s</sub> equal to a whole number of FSRs, ν₂ lands exactly on top of a ν₁ peak: both lines are transmitted at the same setting and cannot be told apart.`;
+  else msg = `Δν<sub>FSR</sub> = c/(2nd cos θ<sub>t</sub>) = ${unit(p.fsr, HZ)} for this etalon: it depends only on the optical round-trip path, not on R. Tick "lock frequency axis" and increase d to watch the comb compress (doubling d halves the FSR). A larger FSR gives a larger unambiguous analysis window.`;
+  $('msgFsr').innerHTML = msg;
+}
+
+/* ---------- TAB 3: finesse ---------- */
+function drawPeak(p, K){
+  let half = st.zoom === 'fsr' ? 0.5*p.fsr : 3*p.dnc; half = Math.min(half, 0.5*p.fsr);
+  const [un, us] = pickUnit(half, HZ);
+  const f = frame($('cPeak'), 250, {l:56, r:12, t:12, b:40}, [-half, half], [0, 1.05]), { ctx } = f;
+  axes(f, { xf: v => fmtTick(v/us), xl: `ν − νₘ  (${un})`, yl: 'T', yt: [0, .25, .5, .75, 1].map(v => ({ v, t: v.toFixed(2) })) });
+  if(isFinite(p.Fe)){
+    clip(f); ctx.fillStyle = K.c3; ctx.globalAlpha = 0.18;
+    ctx.fillRect(f.X(-p.dnce/2), f.m.t, f.X(p.dnce/2) - f.X(-p.dnce/2), f.h - f.m.t - f.m.b); ctx.restore(); ctx.globalAlpha = 1;
+  }
+  clip(f); ctx.strokeStyle = K.dim; ctx.setLineDash([2, 4]); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(f.m.l, f.Y(0.5)); ctx.lineTo(f.w - f.m.r, f.Y(0.5)); ctx.stroke();
+  ctx.strokeStyle = K.c2; ctx.setLineDash([6, 4]); ctx.lineWidth = 1.4;
+  [-1, 1].forEach(sg => { const X = f.X(sg*p.dnc/2); ctx.beginPath(); ctx.moveTo(X, f.m.t); ctx.lineTo(X, f.h - f.m.b); ctx.stroke(); });
+  ctx.setLineDash([]); ctx.restore();
+  curve(f, x => T(p, TAU*x/p.fsr), [0, -p.fsr, p.fsr], K.acc, 2.4);
+  label(ctx, 'T = ½', f.m.l + 6, f.Y(0.5) - 8, K.dim, 'left');
+  if(isFinite(p.Fe)){
+    const XL = f.X(-p.dnce/2), XR = f.X(p.dnce/2), y = f.Y(0.5);
+    if(XR - XL > 30){ ctx.strokeStyle = K.tx; ctx.fillStyle = K.tx; ctx.lineWidth = 1.2; arrow(ctx, XL, y, XR, y, 7, true); }
+    const wide = XR - XL > 120;
+    label(ctx, 'FWHM = ' + unit(p.dnce, HZ), wide ? (XL + XR)/2 : Math.min(f.w - f.m.r - 110, XR + 8), wide ? y + 14 : y - 14, K.tx, wide ? 'center' : 'left');
+  } else label(ctx, 'T never drops to ½: FWHM undefined', (f.m.l + f.w - f.m.r)/2, f.Y(0.2), K.c2);
+}
+
+function drawFR(p, K){
+  const f = frame($('cFR'), 240, {l:56, r:12, t:12, b:40}, [0, 3.35], [-0.3, 4]), { ctx } = f;
+  const Rt = [0, 0.5, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999];
+  const narrow = f.w < 420;
+  axes(f, { xt: Rt.filter(r => !narrow || ![0.5, 0.95, 0.995].includes(r)).map(r => ({ v: -Math.log10(1 - r), t: String(r) })), xl: 'R  (axis ∝ −log₁₀(1 − R))',
+            yt: [0, 1, 2, 3, 4].map(v => ({ v, t: String(Math.pow(10, v)) })), yl: 'Finesse F' });
+  const Rx = x => 1 - Math.pow(10, -x);
+  curve(f, x => { const R = Rx(x); return Math.log10(PI*Math.sqrt(R)/(1 - R)); }, null, K.acc, 2.2);
+  curve(f, x => { const R = Rx(x), a = (1 - R)/(2*Math.sqrt(R)); return a <= 1 ? Math.log10(PI/(2*Math.asin(a))) : NaN; }, null, K.c3, 2, [6, 3]);
+  const X = f.X(-Math.log10(p.omr));
+  ctx.strokeStyle = K.tx; ctx.globalAlpha = 0.45; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(X, f.m.t); ctx.lineTo(X, f.h - f.m.b); ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.fillStyle = K.acc; ctx.beginPath(); ctx.arc(X, f.Y(Math.log10(p.Fa)), 4.5, 0, TAU); ctx.fill();
+  if(isFinite(p.Fe)){ ctx.fillStyle = K.c3; ctx.beginPath(); ctx.arc(X, f.Y(Math.log10(p.Fe)), 3.5, 0, TAU); ctx.fill(); }
+  const right = X < f.w - 90;
+  label(ctx, 'F = ' + big(p.Fa), X + (right ? 8 : -8), f.Y(Math.log10(p.Fa)) - 12, K.tx, right ? 'left' : 'right');
+}
+
+function drawRing(p, K){
+  const Ne = p.Ne, kmax = Math.min(5000, Math.max(8, Math.ceil(4*Ne)));
+  const f = frame($('cRing'), 240, {l:56, r:12, t:12, b:40}, [-0.5, kmax + 0.5], [0, 1.05]), { ctx } = f;
+  axes(f, { xl: 'Round trip k', yl: 'Iₖ / I₀', nx: 5, yt: [0, .25, .5, .75, 1].map(v => ({ v, t: v.toFixed(2) })) });
+  clip(f);
+  if(kmax <= 60){
+    ctx.strokeStyle = K.acc; ctx.fillStyle = K.acc; ctx.lineWidth = 2;
+    for(let k = 0; k <= kmax; k++){ const y = Math.pow(p.R, 2*k);
+      ctx.beginPath(); ctx.moveTo(f.X(k), f.Y(0)); ctx.lineTo(f.X(k), f.Y(y)); ctx.stroke();
+      ctx.beginPath(); ctx.arc(f.X(k), f.Y(y), 2.8, 0, TAU); ctx.fill(); }
+  } else {
+    ctx.fillStyle = K.acc; ctx.globalAlpha = 0.35; ctx.beginPath(); ctx.moveTo(f.X(0), f.Y(0));
+    const N = 400; for(let i = 0; i <= N; i++){ const k = kmax*i/N; ctx.lineTo(f.X(k), f.Y(Math.pow(p.R, 2*k))); }
+    ctx.lineTo(f.X(kmax), f.Y(0)); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+    curve(f, k => Math.pow(p.R, 2*Math.max(0, k)), null, K.acc, 2);
+  }
+  ctx.setLineDash([3, 4]); ctx.strokeStyle = K.c2; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(f.m.l, f.Y(1/Math.E)); ctx.lineTo(f.w - f.m.r, f.Y(1/Math.E));
+  ctx.moveTo(f.X(Ne), f.m.t); ctx.lineTo(f.X(Ne), f.h - f.m.b); ctx.stroke(); ctx.setLineDash([]);
+  ctx.restore();
+  label(ctx, 'Nₑ = ' + big(Ne), Math.min(f.X(Ne) + 6, f.w - f.m.r - 70), f.m.t + 12, K.c2, 'left');
+  label(ctx, '1/e', f.w - f.m.r - 4, f.Y(1/Math.E) - 8, K.c2, 'right');
+}
+
+function drawRes(p, K){
+  const rho = +$('sRho').value;
+  const x0 = -2.5, x1 = rho + 2.5, perX = p.Fa;
+  const g = (x, xc) => T(p, TAU*(x - xc)/p.Fa);
+  const sum = x => g(x, 0) + g(x, rho);
+  const f = frame($('cRes'), 230, {l:56, r:12, t:12, b:40}, [x0, x1], [0, 2.1]), { ctx } = f;
+  axes(f, { xl: 'Etalon resonance offset from ν₁, in units of the FWHM Δνc', yl: 'Detector signal', ny: 4 });
+  const pa = peakList(x0, x1, 0, perX) || [], pb = peakList(x0, x1, rho, perX) || [];
+  curve(f, x => g(x, 0), pa, K.c1, 1.4, [5, 3]);
+  curve(f, x => g(x, rho), pb, K.c2, 1.4, [5, 3]);
+  curve(f, sum, pa.concat(pb), K.tx, 2.2);
+  let mn = Infinity, mx = -Infinity;
+  for(let i = 0; i <= 600; i++){ const v = sum(rho*i/600); mn = Math.min(mn, v); mx = Math.max(mx, v); }
+  const ends = Math.min(sum(0), sum(rho)), resolved = mn < ends - 1e-4;
+  const crit = rho >= 1;
+  $('resNote').innerHTML = p.Fa < 3 ? `F = ${sig(p.Fa, 3)}: the peaks are so broad that neighbouring orders overlap, the Lorentzian picture fails and the etalon cannot resolve lines on the scale of Δν<sub>c</sub>. Raise R to see the resolution criterion at work.` : (resolved
+    ? `Two maxima with a dip to ${(100*mn/mx).toFixed(0)} % of the peak signal between them. `
+    : `The sum shows a single maximum: the two lines are not resolved. `) +
+    `Criterion Δν<sub>s</sub> ≥ Δν<sub>c</sub>: ${crit ? 'met' : 'not met'} (Δν<sub>s</sub> = ${unit(rho*p.dnc, HZ)}, Δν<sub>c</sub> = ${unit(p.dnc, HZ)}).` +
+    '';
+}
+
+function drawFin(p, K){
+  drawPeak(p, K); drawFR(p, K); drawRing(p, K); drawRes(p, K);
+  $('vRho').textContent = (+$('sRho').value).toFixed(2);
+  $('rFa').textContent = big(p.Fa);
+  $('rFaS').textContent = 'π√R/(1−R)';
+  $('rFe').textContent = isFinite(p.Fe) ? big(p.Fe) : 'undefined';
+  $('rFeS').textContent = isFinite(p.Fe) ? 'slide formula off by ' + sig(100*(p.Fa/p.Fe - 1), 2) + ' %' : 'T_min > ½ for R < 0.172';
+  $('rDnc').textContent = unit(p.dnc, HZ);
+  $('rDncS').textContent = isFinite(p.Fe) ? 'exact: ' + unit(p.dnce, HZ) : 'exact FWHM undefined';
+  $('rNe').textContent = big(p.Ne);
+  $('rNeS').textContent = '2πNₑ = ' + big(TAU*p.Ne) + ',  τ = ' + unit(p.Ne/p.fsr, TIME);
+  $('rQ').textContent = big(p.nu0/p.dnc);
+  let msg;
+  if(!isFinite(p.Fe)) msg = `T<sub>min</sub> = ${p.Tmin.toFixed(3)} is above ½, so the transmission never falls to half its peak and the FWHM, hence the finesse, is not defined. The slide formula still returns F = ${sig(p.Fa, 3)}: its small-(1 − R) linearisation has broken down.`;
+  else if(p.Fa/p.Fe - 1 > 0.05) msg = `At R = ${p.R.toFixed(3)} the peaks are broad and the linearised FWHM is inaccurate: the slide formula gives F = ${sig(p.Fa, 3)}, the exact FWHM gives ${sig(p.Fe, 3)} (${sig(100*(p.Fa/p.Fe - 1), 2)} % difference). The approximation assumes R close to 1.`;
+  else msg = `F = ${big(p.Fa)}: a peak is ${big(p.Fa)} times narrower than the spacing between peaks. Light makes about Nₑ = ${big(p.Ne)} round trips before its intensity falls to 1/e, and F ≈ 2πNₑ = ${big(TAU*p.Ne)}. More stored round trips means a longer photon lifetime (${unit(p.Ne/p.fsr, TIME)}) and a narrower line, Δν<sub>c</sub> ≈ 1/(2πτ). F depends only on R, while Δν<sub>c</sub> = Δν<sub>FSR</sub>/F also scales with d.`;
+  $('msgFin').innerHTML = msg;
+}
+
+/* ---------- main ---------- */
+function update(){
+  const p = P(), K = COL();
+  $('vR').textContent = p.omr >= 0.01 ? p.R.toFixed(3) : p.R.toFixed(4);
+  $('vD').textContent = unit(p.d, LEN);
+  $('vN').textContent = p.n.toFixed(2);
+  $('vTh').textContent = (+$('sTh').value).toFixed(1) + '°';
+  $('vL').textContent = $('sL').value + ' nm';
+  if(st.tab === 'trans') drawTrans(p, K);
+  else if(st.tab === 'fsr') drawFsr(p, K);
+  else drawFin(p, K);
+}
+let raf = 0;
+const schedule = () => { if(!raf) raf = requestAnimationFrame(() => { raf = 0; update(); }); };
+
+['sR','sD','sN','sTh','sL','sDet','sSep','sRho','cFam','cRef'].forEach(id => $(id).addEventListener('input', schedule));
+$('cLock').addEventListener('change', () => { st.lockSpan = null; schedule(); });
+
+$('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  st.tab = b.dataset.t;
+  $('tabs').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+  ['trans','fsr','fin'].forEach(t => $('pane-' + t).hidden = t !== st.tab);
+  update();
+});
+$('segZoom').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  st.zoom = b.dataset.z;
+  $('segZoom').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+  update();
+});
+document.querySelectorAll('.presets button').forEach(b => b.addEventListener('click', () => {
+  const q = PRESETS[b.dataset.p];
+  $('sR').value = Math.round(1000*(Math.log10(1 - q.R) - LOMR0)/(LOMR1 - LOMR0));
+  $('sD').value = Math.log10(q.d); $('sN').value = q.n; $('sTh').value = q.th; $('sL').value = q.lam;
+  $('cLock').checked = false; st.lockSpan = null;
+  update();
+}));
+
+function airyPointer(e){
+  if(!airyF) return;
+  if(e.type === 'pointermove' && !(e.buttons & 1)) return;
+  const r = $('cAiry').getBoundingClientRect();
+  let ph = airyF.iX(e.clientX - r.left);
+  ph = ph - TAU*Math.round(ph/TAU);
+  $('sDet').value = (ph*180/PI).toFixed(2);
+  schedule();
+}
+$('cAiry').addEventListener('pointerdown', e => { $('cAiry').setPointerCapture(e.pointerId); airyPointer(e); });
+$('cAiry').addEventListener('pointermove', airyPointer);
+
+window.addEventListener('resize', schedule);
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', schedule);
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+update();
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
