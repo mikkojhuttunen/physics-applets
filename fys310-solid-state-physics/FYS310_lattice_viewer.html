@@ -1178,6 +1178,16 @@
       var mesh = new THREE.Mesh(geo, matCache[pt.role]);
       mesh.position.set(pt.pos[0], pt.pos[1], pt.pos[2]);
       group.add(mesh);
+
+      // Label each high-symmetry point in the rotating figure itself (not just
+      // the legend below), so it reads straight across to the same point name
+      // on the dispersion plot's x-axis.
+      var plen = Math.sqrt(pt.pos[0]*pt.pos[0] + pt.pos[1]*pt.pos[1] + pt.pos[2]*pt.pos[2]);
+      var dir = plen > 1e-6 ? [pt.pos[0]/plen, pt.pos[1]/plen, pt.pos[2]/plen] : [0, 1, 0];
+      var lab = makeLabel(pt.name, '', col);
+      lab.scale.set(pt.role === 'gamma' ? 0.30 : 0.24, pt.role === 'gamma' ? 0.30 : 0.24, 1);
+      lab.position.set(pt.pos[0] + dir[0]*0.24, pt.pos[1] + dir[1]*0.24 + 0.07, pt.pos[2] + dir[2]*0.24);
+      group.add(lab);
     });
 
     group.position.set(0, 0, 0);
