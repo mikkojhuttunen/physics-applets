@@ -29,20 +29,25 @@
       position:sticky; top:0; max-height:100vh; overflow-y:auto; }
   }
 
-  #stageWrap{ padding:16px; display:flex; flex-direction:column; gap:14px; }
-  #panel{ padding:14px 16px 24px; display:flex; flex-direction:column; gap:14px; }
+  #stageWrap{ padding:12px; display:flex; flex-direction:column; gap:10px; }
+  #panel{ padding:10px 16px 16px; display:flex; flex-direction:column; gap:10px; }
 
-  h2.card-title{ margin:0 0 10px; font-size:var(--fs-label); color:var(--text-dim);
+  #stageWrap .card, #panel .card{ padding:10px 12px; }
+
+  h2.card-title{ margin:0 0 6px; font-size:var(--fs-label); color:var(--text-dim);
     text-transform:uppercase; letter-spacing:.04em; }
 
+  .card-header-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; }
+  .card-header-row .card-title{ margin:0; }
+
   /* ---------- spectrum bar ---------- */
-  #barOuter{ position:relative; user-select:none; touch-action:none; padding-top:18px; padding-bottom:46px; }
-  #barTicks{ position:relative; height:16px; margin-bottom:2px; }
+  #barOuter{ position:relative; user-select:none; touch-action:none; padding-top:10px; padding-bottom:24px; }
+  #barTicks{ position:relative; height:13px; margin-bottom:2px; }
   .tick{ position:absolute; top:0; transform:translateX(-50%); font-family:var(--font-mono);
     font-size:var(--fs-tiny); color:var(--text-faint); white-space:nowrap; }
-  .tick::before{ content:""; position:absolute; left:50%; top:14px; width:1px; height:6px; background:var(--border); }
+  .tick::before{ content:""; position:absolute; left:50%; top:12px; width:1px; height:5px; background:var(--border); }
 
-  #barTrack{ position:relative; height:48px; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  #barTrack{ position:relative; height:30px; border-radius:7px; overflow:hidden; border:1px solid var(--border); }
   .band{ position:absolute; top:0; bottom:0; display:flex; align-items:center; justify-content:center;
     font-size:var(--fs-tiny); font-weight:600; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35);
     overflow:hidden; white-space:nowrap; cursor:pointer; }
@@ -51,18 +56,18 @@
       #7d1fa8 0%, #4c3df0 14%, #2f7bf5 28%, #23c7d9 42%, #3ecf6e 56%,
       #e8d44d 70%, #f2914b 84%, #d1382c 100%); }
 
-  .narrowLabels{ position:relative; height:26px; }
+  .narrowLabels{ position:relative; height:16px; }
   .narrowLabel{ position:absolute; top:0; transform:translateX(-50%); text-align:center; }
-  .narrowLabel .leader{ width:1px; height:8px; background:var(--border); margin:0 auto; }
+  .narrowLabel .leader{ width:1px; height:4px; background:var(--border); margin:0 auto; }
   .narrowLabel .txt{ font-size:var(--fs-tiny); color:var(--text-dim); font-weight:600; white-space:nowrap; }
 
-  #cursor{ position:absolute; top:-18px; bottom:-46px; width:2px; background:var(--accent);
+  #cursor{ position:absolute; top:-10px; bottom:-24px; width:2px; background:var(--accent);
     transform:translateX(-50%); cursor:ew-resize; pointer-events:none; z-index:5; }
   #cursor::before{ content:""; position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:12px; height:12px; border-radius:50%; background:var(--accent); border:2px solid var(--panel); }
+    width:10px; height:10px; border-radius:50%; background:var(--accent); border:2px solid var(--panel); }
 
   /* ---------- blackbody chart ---------- */
-  #bbChart{ position:relative; height:120px; border:1px solid var(--border); border-radius:8px;
+  #bbChart{ position:relative; height:100px; border:1px solid var(--border); border-radius:8px;
     background:var(--panel); overflow:hidden; }
   #bbSvg{ position:absolute; inset:0; width:100%; height:100%; }
   .bbToggles{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
@@ -83,12 +88,14 @@
   .presets .btn{ text-align:left; font-size:var(--fs-small); }
 
   /* ---------- sources ---------- */
-  #sourcesCard .seg{ margin-bottom:10px; }
-  #sourceList{ display:flex; flex-direction:column; gap:8px; max-height:360px; overflow-y:auto;
+  #sourcesCard .seg{ margin-bottom:8px; }
+  #sourceList{ display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto;
     padding-right:2px; }
-  .src{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; opacity:.45;
-    transition:opacity .15s, border-color .15s, background .15s; cursor:pointer; }
-  .src.active{ opacity:1; border-color:var(--accent); background:var(--accent-soft); }
+  .src{ border:1px solid var(--border); border-radius:8px; padding:6px 10px;
+    transition:border-color .15s, background .15s; cursor:pointer; }
+  .src.active{ border-color:var(--accent); background:var(--accent-soft); }
+  .src.empty-msg{ color:var(--text-faint); font-size:var(--fs-small); font-style:italic;
+    border-style:dashed; cursor:default; padding:10px; text-align:center; }
   .src-head{ display:flex; align-items:center; gap:7px; }
   .src-dot{ width:8px; height:8px; border-radius:50%; flex:none; }
   .src-name{ font-weight:600; font-size:var(--fs-body); }
@@ -123,14 +130,19 @@
       </section>
 
       <section class="card" id="bbCard">
-        <h2 class="card-title">Blackbody spectra (normalized, aligned to the axis above)</h2>
-        <div id="bbChart"><svg id="bbSvg" viewBox="0 0 1000 120" preserveAspectRatio="none"></svg></div>
-        <div class="bbToggles" id="bbToggles"></div>
-        <p class="note" style="margin-top:8px;">Each curve is a Planck blackbody spectrum, individually height-normalized so the very different intensities of the Sun and the cosmic microwave background can be compared on one axis. Only the <em>peak position</em> (Wien's law) is meaningful across curves — not the relative heights.</p>
+        <div class="card-header-row">
+          <h2 class="card-title">Blackbody spectra (normalized, aligned to the axis above)</h2>
+          <button class="btn small" id="bbToggleBtn" aria-expanded="false">Show</button>
+        </div>
+        <div id="bbBody" style="display:none;">
+          <div id="bbChart"><svg id="bbSvg" viewBox="0 0 1000 120" preserveAspectRatio="none"></svg></div>
+          <div class="bbToggles" id="bbToggles"></div>
+          <p class="note" style="margin-top:8px;">Each curve is a Planck blackbody spectrum, individually height-normalized so the very different intensities of the Sun and the cosmic microwave background can be compared on one axis. Only the <em>peak position</em> (Wien's law) is meaningful across curves — not the relative heights.</p>
+        </div>
       </section>
 
       <section class="card" id="sourcesCard">
-        <h2 class="card-title">Real sources at this wavelength</h2>
+        <h2 class="card-title" id="sourcesHeading">Real sources in this region</h2>
         <div class="seg" id="filterSeg">
           <button data-f="all" class="active">All</button>
           <button data-f="natural">Natural</button>
@@ -409,6 +421,15 @@
       bbSvg.appendChild(path);
     });
   }
+  const bbToggleBtn = document.getElementById('bbToggleBtn');
+  const bbBody = document.getElementById('bbBody');
+  bbToggleBtn.addEventListener('click', () => {
+    const willShow = bbBody.style.display === 'none';
+    bbBody.style.display = willShow ? '' : 'none';
+    bbToggleBtn.textContent = willShow ? 'Hide' : 'Show';
+    bbToggleBtn.setAttribute('aria-expanded', String(willShow));
+  });
+
   function renderBBToggles(){
     bbToggles.innerHTML = '';
     BB_CURVES.forEach(curve => {
@@ -432,32 +453,48 @@
 
   // ---------- sources ----------
   const sourceList = document.getElementById('sourceList');
+  const sourcesHeading = document.getElementById('sourcesHeading');
   let filterTag = 'all';
   let quizMode = false;
 
+  const overlaps = (aLo, aHi, bLo, bHi) => aHi >= bLo && aLo <= bHi;
+
   function renderSources(lambda){
+    const band = bandFor(lambda);
+    sourcesHeading.textContent = 'Real sources — ' + band.name;
     sourceList.innerHTML = '';
-    SOURCES.filter(s => filterTag === 'all' || s.tag === filterTag)
-      .sort((a,b) => a.lo - b.lo)
-      .forEach(s => {
-        const active = lambda >= s.lo && lambda <= s.hi;
-        const el = document.createElement('div');
-        el.className = 'src' + (active ? ' active' : '') + (quizMode ? ' quiz' : '');
-        const dotColor = s.tag === 'natural' ? 'var(--natural)' : s.tag === 'telecom' ? 'var(--telecom)' : 'var(--engineered)';
-        el.innerHTML =
-          '<div class="src-head">' +
-            '<span class="src-dot" style="background:' + dotColor + '"></span>' +
-            '<span class="src-name">' + s.name + '</span>' +
-            '<span class="src-range">' + formatLambda(s.hi) + ' – ' + formatLambda(s.lo) + '</span>' +
-          '</div>' +
-          '<div class="src-desc">' + s.desc + '</div>';
-        if (quizMode){
-          el.addEventListener('click', () => el.classList.toggle('revealed'));
-        } else {
-          el.addEventListener('click', () => setLambda(Math.sqrt(s.lo*s.hi)));
-        }
-        sourceList.appendChild(el);
-      });
+
+    const items = SOURCES
+      .filter(s => (filterTag === 'all' || s.tag === filterTag) && overlaps(s.lo, s.hi, band.lo, band.hi))
+      .sort((a,b) => a.lo - b.lo);
+
+    if (items.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'src empty-msg';
+      empty.textContent = 'No ' + (filterTag === 'all' ? '' : filterTag + ' ') + 'sources catalogued in this region.';
+      sourceList.appendChild(empty);
+      return;
+    }
+
+    items.forEach(s => {
+      const active = lambda >= s.lo && lambda <= s.hi;
+      const el = document.createElement('div');
+      el.className = 'src' + (active ? ' active' : '') + (quizMode ? ' quiz' : '');
+      const dotColor = s.tag === 'natural' ? 'var(--natural)' : s.tag === 'telecom' ? 'var(--telecom)' : 'var(--engineered)';
+      el.innerHTML =
+        '<div class="src-head">' +
+          '<span class="src-dot" style="background:' + dotColor + '"></span>' +
+          '<span class="src-name">' + s.name + '</span>' +
+          '<span class="src-range">' + formatLambda(s.hi) + ' – ' + formatLambda(s.lo) + '</span>' +
+        '</div>' +
+        '<div class="src-desc">' + s.desc + '</div>';
+      if (quizMode){
+        el.addEventListener('click', () => el.classList.toggle('revealed'));
+      } else {
+        el.addEventListener('click', () => setLambda(Math.sqrt(s.lo*s.hi)));
+      }
+      sourceList.appendChild(el);
+    });
   }
 
   document.getElementById('filterSeg').addEventListener('click', (e) => {
