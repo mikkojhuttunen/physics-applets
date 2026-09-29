@@ -26,10 +26,12 @@ Each course has its own folder with an `index.html` listing its applets.
   3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
   applet (linear vs ring cavity), and a mode-competition applet (homogeneous vs
   inhomogeneous gain, intracavity etalon, cavity length), a laser-condition and
-  logarithmic-losses applet (threshold inversion, round-trip gain waterfall), and
+  logarithmic-losses applet (threshold inversion, round-trip gain waterfall),
   a coherence explorer (Michelson and Young, temporal vs spatial coherence),
-  and an output-coupler optimization applet (output power vs mirror
-  transmission, optimum for given gain and loss).
+  an output-coupler optimization applet (output power vs mirror
+  transmission, optimum for given gain and loss), and a transverse-mode
+  explorer (Hermite–Gauss and Laguerre–Gauss field, phase and intensity, mode
+  superpositions, ABCD propagation and M² focusing).
 - `finnmath-app/`
 
 Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Transverse modes: Hermite–Gauss and Laguerre–Gauss</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
+  --pos:#dc1428; --neg:#1932e6; --accent:#1f6feb; --int:#1b1f24;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+    --pos:#ff4a56; --neg:#5a86ff; --accent:#5c9dff; --int:#e6e9ec;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
+  --pos:#ff4a56; --neg:#5a86ff; --accent:#5c9dff; --int:#e6e9ec;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.wrap{max-width:980px;margin:0 auto;padding:16px 16px 28px;}
+h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
+.sub{color:var(--muted);margin:0 0 14px;font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 22px;margin-bottom:14px}
+.ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+.span2{grid-column:1/-1}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:6px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.85rem;cursor:pointer;border-right:1px solid var(--border)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
+.switch{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--fg);cursor:pointer;margin:2px 0}
+.switch input{width:18px;height:18px;accent-color:var(--accent)}
+.btn{padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:.85rem;cursor:pointer}
+.btn[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.picker{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center}
+.picker select,.picker input{font:inherit;font-size:.88rem;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--fg);min-width:0}
+.picker .pl{font-size:.82rem;color:var(--muted)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media (max-width:640px){.panels{grid-template-columns:1fr}}
+.plotbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 8px 6px}
+.ptitle{font-size:.86rem;font-weight:600;margin:0 2px 6px;display:flex;justify-content:space-between;gap:8px}
+.ptitle span:last-child{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+canvas{display:block;width:100%;border-radius:6px}
+.cbar{height:8px;border-radius:4px;margin:6px 2px 0}
+.cbl{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted);margin:0 2px}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+.read .k{font-size:.78rem;color:var(--muted)}
+.read .v{font-size:1.35rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+.read .s{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+h2.sec{font-size:1.1rem;font-weight:650;margin:26px 0 2px}
+#msg,.msg{margin:10px 0 0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--card);border-radius:0 8px 8px 0}
+.gal{display:grid;gap:6px;margin-top:6px}
+.gal figure{margin:0;cursor:pointer;border:1px solid transparent;border-radius:8px;padding:3px}
+.gal figure:hover{border-color:var(--border)}
+.gal figure.sel{border-color:var(--accent)}
+.gal figcaption{font-size:.74rem;text-align:center;color:var(--muted)}
+.hidden{display:none!important}
+details{margin-top:14px;color:var(--muted);font-size:.88rem}
+summary{cursor:pointer;color:var(--fg)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Transverse modes: Hermite–Gauss and Laguerre–Gauss</h1>
+  <p class="sub">FYS.501 Laser Physics · Ch. 3 · field Re E, phase arg E and intensity |E|² of higher-order transverse modes</p>
+
+  <div class="card controls">
+    <div class="ctl span2">
+      <span class="lab">Mode family</span>
+      <div class="seg" id="segFam">
+        <button data-v="HG" aria-pressed="true">Hermite–Gauss (Cartesian)</button>
+        <button data-v="LG" aria-pressed="false">Laguerre–Gauss (cylindrical)</button>
+        <button data-v="SUP" aria-pressed="false">Superposition</button>
+      </div>
+    </div>
+
+    <div class="ctl fHG">
+      <label for="sM">m (nodes along x): <span class="val" id="vM"></span></label>
+      <input id="sM" type="range" min="0" max="8" step="1" value="2">
+    </div>
+    <div class="ctl fHG">
+      <label for="sN">n (nodes along y): <span class="val" id="vN"></span></label>
+      <input id="sN" type="range" min="0" max="8" step="1" value="1">
+    </div>
+
+    <div class="ctl fLG hidden">
+      <label for="sP">p (radial index, dark rings): <span class="val" id="vP"></span></label>
+      <input id="sP" type="range" min="0" max="6" step="1" value="0">
+    </div>
+    <div class="ctl fLG hidden">
+      <label for="sL">l (azimuthal index): <span class="val" id="vL"></span></label>
+      <input id="sL" type="range" min="-8" max="8" step="1" value="1">
+    </div>
+    <div class="ctl fLG hidden span2">
+      <span class="lab">Azimuthal dependence</span>
+      <div class="seg" id="segAng">
+        <button data-v="hel" aria-pressed="true">Helical e<sup>ilφ</sup> (vortex)</button>
+        <button data-v="cos" aria-pressed="false">Standing cos lφ</button>
+        <button data-v="sin" aria-pressed="false">Standing sin lφ</button>
+      </div>
+    </div>
+
+    <div class="ctl fSUP hidden">
+      <span class="lab">Mode A</span>
+      <div class="picker" id="pickA"></div>
+    </div>
+    <div class="ctl fSUP hidden">
+      <span class="lab">Mode B</span>
+      <div class="picker" id="pickB"></div>
+    </div>
+    <div class="ctl fSUP hidden">
+      <label for="sAl">Power fraction in B, α: <span class="val" id="vAl"></span></label>
+      <input id="sAl" type="range" min="0" max="1" step="0.01" value="0.5">
+    </div>
+    <div class="ctl fSUP hidden">
+      <label for="sTh">Relative phase θ of B: <span class="val" id="vTh"></span></label>
+      <input id="sTh" type="range" min="0" max="360" step="1" value="90">
+    </div>
+    <div class="ctl fSUP hidden span2">
+      <span class="lab">Presets: E = √(1−α)·A + √α·e<sup>iθ</sup>·B</span>
+      <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="ctl">
+      <label for="sZ">Propagation distance z / z<sub>R</sub>: <span class="val" id="vZ"></span></label>
+      <input id="sZ" type="range" min="-3" max="3" step="0.01" value="0">
+    </div>
+    <div class="ctl">
+      <span class="lab">Display frame</span>
+      <div class="seg" id="segFrame">
+        <button data-v="auto" aria-pressed="true">Auto-fit</button>
+        <button data-v="w" aria-pressed="false">±5 w(z)</button>
+        <button data-v="lab" aria-pressed="false">±12 w₀</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label class="switch"><input type="checkbox" id="cAnim"> Animate time: Re[E e<sup>iωt</sup>]</label>
+      <label class="switch"><input type="checkbox" id="cCirc" checked> Show beam radius w(z) circle</label>
+    </div>
+    <div class="ctl">
+      <span class="lab">Sweep z through the waist</span>
+      <button class="btn" id="bSweep" aria-pressed="false">▶ Sweep z</button>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="plotbox">
+      <div class="ptitle"><span>Field Re E(x, y)</span><span id="tRe"></span></div>
+      <canvas id="cRe"></canvas>
+      <div class="cbar" id="barRe"></div><div class="cbl"><span>−|E|<sub>max</sub></span><span>0</span><span>+|E|<sub>max</sub></span></div>
+    </div>
+    <div class="plotbox">
+      <div class="ptitle"><span>Phase arg E(x, y)</span><span id="tPh"></span></div>
+      <canvas id="cPh"></canvas>
+      <div class="cbar" id="barPh"></div><div class="cbl"><span>−π</span><span>0</span><span>+π</span></div>
+    </div>
+    <div class="plotbox">
+      <div class="ptitle"><span>Intensity |E(x, y)|²</span><span id="tIn"></span></div>
+      <canvas id="cIn"></canvas>
+      <div class="cbar" id="barIn"></div><div class="cbl"><span>0</span><span>I<sub>max</sub></span></div>
+    </div>
+    <div class="plotbox">
+      <div class="ptitle"><span>Cross-sections through the brightest point</span><span id="tX"></span></div>
+      <canvas id="cX"></canvas>
+      <div class="cbl" style="margin-top:6px"><span id="lgX"></span></div>
+    </div>
+  </div>
+
+  <div class="reads">
+    <div class="card read"><div class="k">Mode</div><div class="v" id="rMode"></div><div class="s" id="rModeS"></div></div>
+    <div class="card read"><div class="k" id="rGouyK">Gouy phase (N + 1)ψ(z)</div><div class="v" id="rGouy"></div><div class="s" id="rGouyS"></div></div>
+    <div class="card read"><div class="k">Beam radius and wavefront</div><div class="v" id="rW"></div><div class="s" id="rWS"></div></div>
+    <div class="card read"><div class="k">Beam quality · orbital angular momentum</div><div class="v" id="rM2"></div><div class="s" id="rM2S"></div></div>
+  </div>
+
+  <div id="msg"></div>
+
+  <div class="card" id="galCard" style="margin-top:12px">
+    <div class="ptitle"><span id="galTitle">Gallery</span><span>click to select</span></div>
+    <div class="gal" id="gal"></div>
+  </div>
+
+  <h2 class="sec">Propagation and focusing: ABCD matrices and the embedded Gaussian</h2>
+  <p class="sub">Waist → free space d₁ → thin lens f → free space. Every mode propagates with the same complex beam parameter q, but its size is √M² times the TEM<sub>00</sub> radius w(z). The mode is taken from the selection above (mode A in superposition mode).</p>
+
+  <div class="card controls">
+    <div class="ctl">
+      <label for="sLam">Wavelength λ: <span class="val" id="vLam"></span></label>
+      <input id="sLam" type="range" min="400" max="2000" step="1" value="1064">
+    </div>
+    <div class="ctl">
+      <label for="sW0">Input TEM<sub>00</sub> waist w₀: <span class="val" id="vW0"></span></label>
+      <input id="sW0" type="range" min="0.1" max="3" step="0.01" value="0.3">
+    </div>
+    <div class="ctl">
+      <label for="sD1">Waist-to-lens distance d₁: <span class="val" id="vD1"></span></label>
+      <input id="sD1" type="range" min="0" max="3000" step="10" value="800">
+    </div>
+    <div class="ctl">
+      <label for="sF">Lens focal length f: <span class="val" id="vF"></span></label>
+      <input id="sF" type="range" min="10" max="500" step="1" value="100">
+    </div>
+    <div class="ctl">
+      <label for="sCur">Observation plane z: <span class="val" id="vCur"></span></label>
+      <input id="sCur" type="range" min="0" max="1" step="0.001" value="0.3">
+    </div>
+    <div class="ctl">
+      <label class="switch"><input type="checkbox" id="cOrds" checked> Envelopes of orders 0…4 (M² = 1, 3, 5, 7, 9)</label>
+      <label class="switch"><input type="checkbox" id="cLink"> Drive the 2D panels above from this plane</label>
+    </div>
+  </div>
+
+  <div class="plotbox" style="margin-bottom:12px">
+    <div class="ptitle"><span>Side view: intensity I(x, z), normalised at each z</span><span id="tSide"></span></div>
+    <canvas id="cSide" class="wide"></canvas>
+    <div class="cbl" style="margin-top:6px"><span id="lgSide"></span></div>
+  </div>
+  <div class="panels">
+    <div class="plotbox">
+      <div class="ptitle"><span>Focal plane: line profiles at equal power</span><span id="tFoc"></span></div>
+      <canvas id="cFoc" class="half"></canvas>
+      <div class="cbl" style="margin-top:6px"><span id="lgFoc"></span></div>
+    </div>
+    <div class="plotbox">
+      <div class="ptitle"><span>Focal spot and divergence vs mode order</span><span>same lens, same w₀</span></div>
+      <canvas id="cOrd" class="half"></canvas>
+      <div class="cbl" style="margin-top:6px"><span id="lgOrd"></span></div>
+    </div>
+  </div>
+
+  <div class="reads">
+    <div class="card read"><div class="k">Input beam</div><div class="v" id="pIn"></div><div class="s" id="pInS"></div></div>
+    <div class="card read"><div class="k">Far-field divergence (half-angle)</div><div class="v" id="pDiv"></div><div class="s" id="pDivS"></div></div>
+    <div class="card read"><div class="k">Focused spot</div><div class="v" id="pFoc"></div><div class="s" id="pFocS"></div></div>
+    <div class="card read"><div class="k">ABCD matrix, waist → observation plane</div><div class="v" id="pAbcd" style="font-size:1rem"></div><div class="s" id="pAbcdS"></div></div>
+  </div>
+  <div id="msg2" class="msg"></div>
+
+  <details>
+    <summary>Model and conventions</summary>
+    <p>Lengths are in units of the waist radius w₀ and z in units of the Rayleigh range z<sub>R</sub> = πw₀²/λ. With w(z) = w₀√(1 + z²/z<sub>R</sub>²), R(z) = z(1 + z<sub>R</sub>²/z²) and Gouy phase ψ(z) = arctan(z/z<sub>R</sub>), the fields (time dependence e<sup>i(ωt − kz)</sup>, power-normalised) are</p>
+    <p><b>HG<sub>mn</sub></b>: E ∝ (w₀/w) H<sub>m</sub>(√2x/w) H<sub>n</sub>(√2y/w) exp(−r²/w²) · exp(−ikr²/2R) · exp[i(m + n + 1)ψ]</p>
+    <p><b>LG<sub>p</sub><sup>l</sup></b>: E ∝ (w₀/w) (√2r/w)<sup>|l|</sup> L<sub>p</sub><sup>|l|</sup>(2r²/w²) exp(−r²/w²) · Φ(φ) · exp(−ikr²/2R) · exp[i(2p + |l| + 1)ψ], with Φ = e<sup>ilφ</sup> (helical), cos lφ or sin lφ (standing).</p>
+    <p>H<sub>m</sub> are the physicists' Hermite polynomials and L<sub>p</sub><sup>|l|</sup> the generalised Laguerre polynomials. m counts nodal lines crossing the x-axis (i.e. lobes along x), n along y; p counts dark rings and |l| the azimuthal order. Some texts write the LG indices in the order (l, p) or use TEM<sub>pl</sub>; check the convention before comparing labels.</p>
+    <p>The mode order N = m + n (HG) or N = 2p + |l| (LG) sets the Gouy phase. In a resonator of length L the transverse-mode frequencies are ν = (c/2L)[q + (N + 1)·arccos(±√(g₁g₂))/π], so all modes with equal N are frequency-degenerate and any combination of them is again a mode: e.g. LG<sub>0</sub><sup>±1</sup> = (HG<sub>10</sub> ± i·HG<sub>01</sub>)/√2. A superposition of modes with different N changes shape along z because their relative Gouy phase (N<sub>B</sub> − N<sub>A</sub>)ψ(z) changes.</p>
+    <p><b>Propagation.</b> The complex beam parameter 1/q = 1/R − iλ/(πw²) transforms as q' = (Aq + B)/(Cq + D), with free space [[1, d], [0, 1]] and thin lens [[1, 0], [−1/f, 1]]. Because the HG and LG modes are shape-invariant and share the same q, a mode of order N has second-moment radius W(z) = √M²·w(z) with M² = 2m + 1 (x-direction of HG<sub>mn</sub>) or 2p + |l| + 1 (LG). Hence W₀θ = M²λ/π: for the same waist the far-field angle is √M² times larger, and behind a lens the focused spot is √M² times larger than for TEM<sub>00</sub>. The focus lies where Re q = 0 after the lens; for d₁ ≫ z<sub>R</sub> it approaches the focal plane and w₀' ≈ λf/(πw<sub>lens</sub>). The side view normalises each z-column to its own maximum so the lobe structure stays visible through the focus.</p>
+    <p>Re E and the cross-sections are normalised to the maximum |E| in the frame; the cross-sections run horizontally and vertically through the pixel of highest intensity; the phase map is faded out where |E| is below a few per cent of the maximum, where the phase is meaningless. M² = 2m + 1 (x), 2n + 1 (y) for HG and 2p + |l| + 1 for LG. The OAM readout is ⟨ℓ⟩ = ∫E*(−i∂<sub>φ</sub>E) dA / ∫|E|² dA, evaluated numerically on the displayed grid.</p>
+  </details>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const RES = 201;
+
+const st = {
+  fam:'HG', m:2, n:1, p:0, l:1, ang:'hel',
+  A:{t:'HG', a:1, b:0}, B:{t:'HG', a:0, b:1}, alpha:0.5, theta:90,
+  z:0, frame:'auto', circ:true, anim:false, sweep:false, wt:0, sweepPh:0
+};
+
+/* ---------- special functions ---------- */
+function hermite(n, x){
+  if (n === 0) return 1;
+  let h0 = 1, h1 = 2*x;
+  for (let k = 1; k < n; k++){ const h2 = 2*x*h1 - 2*k*h0; h0 = h1; h1 = h2; }
+  return h1;
+}
+function laguerre(p, a, x){
+  if (p === 0) return 1;
+  let L0 = 1, L1 = 1 + a - x;
+  for (let k = 1; k < p; k++){ const L2 = ((2*k + 1 + a - x)*L1 - (k + a)*L0)/(k + 1); L0 = L1; L1 = L2; }
+  return L1;
+}
+function fact(n){ let f = 1; for (let i = 2; i <= n; i++) f *= i; return f; }
+
+/* ---------- mode specs ---------- */
+function specOf(t, a, b){
+  if (t === 'HG') return {fam:'HG', a, b};
+  return {fam:'LG', a, b, ang: t.slice(2)};
+}
+function orderOf(sp){ return sp.fam === 'HG' ? sp.a + sp.b : 2*sp.a + Math.abs(sp.b); }
+function sub(s){ return '<sub>' + s + '</sub>'; }
+function labelOf(sp){
+  if (sp.fam === 'HG') return 'HG' + sub('' + sp.a + sp.b);
+  const l = sp.b, ls = (l > 0 && sp.ang === 'hel' ? '+' : '') + l;
+  const tag = sp.ang === 'hel' ? '' : (sp.ang === 'cos' ? ' cos' : ' sin');
+  return 'LG' + sub(sp.a) + '<sup>' + ls + '</sup>' + tag;
+}
+function isNull(sp){ return sp.fam === 'LG' && sp.ang === 'sin' && sp.b === 0; }
+
+function makeEval(sp, zeta){
+  const s = Math.sqrt(1 + zeta*zeta), psi = Math.atan(zeta), curv = zeta/(1 + zeta*zeta);
+  const gouy = (orderOf(sp) + 1)*psi;
+  if (sp.fam === 'HG'){
+    const m = sp.a, n = sp.b;
+    const C = Math.sqrt(2/Math.PI)/Math.sqrt(Math.pow(2, m + n)*fact(m)*fact(n))/s;
+    return (X, Y, out) => {
+      const u = X/s, v = Y/s;
+      const A = C*hermite(m, Math.SQRT2*u)*hermite(n, Math.SQRT2*v)*Math.exp(-(u*u + v*v));
+      const ph = gouy - (X*X + Y*Y)*curv;
+      out[0] = A*Math.cos(ph); out[1] = A*Math.sin(ph);
+    };
+  }
+  const p = sp.a, l = sp.b, al = Math.abs(l), ang = sp.ang;
+  let C = Math.sqrt(2*fact(p)/(Math.PI*fact(p + al)))/s;
+  if (ang !== 'hel' && l !== 0) C *= Math.SQRT2;
+  return (X, Y, out) => {
+    const r2 = (X*X + Y*Y)/(s*s), t = 2*r2;
+    let A = C*Math.pow(t, al/2)*laguerre(p, al, t)*Math.exp(-r2);
+    let ph = gouy - (X*X + Y*Y)*curv;
+    const phi = Math.atan2(Y, X);
+    if (ang === 'hel') ph += l*phi;
+    else if (ang === 'cos') A *= Math.cos(l*phi);
+    else A *= (l === 0 ? 0 : Math.sin(l*phi));
+    out[0] = A*Math.cos(ph); out[1] = A*Math.sin(ph);
+  };
+}
+
+function components(){
+  if (st.fam === 'HG') return [{sp:specOf('HG', st.m, st.n), c:[1,0]}];
+  if (st.fam === 'LG') return [{sp:specOf('LG' + st.ang, st.p, st.l), c:[1,0]}];
+  const a = Math.sqrt(1 - st.alpha), b = Math.sqrt(st.alpha), th = st.theta*Math.PI/180;
+  return [
+    {sp:specOf(st.A.t, st.A.a, st.A.b), c:[a, 0]},
+    {sp:specOf(st.B.t, st.B.a, st.B.b), c:[b*Math.cos(th), b*Math.sin(th)]}
+  ];
+}
+
+/* ---------- field computation ---------- */
+const RE = new Float32Array(RES*RES), IM = new Float32Array(RES*RES);
+const F = {L:4, maxA:1, oam:0, s:1, comps:[]};
+
+function frameHalfWidth(comps, s){
+  const Nmax = Math.max(...comps.map(c => orderOf(c.sp)));
+  if (st.frame === 'w') return 5*s;
+  if (st.frame === 'lab') return 12;
+  return (Math.sqrt(Nmax + 1) + 1.7)*s;
+}
+
+function compute(){
+  const comps = components();
+  const zeta = st.z, s = Math.sqrt(1 + zeta*zeta);
+  const L = frameHalfWidth(comps, s);
+  const ev = comps.map(c => ({f:makeEval(c.sp, zeta), c:c.c}));
+  const out = [0,0];
+  let maxA = 0, P = 0;
+  for (let j = 0; j < RES; j++){
+    const Y = L - 2*L*j/(RES - 1);
+    for (let i = 0; i < RES; i++){
+      const X = -L + 2*L*i/(RES - 1);
+      let re = 0, im = 0;
+      for (const e of ev){
+        e.f(X, Y, out);
+        re += e.c[0]*out[0] - e.c[1]*out[1];
+        im += e.c[0]*out[1] + e.c[1]*out[0];
+      }
+      const k = j*RES + i;
+      RE[k] = re; IM[k] = im;
+      const a2 = re*re + im*im;
+      P += a2;
+      if (a2 > maxA) maxA = a2;
+    }
+  }
+  const h = 2*L/(RES - 1);
+  let Lz = 0;
+  for (let j = 1; j < RES - 1; j++){
+    const Y = L - h*j;
+    for (let i = 1; i < RES - 1; i++){
+      const X = -L + h*i, k = j*RES + i;
+      const dxr = (RE[k+1] - RE[k-1])/(2*h), dxi = (IM[k+1] - IM[k-1])/(2*h);
+      const dyr = (RE[k-RES] - RE[k+RES])/(2*h), dyi = (IM[k-RES] - IM[k+RES])/(2*h);
+      const dpr = X*dyr - Y*dxr, dpi = X*dyi - Y*dxi;
+      Lz += RE[k]*dpi - IM[k]*dpr;
+    }
+  }
+  F.L = L; F.s = s; F.comps = comps;
+  F.maxA = Math.sqrt(maxA) || 1;
+  F.oam = P > 0 ? Lz/P : 0;
+}
+
+/* ---------- colour maps ---------- */
+function hex2rgb(h){
+  h = h.replace('#','');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const v = parseInt(h, 16);
+  return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+}
+const INF = [[0,0,0,4],[.13,31,12,72],[.25,85,15,109],[.38,136,34,106],[.5,186,54,85],[.63,227,89,51],[.75,249,140,10],[.88,249,201,50],[1,252,255,164]];
+const LUT = new Uint8ClampedArray(256*3);
+(function(){
+  for (let i = 0; i < 256; i++){
+    const t = i/255;
+    let k = 0; while (k < INF.length - 2 && t > INF[k+1][0]) k++;
+    const a = INF[k], b = INF[k+1], f = (t - a[0])/(b[0] - a[0]);
+    for (let c = 0; c < 3; c++) LUT[i*3 + c] = a[c+1] + f*(b[c+1] - a[c+1]);
+  }
+})();
+function hue(ph, o){
+  const h = ((ph/(2*Math.PI)) % 1 + 1) % 1*6;
+  const i = Math.floor(h), f = h - i, q = 1 - f;
+  const v = [[1,f,0],[q,1,0],[0,1,f],[0,q,1],[f,0,1],[1,0,q]][i % 6];
+  o[0] = 40 + 200*v[0]; o[1] = 40 + 200*v[1]; o[2] = 40 + 200*v[2];
+}
+let COL = {};
+function readTheme(){
+  COL = {bg:hex2rgb(css('--card')), pos:hex2rgb(css('--pos')), neg:hex2rgb(css('--neg')),
+         fg:css('--fg'), muted:css('--muted'), grid:css('--grid'), border:css('--border'),
+         pc:css('--pos'), nc:css('--neg'), ic:css('--int'), ac:css('--accent')};
+  $('barRe').style.background = `linear-gradient(90deg, ${COL.nc}, rgb(${COL.bg.join(',')}), ${COL.pc})`;
+  $('barIn').style.background = 'linear-gradient(90deg,' + INF.map(s => `rgb(${s[1]},${s[2]},${s[3]}) ${s[0]*100}%`).join(',') + ')';
+  const o = [0,0,0], stops = [];
+  for (let i = 0; i <= 12; i++){ hue(-Math.PI + 2*Math.PI*i/12, o); stops.push(`rgb(${o.map(Math.round).join(',')})`); }
+  $('barPh').style.background = 'linear-gradient(90deg,' + stops.join(',') + ')';
+}
+
+/* ---------- drawing ---------- */
+const off = document.createElement('canvas'); off.width = off.height = RES;
+const offCtx = off.getContext('2d');
+const imgRe = offCtx.createImageData(RES, RES), imgPh = offCtx.createImageData(RES, RES), imgIn = offCtx.createImageData(RES, RES);
+const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
+
+function fit(cv){
+  const w = Math.round(cv.clientWidth*dpr());
+  const asp = cv.classList.contains('wide') ? 0.42 : cv.classList.contains('half') ? 0.66 : 1;
+  const h = Math.round(w*asp);
+  if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+}
+
+function blit(cv, img){
+  fit(cv);
+  offCtx.putImageData(img, 0, 0);
+  const g = cv.getContext('2d');
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.drawImage(off, 0, 0, cv.width, cv.height);
+  if (st.circ){
+    const W = cv.width, r = F.s/F.L*W/2;
+    g.save(); g.setLineDash([5*dpr(), 4*dpr()]); g.lineWidth = 1.2*dpr();
+    g.strokeStyle = img === imgIn ? 'rgba(255,255,255,.75)' : COL.muted;
+    g.beginPath(); g.arc(W/2, W/2, r, 0, 2*Math.PI); g.stroke(); g.restore();
+  }
+}
+
+function paintStatic(){
+  const d = imgIn.data, inv = 1/(F.maxA*F.maxA);
+  for (let k = 0; k < RES*RES; k++){
+    const I = (RE[k]*RE[k] + IM[k]*IM[k])*inv;
+    const li = Math.min(255, Math.round(I*255))*3, q = k*4;
+    d[q] = LUT[li]; d[q+1] = LUT[li+1]; d[q+2] = LUT[li+2]; d[q+3] = 255;
+  }
+  blit($('cIn'), imgIn);
+}
+
+function paintDynamic(){
+  const cw = Math.cos(st.wt), sw = Math.sin(st.wt), inv = 1/F.maxA;
+  const dr = imgRe.data, dp = imgPh.data, bg = COL.bg, o = [0,0,0];
+  for (let k = 0; k < RES*RES; k++){
+    const re = RE[k]*cw - IM[k]*sw, im = RE[k]*sw + IM[k]*cw;
+    const v = re*inv, q = k*4;
+    const c = v >= 0 ? COL.pos : COL.neg, a = Math.min(1, Math.abs(v));
+    dr[q] = bg[0] + a*(c[0] - bg[0]); dr[q+1] = bg[1] + a*(c[1] - bg[1]); dr[q+2] = bg[2] + a*(c[2] - bg[2]); dr[q+3] = 255;
+    const amp = Math.sqrt(re*re + im*im)*inv;
+    const w = Math.min(1, Math.max(0, (amp - 0.015)/0.045));
+    hue(Math.atan2(im, re), o);
+    dp[q] = bg[0] + w*(o[0] - bg[0]); dp[q+1] = bg[1] + w*(o[1] - bg[1]); dp[q+2] = bg[2] + w*(o[2] - bg[2]); dp[q+3] = 255;
+  }
+  blit($('cRe'), imgRe);
+  blit($('cPh'), imgPh);
+  paintCross(cw, sw);
+}
+
+function paintCross(cw, sw){
+  const cv = $('cX'); fit(cv);
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, D = dpr();
+  g.clearRect(0, 0, W, H);
+  const pl = 34*D, pr = 10*D, pt = 12*D, pb = 30*D, iw = W - pl - pr, ih = H - pt - pb;
+  const X = x => pl + (x + F.L)/(2*F.L)*iw, Yv = v => pt + (1 - v)/2*ih;
+  g.font = `${11*D}px system-ui,sans-serif`; g.fillStyle = COL.muted; g.strokeStyle = COL.grid; g.lineWidth = D;
+  for (const v of [-1, -0.5, 0, 0.5, 1]){
+    g.beginPath(); g.moveTo(pl, Yv(v)); g.lineTo(pl + iw, Yv(v)); g.stroke();
+    g.textAlign = 'right'; g.textBaseline = 'middle'; g.fillText(v.toFixed(1), pl - 4*D, Yv(v));
+  }
+  const step = F.L > 8 ? 4 : F.L > 4 ? 2 : 1;
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let x = -Math.floor(F.L/step)*step; x <= F.L + 1e-9; x += step){
+    g.beginPath(); g.moveTo(X(x), pt); g.lineTo(X(x), pt + ih); g.stroke();
+    g.fillText(x, X(x), pt + ih + 4*D);
+  }
+  g.fillText('x or y  (units of w₀)', pl + iw/2, pt + ih + 16*D);
+  g.save(); g.setLineDash([3*D, 3*D]); g.strokeStyle = COL.muted;
+  for (const x of [-F.s, F.s]) if (Math.abs(x) < F.L){ g.beginPath(); g.moveTo(X(x), pt); g.lineTo(X(x), pt + ih); g.stroke(); }
+  g.restore();
+  let kmax = 0, imax = -1;
+  for (let k = 0; k < RES*RES; k++){ const a = RE[k]*RE[k] + IM[k]*IM[k]; if (a > imax*(1 + 1e-6)){ imax = a; kmax = k; } }
+  const row = Math.floor(kmax/RES), colm = kmax % RES, inv = 1/F.maxA;
+  const x0 = -F.L + 2*F.L*colm/(RES - 1), y0 = F.L - 2*F.L*row/(RES - 1);
+  $('tX').textContent = `y = ${y0.toFixed(2)}, x = ${x0.toFixed(2)}`;
+  const xs = i => -F.L + 2*F.L*i/(RES - 1);
+  function line(get, color, dash, lw){
+    g.save(); g.strokeStyle = color; g.lineWidth = lw*D; g.setLineDash(dash.map(d => d*D));
+    g.beginPath();
+    for (let i = 0; i < RES; i++){ const v = get(i); i ? g.lineTo(X(xs(i)), Yv(v)) : g.moveTo(X(xs(i)), Yv(v)); }
+    g.stroke(); g.restore();
+  }
+  const kx = i => row*RES + i, ky = i => (RES - 1 - i)*RES + colm;
+  const reAt = k => (RE[k]*cw - IM[k]*sw)*inv;
+  const iAt = k => (RE[k]*RE[k] + IM[k]*IM[k])*inv*inv;
+  line(i => reAt(ky(i)), COL.nc, [5, 3], 1.4);
+  line(i => reAt(kx(i)), COL.pc, [], 1.6);
+  line(i => iAt(ky(i)), COL.ic, [5, 3], 1.4);
+  line(i => iAt(kx(i)), COL.ic, [], 2.2);
+  $('lgX').innerHTML = `<span style="color:${COL.pc}">━</span> Re E along x &nbsp; <span style="color:${COL.nc}">┅</span> Re E along y &nbsp; ━ |E|² along x &nbsp; ┅ |E|² along y`;
+}
+
+/* ---------- readouts ---------- */
+function fmt(x, d = 2){ return (Math.abs(x) < 5e-4 ? 0 : x).toFixed(d); }
+function readouts(){
+  const z = st.z, s = F.s, psi = Math.atan(z), comps = F.comps;
+  const fr = `frame ±${F.L.toFixed(1)} w₀`;
+  $('tRe').textContent = fr; $('tPh').textContent = fr; $('tIn').textContent = fr;
+  $('rW').innerHTML = `w = ${s.toFixed(2)} w₀`;
+  $('rWS').innerHTML = Math.abs(z) < 1e-3 ? 'R = ∞ (planar wavefront at the waist)'
+    : `R = ${fmt(z + 1/z, 2)} z<sub>R</sub>; ψ(z) = ${fmt(psi*180/Math.PI, 1)}°`;
+  const oam = F.oam;
+  if (st.fam === 'SUP'){
+    const [A, B] = comps.map(c => c.sp), NA = orderOf(A), NB = orderOf(B);
+    $('rMode').innerHTML = `${labelOf(A)} + ${labelOf(B)}`;
+    $('rModeS').innerHTML = `N<sub>A</sub> = ${NA}, N<sub>B</sub> = ${NB} · ${NA === NB ? 'frequency-degenerate' : 'not degenerate'}`;
+    $('rGouyK').innerHTML = 'Relative Gouy phase (N<sub>B</sub> − N<sub>A</sub>)ψ(z)';
+    const d = (NB - NA)*psi;
+    $('rGouy').innerHTML = `${fmt(d, 2)} rad`;
+    $('rGouyS').innerHTML = NA === NB ? 'zero at every z → shape invariant, only scales with w(z)'
+      : `adds to θ; total ${fmt(((st.theta*Math.PI/180 + d)/Math.PI), 2)}π → shape changes with z`;
+    $('rM2').innerHTML = `⟨ℓ⟩ = ${fmt(oam, 2)}`;
+    $('rM2S').innerHTML = 'orbital angular momentum per photon, in units of ħ';
+  } else {
+    const sp = comps[0].sp, N = orderOf(sp);
+    $('rMode').innerHTML = labelOf(sp);
+    $('rGouyK').innerHTML = 'Gouy phase (N + 1)ψ(z)';
+    $('rGouy').innerHTML = `${fmt((N + 1)*psi, 2)} rad`;
+    $('rGouyS').innerHTML = `extra ${fmt(N*psi, 2)} rad vs TEM<sub>00</sub>; → (N+1)π/2 at z ≫ z<sub>R</sub>`;
+    if (sp.fam === 'HG'){
+      $('rModeS').innerHTML = `N = m + n = ${N} · ${sp.a + 1}×${sp.b + 1} lobes`;
+      $('rM2').innerHTML = `M²<sub>x</sub> = ${2*sp.a + 1}, M²<sub>y</sub> = ${2*sp.b + 1}`;
+      $('rM2S').innerHTML = `⟨ℓ⟩ = ${fmt(oam, 2)} ħ per photon`;
+    } else {
+      const al = Math.abs(sp.b);
+      const lobes = sp.ang === 'hel' ? `${sp.a + 1} bright ring${sp.a ? 's' : ''}` : (al ? `${sp.a + 1}×${2*al} lobes` : `${sp.a + 1} ring${sp.a ? 's' : ''} (incl. centre)`);
+      $('rModeS').innerHTML = `N = 2p + |l| = ${N} · ${lobes}`;
+      $('rM2').innerHTML = `M² = ${2*sp.a + al + 1}`;
+      $('rM2S').innerHTML = `⟨ℓ⟩ = ${fmt(oam, 2)} ħ per photon` + (sp.ang === 'hel' && al ? ` (vortex charge ${sp.b})` : '');
+    }
+  }
+  $('msg').innerHTML = message();
+}
+
+function message(){
+  const z = st.z, off = Math.abs(z) > 0.05;
+  const zNote = off ? ` Away from the waist the phase map also shows the curved wavefront exp(−ikr²/2R) as coloured rings, and the whole pattern has grown to w(z) = ${F.s.toFixed(2)} w₀.` : '';
+  if (st.fam === 'HG'){
+    return `HG<sub>${st.m}${st.n}</sub> has ${st.m} nodal line${st.m === 1 ? '' : 's'} crossing the x-axis and ${st.n} crossing the y-axis. Adjacent lobes are π out of phase (red/blue in Re E, opposite colours in the phase map), so the field is real up to a common phase. This rectangular pattern is favoured when something breaks the cylindrical symmetry: a tilted element, a Brewster window or a slab gain medium.` + zNote;
+  }
+  if (st.fam === 'LG'){
+    const al = Math.abs(st.l);
+    if (st.ang === 'sin' && st.l === 0) return 'sin(0·φ) = 0: this mode does not exist. Choose l ≠ 0 or another azimuthal dependence.';
+    if (st.ang === 'hel'){
+      if (!al) return `With l = 0 the mode is cylindrically symmetric and real: a central spot surrounded by ${st.p} ring${st.p === 1 ? '' : 's'}, adjacent rings π out of phase. The lecture slide's LG image with a hollow centre is therefore not an l = 0 mode.` + zNote;
+      return `Helical LG: the phase winds by 2π·${st.l} around the axis (count the colour cycles in the phase map). The field vanishes on the axis — a dark core, i.e. an optical vortex — so the intensity is ${st.p + 1} bright ring${st.p ? 's' : ''} with no azimuthal structure. Re E still shows ${2*al} sectors; switch on the time animation to watch them rotate. Each photon carries orbital angular momentum ${st.l}ħ.` + zNote;
+    }
+    if (!al) return `With l = 0 the cos and helical forms coincide: a central spot plus ${st.p} ring${st.p === 1 ? '' : 's'}.` + zNote;
+    return `Standing-wave LG: ${st.ang} lφ gives ${2*al} azimuthal sectors and ${st.p + 1} radial bands, and the field is real, as in the lecture slide. It is the equal-weight sum of the two helical modes ±l, e.g. cos lφ = (e<sup>ilφ</sup> + e<sup>−ilφ</sup>)/2, so it carries no net OAM.` + zNote;
+  }
+  const [A, B] = F.comps.map(c => c.sp);
+  if (isNull(A) || isNull(B)) return 'One of the modes is sin(0·φ) = 0 and contributes nothing.';
+  const NA = orderOf(A), NB = orderOf(B);
+  if (NA === NB) return `A and B have the same order N = ${NA}, so they share the Gouy phase and resonate at the same cavity frequency. Any combination is therefore itself a mode: move z and the pattern only scales. Changing θ or α reshapes it, e.g. HG<sub>10</sub> + i·HG<sub>01</sub> is the vortex LG<sub>0</sub><sup>+1</sup>, while HG<sub>10</sub> + HG<sub>01</sub> is just an HG<sub>10</sub> rotated by 45°.`;
+  return `A (N = ${NA}) and B (N = ${NB}) are not degenerate. Their relative Gouy phase (N<sub>B</sub> − N<sub>A</sub>)ψ(z) changes along z, so the intensity pattern moves or rotates on propagation (try the z sweep). In a cavity these modes oscillate at different frequencies, and their intensity beats at the transverse-mode spacing.`;
+}
+
+/* ---------- gallery ---------- */
+function buildGallery(){
+  const gal = $('gal'); gal.innerHTML = '';
+  const card = $('galCard');
+  if (st.fam === 'SUP'){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const HG = st.fam === 'HG', R = 48, Lg = 4.3, img = new ImageData(R, R), out = [0,0], tmp = document.createElement('canvas');
+  tmp.width = tmp.height = R;
+  const tctx = tmp.getContext('2d');
+  $('galTitle').innerHTML = HG ? 'Gallery: Re E of HG<sub>mn</sub> at the waist (columns m, rows n)'
+    : `Gallery: Re E of LG<sub>p</sub><sup>l</sup> ${st.ang === 'hel' ? '(helical, Re part)' : st.ang + ' lφ'} at the waist (columns l, rows p)`;
+  gal.style.gridTemplateColumns = 'repeat(4, minmax(0, 88px))';
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++){
+    const sp = HG ? specOf('HG', c, r) : specOf('LG' + st.ang, r, c);
+    const f = makeEval(sp, 0);
+    let mx = 0; const buf = new Float32Array(R*R);
+    for (let j = 0; j < R; j++) for (let i = 0; i < R; i++){
+      f(-Lg + 2*Lg*i/(R - 1), Lg - 2*Lg*j/(R - 1), out);
+      buf[j*R + i] = out[0]; mx = Math.max(mx, Math.hypot(out[0], out[1]));
+    }
+    const bg = COL.bg;
+    for (let k = 0; k < R*R; k++){
+      const v = mx ? buf[k]/mx : 0, col = v >= 0 ? COL.pos : COL.neg, a = Math.min(1, Math.abs(v)), q = k*4;
+      img.data[q] = bg[0] + a*(col[0] - bg[0]); img.data[q+1] = bg[1] + a*(col[1] - bg[1]); img.data[q+2] = bg[2] + a*(col[2] - bg[2]); img.data[q+3] = 255;
+    }
+    tctx.putImageData(img, 0, 0);
+    const fig = document.createElement('figure'), cv = document.createElement('canvas');
+    cv.width = cv.height = 96;
+    const g = cv.getContext('2d'); g.imageSmoothingEnabled = true; g.drawImage(tmp, 0, 0, 96, 96);
+    fig.appendChild(cv);
+    const cap = document.createElement('figcaption'); cap.innerHTML = labelOf(sp).replace(/ (cos|sin)$/, ''); fig.appendChild(cap);
+    const selected = HG ? (st.m === c && st.n === r) : (st.p === r && Math.abs(st.l) === c);
+    if (selected) fig.classList.add('sel');
+    fig.onclick = () => {
+      if (HG){ st.m = c; st.n = r; $('sM').value = c; $('sN').value = r; }
+      else { st.p = r; st.l = c; $('sP').value = r; $('sL').value = c; }
+      update(true);
+    };
+    gal.appendChild(fig);
+  }
+}
+
+/* ---------- superposition pickers ---------- */
+const TYPES = [['HG','HG'],['LGhel','LG e^{ilφ}'],['LGcos','LG cos lφ'],['LGsin','LG sin lφ']];
+function buildPicker(el, key){
+  el.innerHTML = '';
+  const sel = document.createElement('select');
+  TYPES.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t.replace('^{ilφ}', 'ⁱˡᵠ'); sel.appendChild(o); });
+  const mk = () => { const i = document.createElement('input'); i.type = 'number'; i.step = 1; return i; };
+  const ia = mk(), ib = mk();
+  const la = document.createElement('span'), lb = document.createElement('span');
+  la.className = lb.className = 'pl';
+  const wa = document.createElement('label'), wb = document.createElement('label');
+  wa.style.display = wb.style.display = 'flex'; wa.style.gap = wb.style.gap = '4px'; wa.style.alignItems = wb.style.alignItems = 'center';
+  wa.append(la, ia); wb.append(lb, ib);
+  el.append(sel, wa, wb);
+  function sync(){
+    const o = st[key], HG = o.t === 'HG';
+    sel.value = o.t;
+    la.textContent = HG ? 'm' : 'p'; lb.textContent = HG ? 'n' : 'l';
+    ia.min = 0; ia.max = HG ? 8 : 6; ib.min = HG ? 0 : -8; ib.max = 8;
+    ia.value = o.a; ib.value = o.b;
+  }
+  function clamp(v, lo, hi){ v = parseInt(v, 10); return isNaN(v) ? lo : Math.max(lo, Math.min(hi, v)); }
+  function read(){
+    const o = st[key]; o.t = sel.value; const HG = o.t === 'HG';
+    o.a = clamp(ia.value, 0, HG ? 8 : 6); o.b = clamp(ib.value, HG ? 0 : -8, 8);
+    sync(); update(false);
+  }
+  sel.onchange = read; ia.onchange = read; ib.onchange = read; ia.oninput = read; ib.oninput = read;
+  el._sync = sync; sync();
+}
+
+const PRESETS = [
+  {n:'HG₁₀ + i·HG₀₁ → vortex LG₀¹', A:['HG',1,0], B:['HG',0,1], al:.5, th:90},
+  {n:'HG₁₀ + HG₀₁ → rotated HG₁₀', A:['HG',1,0], B:['HG',0,1], al:.5, th:0},
+  {n:'LG₀⁺¹ + LG₀⁻¹ → HG₁₀', A:['LGhel',0,1], B:['LGhel',0,-1], al:.5, th:0},
+  {n:'HG₂₀ + HG₀₂ → LG₁⁰ (spot + ring)', A:['HG',2,0], B:['HG',0,2], al:.5, th:0},
+  {n:'HG₀₀ + HG₁₀ (non-degenerate)', A:['HG',0,0], B:['HG',1,0], al:.5, th:0},
+  {n:'LG₀⁰ + LG₀³ (rotates with z)', A:['LGhel',0,0], B:['LGhel',0,3], al:.4, th:0}
+];
+function buildPresets(){
+  const el = $('presets');
+  PRESETS.forEach(p => {
+    const b = document.createElement('button'); b.className = 'btn'; b.textContent = p.n;
+    b.onclick = () => {
+      st.A = {t:p.A[0], a:p.A[1], b:p.A[2]}; st.B = {t:p.B[0], a:p.B[1], b:p.B[2]};
+      st.alpha = p.al; st.theta = p.th; $('sAl').value = p.al; $('sTh').value = p.th;
+      $('pickA')._sync(); $('pickB')._sync();
+      update(false);
+    };
+    el.appendChild(b);
+  });
+}
+
+/* ---------- wiring ---------- */
+function seg(id, key, cb){
+  const el = $(id);
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    st[key] = b.dataset.v;
+    el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    cb && cb();
+    update(true);
+  });
+}
+seg('segFam', 'fam', () => {
+  document.querySelectorAll('.fHG').forEach(e => e.classList.toggle('hidden', st.fam !== 'HG'));
+  document.querySelectorAll('.fLG').forEach(e => e.classList.toggle('hidden', st.fam !== 'LG'));
+  document.querySelectorAll('.fSUP').forEach(e => e.classList.toggle('hidden', st.fam !== 'SUP'));
+});
+seg('segAng', 'ang');
+seg('segFrame', 'frame');
+
+function labels(){
+  $('vM').textContent = st.m; $('vN').textContent = st.n;
+  $('vP').textContent = st.p; $('vL').textContent = (st.l > 0 ? '+' : '') + st.l;
+  $('vAl').textContent = st.alpha.toFixed(2); $('vTh').textContent = (st.theta/180).toFixed(2) + 'π (' + st.theta + '°)';
+  $('vZ').textContent = st.z.toFixed(2);
+}
+[['sM','m'],['sN','n'],['sP','p'],['sL','l']].forEach(([id, k]) => $(id).addEventListener('input', e => { st[k] = +e.target.value; update(true); }));
+$('sAl').addEventListener('input', e => { st.alpha = +e.target.value; update(false); });
+$('sTh').addEventListener('input', e => { st.theta = +e.target.value; update(false); });
+$('sZ').addEventListener('input', e => { st.z = +e.target.value; if (st.sweep) toggleSweep(); unlink(); update(false); });
+$('cCirc').addEventListener('change', e => { st.circ = e.target.checked; draw(); });
+$('cAnim').addEventListener('change', e => { st.anim = e.target.checked; if (!st.anim) st.wt = 0; loop(); draw(); });
+function toggleSweep(){
+  st.sweep = !st.sweep;
+  $('bSweep').setAttribute('aria-pressed', st.sweep);
+  $('bSweep').textContent = st.sweep ? '❚❚ Stop sweep' : '▶ Sweep z';
+  if (st.sweep){ unlink(); st.sweepPh = Math.asin(Math.max(-1, Math.min(1, st.z/3))); loop(); }
+}
+$('bSweep').addEventListener('click', toggleSweep);
+
+function draw(){ paintStatic(); paintDynamic(); }
+function update(gallery){
+  if (P.link) st.z = cursorZeta();
+  labels(); compute(); readouts(); draw();
+  if (gallery) buildGallery();
+  propagate();
+}
+
+let running = false, last = 0;
+function loop(){
+  if (running || !(st.anim || st.sweep)) return;
+  running = true; last = performance.now();
+  const tick = now => {
+    const dt = Math.min(0.05, (now - last)/1000); last = now;
+    if (!(st.anim || st.sweep)){ running = false; return; }
+    if (st.anim) st.wt = (st.wt + 2*Math.PI*0.4*dt) % (2*Math.PI);
+    if (st.sweep){
+      st.sweepPh += 2*Math.PI*dt/8;
+      st.z = 3*Math.sin(st.sweepPh); $('sZ').value = st.z;
+      labels(); compute(); readouts(); draw(); propagate();
+    } else paintDynamic();
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ---------- propagation and focusing (ABCD) ---------- */
+const P = {lam:1064, w0:0.3, d1:800, f:100, cur:0.3, ord:true, link:false, ready:false};
+const cdiv = (a, b) => { const d = b[0]*b[0] + b[1]*b[1]; return [(a[0]*b[0] + a[1]*b[1])/d, (a[1]*b[0] - a[0]*b[1])/d]; };
+const lamMM = () => P.lam*1e-6;
+const zR0 = () => Math.PI*P.w0*P.w0/lamMM();
+function abcdAt(z){
+  if (z <= P.d1) return [1, z, 0, 1];
+  const d = z - P.d1, c = -1/P.f, dd = 1 - P.d1/P.f;
+  return [1 + d*c, P.d1 + d*dd, c, dd];
+}
+function qAt(z){
+  const M = abcdAt(z), zr = zR0();
+  return cdiv([M[1], M[0]*zr], [M[3], M[2]*zr]);
+}
+function wOf(q){ const iq = cdiv([1, 0], q); return Math.sqrt(-lamMM()/(Math.PI*iq[1])); }
+function focusInfo(){
+  const q = qAt(P.d1 + 1e-9);
+  const dF = -(q[0] - 1e-9), zr = q[1];
+  return {dF, zr, w0p: Math.sqrt(lamMM()*zr/Math.PI)};
+}
+function zMax(){
+  const {dF} = focusInfo();
+  return P.d1 + (dF > 0 ? Math.max(2*dF, 1.2*P.f) : 2*P.f);
+}
+function cursorZ(){ return P.cur*zMax(); }
+function cursorZeta(){ const q = qAt(cursorZ()); return q[0]/q[1]; }
+function unlink(){ if (P.link){ P.link = false; $('cLink').checked = false; } }
+
+function propMode(){
+  const sp = st.fam === 'SUP' ? specOf(st.A.t, st.A.a, st.A.b) : F.comps[0].sp;
+  if (sp.fam === 'HG'){
+    const m = sp.a;
+    return {sp, M2: 2*m + 1, prof: u => { const h = hermite(m, Math.SQRT2*u); return h*h*Math.exp(-2*u*u); }, lab: labelOf(sp), cut: 'x-profile (y-integrated)'};
+  }
+  const p = sp.a, al = Math.abs(sp.b);
+  return {sp, M2: 2*p + al + 1, prof: u => { const t = 2*u*u, Lg = laguerre(p, al, t); return Math.pow(t, al)*Lg*Lg*Math.exp(-t); }, lab: labelOf(sp), cut: 'radial profile'};
+}
+const hgProf = m => u => { const h = hermite(m, Math.SQRT2*u); return h*h*Math.exp(-2*u*u); };
+function area(prof){ let a = 0; const h = 0.01; for (let u = -8; u <= 8; u += h) a += prof(u)*h; return a; }
+
+function fmtLen(mm){
+  const a = Math.abs(mm);
+  if (a < 1) return (mm*1000).toFixed(a < 0.01 ? 2 : 1) + ' µm';
+  if (a < 1000) return mm.toFixed(a < 10 ? 2 : 1) + ' mm';
+  return (mm/1000).toFixed(2) + ' m';
+}
+function fmtAng(rad){ return rad < 1e-3 ? (rad*1e6).toFixed(0) + ' µrad' : (rad*1e3).toFixed(2) + ' mrad'; }
+
+const sideOff = document.createElement('canvas'), SW = 420, SH = 170;
+sideOff.width = SW; sideOff.height = SH;
+const sideCtx = sideOff.getContext('2d'), sideImg = sideCtx.createImageData(SW, SH);
+
+function axesText(g, D){ g.font = `${11*D}px system-ui,sans-serif`; g.fillStyle = COL.muted; }
+function niceStep(range, n){ const r = range/n, p = Math.pow(10, Math.floor(Math.log10(r))), f = r/p; return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10)*p; }
+
+function paintSide(pm, zmax){
+  const cv = $('cSide'); fit(cv);
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, D = dpr();
+  g.clearRect(0, 0, W, H);
+  const pl = 48*D, pr = 10*D, pt = 8*D, pb = 32*D, iw = W - pl - pr, ih = H - pt - pb;
+  const M2max = Math.max(pm.M2, P.ord ? 9 : 1);
+  let wmax = 0;
+  for (let i = 0; i <= 200; i++) wmax = Math.max(wmax, wOf(qAt(zmax*i/200)));
+  const X = 1.2*Math.sqrt(M2max)*wmax;
+  const d = sideImg.data, dx = 2*X/SH;
+  const col = new Float32Array(SH);
+  for (let i = 0; i < SW; i++){
+    const z = zmax*(i + 0.5)/SW, w = wOf(qAt(z));
+    let mx = 0;
+    if (3*w*Math.sqrt(pm.M2) < dx){ col.fill(0); col[SH >> 1] = 1; mx = 1; }
+    else for (let j = 0; j < SH; j++){
+      let v = 0;
+      for (let s = 0; s < 3; s++) v += pm.prof((X - dx*(j + (s + 0.5)/3))/w);
+      col[j] = v; if (v > mx) mx = v;
+    }
+    for (let j = 0; j < SH; j++){
+      const li = Math.min(255, Math.round(col[j]/mx*255))*3, q = (j*SW + i)*4;
+      d[q] = LUT[li]; d[q+1] = LUT[li+1]; d[q+2] = LUT[li+2]; d[q+3] = 255;
+    }
+  }
+  sideCtx.putImageData(sideImg, 0, 0);
+  g.imageSmoothingEnabled = true;
+  g.drawImage(sideOff, pl, pt, iw, ih);
+  const Zx = z => pl + z/zmax*iw, Xy = x => pt + (X - x)/(2*X)*ih;
+  function env(k, color, lw, dash){
+    g.save(); g.strokeStyle = color; g.lineWidth = lw*D; g.setLineDash(dash.map(v => v*D));
+    for (const sgn of [1, -1]){
+      g.beginPath();
+      for (let i = 0; i <= 300; i++){ const z = zmax*i/300, y = Xy(sgn*k*wOf(qAt(z))); i ? g.lineTo(Zx(z), y) : g.moveTo(Zx(z), y); }
+      g.stroke();
+    }
+    g.restore();
+  }
+  if (P.ord) for (let n = 0; n <= 4; n++) if (2*n + 1 !== pm.M2) env(Math.sqrt(2*n + 1), 'rgba(255,255,255,.35)', 1, [2, 3]);
+  env(1, 'rgba(255,255,255,.9)', 1.2, [6, 4]);
+  env(Math.sqrt(pm.M2), '#5cf2ff', 2, []);
+  g.save(); g.strokeStyle = '#ffffff'; g.lineWidth = 2*D;
+  const lx = Zx(P.d1);
+  g.beginPath(); g.moveTo(lx, pt + 4*D); g.lineTo(lx, pt + ih - 4*D); g.stroke();
+  for (const [y, s] of [[pt + 4*D, 1], [pt + ih - 4*D, -1]]){ g.beginPath(); g.moveTo(lx - 5*D, y + s*6*D); g.lineTo(lx, y); g.lineTo(lx + 5*D, y + s*6*D); g.stroke(); }
+  g.restore();
+  const cz = Zx(cursorZ());
+  g.save(); g.strokeStyle = COL.ac; g.lineWidth = 2*D; g.setLineDash([4*D, 3*D]);
+  g.beginPath(); g.moveTo(cz, pt); g.lineTo(cz, pt + ih); g.stroke(); g.restore();
+  axesText(g, D);
+  const zs = niceStep(zmax, 6);
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let z = 0; z <= zmax + 1e-9; z += zs) g.fillText(+z.toPrecision(4), Zx(z), pt + ih + 4*D);
+  g.fillText('z (mm) — lens at d₁ = ' + P.d1 + ' mm', pl + iw/2, pt + ih + 17*D);
+  const xs = niceStep(2*X, 4);
+  g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (let x = -Math.floor(X/xs)*xs; x <= X + 1e-9; x += xs) g.fillText(+x.toPrecision(3), pl - 4*D, Xy(x));
+  g.save(); g.translate(12*D, pt + ih/2); g.rotate(-Math.PI/2); g.textAlign = 'center'; g.fillText('x (mm)', 0, 0); g.restore();
+  $('tSide').textContent = `z = 0 … ${fmtLen(zmax)}`;
+  $('lgSide').innerHTML = `<span style="color:#1aa7b8">━</span> ±√M²·w(z) for ${pm.lab} (M²<sub>x</sub> = ${pm.M2}) &nbsp; ┅ ±w(z) TEM<sub>00</sub>` + (P.ord ? ' &nbsp; ⋯ orders 0…4' : '') + ` &nbsp; <span style="color:${COL.ac}">┆</span> observation plane`;
+}
+
+function paintFocus(pm){
+  const cv = $('cFoc'); fit(cv);
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, D = dpr();
+  g.clearRect(0, 0, W, H);
+  const {dF, w0p} = focusInfo();
+  const pl = 40*D, pr = 10*D, pt = 10*D, pb = 32*D, iw = W - pl - pr, ih = H - pt - pb;
+  const Wm = Math.sqrt(Math.max(pm.M2, P.ord ? 9 : 1))*w0p*1000;
+  const Xr = 1.8*Wm;
+  const f00 = u => Math.exp(-2*u*u), a00 = area(f00), am = area(pm.prof);
+  const peak = 1/a00;
+  const Xp = x => pl + (x + Xr)/(2*Xr)*iw, Yp = v => pt + ih - v/(1.08*peak)*ih;
+  g.strokeStyle = COL.grid; g.lineWidth = D; axesText(g, D);
+  const xs = niceStep(2*Xr, 6);
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let x = -Math.floor(Xr/xs)*xs; x <= Xr + 1e-9; x += xs){
+    g.beginPath(); g.moveTo(Xp(x), pt); g.lineTo(Xp(x), pt + ih); g.stroke();
+    g.fillText(+x.toPrecision(3), Xp(x), pt + ih + 4*D);
+  }
+  g.fillText('x (µm) at the focus', pl + iw/2, pt + ih + 17*D);
+  g.beginPath(); g.moveTo(pl, pt + ih); g.lineTo(pl + iw, pt + ih); g.stroke();
+  function curve(prof, a, color, lw, dash){
+    g.save(); g.strokeStyle = color; g.lineWidth = lw*D; g.setLineDash(dash.map(v => v*D)); g.beginPath();
+    for (let i = 0; i <= 400; i++){ const x = -Xr + 2*Xr*i/400, v = prof(x/(w0p*1000))/a; i ? g.lineTo(Xp(x), Yp(v)) : g.moveTo(Xp(x), Yp(v)); }
+    g.stroke(); g.restore();
+  }
+  if (P.ord && pm.sp.fam === 'HG') for (let n = 1; n <= 4; n++) if (2*n + 1 !== pm.M2){ const pr_ = hgProf(n); curve(pr_, area(pr_), COL.muted, 1, [2, 3]); }
+  curve(f00, a00, COL.ic, 1.6, [6, 4]);
+  curve(pm.prof, am, COL.pc, 2.2, []);
+  g.save(); g.strokeStyle = COL.pc; g.setLineDash([3*D, 3*D]); g.lineWidth = D;
+  for (const x of [-1, 1]){ const xx = x*Math.sqrt(pm.M2)*w0p*1000; g.beginPath(); g.moveTo(Xp(xx), pt); g.lineTo(Xp(xx), pt + ih); g.stroke(); }
+  g.restore();
+  $('tFoc').textContent = dF > 0 ? `${fmtLen(dF)} behind lens` : 'virtual focus';
+  $('lgFoc').innerHTML = `<span style="color:${COL.pc}">━</span> ${pm.lab} (${pm.cut}) &nbsp; ┅ TEM<sub>00</sub>` + (P.ord && pm.sp.fam === 'HG' ? ' &nbsp; ⋯ HG<sub>m0</sub>, m ≤ 4' : '') + ` &nbsp; <span style="color:${COL.pc}">┆</span> ±√M²·w₀'`;
+}
+
+function paintOrders(pm){
+  const cv = $('cOrd'); fit(cv);
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, D = dpr();
+  g.clearRect(0, 0, W, H);
+  const {w0p} = focusInfo(), th00 = lamMM()/(Math.PI*P.w0);
+  const pl = 44*D, pr = 50*D, pt = 10*D, pb = 32*D, iw = W - pl - pr, ih = H - pt - pb;
+  const NN = 9, spot = n => Math.sqrt(2*n + 1)*w0p*1000, div = n => Math.sqrt(2*n + 1)*th00*1000;
+  const smax = spot(NN - 1)*1.1, dmax = div(NN - 1)*1.1;
+  const bw = iw/NN;
+  g.strokeStyle = COL.grid; g.lineWidth = D; axesText(g, D);
+  const ys = niceStep(smax, 4);
+  g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (let v = 0; v <= smax + 1e-9; v += ys){ const y = pt + ih - v/smax*ih; g.beginPath(); g.moveTo(pl, y); g.lineTo(pl + iw, y); g.stroke(); g.fillText(+v.toPrecision(3), pl - 4*D, y); }
+  const ds = niceStep(dmax, 4);
+  g.textAlign = 'left';
+  for (let v = 0; v <= dmax + 1e-9; v += ds){ const y = pt + ih - v/dmax*ih; g.fillStyle = COL.pc; g.fillText(+v.toPrecision(3), pl + iw + 4*D, y); }
+  const sel = (pm.M2 - 1)/2;
+  for (let n = 0; n < NN; n++){
+    const h = spot(n)/smax*ih;
+    g.fillStyle = Math.abs(n - sel) < 1e-9 ? COL.ac : COL.border;
+    g.fillRect(pl + n*bw + bw*0.18, pt + ih - h, bw*0.64, h);
+    g.fillStyle = COL.muted; g.textAlign = 'center'; g.textBaseline = 'top';
+    g.fillText(2*n + 1, pl + n*bw + bw/2, pt + ih + 4*D);
+  }
+  g.fillText('M² = 2N + 1', pl + iw/2, pt + ih + 17*D);
+  g.save(); g.strokeStyle = COL.pc; g.fillStyle = COL.pc; g.lineWidth = 2*D; g.beginPath();
+  for (let n = 0; n < NN; n++){ const x = pl + n*bw + bw/2, y = pt + ih - div(n)/dmax*ih; n ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.stroke();
+  for (let n = 0; n < NN; n++){ const x = pl + n*bw + bw/2, y = pt + ih - div(n)/dmax*ih; g.beginPath(); g.arc(x, y, 3*D, 0, 2*Math.PI); g.fill(); }
+  g.restore();
+  $('lgOrd').innerHTML = `▮ focal spot √M²·w₀' (µm, left) &nbsp; <span style="color:${COL.pc}">●</span> input divergence √M²·θ₀₀ (mrad, right)`;
+}
+
+function propagate(){
+  if (!P.ready) return;
+  const pm = propMode(), zmax = zMax(), zr = zR0(), lam = lamMM();
+  const {dF, zr: zrp, w0p} = focusInfo(), k = Math.sqrt(pm.M2);
+  $('vLam').textContent = P.lam + ' nm'; $('vW0').textContent = P.w0.toFixed(2) + ' mm';
+  $('vD1').textContent = P.d1 + ' mm'; $('vF').textContent = P.f + ' mm';
+  const zc = cursorZ(); $('vCur').textContent = fmtLen(zc);
+  paintSide(pm, zmax); paintFocus(pm); paintOrders(pm);
+  const th00 = lam/(Math.PI*P.w0);
+  $('pIn').innerHTML = `z<sub>R</sub> = ${fmtLen(zr)}`;
+  $('pInS').innerHTML = `${pm.lab}: W₀ = √M²·w₀ = ${fmtLen(k*P.w0)} (M²<sub>x</sub> = ${pm.M2})`;
+  $('pDiv').innerHTML = `θ = ${fmtAng(k*th00)}`;
+  $('pDivS').innerHTML = `TEM<sub>00</sub>: λ/πw₀ = ${fmtAng(th00)} · BPP = M²λ/π = ${(pm.M2*lam/Math.PI*1000).toFixed(3)} mm·mrad`;
+  $('pFoc').innerHTML = `W₀' = ${fmtLen(k*w0p)}`;
+  $('pFocS').innerHTML = (dF > 0 ? `at ${fmtLen(dF)} behind the lens` : `virtual waist ${fmtLen(-dF)} before the lens`) + ` · TEM<sub>00</sub>: w₀' = ${fmtLen(w0p)}, z<sub>R</sub>' = ${fmtLen(zrp)}`;
+  const M = abcdAt(zc), q = qAt(zc), w = wOf(q), Rinv = cdiv([1, 0], q)[0];
+  const f4 = v => Math.abs(v) < 5e-5 ? '0' : (+v.toPrecision(4)).toString();
+  $('pAbcd').innerHTML = `[ ${f4(M[0])} &nbsp; ${f4(M[1])} mm ; &nbsp;${f4(M[2])} mm⁻¹ &nbsp; ${f4(M[3])} ]`;
+  $('pAbcdS').innerHTML = `at z = ${fmtLen(zc)}: w = ${fmtLen(w)}, W = ${fmtLen(k*w)}, R = ${Math.abs(Rinv) < 1e-9 ? '∞' : fmtLen(1/Rinv)}; local z/z<sub>R</sub> = ${(q[0]/q[1]).toFixed(2)}`;
+  const wL = wOf(qAt(P.d1)), smallSpot = lam*P.f/(Math.PI*wL);
+  $('msg2').innerHTML = `All modes share the same q(z), so the whole family is imaged through the lens together and each mode keeps its shape. What changes with order is the size: ${pm.lab} is √M² = ${k.toFixed(2)} times wider than TEM<sub>00</sub> everywhere, so it diverges ${k.toFixed(2)}× faster and focuses to a ${k.toFixed(2)}× larger spot (${fmtLen(k*w0p)} instead of ${fmtLen(w0p)}). A faster lens (smaller f) or a larger beam on the lens shrinks the spot of every mode, but cannot remove the √M² penalty: the beam parameter product M²λ/π is conserved by any lossless ABCD system. Beam radius on the lens w<sub>lens</sub> = ${fmtLen(wL)}; the far-field estimate λf/(πw<sub>lens</sub>) = ${fmtLen(smallSpot)}.` + (dF <= 0 ? ' <b>Note:</b> with these settings the beam leaving the lens is still diverging (virtual focus); increase d₁ or f.' : '');
+}
+
+[['sLam','lam'],['sW0','w0'],['sD1','d1'],['sF','f'],['sCur','cur']].forEach(([id, k]) => $(id).addEventListener('input', e => {
+  P[k] = +e.target.value;
+  if (P.link) update(false); else propagate();
+}));
+$('cOrds').addEventListener('change', e => { P.ord = e.target.checked; propagate(); });
+$('cLink').addEventListener('change', e => { P.link = e.target.checked; if (P.link && st.sweep) toggleSweep(); update(false); });
+
+readTheme();
+buildPicker($('pickA'), 'A'); buildPicker($('pickB'), 'B'); buildPresets();
+P.ready = true;
+update(true);
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { draw(); propagate(); }, 80); });
+if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readTheme(); draw(); buildGallery(); propagate(); });
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
