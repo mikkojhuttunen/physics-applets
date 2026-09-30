@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FYS.240 Optics: Term Alias</title>
+<meta name="description" content="Recap FYS.240 Optics by describing course terms without saying them. Team game, solo study mode and printable cards.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Crect width='1' height='9' x='0' fill='%23d7263d'/%3E%3Crect width='1' height='9' x='1' fill='%23d9480f'/%3E%3Crect width='1' height='9' x='2' fill='%23f2b705'/%3E%3Crect width='1' height='9' x='3' fill='%237cb518'/%3E%3Crect width='1' height='9' x='4' fill='%231e8a3e'/%3E%3Crect width='1' height='9' x='5' fill='%230a8490'/%3E%3Crect width='1' height='9' x='6' fill='%231c6fd6'/%3E%3Crect width='1' height='9' x='7' fill='%234f46c8'/%3E%3Crect width='1' height='9' x='8' fill='%238e3fc8'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f1f3f8; --panel:#ffffff; --ink:#0f1a30; --muted:#586279; --line:#d3d9e6;
+  --btn:#0f1a30; --btn-ink:#ffffff; --focus:#1c6fd6; --ok:#1e8a3e; --bad:#c2303f;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0b1120; --panel:#141c2e; --ink:#eaf0fb; --muted:#9aa7c0; --line:#26314a;
+         --btn:#eaf0fb; --btn-ink:#0b1120; --focus:#8bb6ff; --ok:#3fbf6b; --bad:#ff6b7a; }
+  .btn.ok,.tog[data-r="ok"]{color:#06210f}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--sans);min-height:100dvh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 140px}
+.wrap.game{padding-bottom:40px}
+h1,h2,h3{margin:0}
+[tabindex="-1"]:focus{outline:none}
+
+/* masthead */
+.mast h1{font:700 clamp(2.5rem,8vw,3.9rem)/1 var(--serif);letter-spacing:-.02em}
+.mast p{margin:.45rem 0 0;color:var(--muted);max-width:46ch}
+.spectrum{height:9px;border-radius:5px;margin:16px 0 26px;background:var(--spectrum)}
+.mast-sm{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.mast-sm .name{font:700 1.25rem var(--serif)}
+.mast-sm .lnk{background:none;border:0;color:var(--muted);text-decoration:underline;padding:6px 0}
+
+
+.mast .top{display:flex;justify-content:flex-end;margin-bottom:8px}
+.lang{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.lang button{border:0;background:transparent;padding:7px 15px;font-weight:700;letter-spacing:.02em}
+.lang button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink)}
+/* setup */
+.sec{margin:0 0 26px}
+.sec>h2{font:600 1rem var(--sans);margin-bottom:10px}
+.sec .hint{color:var(--muted);font-size:.9rem;margin:-4px 0 10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:84px;padding:11px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.seg.big button{padding:16px 12px;font-size:1.05rem}
+.seg.big small{display:block;font-weight:400;opacity:.8;font-size:.82rem}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px}
+.chip{--c:#888;--ci:#fff;position:relative;text-align:left;padding:10px 12px 10px 14px;border-radius:12px;border:2px solid var(--c);background:var(--panel);display:grid;gap:1px}
+.chip .no{font:700 1.5rem/1 var(--serif)}
+.chip .nm{font-size:.83rem;line-height:1.25}
+.chip .ct{font-size:.78rem;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--c);color:var(--ci)}
+.chip[aria-pressed="true"] .ct{color:inherit;opacity:.85}
+.chip[aria-pressed="false"]::after{content:"";position:absolute;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:var(--c)}
+.chip[disabled]{opacity:.45;cursor:not-allowed}
+.toolrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.tbtn{background:none;border:0;padding:6px 2px;text-decoration:underline;color:var(--muted)}
+.switch{display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer}
+.switch input{width:20px;height:20px;accent-color:var(--btn)}
+.stepper{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.stepper button{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);font-size:1.3rem;line-height:1}
+.stepper b{min-width:2ch;text-align:center;font-size:1.2rem}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:8px}
+.names label{display:grid;gap:3px;font-size:.85rem;color:var(--muted)}
+.names input{width:100%;min-width:0;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink)}
+details.rules{border:1.5px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 14px;margin-bottom:26px}
+details.rules summary{cursor:pointer;font-weight:600}
+details.rules p{margin:.6rem 0 0;color:var(--muted)}
+details.rules ul{margin:.5rem 0 0;padding-left:1.2rem;color:var(--muted)}
+.dock{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.dock-in{max-width:728px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.dock-in .info{flex:1;color:var(--muted);font-size:.92rem;line-height:1.3}
+.btn{border:0;border-radius:12px;padding:14px 22px;background:var(--btn);color:var(--btn-ink);font-weight:700;font-size:1.05rem}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.wide{width:100%}
+
+/* game chrome */
+.hud{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:4px 0 10px}
+.hud .who{font:700 1.15rem var(--serif)}
+.hud .sc{color:var(--muted);font-size:.92rem}
+.clock{font:700 2.6rem/1 var(--sans);font-variant-numeric:tabular-nums}
+.clock.hurry{color:var(--bad)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;width:100%;background:var(--btn);transform-origin:left;transition:transform .25s linear}
+.bar.hurry i{background:var(--bad)}
+.stage{display:flex;justify-content:center}
+.actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;max-width:440px;margin:18px auto 0}
+.actions .btn{padding:18px 12px;font-size:1.15rem}
+.actions.one{grid-template-columns:1fr}
+.keys{text-align:center;color:var(--muted);font-size:.85rem;margin-top:12px}
+kbd{font:inherit;font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--panel)}
+
+/* the card: 58 x 89 mm, same as the physical template */
+.card{--c:#888;--ci:#fff;container-type:inline-size;width:clamp(220px,calc((100dvh - 290px)*.6517),330px);max-width:100%;aspect-ratio:58/89;background:#fff;color:#11192b;border-radius:14px;box-shadow:0 1px 0 rgba(0,0,0,.06),0 18px 34px -14px rgba(6,12,28,.5);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.card .stripe{height:4cqw;background:var(--c);flex:none}
+.card .meta{padding:5cqw 7cqw 0;font:600 4.3cqw/1.25 var(--sans);color:#4a556b}
+.card .meta b{color:#11192b}
+.card .tag{display:inline-block;margin-top:2cqw;padding:.6cqw 2.4cqw;border-radius:2cqw;background:var(--c);color:var(--ci);font-size:3.6cqw;font-weight:700}
+.card .term{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:2cqw 7cqw;font-family:var(--serif);font-weight:700;line-height:1.08;letter-spacing:-.01em;text-wrap:balance;hyphens:auto;overflow-wrap:break-word;font-size:14cqw}
+.card .term.t-m{font-size:12cqw}.card .term.t-l{font-size:10cqw}.card .term.t-xl{font-size:8.2cqw}
+.card .taboo{flex:none;padding:3.6cqw 7cqw 6cqw;border-top:.6cqw solid #e3e7ef}
+.card .tl{font:700 3.9cqw/1.2 var(--sans);color:#4a556b;margin-bottom:2.2cqw}
+.card .tl span{font-weight:500}
+.card ul{list-style:none;margin:0;padding:0;display:grid;gap:1.3cqw}
+.card li{font:600 5.3cqw/1.2 var(--sans);display:flex;gap:2.4cqw;align-items:baseline}
+.card li::before{content:"\00d7";color:var(--c);font-weight:800;filter:saturate(1.2) brightness(.85)}
+.card ul.rel li::before{content:"\2022";filter:none}
+.card.swap{animation:swap .18s ease-out}
+@keyframes swap{from{transform:translateY(10px);opacity:.3}to{transform:none;opacity:1}}
+.card .prompt{font:500 4.6cqw/1.35 var(--sans);color:#4a556b;text-align:center;padding:0 7cqw 6cqw}
+.card .lecture{display:block;margin:1.5cqw 7cqw 6cqw;font:600 4.3cqw/1.3 var(--sans);color:#11192b}
+
+/* lists */
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:6px 14px;margin:12px 0}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .sw{width:10px;height:28px;border-radius:3px;flex:none;background:var(--c)}
+.row .tm{flex:1;min-width:0;font-weight:600}
+.row .tm small{display:block;font-weight:400;color:var(--muted)}
+.tog{border:1.5px solid var(--line);background:var(--panel);border-radius:9px;padding:7px 12px;font-weight:700;min-width:96px}
+.tog[data-r="ok"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.tog[data-r="skip"]{color:var(--muted)}
+.lec{color:var(--muted);font-size:.88rem}
+.board{list-style:none;padding:0;margin:12px 0;display:grid;gap:8px}
+.board li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;background:var(--panel);border:1.5px solid var(--line);font-weight:600}
+.board li.cur{border-color:var(--btn);box-shadow:inset 0 0 0 1px var(--btn)}
+.board li.win{border-color:var(--ok)}
+.board .pts{font:700 1.4rem var(--serif);font-variant-numeric:tabular-nums}
+.big-h{font:700 clamp(1.7rem,6vw,2.4rem)/1.1 var(--serif);margin:10px 0 4px}
+.sub{color:var(--muted);margin:0 0 14px}
+.grow{display:grid;gap:10px;margin-top:16px}
+.progress{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:6px 0 16px}
+.progress i{display:block;height:100%;background:var(--btn)}
+noscript{display:block;padding:20px}
+
+/* print: A4, 3 x 3 cards of 58 x 89 mm */
+#print{display:none}
+@media print{
+  @page{size:A4;margin:14mm 17mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{background:#fff!important}
+  #app{display:none!important}
+  #print{display:block}
+  .sheet{display:grid;grid-template-columns:repeat(3,58mm);grid-auto-rows:89mm;width:174mm;break-after:page}
+  .sheet:last-child{break-after:auto}
+  .sheet .card{width:58mm;height:89mm;aspect-ratio:auto;border-radius:0;box-shadow:none;outline:.25mm solid #9aa3b5;outline-offset:-.25mm}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"><noscript>This applet needs JavaScript.</noscript></div>
+<div id="print" aria-hidden="true"></div>
+
+<script>
+const DATA = {"chapters":[{"id":"2","name":"Electromagnetic waves, rays and particles","name_fi":"Sähkömagneettiset aallot, säteet ja hiukkaset","short":"EM waves and rays","short_fi":"Aallot ja säteet","range":"2.1-2.3","color":"#d7263d","ink":"#ffffff"},{"id":"3","name":"Waves: harmonic, plane and spherical waves; polarization","name_fi":"Aallot: harmoniset, taso- ja palloaallot; polarisaatio","short":"Waves and polarization","short_fi":"Aallot ja polarisaatio","range":"3.1-3.10","color":"#d9480f","ink":"#ffffff"},{"id":"4","name":"Electromagnetic field: energy, radiation and fields in matter","name_fi":"Sähkömagneettinen kenttä: energia, säteily ja kentät aineessa","short":"Field energy and radiation","short_fi":"Kentän energia ja säteily","range":"4.1-4.6","color":"#f2b705","ink":"#1b1b1b"},{"id":"5","name":"Light-matter interaction and lasing","name_fi":"Valon ja aineen vuorovaikutus ja laserin toiminta","short":"Light–matter and lasing","short_fi":"Valo–aine ja laser","range":"5.1-5.4","color":"#7cb518","ink":"#1b1b1b"},{"id":"6","name":"Reflection and refraction","name_fi":"Heijastus ja taittuminen","short":"Reflection and refraction","short_fi":"Heijastus ja taittuminen","range":"6.1-6.6","color":"#1e8a3e","ink":"#ffffff"},{"id":"7","name":"Superposition, standing waves, Fourier analysis and coherence","name_fi":"Superpositio, seisovat aallot, Fourier-analyysi ja koherenssi","short":"Fourier and coherence","short_fi":"Fourier ja koherenssi","range":"7.1-7.5","color":"#0a8490","ink":"#ffffff"},{"id":"8","name":"Interference and interferometers","name_fi":"Interferenssi ja interferometrit","short":"Interference","short_fi":"Interferenssi","range":"8.1-8.7","color":"#1c6fd6","ink":"#ffffff"},{"id":"9","name":"Diffraction","name_fi":"Diffraktio","short":"Diffraction","short_fi":"Diffraktio","range":"9.1-9.5","color":"#4f46c8","ink":"#ffffff"},{"id":"10","name":"Geometrical optics and optical instruments","name_fi":"Geometrinen optiikka ja optiset laitteet","short":"Geometrical optics","short_fi":"Geometrinen optiikka","range":"10.1-10.13","color":"#8e3fc8","ink":"#ffffff"},{"id":"M","name":"Math toolbox (vector calculus and electrostatics, optional)","name_fi":"Matemaattiset työkalut (vektorianalyysi ja sähköstatiikka, valinnainen)","short":"Math toolbox","short_fi":"Matematiikkalaatikko","range":"3.11-3.12","color":"#5b6577","ink":"#ffffff"}],"terms":[{"t":"Maxwell's equations","fi":"Maxwellin yhtälöt","sec":"2.1","ch":"2","ex":false,"tb":["Faraday","Gauss","curl","electromagnetism"],"tbfi":["Faraday","Gauss","roottori","sähkömagnetismi"]},{"t":"Wavelength","fi":"Aallonpituus","sec":"2.1","ch":"2","ex":false,"tb":["distance","crest","period","metre"],"tbfi":["etäisyys","huippu","jakso","metri"]},{"t":"Photon","fi":"Fotoni","sec":"2.3","ch":"2","ex":false,"tb":["quantum","particle","energy","Planck"],"tbfi":["kvantti","hiukkanen","energia","Planck"]},{"t":"Ray","fi":"Säde","sec":"2.2","ch":"2","ex":false,"tb":["straight line","light","arrow","path"],"tbfi":["suora","valo","nuoli","reitti"]},{"t":"Geometrical optics","fi":"Geometrinen optiikka","sec":"2.2","ch":"2","ex":false,"tb":["ray","straight line","wavelength","lens"],"tbfi":["säde","suora","aallonpituus","linssi"]},{"t":"Index of refraction","fi":"Taitekerroin","sec":"2.2","ch":"2","ex":false,"tb":["speed of light","medium","vacuum","glass"],"tbfi":["valon nopeus","väliaine","tyhjiö","lasi"]},{"t":"Snell's law","fi":"Snellin laki","sec":"2.2","ch":"2","ex":false,"tb":["refraction","sine","interface","angle"],"tbfi":["taittuminen","sini","rajapinta","kulma"]},{"t":"Plane of incidence","fi":"Tulotaso","sec":"2.2","ch":"2","ex":true,"tb":["normal","ray","surface","reflection"],"tbfi":["normaali","säde","pinta","heijastus"]},{"t":"Angle of incidence","fi":"Tulokulma","sec":"2.2","ch":"2","ex":false,"tb":["normal","ray","surface","measured"],"tbfi":["normaali","säde","pinta","mitataan"]},{"t":"Optical fiber","fi":"Optinen kuitu","sec":"2.2","ch":"2","ex":false,"tb":["core","cladding","total reflection","cable"],"tbfi":["ydin","vaippa","kokonaisheijastus","kaapeli"]},{"t":"Slow light","fi":"Hidas valo","sec":"2.1","ch":"2","ex":false,"tb":["group velocity","pulse","medium","speed"],"tbfi":["ryhmänopeus","pulssi","väliaine","vauhti"]},{"t":"Wave equation","fi":"Aaltoyhtälö","sec":"3.2","ch":"3","ex":false,"tb":["partial derivatives","second derivative","speed","solution"],"tbfi":["osittaisderivaatat","toinen derivaatta","nopeus","ratkaisu"]},{"t":"Harmonic wave","fi":"Harmoninen aalto","sec":"3.3","ch":"3","ex":true,"tb":["sine","cosine","oscillation","single frequency"],"tbfi":["sini","kosini","värähtely","yksi taajuus"]},{"t":"Amplitude","fi":"Amplitudi","sec":"3.3","ch":"3","ex":false,"tb":["maximum","height","oscillation","strength"],"tbfi":["maksimi","korkeus","värähtely","voimakkuus"]},{"t":"Frequency","fi":"Taajuus","sec":"3.3","ch":"3","ex":false,"tb":["hertz","period","oscillations","per second"],"tbfi":["hertsi","jaksonaika","värähtelyt","sekunnissa"]},{"t":"Angular frequency","fi":"Kulmataajuus","sec":"3.3","ch":"3","ex":false,"tb":["omega","radians","2π","rad/s"],"tbfi":["omega","radiaanit","2π","rad/s"]},{"t":"Wave number","fi":"Aaltoluku","sec":"3.3","ch":"3","ex":false,"tb":["k","2π","wavelength","radians per metre"],"tbfi":["k","2π","aallonpituus","radiaania metriä kohti"]},{"t":"Wave vector","fi":"Aaltovektori","sec":"3.3","ch":"3","ex":false,"tb":["direction","propagation","k","magnitude"],"tbfi":["suunta","eteneminen","k","pituus"]},{"t":"Phase","fi":"Vaihe","sec":"3.4","ch":"3","ex":false,"tb":["argument","cosine","angle","offset"],"tbfi":["argumentti","kosini","kulma","siirtymä"]},{"t":"Phase velocity","fi":"Vaihenopeus","sec":"3.4","ch":"3","ex":false,"tb":["crest","ω/k","speed","propagates"],"tbfi":["aallonharja","ω/k","vauhti","etenee"]},{"t":"Superposition principle","fi":"Superpositioperiaate","sec":"3.5","ch":"3","ex":true,"tb":["sum","add","linear","overlap"],"tbfi":["summa","lisätä","lineaarinen","päällekkäin"]},{"t":"Interference","fi":"Interferenssi","sec":"3.5","ch":"3","ex":false,"tb":["superposition","fringes","bright","dark"],"tbfi":["superpositio","raidat","kirkas","tumma"]},{"t":"Constructive interference","fi":"Konstruktiivinen interferenssi","sec":"3.5","ch":"3","ex":false,"tb":["in phase","bright","add up","maximum"],"tbfi":["samassa vaiheessa","kirkas","summautuu","maksimi"]},{"t":"Destructive interference","fi":"Destruktiivinen interferenssi","sec":"3.5","ch":"3","ex":false,"tb":["out of phase","dark","cancel","minimum"],"tbfi":["vastavaiheessa","tumma","kumoutuu","minimi"]},{"t":"Complex amplitude","fi":"Kompleksiamplitudi","sec":"3.6","ch":"3","ex":false,"tb":["phasor","imaginary part","magnitude","phase"],"tbfi":["osoitin","imaginaariosa","itseisarvo","vaihe"]},{"t":"Euler's formula","fi":"Eulerin kaava","sec":"3.6","ch":"3","ex":false,"tb":["exponential","cosine","sine","imaginary"],"tbfi":["eksponentti","kosini","sini","imaginääri"]},{"t":"Plane wave","fi":"Tasoaalto","sec":"3.7","ch":"3","ex":true,"tb":["flat","infinite","wavefront","single direction"],"tbfi":["litteä","ääretön","aaltorintama","yksi suunta"]},{"t":"Spherical wave","fi":"Palloaalto","sec":"3.9","ch":"3","ex":true,"tb":["point source","round","radiates","1/r"],"tbfi":["pistelähde","pyöreä","säteilee","1/r"]},{"t":"Polarization of light","fi":"Valon polarisaatio","sec":"3.10","ch":"3","ex":false,"tb":["electric field","direction","oscillation","transverse"],"tbfi":["sähkökenttä","suunta","värähtely","poikittainen"]},{"t":"Linear polarization","fi":"Lineaarinen polarisaatio","sec":"3.10","ch":"3","ex":false,"tb":["fixed direction","straight line","electric field","plane"],"tbfi":["kiinteä suunta","suora","sähkökenttä","taso"]},{"t":"Circular polarization","fi":"Ympyräpolarisaatio","sec":"3.10","ch":"3","ex":false,"tb":["rotating","helix","handedness","quarter"],"tbfi":["pyörivä","kierre","kiertosuunta","neljännesaalto"]},{"t":"Elliptical polarization","fi":"Elliptinen polarisaatio","sec":"3.10","ch":"3","ex":false,"tb":["general case","rotating","unequal amplitudes","phase difference"],"tbfi":["yleinen tapaus","pyörivä","eri amplitudit","vaihe-ero"]},{"t":"Speed of light","fi":"Valon nopeus","sec":"4.1","ch":"4","ex":false,"tb":["c","vacuum","fastest","299 792 458"],"tbfi":["c","tyhjiö","ylin raja","299 792 458"]},{"t":"Lorentz force","fi":"Lorentzin voima","sec":"4.1","ch":"4","ex":false,"tb":["charge","velocity","magnetic","electric"],"tbfi":["varaus","nopeus","magneettinen","sähköinen"]},{"t":"Transverse wave","fi":"Poikittainen aalto","sec":"4.2","ch":"4","ex":false,"tb":["perpendicular","oscillation","propagation","electromagnetic"],"tbfi":["kohtisuorassa","värähtely","eteneminen","sähkömagneettinen"]},{"t":"Charge conservation","fi":"Varauksen säilyminen","sec":"4.2","ch":"4","ex":false,"tb":["continuity equation","created","destroyed","current"],"tbfi":["jatkuvuusyhtälö","syntyä","hävitä","virta"]},{"t":"Energy density","fi":"Energiatiheys","sec":"4.3","ch":"4","ex":false,"tb":["per volume","joules","field","stored"],"tbfi":["tilavuutta kohti","joulea","kenttä","varastoitunut"]},{"t":"Poynting vector","fi":"Poyntingin vektori","sec":"4.3","ch":"4","ex":true,"tb":["energy flow","cross product","direction","E × H"],"tbfi":["energiavirta","ristitulo","suunta","E × H"]},{"t":"Irradiance","fi":"Irradianssi","sec":"4.3","ch":"4","ex":true,"tb":["power per area","watts","intensity","time average"],"tbfi":["teho pinta-alaa kohti","watti","intensiteetti","aikakeskiarvo"]},{"t":"Radiation pressure","fi":"Säteilypaine","sec":"4.4","ch":"4","ex":true,"tb":["force","momentum","solar sail","optical tweezers"],"tbfi":["voima","liikemäärä","aurinkopurje","optinen pinsetti"]},{"t":"Electric dipole","fi":"Sähködipoli","sec":"4.5","ch":"4","ex":false,"tb":["two charges","opposite","separation","moment"],"tbfi":["kaksi varausta","vastakkaiset","etäisyys","momentti"]},{"t":"Dipole radiation","fi":"Dipolisäteily","sec":"4.5","ch":"4","ex":false,"tb":["oscillating charge","antenna","accelerating","far field"],"tbfi":["värähtelevä varaus","antenni","kiihtyvä","kaukokenttä"]},{"t":"Near field","fi":"Lähikenttä","sec":"4.5","ch":"4","ex":false,"tb":["close","source","distance","wavelength"],"tbfi":["lyhyt matka","lähde","etäisyys","aallonpituus"]},{"t":"Far field","fi":"Kaukokenttä","sec":"4.5","ch":"4","ex":false,"tb":["distance","1/r","radiation","spherical wave"],"tbfi":["etäisyys","1/r","säteily","palloaalto"]},{"t":"Optical path length","fi":"Optinen matka","sec":"4.6","ch":"4","ex":true,"tb":["refractive index","geometric distance","n times d","phase"],"tbfi":["taitekerroin","geometrinen etäisyys","n kertaa d","vaihe"]},{"t":"Macroscopic Maxwell's equations","fi":"Makroskooppiset Maxwellin yhtälöt","sec":"4.6","ch":"4","ex":false,"tb":["bound charge","matter","averaging","D and H"],"tbfi":["sidotut varaukset","aine","keskiarvo","D ja H"]},{"t":"Auxiliary fields","fi":"Apukentät","sec":"4.6","ch":"4","ex":false,"tb":["D","H","displacement","matter"],"tbfi":["D","H","sähkövuon tiheys","aine"]},{"t":"Polarization density","fi":"Polarisaatiotiheys","sec":"4.6","ch":"4","ex":false,"tb":["dipole moment","per volume","material","bound charges"],"tbfi":["dipolimomentti","tilavuutta kohti","materiaali","sidotut varaukset"]},{"t":"Permittivity","fi":"Permittiivisyys","sec":"4.6","ch":"4","ex":false,"tb":["epsilon","dielectric","electric response","material"],"tbfi":["epsilon","dielektrinen","sähköinen vaste","materiaali"]},{"t":"Molecular polarizability","fi":"Molekyylin polarisoituvuus","sec":"4.6","ch":"4","ex":false,"tb":["induced dipole","response","alpha","electric field"],"tbfi":["indusoitunut dipoli","vaste","alfa","sähkökenttä"]},{"t":"Excited state","fi":"Viritystila","sec":"5.1","ch":"5","ex":false,"tb":["higher energy","atom","electron","absorbed photon"],"tbfi":["korkeampi energia","atomi","elektroni","absorboitu fotoni"]},{"t":"Ground state","fi":"Perustila","sec":"5.1","ch":"5","ex":false,"tb":["lowest energy","atom","stable","electron"],"tbfi":["matalin energia","atomi","stabiili","elektroni"]},{"t":"Lifetime of a state","fi":"Tilan elinaika","sec":"5.1","ch":"5","ex":false,"tb":["decay","excited","time","exponential"],"tbfi":["hajoaminen","viritetty","kesto","eksponentiaalinen"]},{"t":"Resonance frequency","fi":"Resonanssitaajuus","sec":"5.1","ch":"5","ex":false,"tb":["natural","oscillator","driven","peak response"],"tbfi":["luonnollinen","oskillaattori","pakotettu","huippuvaste"]},{"t":"Absorption","fi":"Absorptio","sec":"5.2","ch":"5","ex":true,"tb":["photon","energy","heat","attenuation"],"tbfi":["fotoni","energia","lämpö","vaimeneminen"]},{"t":"Spontaneous emission","fi":"Spontaani emissio","sec":"5.2","ch":"5","ex":false,"tb":["random","excited","photon","decay"],"tbfi":["satunnainen","viritetty","fotoni","hajoaminen"]},{"t":"Stimulated emission","fi":"Stimuloitu emissio","sec":"5.2","ch":"5","ex":false,"tb":["Einstein","identical photon","coherent","laser"],"tbfi":["Einstein","identtinen fotoni","koherentti","laser"]},{"t":"Scattering","fi":"Sironta","sec":"5.2","ch":"5","ex":true,"tb":["redirect","Rayleigh","sky","particles"],"tbfi":["suunnan muutos","Rayleigh","taivas","hiukkaset"]},{"t":"Lorentz model","fi":"Lorentzin atomimalli","sec":"5.3","ch":"5","ex":true,"tb":["classical","damped oscillator","electron","spring"],"tbfi":["klassinen","vaimennettu värähtelijä","elektroni","jousi"]},{"t":"Dispersion","fi":"Dispersio","sec":"5.3","ch":"5","ex":false,"tb":["wavelength","refractive index","prism","rainbow"],"tbfi":["aallonpituus","taitekerroin","prisma","sateenkaari"]},{"t":"Normal dispersion","fi":"Normaali dispersio","sec":"5.3","ch":"5","ex":true,"tb":["refractive index","wavelength","glass","blue"],"tbfi":["taitekerroin","aallonpituus","lasi","sininen"]},{"t":"Anomalous dispersion","fi":"Anomaalinen dispersio","sec":"5.3","ch":"5","ex":true,"tb":["absorption line","resonance","index","wavelength"],"tbfi":["absorptioviiva","resonanssi","taitekerroin","aallonpituus"]},{"t":"Sellmeier equation","fi":"Sellmeierin yhtälö","sec":"5.3","ch":"5","ex":false,"tb":["empirical","refractive index","glass","wavelength"],"tbfi":["empiirinen","taitekerroin","lasi","aallonpituus"]},{"t":"Boltzmann distribution","fi":"Boltzmannin jakauma","sec":"5.4","ch":"5","ex":false,"tb":["thermal equilibrium","temperature","populations","exponential"],"tbfi":["termodynaaminen tasapaino","lämpötila","miehitykset","eksponentiaalinen"]},{"t":"Population inversion","fi":"Populaatioinversio","sec":"5.4","ch":"5","ex":false,"tb":["laser","excited","more","ground state"],"tbfi":["laser","viritetty","enemmän","perustila"]},{"t":"Gain","fi":"Vahvistus","sec":"5.4","ch":"5","ex":false,"tb":["amplification","stimulated emission","medium","laser"],"tbfi":["kasvattaa","stimuloitu emissio","väliaine","laser"]},{"t":"Optical amplifier","fi":"Optinen vahvistin","sec":"5.4","ch":"5","ex":false,"tb":["boost","signal","gain","fiber"],"tbfi":["tehostaa","signaali","kuitu","laser"]},{"t":"Laser pumping","fi":"Laserpumppaus","sec":"5.4","ch":"5","ex":false,"tb":["energy","inversion","excite","flash lamp"],"tbfi":["energia","inversio","virittää","salamalamppu"]},{"t":"Laser","fi":"Laser","sec":"5.4","ch":"5","ex":false,"tb":["coherent","stimulated emission","cavity","gain"],"tbfi":["koherentti","stimuloitu emissio","kaviteetti","vahvistus"]},{"t":"Wavefront","fi":"Aaltorintama","sec":"6.1","ch":"6","ex":true,"tb":["same phase","surface","rays","perpendicular"],"tbfi":["sama vaihe","pinta","säteet","kohtisuorassa"]},{"t":"Reflection","fi":"Heijastus","sec":"6.2","ch":"6","ex":false,"tb":["mirror","surface","bounce","angle of incidence"],"tbfi":["peili","pinta","kimpoaminen","tulokulma"]},{"t":"Refraction","fi":"Taittuminen","sec":"6.2","ch":"6","ex":false,"tb":["interface","speed","Snell","direction"],"tbfi":["rajapinta","nopeus","Snell","suunta"]},{"t":"Fermat's principle","fi":"Fermat'n periaate","sec":"6.2","ch":"6","ex":false,"tb":["shortest time","path","stationary","light"],"tbfi":["lyhin aika","reitti","stationaarinen","valo"]},{"t":"Principle of least action","fi":"Vähimmän vaikutuksen periaate","sec":"6.2","ch":"6","ex":false,"tb":["minimum","mechanics","path","Lagrangian"],"tbfi":["minimi","mekaniikka","reitti","Lagrangen funktio"]},{"t":"Fresnel coefficients","fi":"Fresnelin kertoimet","sec":"6.4","ch":"6","ex":true,"tb":["amplitude","reflected","transmitted","polarization"],"tbfi":["amplitudi","heijastunut","läpäissyt","polarisaatio"]},{"t":"Brewster's angle","fi":"Brewsterin kulma","sec":"6.4","ch":"6","ex":true,"tb":["p-polarized","no reflection","tangent","polarizing"],"tbfi":["p-polarisoitu","ei heijastusta","tangentti","polarisoiva"]},{"t":"Reflectivity","fi":"Heijastavuus","sec":"6.5","ch":"6","ex":false,"tb":["fraction","power","mirror","R"],"tbfi":["osuus","teho","peili","R"]},{"t":"Transmissivity","fi":"Läpäisevyys","sec":"6.5","ch":"6","ex":false,"tb":["fraction","power","passes through","T"],"tbfi":["osuus","teho","kulkee läpi","T"]},{"t":"Critical angle","fi":"Kriittinen kulma","sec":"6.6","ch":"6","ex":false,"tb":["total internal reflection","arcsin","denser","90 degrees"],"tbfi":["kokonaisheijastus","arkussini","tiheämpi","90 astetta"]},{"t":"Total internal reflection","fi":"Kokonaisheijastus","sec":"6.6","ch":"6","ex":true,"tb":["critical angle","denser","optical fiber","prism"],"tbfi":["kriittinen kulma","tiheämpi","optinen kuitu","prisma"]},{"t":"Evanescent wave","fi":"Evanescentti aalto","sec":"6.6","ch":"6","ex":false,"tb":["exponentially decaying","beyond interface","total internal reflection","near field"],"tbfi":["eksponentiaalisesti vaimeneva","rajapinnan takana","kokonaisheijastus","lähikenttä"]},{"t":"Frustrated total internal reflection","fi":"Estetty kokonaisheijastus","sec":"6.6","ch":"6","ex":false,"tb":["tunneling","gap","evanescent","coupling"],"tbfi":["tunnelointi","rako","evanescentti","kytkeytyminen"]},{"t":"Fresnel rhomb","fi":"Fresnelin rombi","sec":"6.6","ch":"6","ex":false,"tb":["circular polarization","phase shift","quarter-wave","prism"],"tbfi":["ympyräpolarisaatio","vaihesiirto","neljännesaalto","prisma"]},{"t":"Standing wave","fi":"Seisova aalto","sec":"7.3","ch":"7","ex":true,"tb":["nodes","antinodes","opposite directions","stationary"],"tbfi":["solmut","vatsat","vastakkaiset suunnat","paikallaan"]},{"t":"Boundary conditions","fi":"Reunaehdot","sec":"7.3","ch":"7","ex":false,"tb":["mirror","fixed end","edge","resonant modes"],"tbfi":["peili","kiinteä pää","reuna","resonanssimuodot"]},{"t":"Node (standing wave)","fi":"Solmukohta","sec":"7.3","ch":"7","ex":false,"tb":["zero amplitude","stationary","fixed point","antinode"],"tbfi":["nollaamplitudi","paikallaan","kiinteä piste","vatsa"]},{"t":"Fourier analysis","fi":"Fourier-analyysi","sec":"7.4","ch":"7","ex":true,"tb":["decompose","signal","frequencies","sinusoids"],"tbfi":["hajottaa","signaali","taajuudet","siniaallot"]},{"t":"Fourier synthesis","fi":"Fourier-synteesi","sec":"7.4","ch":"7","ex":true,"tb":["build","sum","harmonics","signal"],"tbfi":["rakentaa","summa","harmoniset","signaali"]},{"t":"Fourier transform","fi":"Fourier-muunnos","sec":"7.4","ch":"7","ex":false,"tb":["time domain","frequency domain","integral","spectrum"],"tbfi":["aika-alue","taajuusalue","integraali","spektri"]},{"t":"Spectrum","fi":"Spektri","sec":"7.4","ch":"7","ex":false,"tb":["frequencies","components","colours","wavelengths"],"tbfi":["taajuudet","komponentit","värit","aallonpituudet"]},{"t":"Power spectrum","fi":"Tehospektri","sec":"7.4","ch":"7","ex":false,"tb":["squared","density","amplitude","frequency"],"tbfi":["neliö","tiheys","amplitudi","taajuus"]},{"t":"Bandwidth","fi":"Kaistanleveys","sec":"7.4","ch":"7","ex":false,"tb":["range","frequencies","width","pulse"],"tbfi":["alue","taajuudet","pulssi","spektri"]},{"t":"Pulse length","fi":"Pulssin pituus","sec":"7.4","ch":"7","ex":false,"tb":["duration","short","time","ultrashort"],"tbfi":["kesto","lyhyt","aika","ultralyhyt"]},{"t":"Uncertainty principle","fi":"Epätarkkuusperiaate","sec":"7.4","ch":"7","ex":false,"tb":["Heisenberg","bandwidth","duration","trade-off"],"tbfi":["Heisenberg","kaistanleveys","kesto","kompromissi"]},{"t":"Coherence time","fi":"Koherenssiaika","sec":"7.5","ch":"7","ex":false,"tb":["duration","phase relationship","wave train","correlated"],"tbfi":["kesto","vaihesuhde","aaltojono","korreloitunut"]},{"t":"Interferometer","fi":"Interferometri","sec":"8.2","ch":"8","ex":false,"tb":["measure","split","recombine","fringes"],"tbfi":["mitata","jakaa","yhdistää","raidat"]},{"t":"Double-slit experiment","fi":"Kaksoisrakokoe","sec":"8.2","ch":"8","ex":false,"tb":["Young","two slits","fringes","interference"],"tbfi":["Young","kaksi aukkoa","raidat","interferenssi"]},{"t":"Wavefront-splitting interferometer","fi":"Aaltorintaman jakava interferometri","sec":"8.2","ch":"8","ex":false,"tb":["double slit","Young","aperture","two slits"],"tbfi":["Young","aukko","kaksi lähdettä","raidat"]},{"t":"Amplitude-splitting interferometer","fi":"Amplitudin jakava interferometri","sec":"8.3","ch":"8","ex":false,"tb":["partial mirror","two beams","Michelson","division"],"tbfi":["osittaispeili","kaksi sädettä","Michelson","puolittaa"]},{"t":"Interference fringes","fi":"Interferenssiraidat","sec":"8.1","ch":"8","ex":false,"tb":["bright","dark","pattern","path difference"],"tbfi":["kirkas","tumma","kuvio","matkaero"]},{"t":"Order of interference","fi":"Interferenssin kertaluku","sec":"8.1","ch":"8","ex":false,"tb":["integer","path difference","fringe","wavelengths"],"tbfi":["kokonaisluku","matkaero","raita","aallonpituudet"]},{"t":"Temporal coherence","fi":"Ajallinen koherenssi","sec":"8.1","ch":"8","ex":false,"tb":["longitudinal","correlation time","bandwidth","wave train"],"tbfi":["pitkittäinen","korrelaatioaika","kaistanleveys","aaltojono"]},{"t":"Spatial coherence","fi":"Paikallinen koherenssi","sec":"8.1","ch":"8","ex":false,"tb":["transverse","source size","correlation","different points"],"tbfi":["poikittainen","lähteen koko","korrelaatio","eri pisteet"]},{"t":"Coherence length","fi":"Koherenssipituus","sec":"8.1","ch":"8","ex":false,"tb":["distance","wave train","temporal","speed of light"],"tbfi":["etäisyys","aaltojono","ajallinen","valon nopeus"]},{"t":"Thin film","fi":"Ohutkalvo","sec":"8.3","ch":"8","ex":true,"tb":["layer","coating","nanometres","reflected"],"tbfi":["kerros","pinnoite","nanometrit","heijastunut"]},{"t":"Anti-reflection coating","fi":"Heijastuksenestopinnoite","sec":"8.3","ch":"8","ex":false,"tb":["quarter wavelength","lens","glare","destructive"],"tbfi":["neljännesaallonpituus","linssi","häikäisy","destruktiivinen"]},{"t":"Newton's rings","fi":"Newtonin renkaat","sec":"8.3","ch":"8","ex":false,"tb":["curved surface","flat glass","circular fringes","lens"],"tbfi":["kaareva pinta","tasolasi","ympyräraidat","linssi"]},{"t":"Haidinger fringes","fi":"Haidingerin raidat","sec":"8.3","ch":"8","ex":false,"tb":["equal inclination","circular","plate","infinity"],"tbfi":["sama tulokulma","ympyrä","levy","ääretön"]},{"t":"Michelson interferometer","fi":"Michelsonin interferometri","sec":"8.4","ch":"8","ex":true,"tb":["beam splitter","mirrors","LIGO","path difference"],"tbfi":["säteenjakaja","peilit","LIGO","matkaero"]},{"t":"Beam splitter","fi":"Säteenjakaja","sec":"8.4","ch":"8","ex":false,"tb":["partial mirror","half","reflect","transmit"],"tbfi":["osittaispeili","puoli","heijastaa","läpäisee"]},{"t":"Compensator","fi":"Kompensaattori","sec":"8.4","ch":"8","ex":false,"tb":["plate","glass","dispersion","Michelson"],"tbfi":["levy","lasi","dispersio","Michelson"]},{"t":"Interferogram","fi":"Interferogrammi","sec":"8.4","ch":"8","ex":false,"tb":["mirror position","signal","detector","Fourier transform"],"tbfi":["peilin asema","signaali","ilmaisin","Fourier-muunnos"]},{"t":"Multiple-beam interference","fi":"Usean säteen interferenssi","sec":"8.5","ch":"8","ex":false,"tb":["many reflections","geometric series","sharp","cavity"],"tbfi":["monta heijastusta","geometrinen sarja","terävä","kaviteetti"]},{"t":"Finesse","fi":"Finesse","sec":"8.5","ch":"8","ex":false,"tb":["sharpness","peak width","free spectral range","reflectivity"],"tbfi":["terävyys","huipun leveys","vapaa spektrialue","heijastavuus"]},{"t":"Fabry–Pérot interferometer","fi":"Fabry–Perot-interferometri","sec":"8.6","ch":"8","ex":true,"tb":["two mirrors","parallel","cavity","multiple reflections"],"tbfi":["kaksi peiliä","yhdensuuntainen","kaviteetti","monta heijastusta"]},{"t":"Etalon","fi":"Etalon","sec":"8.6","ch":"8","ex":false,"tb":["parallel surfaces","plate","resonance","fixed mirrors"],"tbfi":["yhdensuuntaiset pinnat","levy","resonanssi","kiinteät peilit"]},{"t":"Airy function","fi":"Airyn funktio","sec":"8.6","ch":"8","ex":false,"tb":["transmission","peaks","resonance","finesse"],"tbfi":["läpäisy","huiput","resonanssi","finesse"]},{"t":"Full width at half maximum (FWHM)","fi":"Täysi leveys puolimaksimikohdassa (FWHM)","sec":"8.6","ch":"8","ex":false,"tb":["peak","linewidth","resonance","Lorentzian"],"tbfi":["huippu","viivanleveys","resonanssi","Lorentzin käyrä"]},{"t":"Free spectral range","fi":"Vapaa spektrialue","sec":"8.7","ch":"8","ex":false,"tb":["spacing","peaks","adjacent","resonances"],"tbfi":["väli","huiput","vierekkäiset","resonanssit"]},{"t":"Resolving power","fi":"Erotuskyky","sec":"8.7","ch":"8","ex":false,"tb":["distinguish","spectral lines","separate","wavelengths"],"tbfi":["erilliset","spektriviivat","tarkkuus","aallonpituudet"]},{"t":"Diffraction","fi":"Diffraktio","sec":"9.1","ch":"9","ex":false,"tb":["spreading","aperture","edge","wave nature"],"tbfi":["leviäminen","aukko","reuna","aaltoluonne"]},{"t":"Huygens–Fresnel principle","fi":"Huygensin–Fresnelin periaate","sec":"9.1","ch":"9","ex":false,"tb":["wavelets","secondary sources","wavefront","each point"],"tbfi":["elementaariaallot","toissijaiset lähteet","aaltorintama","jokainen piste"]},{"t":"Fresnel diffraction","fi":"Fresnelin diffraktio","sec":"9.1","ch":"9","ex":true,"tb":["near field","curved wavefronts","close","distance"],"tbfi":["lähikenttä","kaareva aaltorintama","lähellä","etäisyys"]},{"t":"Fraunhofer diffraction","fi":"Fraunhoferin diffraktio","sec":"9.2","ch":"9","ex":true,"tb":["far field","parallel","Fourier transform","plane wave"],"tbfi":["kaukokenttä","yhdensuuntainen","Fourier-muunnos","tasoaalto"]},{"t":"Single-slit diffraction","fi":"Yhden raon diffraktio","sec":"9.3","ch":"9","ex":false,"tb":["sinc","aperture size","central maximum","Fraunhofer"],"tbfi":["sinc","aukon koko","keskimaksimi","Fraunhofer"]},{"t":"Sinc function","fi":"Sinc-funktio","sec":"9.3","ch":"9","ex":false,"tb":["sin x over x","slit","Fourier transform","rectangular"],"tbfi":["sin x per x","rako","Fourier-muunnos","suorakulmio"]},{"t":"Circ function","fi":"Circ-funktio","sec":"9.3","ch":"9","ex":false,"tb":["circular aperture","disk","radius","Bessel"],"tbfi":["pyöreä aukko","kiekko","säde","Bessel"]},{"t":"Bessel function","fi":"Besselin funktio","sec":"9.3","ch":"9","ex":false,"tb":["circular aperture","J1","oscillating","Airy"],"tbfi":["pyöreä aukko","J1","värähtelevä","Airy"]},{"t":"Diffraction grating","fi":"Diffraktiohila","sec":"9.5","ch":"9","ex":true,"tb":["periodic","slits","orders","spectrometer"],"tbfi":["jaksollinen","raot","kertaluvut","spektrometri"]},{"t":"Order of diffraction","fi":"Diffraktion kertaluku","sec":"9.5","ch":"9","ex":false,"tb":["grating equation","integer","maximum","angle"],"tbfi":["hilayhtälö","kokonaisluku","maksimi","kulma"]},{"t":"Conjugate points","fi":"Konjugaattipisteet","sec":"10.1","ch":"10","ex":false,"tb":["object","image","pair","imaging"],"tbfi":["kohde","kuva","pari","kuvautuminen"]},{"t":"Stigmatic imaging","fi":"Stigmaattinen kuvautuminen","sec":"10.1","ch":"10","ex":false,"tb":["point to point","perfect image","all rays","focus"],"tbfi":["pisteestä pisteeseen","täydellinen kuva","kaikki säteet","polttopiste"]},{"t":"Real image","fi":"Todellinen kuva","sec":"10.1","ch":"10","ex":false,"tb":["screen","converge","project","actually"],"tbfi":["varjostin","suppenee","heijastaa","oikeasti"]},{"t":"Virtual image","fi":"Virtuaalikuva","sec":"10.1","ch":"10","ex":false,"tb":["cannot be projected","diverge","behind","appears"],"tbfi":["ei voi projisoida","hajaantuu","takana","näyttää"]},{"t":"Aberrations","fi":"Aberraatiot","sec":"10.1","ch":"10","ex":false,"tb":["imperfections","blur","distortion","lens defects"],"tbfi":["virheet","sumeus","vääristymä","linssin virheet"]},{"t":"Diffraction-limited system","fi":"Diffraktiorajoitteinen järjestelmä","sec":"10.1","ch":"10","ex":false,"tb":["perfect","resolution","no aberrations","wave nature"],"tbfi":["täydellinen","erotuskyky","ei aberraatioita","aaltoluonne"]},{"t":"Paraxial approximation","fi":"Paraksiaalinen approksimaatio","sec":"10.2","ch":"10","ex":false,"tb":["small angles","near axis","sin θ","first order"],"tbfi":["pienet kulmat","lähellä akselia","sin θ","ensimmäinen kertaluku"]},{"t":"Optical axis","fi":"Optinen akseli","sec":"10.2","ch":"10","ex":false,"tb":["symmetry","line","through centre","lens"],"tbfi":["symmetria","suora","keskipisteen kautta","linssi"]},{"t":"Focal plane","fi":"Polttotaso","sec":"10.2","ch":"10","ex":false,"tb":["perpendicular","axis","parallel rays","focus"],"tbfi":["kohtisuorassa","akseli","yhdensuuntaiset säteet","fokus"]},{"t":"Gaussian lens formula","fi":"Gaussin linssikaava","sec":"10.3","ch":"10","ex":false,"tb":["1/f","object distance","image distance","imaging equation"],"tbfi":["1/f","kohteen etäisyys","kuvan etäisyys","kuvausyhtälö"]},{"t":"Focal length","fi":"Polttoväli","sec":"10.3","ch":"10","ex":false,"tb":["distance","focus","converge","parallel rays"],"tbfi":["etäisyys","fokus","suppenee","yhdensuuntaiset säteet"]},{"t":"Front focal length","fi":"Etupolttoväli","sec":"10.3","ch":"10","ex":true,"tb":["object side","principal plane","distance","parallel rays"],"tbfi":["kohdepuoli","päätaso","etäisyys","yhdensuuntaiset säteet"]},{"t":"Back focal length","fi":"Takapolttoväli","sec":"10.3","ch":"10","ex":true,"tb":["image side","principal plane","distance","parallel rays"],"tbfi":["kuvapuoli","päätaso","etäisyys","yhdensuuntaiset säteet"]},{"t":"Thin lens","fi":"Ohut linssi","sec":"10.3","ch":"10","ex":false,"tb":["negligible thickness","converging","diverging","focal length"],"tbfi":["mitätön paksuus","keräävä","hajottava","polttoväli"]},{"t":"Lensmaker's equation","fi":"Linssintekijän yhtälö","sec":"10.3","ch":"10","ex":false,"tb":["radii of curvature","refractive index","focal length","glass"],"tbfi":["kaarevuussäteet","taitekerroin","polttoväli","lasi"]},{"t":"Refractive power","fi":"Taittovoima","sec":"10.3","ch":"10","ex":false,"tb":["diopters","1/f","strength","lens"],"tbfi":["dioptria","1/f","voimakkuus","linssi"]},{"t":"Transverse magnification","fi":"Poikittaissuurennus","sec":"10.4","ch":"10","ex":false,"tb":["image height","object height","size ratio","inverted"],"tbfi":["kuvan korkeus","kohteen korkeus","kokosuhde","ylösalaisin"]},{"t":"Longitudinal magnification","fi":"Pitkittäissuurennus","sec":"10.4","ch":"10","ex":false,"tb":["along axis","depth","squared","image"],"tbfi":["akselin suunnassa","syvyys","neliö","kuva"]},{"t":"Ray tracing","fi":"Säteenseuranta","sec":"10.5","ch":"10","ex":false,"tb":["principal rays","diagram","lens","graphical"],"tbfi":["pääsäteet","piirros","linssi","graafinen"]},{"t":"Chromatic aberration","fi":"Kromaattinen aberraatio","sec":"10.5","ch":"10","ex":true,"tb":["colors","dispersion","focus","wavelengths"],"tbfi":["värit","dispersio","fokus","aallonpituudet"]},{"t":"Aperture stop","fi":"Aukkorajoitin","sec":"10.6","ch":"10","ex":false,"tb":["limits","light cone","diaphragm","brightness"],"tbfi":["valokeila","diafragma","kirkkaus","aukon koko"]},{"t":"Field stop","fi":"Kenttärajoitin","sec":"10.6","ch":"10","ex":false,"tb":["visible area","edge","image","limits"],"tbfi":["näkyvä alue","reuna","kuva","kehys"]},{"t":"Entrance pupil","fi":"Sisääntulopupilli","sec":"10.6","ch":"10","ex":false,"tb":["image of stop","object side","light cone","aperture stop"],"tbfi":["rajoittimen kuva","kohdepuoli","valokeila","aukkorajoitin"]},{"t":"Exit pupil","fi":"Ulostulopupilli","sec":"10.6","ch":"10","ex":false,"tb":["image side","aperture stop","eye","bright disk"],"tbfi":["kuvapuoli","aukkorajoitin","silmä","kirkas kiekko"]},{"t":"Vignetting","fi":"Vinjetointi","sec":"10.6","ch":"10","ex":false,"tb":["darkening","corners","blocked","image edges"],"tbfi":["tummuminen","kulmat","peittyvä","kuvan reunat"]},{"t":"Relative aperture","fi":"Suhteellinen aukko","sec":"10.6","ch":"10","ex":false,"tb":["f-number","diameter","focal length","camera"],"tbfi":["f-luku","halkaisija","polttoväli","kamera"]},{"t":"Spherical mirror","fi":"Pallopeili","sec":"10.7","ch":"10","ex":false,"tb":["concave","convex","radius of curvature","reflect"],"tbfi":["kovera","kupera","kaarevuussäde","heijastaa"]},{"t":"Prism","fi":"Prisma","sec":"10.8","ch":"10","ex":true,"tb":["triangular","dispersion","glass","rainbow"],"tbfi":["kolmion muotoinen","dispersio","lasi","sateenkaari"]},{"t":"Accommodation","fi":"Akkommodaatio","sec":"10.9","ch":"10","ex":false,"tb":["focus","lens","near","far"],"tbfi":["tarkennus","mykiö","lähellä","kaukana"]},{"t":"Near point","fi":"Lähipiste","sec":"10.9","ch":"10","ex":false,"tb":["closest","sharp","eye","25 cm"],"tbfi":["minimietäisyys","tarkka","silmä","25 cm"]},{"t":"Far point","fi":"Kaukopiste","sec":"10.9","ch":"10","ex":false,"tb":["farthest","infinity","sharp","relaxed"],"tbfi":["maksimietäisyys","ääretön","tarkka","rentoutunut"]},{"t":"Myopia","fi":"Likinäköisyys","sec":"10.9","ch":"10","ex":false,"tb":["nearsightedness","far away blurry","minus lens","eyeball"],"tbfi":["kaukana sumea","miinuslinssi","silmämuna","silmälasit"]},{"t":"Hyperopia","fi":"Kaukonäköisyys","sec":"10.9","ch":"10","ex":false,"tb":["farsightedness","near blurry","plus lens","short eyeball"],"tbfi":["lähellä sumea","plus-linssi","lyhyt silmämuna","silmälasit"]},{"t":"Astigmatism","fi":"Hajataitto","sec":"10.9","ch":"10","ex":false,"tb":["cylindrical","cornea","two axes","blur"],"tbfi":["sylinterinen","sarveiskalvo","kaksi akselia","sumeus"]},{"t":"Cornea","fi":"Sarveiskalvo","sec":"10.9","ch":"10","ex":false,"tb":["front","outer","refracts","transparent"],"tbfi":["etuosa","uloin","taittaa","läpinäkyvä"]},{"t":"Retina","fi":"Verkkokalvo","sec":"10.9","ch":"10","ex":false,"tb":["back of eye","photoreceptors","image","rods"],"tbfi":["silmän perä","valoreseptorit","kuva","sauvat"]},{"t":"Magnifying glass","fi":"Suurennuslasi","sec":"10.10","ch":"10","ex":false,"tb":["simple lens","viewing angle","virtual image","near point"],"tbfi":["yksinkertainen linssi","katselukulma","virtuaalikuva","lähipiste"]},{"t":"Viewing angle","fi":"Katselukulma","sec":"10.10","ch":"10","ex":false,"tb":["angular size","subtended","eye","object"],"tbfi":["kulmakoko","silmä","kohde","näennäinen"]},{"t":"Eyepiece","fi":"Okulaari","sec":"10.11","ch":"10","ex":true,"tb":["ocular","eye","magnifies","image"],"tbfi":["silmä","suurentaa","kuva","katselulaite"]},{"t":"Objective","fi":"Objektiivi","sec":"10.11","ch":"10","ex":false,"tb":["lens","collects","microscope","specimen"],"tbfi":["linssi","kerää","mikroskooppi","näyte"]},{"t":"Microscope","fi":"Mikroskooppi","sec":"10.12","ch":"10","ex":true,"tb":["small","objective","eyepiece","magnify"],"tbfi":["pieni","objektiivi","okulaari","suurentaa"]},{"t":"Magnifying power","fi":"Kulmasuurennus","sec":"10.12","ch":"10","ex":false,"tb":["enlargement","ratio","viewing angle","eye"],"tbfi":["suhde","katselukulma","silmä","kohde"]},{"t":"Numerical aperture","fi":"Numeerinen apertuuri","sec":"10.12","ch":"10","ex":false,"tb":["NA","n sin θ","resolution","objective"],"tbfi":["NA","n sin θ","erotuskyky","objektiivi"]},{"t":"Tube length","fi":"Tubuspituus","sec":"10.12","ch":"10","ex":false,"tb":["distance","objective","eyepiece","microscope"],"tbfi":["etäisyys","objektiivi","okulaari","mikroskooppi"]},{"t":"Field of view","fi":"Näkökenttä","sec":"10.12","ch":"10","ex":false,"tb":["visible area","angle","instrument","see"],"tbfi":["näkyvä alue","kulma","laite","nähdä"]},{"t":"Telescope","fi":"Kaukoputki","sec":"10.13","ch":"10","ex":false,"tb":["distant","objective","eyepiece","stars"],"tbfi":["kaukainen","objektiivi","okulaari","tähdet"]},{"t":"Afocal","fi":"Afokaalinen","sec":"10.13","ch":"10","ex":true,"tb":["parallel rays in","parallel rays out","no focus","telescope"],"tbfi":["yhdensuuntaiset säteet sisään","yhdensuuntaiset säteet ulos","ei polttopistettä","kaukoputki"]},{"t":"Galilean telescope","fi":"Galilein kaukoputki","sec":"10.13","ch":"10","ex":true,"tb":["concave eyepiece","upright","opera glasses","afocal"],"tbfi":["kovera okulaari","pystykuva","oopperakiikari","afokaalinen"]},{"t":"Keplerian telescope","fi":"Keplerin kaukoputki","sec":"10.13","ch":"10","ex":true,"tb":["two convex lenses","inverted","real intermediate image","afocal"],"tbfi":["kaksi kuperaa linssiä","ylösalaisin","todellinen välikuva","afokaalinen"]},{"t":"Newtonian telescope","fi":"Newtonin kaukoputki","sec":"10.13","ch":"10","ex":true,"tb":["reflecting","primary mirror","flat secondary","parabolic"],"tbfi":["heijastava","pääpeili","tasopeili","paraboloidi"]},{"t":"Binoculars","fi":"Kiikari","sec":"10.13","ch":"10","ex":false,"tb":["two tubes","prisms","both eyes","upright"],"tbfi":["kaksi putkea","prismat","molemmat silmät","pystykuva"]},{"t":"Dot product","fi":"Pistetulo","sec":"3.11","ch":"M","ex":false,"tb":["scalar","projection","cosine","parallel"],"tbfi":["skalaari","projektio","kosini","yhdensuuntainen"]},{"t":"Cross product","fi":"Ristitulo","sec":"3.11","ch":"M","ex":false,"tb":["perpendicular","vector","right-hand rule","sine"],"tbfi":["kohtisuorassa","vektori","oikean käden sääntö","sini"]},{"t":"Gradient","fi":"Gradientti","sec":"3.11","ch":"M","ex":false,"tb":["slope","steepest","scalar field","nabla"],"tbfi":["kaltevuus","jyrkin","skalaarikenttä","nabla"]},{"t":"Divergence","fi":"Divergenssi","sec":"3.11","ch":"M","ex":false,"tb":["source","outflow","nabla dot","flux"],"tbfi":["lähde","ulosvirtaus","nabla piste","vuo"]},{"t":"Curl","fi":"Roottori","sec":"3.11","ch":"M","ex":false,"tb":["rotation","circulation","nabla cross","swirl"],"tbfi":["pyörre","kierto","nabla risti","pyörivä"]},{"t":"Laplacian","fi":"Laplacen operaattori","sec":"3.11","ch":"M","ex":false,"tb":["second derivative","nabla squared","divergence of gradient","wave equation"],"tbfi":["toinen derivaatta","nabla toiseen","gradientin divergenssi","aaltoyhtälö"]},{"t":"Divergence theorem","fi":"Divergenssilause","sec":"3.12","ch":"M","ex":false,"tb":["volume","surface","flux","Gauss"],"tbfi":["tilavuus","pinta","vuo","Gauss"]},{"t":"Electrostatics","fi":"Sähköstatiikka","sec":"3.12","ch":"M","ex":false,"tb":["static charges","Coulomb","potential","time dependence"],"tbfi":["staattiset varaukset","Coulomb","potentiaali","aikariippuvuus"]},{"t":"Poisson's equation","fi":"Poissonin yhtälö","sec":"3.12","ch":"M","ex":false,"tb":["potential","charge density","Laplacian","electrostatic"],"tbfi":["potentiaali","varaustiheys","Laplacen operaattori","sähköstaattinen"]}],"videos":{"2.1":{"topic":"Electromagnetic waves","url":"https://www.youtube.com/watch?v=YF0EGDxvILI","topic_fi":"Sähkömagneettiset aallot","url_fi":"https://www.youtube.com/watch?v=MfFv9Y37cXA"},"2.2":{"topic":"Rays","url":"https://www.youtube.com/watch?v=Hpst5RnWvWk","topic_fi":"Säteet","url_fi":"https://www.youtube.com/watch?v=sA15dZsSNV4"},"2.3":{"topic":"Particles","url":"https://www.youtube.com/watch?v=7_8dAL5p2Uo","topic_fi":"Hiukkaset","url_fi":"https://www.youtube.com/watch?v=mHYSquFXcvY"},"3.1":{"topic":"Moving perturbation","url":"https://www.youtube.com/watch?v=67WIeeSZ8J8","topic_fi":"Liikkuva häiriö","url_fi":"https://www.youtube.com/watch?v=vN1Sq4MQmH0"},"3.2":{"topic":"Wave equation","url":"https://www.youtube.com/watch?v=G7LuVFfkgH4","topic_fi":"Aaltoyhtälö","url_fi":"https://www.youtube.com/watch?v=II4QfIcltdI"},"3.3":{"topic":"Harmonic waves","url":"https://www.youtube.com/watch?v=pzzjQhhXdkE","topic_fi":"Harmoninen aalto","url_fi":"https://www.youtube.com/watch?v=BlyOBramP8I"},"3.4":{"topic":"Phase and phase velocity","url":"https://www.youtube.com/watch?v=FDyq6eIYGW4","topic_fi":"Vaihe ja vaihenopeus","url_fi":"https://www.youtube.com/watch?v=bjc6RoL_OkI"},"3.5":{"topic":"Superposition principle","url":"https://www.youtube.com/watch?v=dyMMYWWq61Q","topic_fi":"Superpositioperiaate","url_fi":"https://www.youtube.com/watch?v=nfvA3Ro-Xgw"},"3.6":{"topic":"Complex representation of waves","url":"https://www.youtube.com/watch?v=Ve6Y_WjFSOc","topic_fi":"Aaltojen kompleksinen esitys","url_fi":"https://www.youtube.com/watch?v=4Ws_6MzHe08"},"3.7":{"topic":"Plane waves","url":"https://www.youtube.com/watch?v=_tcGbrTCQJk","topic_fi":"Tasoaallot","url_fi":"https://www.youtube.com/watch?v=F_eQY3kH5pU"},"3.8":{"topic":"Wave equation in three-dimensional space","url":"https://www.youtube.com/watch?v=Ake1joldkjQ","topic_fi":"Aaltoyhtälö kolmessa ulottuvuudessa","url_fi":"https://www.youtube.com/watch?v=4comdeP8QWY"},"3.9":{"topic":"Spherical and cylindrical waves","url":"https://www.youtube.com/watch?v=maSfD-56GyE","topic_fi":"Pallo- ja sylinteriaallot","url_fi":"https://www.youtube.com/watch?v=qvASDTXJss0"},"3.10":{"topic":"Vector fields","url":"https://www.youtube.com/watch?v=bH4obSrWKu0","topic_fi":"Vektorikentät ja valon polarisaatio","url_fi":"https://www.youtube.com/watch?v=W37_AzacniU"},"3.11":{"topic":"Tutorial on vector calculus","url":"https://www.youtube.com/watch?v=GSxubtjbaGw","topic_fi":"Vektorianalyysin perusteet","url_fi":"https://www.youtube.com/watch?v=GP6R2SD7xUs"},"3.12":{"topic":"Electrostatic approximation and potentials","url":"https://www.youtube.com/watch?v=94iUDGD4Zds","topic_fi":"Sähköstatiikka ja sähköstaattiset potentiaalit","url_fi":"https://www.youtube.com/watch?v=xvdkqsoE55c"},"4.1":{"topic":"Microscopic Maxwells equations","url":"https://www.youtube.com/watch?v=qTUo4-5at-g","topic_fi":"Mikroskooppiset Maxwellin yhtälöt","url_fi":"https://www.youtube.com/watch?v=lu3CBQFeaFM"},"4.2":{"topic":"Transverse waves and charge conservation","url":"https://www.youtube.com/watch?v=sQxY5lPnGqU","topic_fi":"Poikittainen aaltoliike ja varauksen säilyminen","url_fi":"https://www.youtube.com/watch?v=uWUN2LZwbXU"},"4.3":{"topic":"Energy of the electromagnetic field","url":"https://www.youtube.com/watch?v=qPxBAoaT_Dc","topic_fi":"Sähkömagneettisen kentän energia","url_fi":"https://www.youtube.com/watch?v=KCRFMlnFNbQ"},"4.4":{"topic":"Radiation pressure and momentum of electromagnetic field","url":"https://www.youtube.com/watch?v=oy_dKWcBdEU","topic_fi":"Säteilypaine ja liikemäärä","url_fi":"https://www.youtube.com/watch?v=0Sa8yiBKW6k"},"4.5":{"topic":"Dipole radiation","url":"https://www.youtube.com/watch?v=2DzOMc2TNXg","topic_fi":"Dipolikenttä","url_fi":"https://www.youtube.com/watch?v=BP5tEo9OGJM"},"4.6":{"topic":"Macroscopic Maxwells equations","url":"https://www.youtube.com/watch?v=UQhWzsds36Y","topic_fi":"Maxwellin yhtälöt väliaineessa","url_fi":"https://www.youtube.com/watch?v=-kGaj4ONpq0"},"5.1":{"topic":"Radiation from atoms and molecules","url":"https://www.youtube.com/watch?v=-M_cmF5Yr_0","topic_fi":"Atomien ja molekyylien säteily","url_fi":"https://www.youtube.com/watch?v=RqimjuYdDGA"},"5.2":{"topic":"Basic light matter interactions","url":"https://www.youtube.com/watch?v=zSxO_lvWLCo","topic_fi":"Valon ja aineen vuorovaikutus","url_fi":"https://www.youtube.com/watch?v=ifhrp3ELmFs"},"5.3":{"topic":"Lorentz model of an atom","url":"https://www.youtube.com/watch?v=OuJEnxBIMow","topic_fi":"Lorentzin atomimalli","url_fi":"https://www.youtube.com/watch?v=iWWeet0tZVo"},"5.4":{"topic":"Lasing principle","url":"https://www.youtube.com/watch?v=IjpJ9CPpNzY","topic_fi":"Laserin toimintaperiaate","url_fi":"https://www.youtube.com/watch?v=Cue9WoDlcC0"},"6.1":{"topic":"Wave fronts and rays","url":"https://www.youtube.com/watch?v=f2zWQFZy3ro","topic_fi":"Aaltorintamat ja säteet","url_fi":"https://www.youtube.com/watch?v=2yhzPfIstK0"},"6.2":{"topic":"Phenomenology of transmission and reflection","url":"https://www.youtube.com/watch?v=rZpevBG15wM","topic_fi":"Läpäisy ja heijastus ilmiöinä","url_fi":"https://www.youtube.com/watch?v=kHYNBBSaG5Y"},"6.3":{"topic":"Electromagnetic theory of reflection and refraction","url":"https://www.youtube.com/watch?v=v2xMj_Ln2CU","topic_fi":"Läpäisyn ja heijastuksen SMG teoria","url_fi":"https://www.youtube.com/watch?v=yvGUqkLMh3w"},"6.4":{"topic":"Fresnel coefficients","url":"https://www.youtube.com/watch?v=TY301VRuhws","topic_fi":"Fresnelin kertoimet","url_fi":"https://www.youtube.com/watch?v=MdneBZEQLdI"},"6.5":{"topic":"Reflectivity and transmissivity","url":"https://www.youtube.com/watch?v=v8EnoFFq8j4","topic_fi":"Heijastavuus ja läpäisevyys","url_fi":"https://www.youtube.com/watch?v=_JWAPu0VUW8"},"6.6":{"topic":"Total internal reflection","url":"https://www.youtube.com/watch?v=nL2UDvMp8xY","topic_fi":"Kokonaisheijastus","url_fi":"https://www.youtube.com/watch?v=dhQ1F7Rfh2A"},"7.1":{"topic":"Superposition principle","url":"https://www.youtube.com/watch?v=RE2w02PdXPM","topic_fi":"Superpositioperiaate","url_fi":"https://www.youtube.com/watch?v=2hjW5XEqi1c"},"7.2":{"topic":"Harmonic waves","url":"https://www.youtube.com/watch?v=Vcyz3UGkx5g","topic_fi":"Harmoniset aallot","url_fi":"https://www.youtube.com/watch?v=pl7rt9eEM4E"},"7.3":{"topic":"Standing waves","url":"https://www.youtube.com/watch?v=QjukxExTOA4","topic_fi":"Seisovat aallot","url_fi":"https://www.youtube.com/watch?v=Zgcmyyb2zJU"},"7.4":{"topic":"Superposition of several frequencies","url":"https://www.youtube.com/watch?v=Ccz-BpQwsgM","topic_fi":"Usean aallon superpositio ja koherenssi","url_fi":"https://www.youtube.com/watch?v=s8itpLTTBcE"},"7.5":{"topic":"Coherence","url":"https://www.youtube.com/watch?v=Ls8TMMR-Kbs"},"8.1":{"topic":"Conditions for interference","url":"https://www.youtube.com/watch?v=YZEzxidicM0","topic_fi":"Vaatimukset interferenssille","url_fi":"https://www.youtube.com/watch?v=QQgsiYVPLas"},"8.2":{"topic":"Wavefront-splitting interferometers","url":"https://www.youtube.com/watch?v=bV3V7lFjTbQ","topic_fi":"Aaltorintaman jakavat interferometrit","url_fi":"https://www.youtube.com/watch?v=8Gnd1mgW9_c"},"8.3":{"topic":"Amplitude-splitting interferometers","url":"https://www.youtube.com/watch?v=vSeFezFqK8Y","topic_fi":"Amplitudin jakavat interferometrit","url_fi":"https://www.youtube.com/watch?v=3WdXDEPXnGY"},"8.4":{"topic":"Michelson interferometer","url":"https://www.youtube.com/watch?v=lF1xY180co0","topic_fi":"Michelsonin interferometri","url_fi":"https://www.youtube.com/watch?v=Kqm2V5yTZVs"},"8.5":{"topic":"Multiple-beam interference","url":"https://www.youtube.com/watch?v=823Ks2ZCAOg","topic_fi":"Usean säteen interferenssi","url_fi":"https://www.youtube.com/watch?v=dfLBiAwXB4A"},"8.6":{"topic":"Fabry–Perot instruments","url":"https://www.youtube.com/watch?v=falbEurnJjk","topic_fi":"Fabryn–Perotin instrumentit","url_fi":"https://www.youtube.com/watch?v=A869OP8aFyY"},"8.7":{"topic":"Fabry–Perot spectroscopy","url":"https://www.youtube.com/watch?v=vSVBASzmCT4","topic_fi":"Fabryn–Perotin spektroskopia","url_fi":"https://www.youtube.com/watch?v=3PMbr2jd8wo"},"9.1":{"topic":"Basic theory of diffraction","url":"https://www.youtube.com/watch?v=_mM8QYplWtE","topic_fi":"Diffraktio-ilmiön matemaattinen malli","url_fi":"https://www.youtube.com/watch?v=QaEgPdf4St4"},"9.2":{"topic":"Fraunhofer diffraction","url":"https://www.youtube.com/watch?v=JphaoWz52lQ","topic_fi":"Fraunhoferin diffraktio","url_fi":"https://www.youtube.com/watch?v=FDsxXicvdnE"},"9.3":{"topic":"Diffraction from basic aperture shapes","url":"https://www.youtube.com/watch?v=9sS4kmdQn9U","topic_fi":"Yksinkertaisten aukkojen diffraktio","url_fi":"https://www.youtube.com/watch?v=MAf93waIV-g"},"9.4":{"topic":"Diffraction from multiple slits","url":"https://www.youtube.com/watch?v=47SHcLXCT0E","topic_fi":"Usean aukon diffraktio","url_fi":"https://www.youtube.com/watch?v=kAqiJjLFBrw"},"9.5":{"topic":"Diffraction gratings","url":"https://www.youtube.com/watch?v=0jrjMJzjIsA","topic_fi":"Diffraktiohilat","url_fi":"https://www.youtube.com/watch?v=iCY-G29TzMQ"},"10.1":{"topic":"Basic definitions","url":"https://www.youtube.com/watch?v=WKIGee5ISaw","topic_fi":"Perusmääritelmät","url_fi":"https://www.youtube.com/watch?v=dC3yEzq76nw"},"10.2":{"topic":"Refraction at a spherical surface","url":"https://www.youtube.com/watch?v=6eMo9rIPaw4","topic_fi":"Taittuminen pallopinnalla","url_fi":"https://www.youtube.com/watch?v=KKWAW34AfJw"},"10.3":{"topic":"Thin lenses","url":"https://www.youtube.com/watch?v=_P3oLukTFTE","topic_fi":"Ohut linssi","url_fi":"https://www.youtube.com/watch?v=ysCrtlkMByY"},"10.4":{"topic":"Image formation","url":"https://www.youtube.com/watch?v=mHaqg91mdqU","topic_fi":"Kuvanmuodostus","url_fi":"https://www.youtube.com/watch?v=FZwXt5Y2eGw"},"10.5":{"topic":"Combination of lenses","url":"https://www.youtube.com/watch?v=pSjhB-N4yOU","topic_fi":"Linssisysteemit","url_fi":"https://www.youtube.com/watch?v=bKLgnpGzj1Y"},"10.6":{"topic":"Apertures and stops","url":"https://www.youtube.com/watch?v=LsSDUs54BzA","topic_fi":"Aukot ja rajoittimet","url_fi":"https://www.youtube.com/watch?v=T9HaKFEX9l8"},"10.7":{"topic":"Mirrors","url":"https://www.youtube.com/watch?v=XCxuW52jv-4","topic_fi":"Peili","url_fi":"https://www.youtube.com/watch?v=zkHP3lgIzjA"},"10.8":{"topic":"Prisms","url":"https://www.youtube.com/watch?v=ZyEEYqvkbt4","topic_fi":"Prisma","url_fi":"https://www.youtube.com/watch?v=dPnmcCvQ8HE"},"10.9":{"topic":"Human eye","url":"https://www.youtube.com/watch?v=uHOZb69Qcgo","topic_fi":"Ihmissilmä","url_fi":"https://www.youtube.com/watch?v=H02bNFbiT-w"},"10.10":{"topic":"Magnifying glass","url":"https://www.youtube.com/watch?v=ZzNvEyRSFEM","topic_fi":"Suurennuslasi","url_fi":"https://www.youtube.com/watch?v=7axzJgkErp4"},"10.11":{"topic":"Eyepiece","url":"https://www.youtube.com/watch?v=a0AGftBDXzI","topic_fi":"Okulaari","url_fi":"https://www.youtube.com/watch?v=Ix3ugaeI_MY"},"10.12":{"topic":"Microscope","url":"https://www.youtube.com/watch?v=AGc87oSBf7s","topic_fi":"Mikroskooppi","url_fi":"https://www.youtube.com/watch?v=CK2SR2PC4M4"},"10.13":{"topic":"Telescope","url":"https://www.youtube.com/watch?v=H_tQ8I7Fhns","topic_fi":"Kaukoputki","url_fi":"https://www.youtube.com/watch?v=GSkARKoRQOs"}}};
+</script>
+<script>
+(function(){
+"use strict";
+var CH = DATA.chapters, TERMS = DATA.terms, VIDEOS = DATA.videos;
+var chById = {}; CH.forEach(function(c){ chById[c.id] = c; });
+TERMS.forEach(function(t,i){ t.i = i; });
+document.documentElement.style.setProperty("--spectrum",
+  "linear-gradient(90deg," + CH.filter(function(c){return c.id!=="M";}).map(function(c,i,a){
+    var s = (i/a.length*100).toFixed(2), e = ((i+1)/a.length*100).toFixed(2);
+    return c.color+" "+s+"% "+e+"%"; }).join(",") + ")");
+
+var $ = function(s, el){ return (el||document).querySelector(s); };
+var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+var app = $("#app");
+
+/* ---------- interface texts ---------- */
+var I = {
+en:{
+ title:"Term Alias", docTitle:"FYS.240 Optics: Term Alias",
+ tagline:"FYS.240 Optics. Describe a course term without saying it, and recap the main concepts while you play.",
+ howTitle:"How it works",
+ howTeam:"<b>Team game.</b> One player describes the term on the card. Teammates guess it out loud. Do not say the term, any word of it, or the forbidden words. No spelling, gestures or translations. A correct guess scores a point.",
+ howStudy:"<b>Study alone.</b> Explain each term in your own words, like the exam\u2019s explain-briefly questions, then reveal the related concepts and open the lecture video if it was shaky.",
+ mode:"Mode", modeTeam:"Play with teams", modeTeamSub:"2 to 4 teams, one device", modeStudy:"Study alone", modeStudySub:"Explain, reveal, check",
+ chapters:"Chapters in the deck", spectrumHint:"The colours follow the spectrum, from chapter 2 (red) to chapter 10 (violet).",
+ cards:function(n){return n+" cards";}, extra:"Extra", all:"Select all", clear:"Clear", print:"Print cards (A4, 58 \u00d7 89 mm)",
+ exam:function(n){return "Only topics from the exam explain-questions ("+n+" terms)";},
+ teams:"Teams", teamsWord:"teams", fewer:"Fewer teams", more:"More teams", teamN:function(i){return "Team "+i;},
+ roundLength:"Round length", roundsPer:"Rounds per team", penalty:"A skipped card costs a point",
+ deckInfo:function(n){return "<b>"+n+" cards</b> in the deck";}, pickOne:"Pick at least one chapter.",
+ startGame:"Start game", startStudy:"Start studying", langLabel:"Language",
+ roundOf:function(r,R){return "Round "+r+" of "+R;}, youreUp:function(n){return n+", you\u2019re up";},
+ hold:"Choose one describer and hold the screen so only they can see it. Everyone else guesses out loud.",
+ startRound:function(s){return "Start "+s+" second round";}, endGame:"End game",
+ thisRound:function(s){return "This round: "+(s>0?"+":"")+s;}, skip:"Skip", skipPen:"Skip (\u22121)", gotIt:"Got it (+1)",
+ keysPlay:"<kbd>\u2192</kbd> or <kbd>Enter</kbd> got it \u00a0 <kbd>\u2190</kbd> skip", endEarly:"End round early",
+ timesUp:function(n){return "Time\u2019s up, "+n;},
+ tapFix:function(s){return "Tap a card to fix its result before scoring. <b id=\"rs\">"+(s>0?"+":"")+s+"</b> points this round.";},
+ noCards:"No cards were played this round.", correct:"Correct", skipped:"Skipped", tapChange:"Tap to change",
+ nextTeam:function(n){return "Next: "+n;}, seeResults:"See results", tie:"It\u2019s a tie: ", wins:" wins",
+ termsCame:function(n,m){return n+" terms came up. "+(m?m+" were skipped.":"None were skipped.");},
+ worth:"Worth another look", skippedGame:"Skipped this game. Open the lecture to recap.", playAgain:"Play again", back:"Back to setup",
+ quit:"Stop and go back to setup?",
+ chapter:"Chapter", extraTag:"Extra", examTag:"Exam topic", doNot:"Do not say", orAny:"(or any word of the term)",
+ goodExpl:"A good explanation touches on", prompt:"Explain it in two or three sentences, aloud or on paper. Then check yourself.",
+ study:"Study", stop:"Stop", cardOf:function(i,n){return "Card "+i+" of "+n;}, showRel:"Show related concepts",
+ keySpace:"<kbd>Space</kbd> to reveal", reviewAgain:"Review again", gotIt2:"Got it",
+ keysStudy:"<kbd>\u2192</kbd> got it \u00a0 <kbd>\u2190</kbd> review again",
+ felt:function(g,n){return g+" of "+n+" felt solid";}, restListed:"The rest are listed below with their lectures.",
+ nothingLeft:"Nothing left to review in this deck.", studyAgain:function(n){return "Study the "+n+" again";}, newSession:"New shuffled session",
+ lecture:"Lecture"
+},
+fi:{
+ title:"Termi-Alias", docTitle:"FYS.240 Optiikka: Termi-Alias",
+ tagline:"FYS.240 Optiikka. Kuvaile kurssin termi sanomatta sit\u00e4 ja kertaa p\u00e4\u00e4k\u00e4sitteet pelin lomassa.",
+ howTitle:"N\u00e4in pelataan",
+ howTeam:"<b>Joukkuepeli.</b> Yksi pelaaja kuvailee kortin termin, muut arvaavat \u00e4\u00e4neen. \u00c4l\u00e4 sano termi\u00e4, sen sanoja \u00e4l\u00e4k\u00e4 kiellettyj\u00e4 sanoja. Ei tavausta, elehtimist\u00e4 eik\u00e4 k\u00e4\u00e4nn\u00f6ksi\u00e4. Oikea arvaus tuo pisteen.",
+ howStudy:"<b>Opiskele yksin.</b> Selit\u00e4 jokainen termi omin sanoin kuten tentin selit\u00e4 lyhyesti -teht\u00e4viss\u00e4, paljasta sitten siihen liittyv\u00e4t k\u00e4sitteet ja avaa luentovideo, jos tuntui ep\u00e4varmalta.",
+ mode:"Pelitapa", modeTeam:"Pelaa joukkueilla", modeTeamSub:"2\u20134 joukkuetta, yksi laite", modeStudy:"Opiskele yksin", modeStudySub:"Selit\u00e4, paljasta, tarkista",
+ chapters:"Pakassa mukana olevat luvut", spectrumHint:"V\u00e4rit seuraavat spektri\u00e4: luku 2 on punainen, luku 10 violetti.",
+ cards:function(n){return n+" korttia";}, extra:"Lis\u00e4", all:"Valitse kaikki", clear:"Tyhjenn\u00e4", print:"Tulosta kortit (A4, 58 \u00d7 89 mm)",
+ exam:function(n){return "Vain tentin selit\u00e4 lyhyesti -teht\u00e4vien aiheet ("+n+" termi\u00e4)";},
+ teams:"Joukkueet", teamsWord:"joukkuetta", fewer:"V\u00e4hemm\u00e4n joukkueita", more:"Enemm\u00e4n joukkueita", teamN:function(i){return "Joukkue "+i;},
+ roundLength:"Kierroksen pituus", roundsPer:"Kierroksia joukkuetta kohti", penalty:"Ohitettu kortti maksaa pisteen",
+ deckInfo:function(n){return "<b>"+n+" korttia</b> pakassa";}, pickOne:"Valitse v\u00e4hint\u00e4\u00e4n yksi luku.",
+ startGame:"Aloita peli", startStudy:"Aloita opiskelu", langLabel:"Kieli",
+ roundOf:function(r,R){return "Kierros "+r+" / "+R;}, youreUp:function(n){return n+", sinun vuorosi";},
+ hold:"Valitkaa yksi kuvailija ja pit\u00e4k\u00e4\u00e4 ruutu niin, ett\u00e4 vain h\u00e4n n\u00e4kee sen. Muut arvaavat \u00e4\u00e4neen.",
+ startRound:function(s){return "Aloita "+s+" sekunnin kierros";}, endGame:"Lopeta peli",
+ thisRound:function(s){return "T\u00e4ll\u00e4 kierroksella: "+(s>0?"+":"")+s;}, skip:"Ohita", skipPen:"Ohita (\u22121)", gotIt:"Oikein (+1)",
+ keysPlay:"<kbd>\u2192</kbd> tai <kbd>Enter</kbd> oikein \u00a0 <kbd>\u2190</kbd> ohita", endEarly:"Lopeta kierros",
+ timesUp:function(n){return "Aika loppui, "+n;},
+ tapFix:function(s){return "Napauta korttia korjataksesi tuloksen ennen pisteytyst\u00e4. Kierroksen pisteet: <b id=\"rs\">"+(s>0?"+":"")+s+"</b>.";},
+ noCards:"T\u00e4ll\u00e4 kierroksella ei pelattu yht\u00e4\u00e4n korttia.", correct:"Oikein", skipped:"Ohitettu", tapChange:"Napauta vaihtaaksesi",
+ nextTeam:function(n){return "Seuraavana: "+n;}, seeResults:"N\u00e4yt\u00e4 tulokset", tie:"Tasapeli: ", wins:" voittaa",
+ termsCame:function(n,m){return n+" termi\u00e4 tuli vastaan. "+(m?m+" ohitettiin.":"Yht\u00e4\u00e4n ei ohitettu.");},
+ worth:"Kertaa n\u00e4m\u00e4", skippedGame:"Ohitettu t\u00e4ss\u00e4 pelissä. Avaa luento kertausta varten.", playAgain:"Pelaa uudelleen", back:"Takaisin asetuksiin",
+ quit:"Lopetetaanko ja palataanko asetuksiin?",
+ chapter:"Luku", extraTag:"Lis\u00e4", examTag:"Tenttiaihe", doNot:"\u00c4l\u00e4 sano", orAny:"(tai mit\u00e4\u00e4n termin sanaa)",
+ goodExpl:"Hyv\u00e4 selitys sivuaa", prompt:"Selit\u00e4 termi parilla lauseella \u00e4\u00e4neen tai paperille. Tarkista sitten itsesi.",
+ study:"Opiskelu", stop:"Lopeta", cardOf:function(i,n){return "Kortti "+i+" / "+n;}, showRel:"N\u00e4yt\u00e4 liittyv\u00e4t k\u00e4sitteet",
+ keySpace:"<kbd>V\u00e4li</kbd> paljastaa", reviewAgain:"Kertaa uudelleen", gotIt2:"Osasin",
+ keysStudy:"<kbd>\u2192</kbd> osasin \u00a0 <kbd>\u2190</kbd> kertaa uudelleen",
+ felt:function(g,n){return g+" / "+n+" tuntui varmalta";}, restListed:"Loput on listattu alla luentoineen.",
+ nothingLeft:"T\u00e4ss\u00e4 pakassa ei ole en\u00e4\u00e4 kerrattavaa.", studyAgain:function(n){return "Opiskele nuo "+n+" uudelleen";}, newSession:"Uusi sekoitettu kierros",
+ lecture:"Luento"
+}};
+
+/* ---------- persistence (settings only) ---------- */
+var store = {
+  get: function(k, d){ try{ var v = localStorage.getItem("fys240alias."+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set: function(k, v){ try{ localStorage.setItem("fys240alias."+k, JSON.stringify(v)); }catch(e){} }
+};
+var DEFAULTS = {mode:"team", chapters:CH.filter(function(c){return c.id!=="M";}).map(function(c){return c.id;}),
+  exam:false, teamCount:2, teamNames:["","","",""], roundSec:60, rounds:2, penalty:true,
+  lang:((navigator.language||"").slice(0,2)==="fi" ? "fi" : "en")};
+var S = Object.assign({}, DEFAULTS, store.get("settings", {}));
+S.chapters = (S.chapters||[]).filter(function(id){ return chById[id]; });
+if(S.lang !== "fi" && S.lang !== "en") S.lang = "en";
+if(!Array.isArray(S.teamNames) || S.teamNames.length < 4) S.teamNames = ["","","",""];
+S.teamNames = S.teamNames.map(function(n){ return /^(Team|Joukkue) \d$/.test(n||"") ? "" : (n||""); });
+function save(){ store.set("settings", S); }
+
+function tr(k){ var v = I[S.lang][k]; return typeof v === "function" ? v.apply(null, Array.prototype.slice.call(arguments,1)) : v; }
+function nm(t){ return S.lang==="fi" ? t.fi : t.t; }
+function tbs(t){ return S.lang==="fi" ? t.tbfi : t.tb; }
+function chShort(c){ return S.lang==="fi" ? c.short_fi : c.short; }
+function teamName(i){ return (S.teamNames[i]||"").trim() || tr("teamN", i+1); }
+function applyLang(){ document.documentElement.lang = S.lang; document.title = tr("docTitle"); }
+
+/* ---------- helpers ---------- */
+function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j = Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function deckTerms(){ return TERMS.filter(function(t){ return S.chapters.indexOf(t.ch) >= 0 && (!S.exam || t.ex); }); }
+function countFor(id){ return TERMS.filter(function(t){ return t.ch===id && (!S.exam || t.ex); }).length; }
+function lecture(t, cls){
+  var v = VIDEOS[t.sec]; if(!v) return "";
+  var fi = S.lang==="fi" && v.url_fi;
+  var url = fi ? v.url_fi : v.url, topic = fi ? (v.topic_fi || v.topic) : v.topic;
+  return '<a class="'+(cls||"lec")+'" href="'+esc(url)+'" target="_blank" rel="noopener">'+tr("lecture")+' '+esc(t.sec)+': '+esc(topic)+'</a>';
+}
+function termSize(s){ var n = s.length; return n<=10 ? "" : n<=17 ? "t-m" : n<=26 ? "t-l" : "t-xl"; }
+function cardHTML(t, o){
+  o = o || {}; var c = chById[t.ch];
+  var meta = '<div class="meta"><b>'+(t.ch==="M"?tr("extraTag"):tr("chapter")+" "+esc(t.ch))+'</b> '+esc(chShort(c))+
+    (t.ex ? '<br><span class="tag">'+tr("examTag")+'</span>' : '')+'</div>';
+  var items = tbs(t).map(function(w){return "<li>"+esc(w)+"</li>";}).join("");
+  var low;
+  if(o.study === 1) low = '<div class="prompt">'+tr("prompt")+'</div>';
+  else if(o.study === 2) low = '<div class="taboo"><div class="tl">'+tr("goodExpl")+'</div><ul class="rel">'+items+'</ul></div>'+(lecture(t,"lecture")||"");
+  else low = '<div class="taboo"><div class="tl">'+tr("doNot")+' <span>'+tr("orAny")+'</span></div><ul>'+items+'</ul></div>';
+  return '<div class="card'+(o.swap?" swap":"")+'" style="--c:'+c.color+';--ci:'+c.ink+'"><div class="stripe"></div>'+meta+
+    '<div class="term '+termSize(nm(t))+'">'+esc(nm(t))+'</div>'+low+'</div>';
+}
+
+/* ---------- screens ---------- */
+var view = "setup";
+function show(html, name, keepFocus){
+  var key = null, a = document.activeElement;
+  if(keepFocus && a && a.dataset && a.dataset.act) key = a.dataset.act+"|"+(a.dataset.val==null?"":a.dataset.val);
+  view = name; app.innerHTML = html;
+  if(key){
+    var p = key.split("|"), el = Array.prototype.find.call(app.querySelectorAll("[data-act]"), function(x){ return x.dataset.act===p[0] && (x.dataset.val==null?"":x.dataset.val)===p[1]; });
+    if(el){ el.focus({preventScroll:true}); return; }
+  }
+  var h = app.querySelector("[data-h]"); if(h){ h.setAttribute("tabindex","-1"); h.focus({preventScroll:true}); }
+  if(!keepFocus) window.scrollTo(0,0);
+}
+function seg(act, cur, items){
+  return '<div class="seg" role="group">'+items.map(function(it){
+    return '<button type="button" data-act="'+act+'" data-val="'+esc(it[0])+'" aria-pressed="'+(String(cur)===String(it[0]))+'">'+esc(it[1])+'</button>'; }).join("")+'</div>';
+}
+function langSwitch(){
+  return '<div class="lang" role="group" aria-label="'+tr("langLabel")+'">'+
+    [["en","EN","English"],["fi","FI","Suomi"]].map(function(l){
+      return '<button type="button" data-act="lang" data-val="'+l[0]+'" lang="'+l[0]+'" title="'+l[2]+'" aria-pressed="'+(S.lang===l[0])+'">'+l[1]+'</button>'; }).join("")+'</div>';
+}
+
+function renderSetup(keep){
+  applyLang();
+  var deck = deckTerms(), team = S.mode==="team";
+  var chips = CH.map(function(c){
+    var n = countFor(c.id), on = S.chapters.indexOf(c.id)>=0;
+    return '<button type="button" class="chip" data-act="ch" data-val="'+c.id+'" aria-pressed="'+on+'"'+(n?"":" disabled")+' style="--c:'+c.color+';--ci:'+c.ink+'">'+
+      '<span class="no">'+(c.id==="M"?tr("extra"):c.id)+'</span><span class="nm">'+esc(chShort(c))+'</span><span class="ct">'+tr("cards",n)+'</span></button>'; }).join("");
+  var nEx = TERMS.filter(function(t){return t.ex;}).length;
+  var names = "";
+  for(var i=0;i<S.teamCount;i++) names += '<label>'+esc(tr("teamN",i+1))+'<input type="text" maxlength="24" data-team="'+i+'" value="'+esc(S.teamNames[i])+'" placeholder="'+esc(tr("teamN",i+1))+'"></label>';
+  var html = '<div class="wrap">'+
+   '<header class="mast"><div class="top">'+langSwitch()+'</div><h1 data-h>'+tr("title")+'</h1><p>'+tr("tagline")+'</p><div class="spectrum" aria-hidden="true"></div></header>'+
+   '<details class="rules"><summary>'+tr("howTitle")+'</summary><p>'+tr("howTeam")+'</p><p>'+tr("howStudy")+'</p></details>'+
+   '<section class="sec"><h2>'+tr("mode")+'</h2><div class="seg big" role="group">'+
+     '<button type="button" data-act="mode" data-val="team" aria-pressed="'+team+'">'+tr("modeTeam")+'<small>'+tr("modeTeamSub")+'</small></button>'+
+     '<button type="button" data-act="mode" data-val="study" aria-pressed="'+!team+'">'+tr("modeStudy")+'<small>'+tr("modeStudySub")+'</small></button></div></section>'+
+   '<section class="sec"><h2>'+tr("chapters")+'</h2><p class="hint">'+tr("spectrumHint")+'</p><div class="chips">'+chips+'</div>'+
+     '<div class="toolrow"><button type="button" class="tbtn" data-act="allch">'+tr("all")+'</button><button type="button" class="tbtn" data-act="noch">'+tr("clear")+'</button>'+
+     '<button type="button" class="tbtn" data-act="printcards"'+(deck.length?"":" disabled")+'>'+tr("print")+'</button></div>'+
+     '<label class="switch"><input type="checkbox" data-act="exam"'+(S.exam?" checked":"")+'> '+tr("exam",nEx)+'</label></section>';
+  if(team){
+    html += '<section class="sec"><h2>'+tr("teams")+'</h2><div class="stepper"><button type="button" data-act="teams" data-val="-1" aria-label="'+tr("fewer")+'">\u2212</button><b>'+S.teamCount+'</b><button type="button" data-act="teams" data-val="1" aria-label="'+tr("more")+'">+</button><span class="lec">'+tr("teamsWord")+'</span></div><div class="names">'+names+'</div></section>'+
+     '<section class="sec"><h2>'+tr("roundLength")+'</h2>'+seg("sec", S.roundSec, [[30,"30 s"],[60,"60 s"],[90,"90 s"]])+'</section>'+
+     '<section class="sec"><h2>'+tr("roundsPer")+'</h2>'+seg("rounds", S.rounds, [[1,"1"],[2,"2"],[3,"3"],[5,"5"]])+
+       '<label class="switch"><input type="checkbox" data-act="penalty"'+(S.penalty?" checked":"")+'> '+tr("penalty")+'</label></section>';
+  }
+  html += '</div><div class="dock"><div class="dock-in"><div class="info">'+tr("deckInfo",deck.length)+(deck.length<1?"<br>"+tr("pickOne"):"")+'</div>'+
+   '<button type="button" class="btn" data-act="start"'+(deck.length?"":" disabled")+'>'+(team?tr("startGame"):tr("startStudy"))+'</button></div></div>';
+  show(html, "setup", keep);
+}
+
+/* ---------- team game ---------- */
+var G = null, timer = null;
+function startGame(){
+  var pool = deckTerms(); if(!pool.length) return;
+  G = {teams:[], total:S.teamCount*S.rounds, turn:0, deck:shuffle(pool.map(function(t){return t.i;})), pos:0, log:[], cur:null, deadline:0, all:{}};
+  for(var i=0;i<S.teamCount;i++) G.teams.push({name:teamName(i), score:0});
+  renderIntro();
+}
+function draw(){
+  if(G.pos >= G.deck.length){ G.deck = shuffle(deckTerms().map(function(t){return t.i;})); G.pos = 0; }
+  return G.deck[G.pos++];
+}
+function teamNow(){ return G.teams[G.turn % G.teams.length]; }
+function roundScore(){
+  var ok = 0, sk = 0; G.log.forEach(function(e){ if(e.r==="ok") ok++; else sk++; });
+  return ok - (S.penalty ? sk : 0);
+}
+function boardHTML(highlight){
+  return '<ul class="board">'+G.teams.map(function(t,i){ return '<li'+(highlight && i===G.turn%G.teams.length?' class="cur"':"")+'><span>'+esc(t.name)+'</span><span class="pts">'+t.score+'</span></li>'; }).join("")+'</ul>';
+}
+function miniHead(label, link){
+  return '<div class="mast-sm"><span class="name">'+label+'</span>'+(link||"")+'</div><div class="spectrum" aria-hidden="true" style="margin:8px 0 20px"></div>';
+}
+function renderIntro(){
+  var round = Math.floor(G.turn/G.teams.length)+1;
+  show('<div class="wrap game">'+miniHead(tr("title"), '<button type="button" class="lnk" data-act="quit">'+tr("endGame")+'</button>')+
+    '<p class="sub">'+tr("roundOf",round,S.rounds)+'</p>'+
+    '<h2 class="big-h" data-h>'+esc(tr("youreUp",teamNow().name))+'</h2>'+
+    '<p class="sub">'+tr("hold")+'</p>'+
+    boardHTML(true)+
+    '<div class="grow"><button type="button" class="btn wide" data-act="startround">'+tr("startRound",S.roundSec)+'</button></div></div>', "intro");
+}
+function startRound(){
+  G.log = []; G.cur = draw(); G.deadline = Date.now() + S.roundSec*1000;
+  show('<div class="wrap game"><div class="hud"><div><div class="who" data-h>'+esc(teamNow().name)+'</div><div class="sc" id="sc"></div></div><div class="clock" id="clock" role="timer">'+S.roundSec+'</div></div>'+
+    '<div class="bar" id="bar"><i id="barfill"></i></div>'+
+    '<div class="stage" id="slot">'+cardHTML(TERMS[G.cur])+'</div>'+
+    '<div class="actions"><button type="button" class="btn ghost" data-act="skip">'+(S.penalty?tr("skipPen"):tr("skip"))+'</button><button type="button" class="btn ok" data-act="ok">'+tr("gotIt")+'</button></div>'+
+    '<div class="keys">'+tr("keysPlay")+'</div>'+
+    '<div class="grow"><button type="button" class="btn ghost" data-act="endearly">'+tr("endEarly")+'</button></div></div>', "play");
+  scoreLine(); clearInterval(timer); timer = setInterval(tick, 200); tick();
+}
+function scoreLine(){ var e = $("#sc"); if(e) e.textContent = tr("thisRound", roundScore()); }
+function tick(){
+  var left = Math.max(0, G.deadline - Date.now()), sec = Math.ceil(left/1000);
+  var c = $("#clock"), b = $("#barfill"), bar = $("#bar");
+  if(c){ c.textContent = sec; c.classList.toggle("hurry", sec<=10); }
+  if(bar) bar.classList.toggle("hurry", sec<=10);
+  if(b) b.style.transform = "scaleX("+(left/(S.roundSec*1000)).toFixed(4)+")";
+  if(left<=0) endRound();
+}
+function answer(r){
+  if(view!=="play") return;
+  G.log.push({i:G.cur, r:r}); G.cur = draw();
+  var slot = $("#slot"); if(slot) slot.innerHTML = cardHTML(TERMS[G.cur], {swap:true});
+  scoreLine();
+}
+function endRound(){
+  if(view!=="play") return;
+  clearInterval(timer); timer = null;
+  G.deck.push(G.cur);
+  renderRoundEnd();
+}
+function label(e){ return e.r==="ok" ? tr("correct") : tr("skipped"); }
+function renderRoundEnd(){
+  var last = G.turn+1 >= G.total, nxt = G.teams[(G.turn+1)%G.teams.length];
+  var rows = G.log.length ? G.log.map(function(e,k){ var t = TERMS[e.i], c = chById[t.ch];
+      return '<div class="row" style="--c:'+c.color+'"><span class="sw"></span><div class="tm">'+esc(nm(t))+'<small>'+lecture(t)+'</small></div>'+
+        '<button type="button" class="tog" data-act="tog" data-val="'+k+'" data-r="'+e.r+'" aria-label="'+esc(nm(t))+': '+label(e)+'. '+tr("tapChange")+'">'+label(e)+'</button></div>'; }).join("")
+    : '<p class="sub" style="padding:10px 0">'+tr("noCards")+'</p>';
+  show('<div class="wrap game">'+miniHead(tr("title"))+
+    '<h2 class="big-h" data-h>'+esc(tr("timesUp",teamNow().name))+'</h2>'+
+    '<p class="sub">'+tr("tapFix",roundScore())+'</p>'+
+    '<div class="panel" id="rows">'+rows+'</div>'+
+    '<div class="grow"><button type="button" class="btn wide" data-act="next">'+(last?tr("seeResults"):esc(tr("nextTeam",nxt.name)))+'</button></div></div>', "roundend");
+}
+function nextTurn(){
+  teamNow().score += roundScore();
+  G.log.forEach(function(e){ G.all[e.i] = e.r; });
+  G.turn++;
+  if(G.turn >= G.total) renderGameEnd(); else renderIntro();
+}
+function revisitList(ids, withIntro){
+  return '<h3 style="margin-top:22px">'+tr("worth")+'</h3>'+(withIntro?'<p class="sub">'+tr("skippedGame")+'</p>':"")+'<div class="panel">'+ids.map(function(i){ var t = TERMS[i], c = chById[t.ch];
+      return '<div class="row" style="--c:'+c.color+'"><span class="sw"></span><div class="tm">'+esc(nm(t))+'<small>'+lecture(t)+'</small></div></div>'; }).join("")+'</div>';
+}
+function renderGameEnd(){
+  var max = Math.max.apply(null, G.teams.map(function(t){return t.score;}));
+  var winners = G.teams.filter(function(t){return t.score===max;}).map(function(t){return t.name;});
+  var sorted = G.teams.slice().sort(function(a,b){return b.score-a.score;});
+  var missed = Object.keys(G.all).filter(function(i){return G.all[i]==="skip";}).map(Number);
+  var played = Object.keys(G.all).length;
+  var amp = S.lang==="fi" ? " ja " : " and ";
+  show('<div class="wrap game">'+miniHead(tr("title"))+
+    '<h2 class="big-h" data-h>'+(winners.length>1?tr("tie"):"")+esc(winners.join(amp))+(winners.length>1?"":tr("wins"))+'</h2>'+
+    '<p class="sub">'+tr("termsCame",played,missed.length)+'</p>'+
+    '<ul class="board">'+sorted.map(function(t){ return '<li'+(t.score===max?' class="win"':"")+'><span>'+esc(t.name)+'</span><span class="pts">'+t.score+'</span></li>'; }).join("")+'</ul>'+
+    (missed.length ? revisitList(missed, true) : "")+
+    '<div class="grow"><button type="button" class="btn wide" data-act="start">'+tr("playAgain")+'</button><button type="button" class="btn ghost wide" data-act="home">'+tr("back")+'</button></div></div>', "gameend");
+}
+
+/* ---------- study mode ---------- */
+var ST = null;
+function startStudy(list){
+  var q = list || shuffle(deckTerms().map(function(t){return t.i;})); if(!q.length) return;
+  ST = {queue:q, pos:0, rev:false, good:[], again:[]}; renderStudy();
+}
+function renderStudy(keep){
+  if(ST.pos >= ST.queue.length) return renderStudyEnd();
+  var t = TERMS[ST.queue[ST.pos]], n = ST.queue.length;
+  var acts = ST.rev
+    ? '<div class="actions"><button type="button" class="btn ghost" data-act="again">'+tr("reviewAgain")+'</button><button type="button" class="btn ok" data-act="good">'+tr("gotIt2")+'</button></div><div class="keys">'+tr("keysStudy")+'</div>'
+    : '<div class="actions one"><button type="button" class="btn" data-act="reveal">'+tr("showRel")+'</button></div><div class="keys">'+tr("keySpace")+'</div>';
+  show('<div class="wrap game"><div class="mast-sm"><span class="name">'+tr("study")+'</span><button type="button" class="lnk" data-act="quit">'+tr("stop")+'</button></div>'+
+    '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+ST.pos+'"><i style="width:'+(ST.pos/n*100).toFixed(1)+'%"></i></div>'+
+    '<p class="sub" data-h>'+tr("cardOf",ST.pos+1,n)+'</p><div class="stage">'+cardHTML(t,{study:ST.rev?2:1, swap:!keep})+'</div>'+acts+'</div>', "study", keep);
+}
+function studyNext(kind){
+  var i = ST.queue[ST.pos]; (kind==="good" ? ST.good : ST.again).push(i);
+  ST.pos++; ST.rev = false; renderStudy();
+}
+function renderStudyEnd(){
+  var n = ST.queue.length, g = ST.good.length;
+  show('<div class="wrap game">'+miniHead(tr("study"))+
+    '<h2 class="big-h" data-h>'+tr("felt",g,n)+'</h2><p class="sub">'+(ST.again.length?tr("restListed"):tr("nothingLeft"))+'</p>'+
+    (ST.again.length ? revisitList(ST.again, false) : "")+
+    '<div class="grow">'+(ST.again.length?'<button type="button" class="btn wide" data-act="studyagain">'+tr("studyAgain",ST.again.length)+'</button>':"")+
+    '<button type="button" class="btn '+(ST.again.length?"ghost ":"")+'wide" data-act="start">'+tr("newSession")+'</button><button type="button" class="btn ghost wide" data-act="home">'+tr("back")+'</button></div></div>', "studyend");
+}
+
+/* ---------- print ---------- */
+function printCards(){
+  var d = deckTerms(), pages = [];
+  for(var i=0;i<d.length;i+=9) pages.push(d.slice(i,i+9));
+  $("#print").innerHTML = pages.map(function(p){ return '<section class="sheet">'+p.map(function(t){return cardHTML(t);}).join("")+'</section>'; }).join("");
+  window.print();
+}
+
+/* ---------- events ---------- */
+function home(){ clearInterval(timer); timer = null; renderSetup(); }
+var actions = {
+  lang:function(b){ S.lang = b.dataset.val; save(); renderSetup(true); },
+  mode:function(b){ S.mode = b.dataset.val; save(); renderSetup(true); },
+  ch:function(b){ var id = b.dataset.val, k = S.chapters.indexOf(id); if(k>=0) S.chapters.splice(k,1); else S.chapters.push(id); save(); renderSetup(true); },
+  allch:function(){ S.chapters = CH.filter(function(c){return countFor(c.id)>0;}).map(function(c){return c.id;}); save(); renderSetup(true); },
+  noch:function(){ S.chapters = []; save(); renderSetup(true); },
+  exam:function(b){ S.exam = b.checked; save(); renderSetup(true); },
+  teams:function(b){ S.teamCount = Math.min(4, Math.max(2, S.teamCount + Number(b.dataset.val))); save(); renderSetup(true); },
+  sec:function(b){ S.roundSec = Number(b.dataset.val); save(); renderSetup(true); },
+  rounds:function(b){ S.rounds = Number(b.dataset.val); save(); renderSetup(true); },
+  penalty:function(b){ S.penalty = b.checked; save(); },
+  printcards:printCards,
+  start:function(){ if(S.mode==="team") startGame(); else startStudy(); },
+  startround:startRound,
+  ok:function(){ answer("ok"); },
+  skip:function(){ answer("skip"); },
+  endearly:endRound,
+  tog:function(b){ var e = G.log[Number(b.dataset.val)]; e.r = e.r==="ok" ? "skip" : "ok";
+        b.dataset.r = e.r; b.textContent = label(e);
+        b.setAttribute("aria-label", nm(TERMS[e.i])+": "+label(e)+". "+tr("tapChange"));
+        var s = roundScore(); $("#rs").textContent = (s>0?"+":"")+s; },
+  next:nextTurn,
+  quit:function(){ if(confirm(tr("quit"))) home(); },
+  home:home,
+  reveal:function(){ ST.rev = true; renderStudy(true); },
+  good:function(){ studyNext("good"); },
+  again:function(){ studyNext("again"); },
+  studyagain:function(){ startStudy(shuffle(ST.again)); }
+};
+app.addEventListener("click", function(e){
+  var b = e.target.closest("[data-act]"); if(!b || b.disabled) return;
+  if(b.type==="checkbox") return;
+  var f = actions[b.dataset.act]; if(f) f(b, e);
+});
+app.addEventListener("change", function(e){
+  var b = e.target.closest("input[data-act]"); if(b && actions[b.dataset.act]) actions[b.dataset.act](b, e);
+});
+app.addEventListener("input", function(e){
+  var el = e.target; if(el.dataset && el.dataset.team!=null){ S.teamNames[Number(el.dataset.team)] = el.value; save(); }
+});
+document.addEventListener("keydown", function(e){
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  var tag = (e.target.tagName||"").toLowerCase();
+  if(tag==="input" || tag==="textarea") return;
+  var onControl = tag==="button" || tag==="a" || tag==="summary";
+  var right = e.key==="ArrowRight", left = e.key==="ArrowLeft";
+  var enter = (e.key==="Enter" || e.key===" ") && !onControl;
+  if(view==="play"){
+    if(right || enter){ e.preventDefault(); answer("ok"); }
+    else if(left || e.key==="Backspace"){ e.preventDefault(); answer("skip"); }
+  } else if(view==="study"){
+    if(!ST.rev){ if(enter || right){ e.preventDefault(); ST.rev = true; renderStudy(true); } }
+    else if(right || enter){ e.preventDefault(); studyNext("good"); }
+    else if(left){ e.preventDefault(); studyNext("again"); }
+  }
+});
+renderSetup();
+})();
+</script>
+</body>
+</html>

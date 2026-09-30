@@ -1,0 +1,219 @@
+FYS.240 Optics / Optiikka - main concepts and terminology for the Term Alias applet
+
+Sources: course booklet index (312 terms, terminology.json), lecture section titles
+(videos 2.1-10.13) and the exam 'explain briefly' question pool (FYS240_card_game.xlsx).
+190 terms, of which 37 are marked E = topic of an exam explain-question.
+
+Line format:  English term | Suomi | lecture section | E if exam topic | forbidden words EN || forbidden words FI
+Words that appear in the term itself are always forbidden in the game as well.
+Chapter names are descriptive labels derived from the lecture titles.
+
+== Chapter 2 / Luku 2: Electromagnetic waves, rays and particles / Sähkömagneettiset aallot, säteet ja hiukkaset (lectures 2.1-2.3) - 11 terms ==
+Maxwell's equations                   | Maxwellin yhtälöt                         | 2.1  |   | Faraday; Gauss; curl; electromagnetism || Faraday; Gauss; roottori; sähkömagnetismi
+Wavelength                            | Aallonpituus                              | 2.1  |   | distance; crest; period; metre || etäisyys; huippu; jakso; metri
+Photon                                | Fotoni                                    | 2.3  |   | quantum; particle; energy; Planck || kvantti; hiukkanen; energia; Planck
+Ray                                   | Säde                                      | 2.2  |   | straight line; light; arrow; path || suora; valo; nuoli; reitti
+Geometrical optics                    | Geometrinen optiikka                      | 2.2  |   | ray; straight line; wavelength; lens || säde; suora; aallonpituus; linssi
+Index of refraction                   | Taitekerroin                              | 2.2  |   | speed of light; medium; vacuum; glass || valon nopeus; väliaine; tyhjiö; lasi
+Snell's law                           | Snellin laki                              | 2.2  |   | refraction; sine; interface; angle || taittuminen; sini; rajapinta; kulma
+Plane of incidence                    | Tulotaso                                  | 2.2  | E | normal; ray; surface; reflection || normaali; säde; pinta; heijastus
+Angle of incidence                    | Tulokulma                                 | 2.2  |   | normal; ray; surface; measured || normaali; säde; pinta; mitataan
+Optical fiber                         | Optinen kuitu                             | 2.2  |   | core; cladding; total reflection; cable || ydin; vaippa; kokonaisheijastus; kaapeli
+Slow light                            | Hidas valo                                | 2.1  |   | group velocity; pulse; medium; speed || ryhmänopeus; pulssi; väliaine; vauhti
+
+== Chapter 3 / Luku 3: Waves: harmonic, plane and spherical waves; polarization / Aallot: harmoniset, taso- ja palloaallot; polarisaatio (lectures 3.1-3.10) - 21 terms ==
+Wave equation                         | Aaltoyhtälö                               | 3.2  |   | partial derivatives; second derivative; speed; solution || osittaisderivaatat; toinen derivaatta; nopeus; ratkaisu
+Harmonic wave                         | Harmoninen aalto                          | 3.3  | E | sine; cosine; oscillation; single frequency || sini; kosini; värähtely; yksi taajuus
+Amplitude                             | Amplitudi                                 | 3.3  |   | maximum; height; oscillation; strength || maksimi; korkeus; värähtely; voimakkuus
+Frequency                             | Taajuus                                   | 3.3  |   | hertz; period; oscillations; per second || hertsi; jaksonaika; värähtelyt; sekunnissa
+Angular frequency                     | Kulmataajuus                              | 3.3  |   | omega; radians; 2π; rad/s || omega; radiaanit; 2π; rad/s
+Wave number                           | Aaltoluku                                 | 3.3  |   | k; 2π; wavelength; radians per metre || k; 2π; aallonpituus; radiaania metriä kohti
+Wave vector                           | Aaltovektori                              | 3.3  |   | direction; propagation; k; magnitude || suunta; eteneminen; k; pituus
+Phase                                 | Vaihe                                     | 3.4  |   | argument; cosine; angle; offset || argumentti; kosini; kulma; siirtymä
+Phase velocity                        | Vaihenopeus                               | 3.4  |   | crest; ω/k; speed; propagates || aallonharja; ω/k; vauhti; etenee
+Superposition principle               | Superpositioperiaate                      | 3.5  | E | sum; add; linear; overlap || summa; lisätä; lineaarinen; päällekkäin
+Interference                          | Interferenssi                             | 3.5  |   | superposition; fringes; bright; dark || superpositio; raidat; kirkas; tumma
+Constructive interference             | Konstruktiivinen interferenssi            | 3.5  |   | in phase; bright; add up; maximum || samassa vaiheessa; kirkas; summautuu; maksimi
+Destructive interference              | Destruktiivinen interferenssi             | 3.5  |   | out of phase; dark; cancel; minimum || vastavaiheessa; tumma; kumoutuu; minimi
+Complex amplitude                     | Kompleksiamplitudi                        | 3.6  |   | phasor; imaginary part; magnitude; phase || osoitin; imaginaariosa; itseisarvo; vaihe
+Euler's formula                       | Eulerin kaava                             | 3.6  |   | exponential; cosine; sine; imaginary || eksponentti; kosini; sini; imaginääri
+Plane wave                            | Tasoaalto                                 | 3.7  | E | flat; infinite; wavefront; single direction || litteä; ääretön; aaltorintama; yksi suunta
+Spherical wave                        | Palloaalto                                | 3.9  | E | point source; round; radiates; 1/r || pistelähde; pyöreä; säteilee; 1/r
+Polarization of light                 | Valon polarisaatio                        | 3.10 |   | electric field; direction; oscillation; transverse || sähkökenttä; suunta; värähtely; poikittainen
+Linear polarization                   | Lineaarinen polarisaatio                  | 3.10 |   | fixed direction; straight line; electric field; plane || kiinteä suunta; suora; sähkökenttä; taso
+Circular polarization                 | Ympyräpolarisaatio                        | 3.10 |   | rotating; helix; handedness; quarter || pyörivä; kierre; kiertosuunta; neljännesaalto
+Elliptical polarization               | Elliptinen polarisaatio                   | 3.10 |   | general case; rotating; unequal amplitudes; phase difference || yleinen tapaus; pyörivä; eri amplitudit; vaihe-ero
+
+== Chapter 4 / Luku 4: Electromagnetic field: energy, radiation and fields in matter / Sähkömagneettinen kenttä: energia, säteily ja kentät aineessa (lectures 4.1-4.6) - 18 terms ==
+Speed of light                        | Valon nopeus                              | 4.1  |   | c; vacuum; fastest; 299 792 458 || c; tyhjiö; ylin raja; 299 792 458
+Lorentz force                         | Lorentzin voima                           | 4.1  |   | charge; velocity; magnetic; electric || varaus; nopeus; magneettinen; sähköinen
+Transverse wave                       | Poikittainen aalto                        | 4.2  |   | perpendicular; oscillation; propagation; electromagnetic || kohtisuorassa; värähtely; eteneminen; sähkömagneettinen
+Charge conservation                   | Varauksen säilyminen                      | 4.2  |   | continuity equation; created; destroyed; current || jatkuvuusyhtälö; syntyä; hävitä; virta
+Energy density                        | Energiatiheys                             | 4.3  |   | per volume; joules; field; stored || tilavuutta kohti; joulea; kenttä; varastoitunut
+Poynting vector                       | Poyntingin vektori                        | 4.3  | E | energy flow; cross product; direction; E × H || energiavirta; ristitulo; suunta; E × H
+Irradiance                            | Irradianssi                               | 4.3  | E | power per area; watts; intensity; time average || teho pinta-alaa kohti; watti; intensiteetti; aikakeskiarvo
+Radiation pressure                    | Säteilypaine                              | 4.4  | E | force; momentum; solar sail; optical tweezers || voima; liikemäärä; aurinkopurje; optinen pinsetti
+Electric dipole                       | Sähködipoli                               | 4.5  |   | two charges; opposite; separation; moment || kaksi varausta; vastakkaiset; etäisyys; momentti
+Dipole radiation                      | Dipolisäteily                             | 4.5  |   | oscillating charge; antenna; accelerating; far field || värähtelevä varaus; antenni; kiihtyvä; kaukokenttä
+Near field                            | Lähikenttä                                | 4.5  |   | close; source; distance; wavelength || lyhyt matka; lähde; etäisyys; aallonpituus
+Far field                             | Kaukokenttä                               | 4.5  |   | distance; 1/r; radiation; spherical wave || etäisyys; 1/r; säteily; palloaalto
+Optical path length                   | Optinen matka                             | 4.6  | E | refractive index; geometric distance; n times d; phase || taitekerroin; geometrinen etäisyys; n kertaa d; vaihe
+Macroscopic Maxwell's equations       | Makroskooppiset Maxwellin yhtälöt         | 4.6  |   | bound charge; matter; averaging; D and H || sidotut varaukset; aine; keskiarvo; D ja H
+Auxiliary fields                      | Apukentät                                 | 4.6  |   | D; H; displacement; matter || D; H; sähkövuon tiheys; aine
+Polarization density                  | Polarisaatiotiheys                        | 4.6  |   | dipole moment; per volume; material; bound charges || dipolimomentti; tilavuutta kohti; materiaali; sidotut varaukset
+Permittivity                          | Permittiivisyys                           | 4.6  |   | epsilon; dielectric; electric response; material || epsilon; dielektrinen; sähköinen vaste; materiaali
+Molecular polarizability              | Molekyylin polarisoituvuus                | 4.6  |   | induced dipole; response; alpha; electric field || indusoitunut dipoli; vaste; alfa; sähkökenttä
+
+== Chapter 5 / Luku 5: Light-matter interaction and lasing / Valon ja aineen vuorovaikutus ja laserin toiminta (lectures 5.1-5.4) - 19 terms ==
+Excited state                         | Viritystila                               | 5.1  |   | higher energy; atom; electron; absorbed photon || korkeampi energia; atomi; elektroni; absorboitu fotoni
+Ground state                          | Perustila                                 | 5.1  |   | lowest energy; atom; stable; electron || matalin energia; atomi; stabiili; elektroni
+Lifetime of a state                   | Tilan elinaika                            | 5.1  |   | decay; excited; time; exponential || hajoaminen; viritetty; kesto; eksponentiaalinen
+Resonance frequency                   | Resonanssitaajuus                         | 5.1  |   | natural; oscillator; driven; peak response || luonnollinen; oskillaattori; pakotettu; huippuvaste
+Absorption                            | Absorptio                                 | 5.2  | E | photon; energy; heat; attenuation || fotoni; energia; lämpö; vaimeneminen
+Spontaneous emission                  | Spontaani emissio                         | 5.2  |   | random; excited; photon; decay || satunnainen; viritetty; fotoni; hajoaminen
+Stimulated emission                   | Stimuloitu emissio                        | 5.2  |   | Einstein; identical photon; coherent; laser || Einstein; identtinen fotoni; koherentti; laser
+Scattering                            | Sironta                                   | 5.2  | E | redirect; Rayleigh; sky; particles || suunnan muutos; Rayleigh; taivas; hiukkaset
+Lorentz model                         | Lorentzin atomimalli                      | 5.3  | E | classical; damped oscillator; electron; spring || klassinen; vaimennettu värähtelijä; elektroni; jousi
+Dispersion                            | Dispersio                                 | 5.3  |   | wavelength; refractive index; prism; rainbow || aallonpituus; taitekerroin; prisma; sateenkaari
+Normal dispersion                     | Normaali dispersio                        | 5.3  | E | refractive index; wavelength; glass; blue || taitekerroin; aallonpituus; lasi; sininen
+Anomalous dispersion                  | Anomaalinen dispersio                     | 5.3  | E | absorption line; resonance; index; wavelength || absorptioviiva; resonanssi; taitekerroin; aallonpituus
+Sellmeier equation                    | Sellmeierin yhtälö                        | 5.3  |   | empirical; refractive index; glass; wavelength || empiirinen; taitekerroin; lasi; aallonpituus
+Boltzmann distribution                | Boltzmannin jakauma                       | 5.4  |   | thermal equilibrium; temperature; populations; exponential || termodynaaminen tasapaino; lämpötila; miehitykset; eksponentiaalinen
+Population inversion                  | Populaatioinversio                        | 5.4  |   | laser; excited; more; ground state || laser; viritetty; enemmän; perustila
+Gain                                  | Vahvistus                                 | 5.4  |   | amplification; stimulated emission; medium; laser || kasvattaa; stimuloitu emissio; väliaine; laser
+Optical amplifier                     | Optinen vahvistin                         | 5.4  |   | boost; signal; gain; fiber || tehostaa; signaali; kuitu; laser
+Laser pumping                         | Laserpumppaus                             | 5.4  |   | energy; inversion; excite; flash lamp || energia; inversio; virittää; salamalamppu
+Laser                                 | Laser                                     | 5.4  |   | coherent; stimulated emission; cavity; gain || koherentti; stimuloitu emissio; kaviteetti; vahvistus
+
+== Chapter 6 / Luku 6: Reflection and refraction / Heijastus ja taittuminen (lectures 6.1-6.6) - 14 terms ==
+Wavefront                             | Aaltorintama                              | 6.1  | E | same phase; surface; rays; perpendicular || sama vaihe; pinta; säteet; kohtisuorassa
+Reflection                            | Heijastus                                 | 6.2  |   | mirror; surface; bounce; angle of incidence || peili; pinta; kimpoaminen; tulokulma
+Refraction                            | Taittuminen                               | 6.2  |   | interface; speed; Snell; direction || rajapinta; nopeus; Snell; suunta
+Fermat's principle                    | Fermat'n periaate                         | 6.2  |   | shortest time; path; stationary; light || lyhin aika; reitti; stationaarinen; valo
+Principle of least action             | Vähimmän vaikutuksen periaate             | 6.2  |   | minimum; mechanics; path; Lagrangian || minimi; mekaniikka; reitti; Lagrangen funktio
+Fresnel coefficients                  | Fresnelin kertoimet                       | 6.4  | E | amplitude; reflected; transmitted; polarization || amplitudi; heijastunut; läpäissyt; polarisaatio
+Brewster's angle                      | Brewsterin kulma                          | 6.4  | E | p-polarized; no reflection; tangent; polarizing || p-polarisoitu; ei heijastusta; tangentti; polarisoiva
+Reflectivity                          | Heijastavuus                              | 6.5  |   | fraction; power; mirror; R || osuus; teho; peili; R
+Transmissivity                        | Läpäisevyys                               | 6.5  |   | fraction; power; passes through; T || osuus; teho; kulkee läpi; T
+Critical angle                        | Kriittinen kulma                          | 6.6  |   | total internal reflection; arcsin; denser; 90 degrees || kokonaisheijastus; arkussini; tiheämpi; 90 astetta
+Total internal reflection             | Kokonaisheijastus                         | 6.6  | E | critical angle; denser; optical fiber; prism || kriittinen kulma; tiheämpi; optinen kuitu; prisma
+Evanescent wave                       | Evanescentti aalto                        | 6.6  |   | exponentially decaying; beyond interface; total internal reflection; near field || eksponentiaalisesti vaimeneva; rajapinnan takana; kokonaisheijastus; lähikenttä
+Frustrated total internal reflection  | Estetty kokonaisheijastus                 | 6.6  |   | tunneling; gap; evanescent; coupling || tunnelointi; rako; evanescentti; kytkeytyminen
+Fresnel rhomb                         | Fresnelin rombi                           | 6.6  |   | circular polarization; phase shift; quarter-wave; prism || ympyräpolarisaatio; vaihesiirto; neljännesaalto; prisma
+
+== Chapter 7 / Luku 7: Superposition, standing waves, Fourier analysis and coherence / Superpositio, seisovat aallot, Fourier-analyysi ja koherenssi (lectures 7.1-7.5) - 12 terms ==
+Standing wave                         | Seisova aalto                             | 7.3  | E | nodes; antinodes; opposite directions; stationary || solmut; vatsat; vastakkaiset suunnat; paikallaan
+Boundary conditions                   | Reunaehdot                                | 7.3  |   | mirror; fixed end; edge; resonant modes || peili; kiinteä pää; reuna; resonanssimuodot
+Node (standing wave)                  | Solmukohta                                | 7.3  |   | zero amplitude; stationary; fixed point; antinode || nollaamplitudi; paikallaan; kiinteä piste; vatsa
+Fourier analysis                      | Fourier-analyysi                          | 7.4  | E | decompose; signal; frequencies; sinusoids || hajottaa; signaali; taajuudet; siniaallot
+Fourier synthesis                     | Fourier-synteesi                          | 7.4  | E | build; sum; harmonics; signal || rakentaa; summa; harmoniset; signaali
+Fourier transform                     | Fourier-muunnos                           | 7.4  |   | time domain; frequency domain; integral; spectrum || aika-alue; taajuusalue; integraali; spektri
+Spectrum                              | Spektri                                   | 7.4  |   | frequencies; components; colours; wavelengths || taajuudet; komponentit; värit; aallonpituudet
+Power spectrum                        | Tehospektri                               | 7.4  |   | squared; density; amplitude; frequency || neliö; tiheys; amplitudi; taajuus
+Bandwidth                             | Kaistanleveys                             | 7.4  |   | range; frequencies; width; pulse || alue; taajuudet; pulssi; spektri
+Pulse length                          | Pulssin pituus                            | 7.4  |   | duration; short; time; ultrashort || kesto; lyhyt; aika; ultralyhyt
+Uncertainty principle                 | Epätarkkuusperiaate                       | 7.4  |   | Heisenberg; bandwidth; duration; trade-off || Heisenberg; kaistanleveys; kesto; kompromissi
+Coherence time                        | Koherenssiaika                            | 7.5  |   | duration; phase relationship; wave train; correlated || kesto; vaihesuhde; aaltojono; korreloitunut
+
+== Chapter 8 / Luku 8: Interference and interferometers / Interferenssi ja interferometrit (lectures 8.1-8.7) - 25 terms ==
+Interferometer                        | Interferometri                            | 8.2  |   | measure; split; recombine; fringes || mitata; jakaa; yhdistää; raidat
+Double-slit experiment                | Kaksoisrakokoe                            | 8.2  |   | Young; two slits; fringes; interference || Young; kaksi aukkoa; raidat; interferenssi
+Wavefront-splitting interferometer    | Aaltorintaman jakava interferometri       | 8.2  |   | double slit; Young; aperture; two slits || Young; aukko; kaksi lähdettä; raidat
+Amplitude-splitting interferometer    | Amplitudin jakava interferometri          | 8.3  |   | partial mirror; two beams; Michelson; division || osittaispeili; kaksi sädettä; Michelson; puolittaa
+Interference fringes                  | Interferenssiraidat                       | 8.1  |   | bright; dark; pattern; path difference || kirkas; tumma; kuvio; matkaero
+Order of interference                 | Interferenssin kertaluku                  | 8.1  |   | integer; path difference; fringe; wavelengths || kokonaisluku; matkaero; raita; aallonpituudet
+Temporal coherence                    | Ajallinen koherenssi                      | 8.1  |   | longitudinal; correlation time; bandwidth; wave train || pitkittäinen; korrelaatioaika; kaistanleveys; aaltojono
+Spatial coherence                     | Paikallinen koherenssi                    | 8.1  |   | transverse; source size; correlation; different points || poikittainen; lähteen koko; korrelaatio; eri pisteet
+Coherence length                      | Koherenssipituus                          | 8.1  |   | distance; wave train; temporal; speed of light || etäisyys; aaltojono; ajallinen; valon nopeus
+Thin film                             | Ohutkalvo                                 | 8.3  | E | layer; coating; nanometres; reflected || kerros; pinnoite; nanometrit; heijastunut
+Anti-reflection coating               | Heijastuksenestopinnoite                  | 8.3  |   | quarter wavelength; lens; glare; destructive || neljännesaallonpituus; linssi; häikäisy; destruktiivinen
+Newton's rings                        | Newtonin renkaat                          | 8.3  |   | curved surface; flat glass; circular fringes; lens || kaareva pinta; tasolasi; ympyräraidat; linssi
+Haidinger fringes                     | Haidingerin raidat                        | 8.3  |   | equal inclination; circular; plate; infinity || sama tulokulma; ympyrä; levy; ääretön
+Michelson interferometer              | Michelsonin interferometri                | 8.4  | E | beam splitter; mirrors; LIGO; path difference || säteenjakaja; peilit; LIGO; matkaero
+Beam splitter                         | Säteenjakaja                              | 8.4  |   | partial mirror; half; reflect; transmit || osittaispeili; puoli; heijastaa; läpäisee
+Compensator                           | Kompensaattori                            | 8.4  |   | plate; glass; dispersion; Michelson || levy; lasi; dispersio; Michelson
+Interferogram                         | Interferogrammi                           | 8.4  |   | mirror position; signal; detector; Fourier transform || peilin asema; signaali; ilmaisin; Fourier-muunnos
+Multiple-beam interference            | Usean säteen interferenssi                | 8.5  |   | many reflections; geometric series; sharp; cavity || monta heijastusta; geometrinen sarja; terävä; kaviteetti
+Finesse                               | Finesse                                   | 8.5  |   | sharpness; peak width; free spectral range; reflectivity || terävyys; huipun leveys; vapaa spektrialue; heijastavuus
+Fabry–Pérot interferometer            | Fabry–Perot-interferometri                | 8.6  | E | two mirrors; parallel; cavity; multiple reflections || kaksi peiliä; yhdensuuntainen; kaviteetti; monta heijastusta
+Etalon                                | Etalon                                    | 8.6  |   | parallel surfaces; plate; resonance; fixed mirrors || yhdensuuntaiset pinnat; levy; resonanssi; kiinteät peilit
+Airy function                         | Airyn funktio                             | 8.6  |   | transmission; peaks; resonance; finesse || läpäisy; huiput; resonanssi; finesse
+Full width at half maximum (FWHM)     | Täysi leveys puolimaksimikohdassa (FWHM)  | 8.6  |   | peak; linewidth; resonance; Lorentzian || huippu; viivanleveys; resonanssi; Lorentzin käyrä
+Free spectral range                   | Vapaa spektrialue                         | 8.7  |   | spacing; peaks; adjacent; resonances || väli; huiput; vierekkäiset; resonanssit
+Resolving power                       | Erotuskyky                                | 8.7  |   | distinguish; spectral lines; separate; wavelengths || erilliset; spektriviivat; tarkkuus; aallonpituudet
+
+== Chapter 9 / Luku 9: Diffraction / Diffraktio (lectures 9.1-9.5) - 10 terms ==
+Diffraction                           | Diffraktio                                | 9.1  |   | spreading; aperture; edge; wave nature || leviäminen; aukko; reuna; aaltoluonne
+Huygens–Fresnel principle             | Huygensin–Fresnelin periaate              | 9.1  |   | wavelets; secondary sources; wavefront; each point || elementaariaallot; toissijaiset lähteet; aaltorintama; jokainen piste
+Fresnel diffraction                   | Fresnelin diffraktio                      | 9.1  | E | near field; curved wavefronts; close; distance || lähikenttä; kaareva aaltorintama; lähellä; etäisyys
+Fraunhofer diffraction                | Fraunhoferin diffraktio                   | 9.2  | E | far field; parallel; Fourier transform; plane wave || kaukokenttä; yhdensuuntainen; Fourier-muunnos; tasoaalto
+Single-slit diffraction               | Yhden raon diffraktio                     | 9.3  |   | sinc; aperture size; central maximum; Fraunhofer || sinc; aukon koko; keskimaksimi; Fraunhofer
+Sinc function                         | Sinc-funktio                              | 9.3  |   | sin x over x; slit; Fourier transform; rectangular || sin x per x; rako; Fourier-muunnos; suorakulmio
+Circ function                         | Circ-funktio                              | 9.3  |   | circular aperture; disk; radius; Bessel || pyöreä aukko; kiekko; säde; Bessel
+Bessel function                       | Besselin funktio                          | 9.3  |   | circular aperture; J1; oscillating; Airy || pyöreä aukko; J1; värähtelevä; Airy
+Diffraction grating                   | Diffraktiohila                            | 9.5  | E | periodic; slits; orders; spectrometer || jaksollinen; raot; kertaluvut; spektrometri
+Order of diffraction                  | Diffraktion kertaluku                     | 9.5  |   | grating equation; integer; maximum; angle || hilayhtälö; kokonaisluku; maksimi; kulma
+
+== Chapter 10 / Luku 10: Geometrical optics and optical instruments / Geometrinen optiikka ja optiset laitteet (lectures 10.1-10.13) - 51 terms ==
+Conjugate points                      | Konjugaattipisteet                        | 10.1 |   | object; image; pair; imaging || kohde; kuva; pari; kuvautuminen
+Stigmatic imaging                     | Stigmaattinen kuvautuminen                | 10.1 |   | point to point; perfect image; all rays; focus || pisteestä pisteeseen; täydellinen kuva; kaikki säteet; polttopiste
+Real image                            | Todellinen kuva                           | 10.1 |   | screen; converge; project; actually || varjostin; suppenee; heijastaa; oikeasti
+Virtual image                         | Virtuaalikuva                             | 10.1 |   | cannot be projected; diverge; behind; appears || ei voi projisoida; hajaantuu; takana; näyttää
+Aberrations                           | Aberraatiot                               | 10.1 |   | imperfections; blur; distortion; lens defects || virheet; sumeus; vääristymä; linssin virheet
+Diffraction-limited system            | Diffraktiorajoitteinen järjestelmä        | 10.1 |   | perfect; resolution; no aberrations; wave nature || täydellinen; erotuskyky; ei aberraatioita; aaltoluonne
+Paraxial approximation                | Paraksiaalinen approksimaatio             | 10.2 |   | small angles; near axis; sin θ; first order || pienet kulmat; lähellä akselia; sin θ; ensimmäinen kertaluku
+Optical axis                          | Optinen akseli                            | 10.2 |   | symmetry; line; through centre; lens || symmetria; suora; keskipisteen kautta; linssi
+Focal plane                           | Polttotaso                                | 10.2 |   | perpendicular; axis; parallel rays; focus || kohtisuorassa; akseli; yhdensuuntaiset säteet; fokus
+Gaussian lens formula                 | Gaussin linssikaava                       | 10.3 |   | 1/f; object distance; image distance; imaging equation || 1/f; kohteen etäisyys; kuvan etäisyys; kuvausyhtälö
+Focal length                          | Polttoväli                                | 10.3 |   | distance; focus; converge; parallel rays || etäisyys; fokus; suppenee; yhdensuuntaiset säteet
+Front focal length                    | Etupolttoväli                             | 10.3 | E | object side; principal plane; distance; parallel rays || kohdepuoli; päätaso; etäisyys; yhdensuuntaiset säteet
+Back focal length                     | Takapolttoväli                            | 10.3 | E | image side; principal plane; distance; parallel rays || kuvapuoli; päätaso; etäisyys; yhdensuuntaiset säteet
+Thin lens                             | Ohut linssi                               | 10.3 |   | negligible thickness; converging; diverging; focal length || mitätön paksuus; keräävä; hajottava; polttoväli
+Lensmaker's equation                  | Linssintekijän yhtälö                     | 10.3 |   | radii of curvature; refractive index; focal length; glass || kaarevuussäteet; taitekerroin; polttoväli; lasi
+Refractive power                      | Taittovoima                               | 10.3 |   | diopters; 1/f; strength; lens || dioptria; 1/f; voimakkuus; linssi
+Transverse magnification              | Poikittaissuurennus                       | 10.4 |   | image height; object height; size ratio; inverted || kuvan korkeus; kohteen korkeus; kokosuhde; ylösalaisin
+Longitudinal magnification            | Pitkittäissuurennus                       | 10.4 |   | along axis; depth; squared; image || akselin suunnassa; syvyys; neliö; kuva
+Ray tracing                           | Säteenseuranta                            | 10.5 |   | principal rays; diagram; lens; graphical || pääsäteet; piirros; linssi; graafinen
+Chromatic aberration                  | Kromaattinen aberraatio                   | 10.5 | E | colors; dispersion; focus; wavelengths || värit; dispersio; fokus; aallonpituudet
+Aperture stop                         | Aukkorajoitin                             | 10.6 |   | limits; light cone; diaphragm; brightness || valokeila; diafragma; kirkkaus; aukon koko
+Field stop                            | Kenttärajoitin                            | 10.6 |   | visible area; edge; image; limits || näkyvä alue; reuna; kuva; kehys
+Entrance pupil                        | Sisääntulopupilli                         | 10.6 |   | image of stop; object side; light cone; aperture stop || rajoittimen kuva; kohdepuoli; valokeila; aukkorajoitin
+Exit pupil                            | Ulostulopupilli                           | 10.6 |   | image side; aperture stop; eye; bright disk || kuvapuoli; aukkorajoitin; silmä; kirkas kiekko
+Vignetting                            | Vinjetointi                               | 10.6 |   | darkening; corners; blocked; image edges || tummuminen; kulmat; peittyvä; kuvan reunat
+Relative aperture                     | Suhteellinen aukko                        | 10.6 |   | f-number; diameter; focal length; camera || f-luku; halkaisija; polttoväli; kamera
+Spherical mirror                      | Pallopeili                                | 10.7 |   | concave; convex; radius of curvature; reflect || kovera; kupera; kaarevuussäde; heijastaa
+Prism                                 | Prisma                                    | 10.8 | E | triangular; dispersion; glass; rainbow || kolmion muotoinen; dispersio; lasi; sateenkaari
+Accommodation                         | Akkommodaatio                             | 10.9 |   | focus; lens; near; far || tarkennus; mykiö; lähellä; kaukana
+Near point                            | Lähipiste                                 | 10.9 |   | closest; sharp; eye; 25 cm || minimietäisyys; tarkka; silmä; 25 cm
+Far point                             | Kaukopiste                                | 10.9 |   | farthest; infinity; sharp; relaxed || maksimietäisyys; ääretön; tarkka; rentoutunut
+Myopia                                | Likinäköisyys                             | 10.9 |   | nearsightedness; far away blurry; minus lens; eyeball || kaukana sumea; miinuslinssi; silmämuna; silmälasit
+Hyperopia                             | Kaukonäköisyys                            | 10.9 |   | farsightedness; near blurry; plus lens; short eyeball || lähellä sumea; plus-linssi; lyhyt silmämuna; silmälasit
+Astigmatism                           | Hajataitto                                | 10.9 |   | cylindrical; cornea; two axes; blur || sylinterinen; sarveiskalvo; kaksi akselia; sumeus
+Cornea                                | Sarveiskalvo                              | 10.9 |   | front; outer; refracts; transparent || etuosa; uloin; taittaa; läpinäkyvä
+Retina                                | Verkkokalvo                               | 10.9 |   | back of eye; photoreceptors; image; rods || silmän perä; valoreseptorit; kuva; sauvat
+Magnifying glass                      | Suurennuslasi                             | 10.10|   | simple lens; viewing angle; virtual image; near point || yksinkertainen linssi; katselukulma; virtuaalikuva; lähipiste
+Viewing angle                         | Katselukulma                              | 10.10|   | angular size; subtended; eye; object || kulmakoko; silmä; kohde; näennäinen
+Eyepiece                              | Okulaari                                  | 10.11| E | ocular; eye; magnifies; image || silmä; suurentaa; kuva; katselulaite
+Objective                             | Objektiivi                                | 10.11|   | lens; collects; microscope; specimen || linssi; kerää; mikroskooppi; näyte
+Microscope                            | Mikroskooppi                              | 10.12| E | small; objective; eyepiece; magnify || pieni; objektiivi; okulaari; suurentaa
+Magnifying power                      | Kulmasuurennus                            | 10.12|   | enlargement; ratio; viewing angle; eye || suhde; katselukulma; silmä; kohde
+Numerical aperture                    | Numeerinen apertuuri                      | 10.12|   | NA; n sin θ; resolution; objective || NA; n sin θ; erotuskyky; objektiivi
+Tube length                           | Tubuspituus                               | 10.12|   | distance; objective; eyepiece; microscope || etäisyys; objektiivi; okulaari; mikroskooppi
+Field of view                         | Näkökenttä                                | 10.12|   | visible area; angle; instrument; see || näkyvä alue; kulma; laite; nähdä
+Telescope                             | Kaukoputki                                | 10.13|   | distant; objective; eyepiece; stars || kaukainen; objektiivi; okulaari; tähdet
+Afocal                                | Afokaalinen                               | 10.13| E | parallel rays in; parallel rays out; no focus; telescope || yhdensuuntaiset säteet sisään; yhdensuuntaiset säteet ulos; ei polttopistettä; kaukoputki
+Galilean telescope                    | Galilein kaukoputki                       | 10.13| E | concave eyepiece; upright; opera glasses; afocal || kovera okulaari; pystykuva; oopperakiikari; afokaalinen
+Keplerian telescope                   | Keplerin kaukoputki                       | 10.13| E | two convex lenses; inverted; real intermediate image; afocal || kaksi kuperaa linssiä; ylösalaisin; todellinen välikuva; afokaalinen
+Newtonian telescope                   | Newtonin kaukoputki                       | 10.13| E | reflecting; primary mirror; flat secondary; parabolic || heijastava; pääpeili; tasopeili; paraboloidi
+Binoculars                            | Kiikari                                   | 10.13|   | two tubes; prisms; both eyes; upright || kaksi putkea; prismat; molemmat silmät; pystykuva
+
+== Extra / Lisä: Math toolbox (vector calculus and electrostatics, optional) / Matemaattiset työkalut (vektorianalyysi ja sähköstatiikka, valinnainen) (lectures 3.11-3.12) - 9 terms ==
+Dot product                           | Pistetulo                                 | 3.11 |   | scalar; projection; cosine; parallel || skalaari; projektio; kosini; yhdensuuntainen
+Cross product                         | Ristitulo                                 | 3.11 |   | perpendicular; vector; right-hand rule; sine || kohtisuorassa; vektori; oikean käden sääntö; sini
+Gradient                              | Gradientti                                | 3.11 |   | slope; steepest; scalar field; nabla || kaltevuus; jyrkin; skalaarikenttä; nabla
+Divergence                            | Divergenssi                               | 3.11 |   | source; outflow; nabla dot; flux || lähde; ulosvirtaus; nabla piste; vuo
+Curl                                  | Roottori                                  | 3.11 |   | rotation; circulation; nabla cross; swirl || pyörre; kierto; nabla risti; pyörivä
+Laplacian                             | Laplacen operaattori                      | 3.11 |   | second derivative; nabla squared; divergence of gradient; wave equation || toinen derivaatta; nabla toiseen; gradientin divergenssi; aaltoyhtälö
+Divergence theorem                    | Divergenssilause                          | 3.12 |   | volume; surface; flux; Gauss || tilavuus; pinta; vuo; Gauss
+Electrostatics                        | Sähköstatiikka                            | 3.12 |   | static charges; Coulomb; potential; time dependence || staattiset varaukset; Coulomb; potentiaali; aikariippuvuus
+Poisson's equation                    | Poissonin yhtälö                          | 3.12 |   | potential; charge density; Laplacian; electrostatic || potentiaali; varaustiheys; Laplacen operaattori; sähköstaattinen
