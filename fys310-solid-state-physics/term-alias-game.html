@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Term Alias: FYS.310 Concept Card Game</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys310-solid-state-physics.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+  .wrap { max-width: 560px; margin: 0 auto; padding: 14px 14px 32px; }
+  h1 { margin: 2px 0 2px; }
+  .sub { color: var(--text-dim); margin: 0 0 14px; font-size: var(--fs-small); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .chip { font: 500 0.72rem/1 var(--font-body); padding: 7px 10px; border-radius: 999px; cursor: pointer;
+          border: 1px solid var(--border); background: var(--panel); color: var(--text-dim);
+          display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: inline-block; }
+  .chip[aria-pressed="true"] { color: var(--text); border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--panel)); }
+  .chip:focus-visible, .btn-main:focus-visible, .btn-ghost:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .timerbox { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 14px; }
+  .ring { position: relative; width: 104px; height: 104px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .track { stroke: var(--border); }
+  .ring .bar { stroke: var(--green); stroke-linecap: round; transition: stroke .3s; }
+  .ring .num { position: absolute; inset: 0; display: grid; place-items: center;
+               font: 600 2rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+  .ring.warn .bar { stroke: var(--yellow); }
+  .ring.danger .bar { stroke: var(--red); }
+  .ring.danger .num { color: var(--red); animation: pulse .5s ease-in-out infinite alternate; }
+  .ring.idle .bar { stroke: var(--text-faint); }
+  @keyframes pulse { to { transform: scale(1.12); } }
+
+  .stage { position: relative; perspective: 1400px; height: min(62vw, 330px); min-height: 250px; margin-bottom: 16px; }
+
+  .card { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+  .card.flipped { transform: rotateY(180deg); }
+  .card.hide { opacity: 0; transition: opacity .2s; }
+  .face { position: absolute; inset: 0; border-radius: 20px; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+          border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          box-shadow: 0 18px 40px -16px rgba(0,0,0,.55); padding: 22px 20px; text-align: center; }
+  .back { background:
+      radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--violet) 40%, transparent), transparent 62%),
+      repeating-linear-gradient(45deg, var(--panel) 0 14px, var(--panel-2) 14px 28px);
+      border-color: var(--violet); }
+  .back .mark { font: 700 3.4rem/1 var(--font-body); color: var(--text); opacity: .9; }
+  .back .lab { font: 500 0.8rem/1 var(--font-mono); letter-spacing: .18em; color: var(--text-dim); margin-top: 10px; }
+  .front { transform: rotateY(180deg);
+           background: linear-gradient(160deg, color-mix(in srgb, var(--cc, var(--violet)) 22%, var(--panel)) 0%, var(--panel) 60%);
+           border-color: var(--cc, var(--violet)); }
+  .front::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: var(--cc, var(--violet)); }
+  .front .cat { position: absolute; top: 18px; left: 0; right: 0; font: 600 0.68rem/1 var(--font-mono); letter-spacing: .1em;
+                text-transform: uppercase; color: var(--cc, var(--violet)); }
+  .front .term { font: 700 clamp(1.5rem, 7vw, 2.4rem)/1.15 var(--font-body); letter-spacing: -.01em; text-wrap: balance; margin: 18px 0 14px; }
+  .front .term.long { font-size: clamp(1.15rem, 5vw, 1.65rem); }
+  .front .taboo { font-size: .7rem; color: var(--text-dim); }
+  .front .taboo span { display: inline-block; margin: 4px 3px 0; padding: 3px 8px; border-radius: 6px; font: 500 .72rem/1.2 var(--font-mono);
+                       border: 1px dashed var(--red); color: var(--red); }
+  .front .corner { position: absolute; bottom: 14px; right: 18px; font: 500 .68rem/1 var(--font-mono); color: var(--text-faint); }
+  .card.over .front { filter: saturate(.35) brightness(.85); }
+  .badge { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(-8deg) scale(.4); opacity: 0; pointer-events: none;
+           font: 700 1.5rem/1 var(--font-body); padding: 10px 18px; border-radius: 12px; border: 3px solid var(--red); color: var(--red);
+           background: color-mix(in srgb, var(--bg) 82%, transparent); transition: all .35s cubic-bezier(.3,1.6,.5,1); z-index: 5; white-space: nowrap; }
+  .badge.show { opacity: 1; transform: translate(-50%,-50%) rotate(-8deg) scale(1); }
+  .badge.ok { border-color: var(--green); color: var(--green); }
+
+  .dicewrap { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 34px; }
+  .dicewrap.on { display: flex; }
+  .dice3d { perspective: 700px; animation: hop 1.7s cubic-bezier(.3,0,.4,1) both; }
+  @keyframes hop { 0% { transform: translateY(0); } 18% { transform: translateY(-70px); } 38% { transform: translateY(0); } 52% { transform: translateY(-34px); }
+                   66% { transform: translateY(0); } 78% { transform: translateY(-12px); } 88%,100% { transform: translateY(0); } }
+  .cube { --s: 84px; position: relative; width: var(--s); height: var(--s); transform-style: preserve-3d; transition: transform 1.7s cubic-bezier(.15,.6,.25,1); }
+  .cface { position: absolute; width: var(--s); height: var(--s); border-radius: 14px; background: linear-gradient(145deg, #ffffff, #d9dbe6);
+           border: 1px solid #b9bccb; display: grid; grid-template: repeat(3,1fr) / repeat(3,1fr); padding: 12px; backface-visibility: visible; }
+  .cface b { width: 15px; height: 15px; border-radius: 50%; background: #1b1c24; place-self: center; box-shadow: inset 0 2px 3px rgba(255,255,255,.2); }
+  .f1 { transform: rotateY(0deg) translateZ(42px); } .f2 { transform: rotateY(90deg) translateZ(42px); }
+  .f3 { transform: rotateY(180deg) translateZ(42px); } .f4 { transform: rotateY(-90deg) translateZ(42px); }
+  .f5 { transform: rotateX(90deg) translateZ(42px); } .f6 { transform: rotateX(-90deg) translateZ(42px); }
+  .shadow { width: 76px; height: 12px; border-radius: 50%; background: rgba(0,0,0,.45); filter: blur(5px); animation: sh 1.7s cubic-bezier(.3,0,.4,1) both; }
+  @keyframes sh { 0%,38%,66%,88%,100% { transform: scale(1); opacity: .6; } 18% { transform: scale(.55); opacity: .25; } 52% { transform: scale(.8); opacity: .4; } 78% { transform: scale(.92); opacity: .5; } }
+  .rollmsg { font: 500 .8rem/1 var(--font-mono); color: var(--text-dim); letter-spacing: .14em; text-transform: uppercase; margin-top: -8px; }
+
+  .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn-main { font: 600 1.05rem/1 var(--font-body); padding: 15px 28px; border-radius: 12px; border: 0; cursor: pointer; color: #fff;
+              background: linear-gradient(135deg, var(--violet), var(--blue)); box-shadow: 0 10px 24px -10px var(--violet); transition: transform .12s, filter .12s; }
+  .btn-main:hover { filter: brightness(1.1); } .btn-main:active { transform: translateY(1px) scale(.98); }
+  .btn-main[disabled] { opacity: .45; cursor: default; filter: none; }
+  .btn-ghost { font: 500 .9rem/1 var(--font-body); padding: 14px 18px; border-radius: 12px; cursor: pointer; background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost.ok { border-color: var(--green); color: var(--green); }
+  .btn-ghost:hover { background: var(--panel-2); }
+  [hidden] { display: none !important; }
+
+  .stats { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; color: var(--text-dim); font: 500 .75rem/1.3 var(--font-mono); }
+  .stats b { color: var(--text); font-weight: 600; }
+  .stats button { all: unset; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .rules { margin-top: 18px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); color: var(--text-dim); font-size: var(--fs-small); }
+  .rules summary { cursor: pointer; color: var(--text); font-weight: 500; }
+  .rules ul { margin: 8px 0 2px; padding-left: 1.1rem; line-height: 1.6; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition-duration: .01s; } .dice3d, .shadow { animation: none; } .cube { transition-duration: .4s; } .ring.danger .num { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Term Alias</h1>
+  <p class="sub">Explain the concept on the card to your team without saying the term itself. You have one minute per card.</p>
+
+  <div class="chips" id="chips" role="group" aria-label="Topic filter"></div>
+
+  <div class="timerbox">
+    <div class="ring idle" id="ring" role="timer" aria-live="off">
+      <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="44" fill="none" stroke-width="7"/><circle class="bar" id="bar" cx="50" cy="50" r="44" fill="none" stroke-width="7"/></svg>
+      <div class="num" id="num">60</div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="card" id="card">
+      <div class="face back"><div class="mark">?</div><div class="lab">FYS.310 · SSP</div></div>
+      <div class="face front" id="front">
+        <div class="cat" id="cat"></div>
+        <div class="term" id="term"></div>
+        <div class="taboo" id="taboo"></div>
+        <div class="corner" id="corner"></div>
+      </div>
+    </div>
+    <div class="badge" id="badge">Time's up!</div>
+    <div class="dicewrap" id="dicewrap" aria-hidden="true">
+      <div class="dice3d" id="dice3d"><div class="cube" id="cube"></div></div>
+      <div class="shadow"></div>
+      <div class="rollmsg">Rolling…</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-ghost ok" id="gotit" hidden>✓ Guessed it</button>
+    <button class="btn-main" id="main">🎲 Roll &amp; draw a card</button>
+  </div>
+
+  <div class="stats">
+    <span>Cards left <b id="sLeft">0</b></span>
+    <span>Played <b id="sPlayed">0</b></span>
+    <span>Guessed <b id="sGot">0</b></span>
+    <button id="mute" aria-pressed="false">Sound: on</button>
+    <button id="reset">Reset</button>
+  </div>
+
+  <details class="rules">
+    <summary>How to play</summary>
+    <ul>
+      <li>One player draws a card and explains the term; teammates guess. The clock starts when the card is revealed.</li>
+      <li>Do not say the term or any word marked <em>Don't say</em>. No gestures, no spelling, no "rhymes with".</li>
+      <li>Press <em>Guessed it</em> when the team gets it. The card ends the moment the timer hits zero.</li>
+      <li>Use the topic chips to play only the chapters you want to revise. Cards do not repeat until the filtered deck is used up.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+const DATA = {"cats": ["Crystal structure & reciprocal lattice", "Bonding in solids", "Mechanical properties", "Lattice vibrations & thermal properties", "Electrons in solids", "Semiconductors", "Dielectrics & quantum models"], "terms": [{"t": "Bravais lattice", "c": 0}, {"t": "Primitive cell", "c": 0}, {"t": "Wigner–Seitz cell", "c": 0}, {"t": "Diamond structure", "c": 0}, {"t": "Face-centered cubic (fcc)", "c": 0}, {"t": "Primitive cubic (Simple cubic)", "c": 0}, {"t": "Body-centered cubic (bcc)", "c": 0}, {"t": "Zincblende structure", "c": 0}, {"t": "Ewald construction", "c": 0}, {"t": "Brillouin zone", "c": 0}, {"t": "Structure factor", "c": 0}, {"t": "Laue condition", "c": 0}, {"t": "Fourier series", "c": 0}, {"t": "Reciprocal lattice", "c": 0}, {"t": "Truncated octahedron", "c": 0}, {"t": "Covalent bond", "c": 1}, {"t": "Ionic bond", "c": 1}, {"t": "Van der Waals bond", "c": 1}, {"t": "Metallic bond", "c": 1}, {"t": "Hydrogen bond", "c": 1}, {"t": "Antisymmetric wavefunction", "c": 1}, {"t": "Madelung constant", "c": 1}, {"t": "Pauli exclusion principle", "c": 1}, {"t": "Stress–Strain curve", "c": 2}, {"t": "Elastic deformation", "c": 2}, {"t": "Plastic deformation", "c": 2}, {"t": "Elastic constants", "c": 2}, {"t": "Stress", "c": 2}, {"t": "Strain", "c": 2}, {"t": "Young's modulus", "c": 2}, {"t": "Shear modulus", "c": 2}, {"t": "Necking", "c": 2}, {"t": "True stress", "c": 2}, {"t": "Lattice defects", "c": 2}, {"t": "Work hardening", "c": 2}, {"t": "Ductile material", "c": 2}, {"t": "Brittle material", "c": 2}, {"t": "Tensile stress", "c": 2}, {"t": "Dispersion relation", "c": 3}, {"t": "Phonon", "c": 3}, {"t": "Heat capacity", "c": 3}, {"t": "Thermal expansion", "c": 3}, {"t": "Optical phonon branch", "c": 3}, {"t": "Acoustic phonon branch", "c": 3}, {"t": "1st Brillouin zone", "c": 3}, {"t": "Density of states (DOS)", "c": 3}, {"t": "Debye model", "c": 3}, {"t": "Thermal conductivity", "c": 3}, {"t": "Gamma-point", "c": 3}, {"t": "Electron–phonon scattering", "c": 3}, {"t": "Phonon–phonon scattering", "c": 3}, {"t": "Phonon–impurity scattering", "c": 3}, {"t": "Band structure", "c": 4}, {"t": "Band gap", "c": 4}, {"t": "Electric conductivity", "c": 4}, {"t": "Drude model", "c": 4}, {"t": "Drude–Sommerfeld model", "c": 4}, {"t": "Free-electron model", "c": 4}, {"t": "Fermi surface/energy", "c": 4}, {"t": "Equipartition theorem", "c": 4}, {"t": "Wiedemann–Franz law", "c": 4}, {"t": "Electric-field screening", "c": 4}, {"t": "Screening length", "c": 4}, {"t": "Electronic density of states (DOS)", "c": 4}, {"t": "Bloch theorem", "c": 4}, {"t": "Mean free path", "c": 4}, {"t": "Central equation", "c": 4}, {"t": "Effective mass of an electron", "c": 4}, {"t": "Compound semiconductor", "c": 5}, {"t": "Elemental semiconductor", "c": 5}, {"t": "p-type doping of semiconductors", "c": 5}, {"t": "n-type doping of semiconductors", "c": 5}, {"t": "III–V semiconductors", "c": 5}, {"t": "Intrinsic semiconductor", "c": 5}, {"t": "Hall effect", "c": 5}, {"t": "Mobility", "c": 5}, {"t": "Extrinsic semiconductor", "c": 5}, {"t": "Mass action law", "c": 5}, {"t": "Born–Oppenheimer approximation", "c": 5}, {"t": "Conduction band", "c": 5}, {"t": "Valence band", "c": 5}, {"t": "Matthiessen's rule", "c": 5}, {"t": "Indirect band gap", "c": 5}, {"t": "pn-junction", "c": 5}, {"t": "Tight-binding model", "c": 6}, {"t": "Clausius–Mossotti relation", "c": 6}, {"t": "Lorentz–Lorenz equation", "c": 6}, {"t": "Bra–ket notation", "c": 6}, {"t": "Hilbert space", "c": 6}, {"t": "Polarizability (of an atomic emitter/scatterer)", "c": 6}, {"t": "Local-field effects", "c": 6}, {"t": "Frequency-dependent permittivity", "c": 6}, {"t": "Lorentz model", "c": 6}, {"t": "YAG crystal", "c": 6}, {"t": "Insulator", "c": 6}, {"t": "Metal", "c": 6}, {"t": "Semiconductor", "c": 6}]};
+const ROUND = 60;
+const COLORS = ['#7b5cfa','#f2914b','#e8d44d','#23c7d9','#3e8ef7','#3ecf6e','#f0553f'];
+const $ = id => document.getElementById(id);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const state = { active: new Set(DATA.cats.map((_, i) => i)), deck: [], phase: 'idle', played: 0, got: 0, muted: false, raf: 0, endAt: 0, lastTick: -1, cur: null };
+
+/* topic chips */
+const chips = $('chips');
+DATA.cats.forEach((name, i) => {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.style.setProperty('--c', COLORS[i]); b.setAttribute('aria-pressed', 'true');
+  b.innerHTML = '<i></i>' + name;
+  b.onclick = () => {
+    if (state.phase === 'rolling') return;
+    if (state.active.has(i)) { if (state.active.size > 1) state.active.delete(i); } else state.active.add(i);
+    b.setAttribute('aria-pressed', state.active.has(i));
+    buildDeck();
+  };
+  chips.appendChild(b);
+});
+
+/* dice faces */
+const PIPS = { 1:[5], 2:[1,9], 3:[1,5,9], 4:[1,3,7,9], 5:[1,3,5,7,9], 6:[1,3,4,6,7,9] };
+const cube = $('cube');
+for (let f = 1; f <= 6; f++) {
+  const d = document.createElement('div'); d.className = 'cface f' + f;
+  for (let p = 1; p <= 9; p++) { const c = document.createElement('div'); if (PIPS[f].includes(p)) c.innerHTML = '<b></b>'; d.appendChild(c); }
+  cube.appendChild(d);
+}
+const FACE_ROT = { 1:[0,0], 2:[0,-90], 3:[0,-180], 4:[0,90], 5:[-90,0], 6:[90,0] };
+let cubeX = 0, cubeY = 0;
+
+/* deck */
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function buildDeck() { state.deck = shuffle(DATA.terms.filter(t => state.active.has(t.c))); updateStats(); }
+function updateStats() { $('sLeft').textContent = state.deck.length; $('sPlayed').textContent = state.played; $('sGot').textContent = state.got; }
+
+/* term display */
+const STOP = new Set(['of','the','an','and','to','in','for','on']);
+function tabooWords(term) {
+  const seen = new Set();
+  return term.replace(/[()/]/g, ' ').split(/[\s–—\-]+/).map(w => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}'’]+$/gu, ''))
+    .filter(w => w.length > 2 && !STOP.has(w.toLowerCase()) && !seen.has(w.toLowerCase()) && seen.add(w.toLowerCase()));
+}
+function showCard(t) {
+  state.cur = t;
+  const cc = COLORS[t.c];
+  $('front').style.setProperty('--cc', cc);
+  $('cat').textContent = DATA.cats[t.c];
+  const termEl = $('term'); termEl.textContent = t.t; termEl.classList.toggle('long', t.t.length > 28);
+  const tb = $('taboo'); tb.innerHTML = '';
+  const words = tabooWords(t.t);
+  if (words.length) { tb.append("Don't say"); const wrap = document.createElement('div'); words.forEach(w => { const s = document.createElement('span'); s.textContent = w; wrap.appendChild(s); }); tb.appendChild(wrap); }
+  $('corner').textContent = 'Card ' + state.played;
+}
+
+/* audio */
+let ac;
+function beep(f, d, type = 'sine', v = .12) {
+  if (state.muted) return;
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = f; g.gain.value = v; g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + d);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d); } catch (e) {}
+}
+
+/* timer */
+const C = 2 * Math.PI * 44, bar = $('bar');
+bar.style.strokeDasharray = C;
+function setRing(left) {
+  const frac = Math.max(0, left / ROUND);
+  bar.style.strokeDashoffset = C * (1 - frac);
+  const s = Math.ceil(left);
+  $('num').textContent = Math.max(0, s);
+  const ring = $('ring');
+  ring.className = 'ring' + (state.phase !== 'playing' && state.phase !== 'over' ? ' idle' : left <= 10 ? ' danger' : left <= 20 ? ' warn' : '');
+  if (state.phase === 'playing' && s !== state.lastTick) { state.lastTick = s; if (s <= 5 && s > 0) beep(880, .12, 'square', .06); }
+}
+function tick() {
+  const left = (state.endAt - performance.now()) / 1000;
+  if (left <= 0) { setRing(0); return finish(false); }
+  setRing(left); state.raf = requestAnimationFrame(tick);
+}
+function finish(guessed) {
+  cancelAnimationFrame(state.raf);
+  state.phase = 'over';
+  $('card').classList.add('over');
+  const b = $('badge'); b.textContent = guessed ? 'Guessed! ✓' : "Time's up!"; b.classList.toggle('ok', guessed); b.classList.add('show');
+  if (guessed) { state.got++; beep(660, .12); setTimeout(() => beep(990, .2), 120); } else { beep(180, .7, 'sawtooth', .1); }
+  if (guessed) { const left = Math.max(0, (state.endAt - performance.now()) / 1000); setRing(left); }
+  $('gotit').hidden = true;
+  $('main').disabled = false; $('main').innerHTML = '🎲 Draw a new card';
+  $('main').focus({ preventScroll: true });
+  updateStats();
+}
+
+/* flow */
+function roll() {
+  if (state.phase === 'rolling' || state.phase === 'playing') return;
+  cancelAnimationFrame(state.raf);
+  if (!state.deck.length) { buildDeck(); }
+  const next = state.deck.pop();
+  state.phase = 'rolling';
+  $('main').disabled = true; $('gotit').hidden = true;
+  $('card').classList.remove('flipped', 'over'); $('card').classList.add('hide'); $('badge').classList.remove('show', 'ok');
+  $('ring').className = 'ring idle'; bar.style.strokeDashoffset = 0; $('num').textContent = ROUND;
+
+  const face = 1 + Math.floor(Math.random() * 6);
+  const [fx, fy] = FACE_ROT[face];
+  cubeX = Math.round(cubeX / 360) * 360 + 360 * (2 + Math.floor(Math.random() * 2)) + fx;
+  cubeY = Math.round(cubeY / 360) * 360 + 360 * (2 + Math.floor(Math.random() * 2)) + fy;
+  const dw = $('dicewrap'), d3 = $('dice3d'), sh = dw.querySelector('.shadow');
+  dw.classList.add('on');
+  d3.style.animation = 'none'; sh.style.animation = 'none'; void d3.offsetWidth; d3.style.animation = ''; sh.style.animation = '';
+  cube.style.transition = 'none'; cube.style.transform = `rotateX(${cubeX - 720}deg) rotateY(${cubeY - 720}deg) rotateZ(0deg)`; void cube.offsetWidth;
+  cube.style.transition = ''; cube.style.transform = `rotateX(${cubeX}deg) rotateY(${cubeY}deg)`;
+  const n = 7; for (let i = 0; i < n; i++) setTimeout(() => beep(260 + Math.random() * 140, .05, 'triangle', .05), 120 + i * 210);
+
+  setTimeout(() => {
+    dw.classList.remove('on');
+    state.played++; showCard(next); updateStats();
+    $('card').classList.remove('hide');
+    requestAnimationFrame(() => $('card').classList.add('flipped'));
+    setTimeout(start, reduced ? 50 : 650);
+  }, reduced ? 500 : 2000);
+}
+function start() {
+  state.phase = 'playing'; state.lastTick = -1;
+  state.endAt = performance.now() + ROUND * 1000;
+  $('gotit').hidden = false; $('main').innerHTML = '…timer running';
+  beep(523, .1); tick();
+}
+
+$('main').onclick = roll;
+$('gotit').onclick = () => { if (state.phase === 'playing') finish(true); };
+$('mute').onclick = e => { state.muted = !state.muted; e.target.textContent = 'Sound: ' + (state.muted ? 'off' : 'on'); e.target.setAttribute('aria-pressed', state.muted); };
+$('reset').onclick = () => {
+  cancelAnimationFrame(state.raf); state.phase = 'idle'; state.played = 0; state.got = 0; buildDeck();
+  $('card').classList.remove('flipped', 'over', 'hide'); $('badge').classList.remove('show', 'ok'); $('dicewrap').classList.remove('on');
+  $('gotit').hidden = true; $('main').disabled = false; $('main').innerHTML = '🎲 Roll &amp; draw a card';
+  bar.style.strokeDashoffset = 0; $('num').textContent = ROUND; $('ring').className = 'ring idle';
+};
+addEventListener('keydown', e => {
+  if ((e.key === ' ' || e.key === 'Enter') && document.activeElement && ['BUTTON','SUMMARY'].includes(document.activeElement.tagName)) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (state.phase === 'playing') $('gotit').click(); else if (!$('main').disabled) roll(); }
+});
+
+buildDeck(); setRing(ROUND);
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
