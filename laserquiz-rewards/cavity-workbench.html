@@ -792,7 +792,9 @@ $('#btnTune').onclick=()=>{ tuneToTarget(S); syncControls(); renderBench(); sche
 
 /* ---------- canvas helpers ---------- */
 function setup(cv){
-  const dpr=window.devicePixelRatio||1, w=Math.max(200,cv.clientWidth), h=+cv.getAttribute('height');
+  // CSS height comes from the markup once; cv.height is the backing store and is rewritten with dpr below
+  if(!cv.dataset.h){ cv.dataset.h=cv.getAttribute('height'); cv.style.height=cv.dataset.h+'px'; }
+  const dpr=window.devicePixelRatio||1, w=Math.max(200,cv.clientWidth), h=+cv.dataset.h;
   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
   const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
   ctx.font='12px '+css('--sans'); return {ctx,w,h};
