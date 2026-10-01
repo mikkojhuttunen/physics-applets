@@ -651,27 +651,27 @@ function mkState(){
 // full DHW designs (the homework answers) are not in the student page source. See README.md.
 const EDITION='pro';
 const PRESETS = {
-  dhw1: {label:'DHW1 – Nd:YAG ring, 1064 nm, >5 W (starting cavity)', build(){
+  // starting cavities: no gain medium, isolator or etalons; the pump arm is the full design arm minus the
+  // 10 mm crystal, so it is stable while empty and back to the design length once a crystal is added
+  dhw1: {label:'DHW1: 1064.2 nm, linewidth ≈ 1 MHz, > 5 W output', build(){
     const s=mkState(); s.mode='ring'; s.pump={P:16,wp:185}; s.target={lam:1064.2,P:5,lw:1,tol:0.5};
     s.els=[
-      mkEl('mirror_curved',{R:150,aoi:8,dich:true,gap:120}),
-      mkEl('gain',{mat:'ndyag',L:10,brew:false,gap:120}),
+      mkEl('mirror_curved',{R:150,aoi:8,dich:true,gap:240}),
       mkEl('mirror_curved',{R:150,aoi:8,gap:60}),
       mkEl('mirror_flat',{gap:49.7}),
       mkEl('mirror_flat',{T:7,gap:60})
     ]; tuneToTarget(s); return s; }},
-  dhw2: {label:'DHW2 – Ti:sapphire ring, 780 nm, >1 W (starting cavity)', build(){
+  dhw2: {label:'DHW2: 780.24 nm, linewidth ≈ 1 MHz, > 1 W output', build(){
     const s=mkState(); s.mode='ring'; s.pump={P:9,wp:30}; s.thermalCal=0.3; s.target={lam:780.24,P:1,lw:1,tol:0.3};
     s.noise={nm:1,lock:true};
     s.els=[
-      mkEl('mirror_curved',{R:100,aoi:10,dich:true,gap:52}),
-      mkEl('gain',{mat:'tisa',L:10,brew:true,gap:52}),
+      mkEl('mirror_curved',{R:100,aoi:10,dich:true,gap:104}),
       mkEl('mirror_curved',{R:100,aoi:10,gap:300}),
       mkEl('mirror_flat',{gap:100}),
       mkEl('brf',{N:3,d1:0.4,lam:780.24,gap:130.5}),
       mkEl('mirror_flat',{T:4,gap:300})
     ]; tuneToTarget(s); return s; }},
-  lin: {label:'Linear Nd:YAG, two mirrors (multimode)', build(){
+  lin: {label:'Linear two-mirror cavity (demo, multimode)', build(){
     const s=mkState(); s.mode='linear'; s.pump={P:10,wp:150}; s.target={lam:1064.2,P:5,lw:1,tol:0.5};
     s.els=[
       mkEl('mirror_flat',{dich:true,gap:40}),
@@ -756,7 +756,11 @@ function addEl(key){
     default: e=mkEl(key,{});
   }
   e.gap=50;
-  if(S.mode==='linear' && S.els.length>=2) S.els.splice(S.els.length-1,0,e); else S.els.push(e);
+  const mi=S.els.findIndex(x=>isMirror(x)&&x.dich);
+  if(e.type==='gain' && !S.els.some(x=>x.type==='gain') && mi>=0 && !(S.mode==='linear'&&mi===S.els.length-1)){
+    // first crystal goes in the middle of the arm behind the pump window
+    const g=S.els[mi].gap; S.els[mi].gap=Math.max(1,g/2); e.gap=Math.max(1,g/2); S.els.splice(mi+1,0,e);
+  } else if(S.mode==='linear' && S.els.length>=2) S.els.splice(S.els.length-1,0,e); else S.els.push(e);
   renderBench(); schedule();
 }
 function buildPalette(){
