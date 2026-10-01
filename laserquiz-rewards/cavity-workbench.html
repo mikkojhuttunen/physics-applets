@@ -176,6 +176,21 @@ footer li{margin:2px 0}
     <div class="legend" id="specLegend"></div>
     <p class="note">Curves are scaled 0–1. The dark line is the ratio of small-signal gain to round-trip loss at each frequency (scaled to the best mode); modes above the dashed threshold line can lase. Zoom in to see individual cavity modes and the etalon passbands.</p>
   </section>
+
+  <section class="panel" aria-labelledby="hshb">
+    <h2 id="hshb">Spatial hole burning in the gain crystal</h2>
+    <div class="ctl">
+      <label>Position in crystal <input type="range" id="shbPos" min="0" max="1" step="0.005" aria-label="Position in the crystal"></label><output id="shbPosOut" style="min-width:150px;font-weight:600"></output>
+      <label>Compare with mode q + <input type="number" id="shbM" step="1" style="width:64px"></label>
+      <button id="shbBest">Strongest competitor</button>
+    </div>
+    <canvas id="cvShbZoom" height="230" role="img" aria-label="Standing-wave intensity and saturated gain inside the crystal"></canvas>
+    <div class="legend"><span><i style="background:var(--beam)"></i>lasing mode q, intensity</span><span><i style="background:var(--ink)"></i>gain left over ÷ threshold gain</span><span><i style="background:var(--f1)"></i>mode q + m, intensity</span><span><i style="height:0;border-top:2px dashed var(--bad);background:none"></i>threshold</span></div>
+    <canvas id="cvShbModes" height="220" role="img" aria-label="Net gain of the neighbouring modes"></canvas>
+    <div class="legend"><span><i style="background:var(--bad)"></i>can start lasing (net gain ÷ loss above 1)</span><span><i style="background:var(--muted)"></i>stays below threshold</span><span>click a bar to show that mode above</span></div>
+    <p class="note" id="shbNote"></p>
+    <p class="note">In a standing wave the lasing mode saturates the gain only at its antinodes; at the nodes, every λ/2n, the gain stays near its small-signal value. Mode q + m has its antinodes shifted by φ = 2π m p / p<sub>rt</sub>, where p is the optical distance from the end mirror and p<sub>rt</sub> the round-trip path, so it can feed on that left-over gain. In a ring with an optical isolator the wave travels, the intensity is uniform and no gain is left over. Things to try: move the crystal right next to an end mirror, add a twisted-mode pair, or switch to a ring with an isolator.</p>
+  </section>
 </div>
 
 <aside aria-label="Results and settings">
@@ -223,6 +238,7 @@ footer li{margin:2px 0}
       <li><strong>Ray trace.</strong> Paraxial rays (y, n·θ) pushed through the same round-trip matrices, so they exist whether or not a Gaussian eigenmode does. The round-trip Gouy phase θ = arccos m sets how fast a ray circles the axis; if θ/2π is close to a fraction p/q with small q the ray closes on itself after q round trips and transverse modes become degenerate. For |m| &gt; 1 a ray grows by |m| + √(m² − 1) per round trip. Apertures only stop rays; their diffraction loss is not modelled.</li>
       <li><strong>Astigmatism compensation.</strong> The button scans one common incidence angle θ for all curved mirrors and keeps the one where both planes see the same cavity, m<sub>T</sub> = m<sub>S</sub> (equal stability ranges, round beam in the arms). For comparison it quotes the textbook two-mirror condition for the Brewster crystal, R sin θ tan θ = L(n²−1)/n³ with L the path length in the crystal (Kogelnik et al. 1972). Brewster surfaces elsewhere (BRF, plates) also enter the scan.</li>
       <li><strong>Layout.</strong> A four-mirror ring is drawn as a bowtie from the real arm lengths, with the crystal arm at the bottom and the two arms horizontal; only the horizontal direction is stretched to fill the panel. The fold angles that close this bowtie are compared with the incidence angles you entered, which are what the beam calculation uses.</li>
+      <li><strong>Spatial hole burning panel.</strong> One mode q lases alone; its gain is clamped so that its own modal gain equals the loss. Along the crystal the saturated gain is g(z) = g₀/(1 + S·I(z)), with the standing-wave intensity I = sin²(k p) in a linear cavity and I = 1 in a ring with an isolator; S follows from the clamping condition. Mode q + m sees the overlap of g(z) with its own pattern, which is phase-shifted by 2π m p/p<sub>rt</sub>, times its own small-signal gain and loss (gain line and filters). A bar above 1 means that mode can start. Pump absorption along the crystal, transverse profiles and the second mode's own saturation are ignored. In a ring without an isolator the standing-wave position is not pinned by a mirror; the panel assumes equal counter-propagating beams whose patterns coincide at the crystal centre. A twisted-mode pair is treated as making the intensity in the crystal uniform. The mode count in the results uses the simpler rule under Mode selection, so the two can differ.</li>
       <li><strong>Thermal lens.</strong> Thin lens at the crystal centre, f = πKw<sub>p</sub>²/(P<sub>heat</sub>·dn/dT) with P<sub>heat</sub> = quantum defect × absorbed pump. It ignores end-face bulging, stress birefringence and aberrations, and overestimates the lens for very tight pump spots, so use the calibration factor if you have a measured value. The Ti:sapphire example uses 0.3 as an assumption, not a measurement.</li>
       <li><strong>Threshold and power.</strong> Ideal four-level rate-equation estimate: P<sub>th</sub> = hν<sub>p</sub>π(w<sub>l</sub>²+w<sub>p</sub>²)γ / (2·N<sub>pass</sub>·σ·τ), slope = (λ<sub>p</sub>/λ<sub>l</sub>)·η<sub>overlap</sub>·0.9·T/γ. No excited-state absorption, upconversion or reabsorption, so thresholds are optimistic.</li>
       <li><strong>Mode selection.</strong> Every cavity mode inside the gain window is given a ratio x = (gain)/(round-trip loss incl. filter losses). The best mode wins. In a travelling-wave ring (ring + optical isolator) homogeneous broadening allows only that one mode; the margin to the runner-up tells you how prone it is to mode hops. With spatial hole burning (linear cavity, or ring without an isolator) modes whose x is within half of the excess over threshold also lase; a twisted-mode pair reduces this to 10 %.</li>
@@ -352,13 +368,37 @@ function propagate(ops, end, qT0, qS0, lam, nSamp){
 
 /* ---- element positions along the forward path (geometry only, no eigenmode needed) ---- */
 function geomRec(ops, end){
-  let z=0; const rec={};
+  let z=0, p=0; const rec={};   // z geometric, p optical path, both from the start of element 1
   for(let i=0;i<end;i++){
     const o=ops[i];
-    if(o.k==='m') rec[o.ei]={z0:z};
-    else if(o.k==='s'){ z+=o.len; if(o.ei>=0 && rec[o.ei]) rec[o.ei].z1=z; }
+    if(o.k==='m') rec[o.ei]={z0:z, p0:p};
+    else if(o.k==='s'){ z+=o.len; p+=o.len*o.nopt; if(o.ei>=0 && rec[o.ei]){ rec[o.ei].z1=z; rec[o.ei].p1=p; } }
   }
   return {rec, len:z};
+}
+
+/* ---- spatial hole burning: one mode q lasing, what do the others see? ----
+   Relative gain r(theta) = x/(1+S*I(theta)), x = small-signal gain / loss of mode q. S is fixed by
+   clamping: <r I_q> / <I_q> = 1. Mode q+m sees <r I_m>/<I_m>, times its own small-signal ratio. */
+function shbAnalyze(R, st){
+  if(!R.lasing||R.gi<0||!R.zrec||!R.zrec[R.gi]) return null;
+  const g=st.els[R.gi], rc=R.zrec[R.gi], x=R.xstar, lam=C0/R.nuStar;
+  const kind = (st.mode==='ring'&&R.hasDiode) ? 'travel' : (st.mode==='linear'&&R.hasTwist) ? 'twist' : st.mode==='linear' ? 'linear' : 'bidir';
+  const standing = kind==='linear'||kind==='bidir';
+  const NT=72, th=[...Array(NT)].map((_,j)=>Math.PI*(j+.5)/NT);   // sin^2 has period pi
+  let S;
+  if(!standing) S=x-1;
+  else { let lo=0, hi=1e6;   // modal gain of q: 2*mean(x sin^2/(1+S sin^2)) = 1
+    for(let it=0;it<100;it++){ const mid=Math.sqrt(lo*hi)||hi/2; let a=0; for(const t of th){ const s2=Math.sin(t)**2; a+=x*s2/(1+mid*s2); } a=2*a/NT; if(a>1) lo=mid; else hi=mid; }
+    S=Math.sqrt(lo*hi); }
+  const pa=rc.p0, pb=rc.p1!=null?rc.p1:rc.p0, pref = kind==='bidir' ? (pa+pb)/2 : 0;
+  const prt=R.p, NP=48;
+  const local=(phi)=>{ if(!standing) return 1; let a=0,b=0; for(const t of th){ const s2=Math.sin(t)**2, sm=Math.sin(t+phi)**2; a+=x*sm/(1+S*s2); b+=sm; } return a/b; };
+  const Gm=(m)=>{ if(!standing) return 1; let a=0; for(let j=0;j<NP;j++){ const p=pa+(pb-pa)*(j+.5)/NP; a+=local(2*Math.PI*m*(p-pref)/prt); } return a/NP; };
+  const M=40, bars=[];
+  for(let m=-M;m<=M;m++){ if(!m) continue; const nu=R.nuStar+m*R.fsr, r=R.xAt(nu)/x, G=Gm(m); bars.push({m, G, r, net:G*r}); }
+  let best=bars[0]; for(const b of bars) if(b.net>best.net) best=b;
+  return {kind, standing, x, S, pa, pb, pref, prt, lam, n:g.n, L:g.L, local, bars, best, nStart:bars.filter(b=>b.net>1).length};
 }
 
 /* ---- paraxial ray (y, n*theta) over n round trips; works for unstable cavities too ----
@@ -685,7 +725,7 @@ const PRESETS = {
 /* ===== UI ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let S=PRESETS.dhw1.build();
-const view={spanLog:null, center:'mode', sweep:'pump', ray:{plane:'T', n:8, y0:0.5, u0:1, ap:5}};
+const view={shb:{u:0.5, m:null}, spanLog:null, center:'mode', sweep:'pump', ray:{plane:'T', n:8, y0:0.5, u0:1, ap:5}};
 const NAMES={mirror_flat:'Flat mirror',mirror_curved:'Curved mirror',lens:'Lens',gain:'Gain crystal',etalon:'Etalon',brf:'Lyot filter (BRF)',filter:'Bandpass filter',diode:'Optical isolator',plate:'Glass plate',twist:'Twisted-mode λ/4 pair'};
 const css=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const isMirror=e=>e.type==='mirror_flat'||e.type==='mirror_curved';
@@ -1181,6 +1221,56 @@ function drawSpec(R){
   }
   lg.innerHTML=legend.join('');
 }
+/* ---------- spatial hole burning ---------- */
+function drawShb(R){
+  const cz=$('#cvShbZoom'), cm=$('#cvShbModes'), note=$('#shbNote');
+  const H=R.shb;
+  if(!H){ const t=R.gi<0?'Add a gain crystal to see its standing-wave pattern.':!R.valid?'No stable mode: nothing to burn holes yet.':'Below threshold: the gain is not saturated, so there are no holes yet.';
+    msg(cz,t); msg(cm,t); note.textContent=''; $('#shbPosOut').textContent=''; return; }
+  const bmap=new Map(H.bars.map(b=>[b.m,b]));
+  let m=view.shb.m; if(m==null||!bmap.has(m)) m=H.best.m;
+  $('#shbM').value=m; $('#shbPos').value=view.shb.u;
+  const pu=H.pa+(H.pb-H.pa)*view.shb.u, zmm=(pu-H.pa)/H.n*1e3;
+  $('#shbPosOut').textContent=`${fmt(zmm,3)} mm of ${fmt(H.L,3)} mm`;
+  // zoom: three standing-wave periods (lambda/2n) at the chosen point
+  { const {ctx,w,h}=setup(cz), box={x:58,y:14,w:w-72,h:h-58};
+    const per=H.lam/2, span=3*per, NPt=600, xs=[], Iq=[], Im=[], G=[];
+    const k=2*Math.PI/H.lam, phi=2*Math.PI*m*(pu-H.pref)/H.prt;
+    for(let j=0;j<=NPt;j++){ const p=pu+span*j/NPt, t=k*(p-H.pref);
+      const iq=H.standing?Math.sin(t)**2:1, im=H.standing?Math.sin(t+phi)**2:1;
+      xs.push((p-pu)/H.n*1e6); Iq.push(iq); Im.push(im); G.push(H.x/(1+H.S*iq)); }
+    const ymax=H.standing?Math.min(5,Math.max(1.2,H.x*1.08)):1.3, clip=H.x*1.08>ymax&&H.standing;
+    const F=frame(ctx,box,[0,xs[NPt]],[0,ymax],{xl:'distance in crystal (µm), 3 periods λ/2n',yl:'relative'});
+    ctx.fillStyle=css('--beam'); ctx.globalAlpha=.16; ctx.beginPath(); ctx.moveTo(F.X(0),F.Y(0)); xs.forEach((v,j)=>ctx.lineTo(F.X(v),F.Y(Iq[j]))); ctx.lineTo(F.X(xs[NPt]),F.Y(0)); ctx.fill(); ctx.globalAlpha=1;
+    const line=(arr,col,lw,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.setLineDash(dash||[]); ctx.beginPath(); xs.forEach((v,j)=>j?ctx.lineTo(F.X(v),F.Y(arr[j])):ctx.moveTo(F.X(v),F.Y(arr[j]))); ctx.stroke(); ctx.setLineDash([]); };
+    ctx.strokeStyle=css('--bad'); ctx.setLineDash([6,4]); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(box.x,F.Y(1)); ctx.lineTo(box.x+box.w,F.Y(1)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.save(); ctx.beginPath(); ctx.rect(box.x,box.y,box.w,box.h); ctx.clip();
+    line(Iq,css('--beam'),2); line(Im,css('--f1'),1.8,[5,3]); line(G,css('--ink'),2.2); ctx.restore();
+    if(clip){ ctx.fillStyle=css('--ink'); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`gain peaks reach ${fmt(H.x,3)}`,box.x+6,box.y+4); }
+    ctx.fillStyle=css('--muted'); ctx.textAlign='right'; ctx.textBaseline='top';
+    ctx.fillText(H.standing?`q ${m<0?'−':'+'} ${Math.abs(m)} shifted ${fmt(((phi%(2*Math.PI))+2*Math.PI)%(2*Math.PI)*180/Math.PI,3)}°`:'travelling wave: uniform',box.x+box.w-6,box.y+(clip&&w<500?20:4)); }
+  // bars: net gain / loss of q+m
+  { const {ctx,w,h}=setup(cm), box={x:58,y:14,w:w-72,h:h-58};
+    const ymax=Math.max(1.3,...H.bars.map(b=>b.net))*1.05;
+    const F=frame(ctx,box,[-41,41],[0,ymax],{xl:'mode offset m from the lasing mode q',yl:'net gain ÷ loss',xticks:[-40,-30,-20,-10,0,10,20,30,40]});
+    const bw=Math.max(1.5,box.w/82*.7);
+    for(const b of H.bars){ const x=F.X(b.m); ctx.fillStyle=b.net>1?css('--bad'):css('--muted'); ctx.globalAlpha=b.net>1?.9:.55; ctx.fillRect(x-bw/2,F.Y(Math.min(b.net,ymax)),bw,F.Y(0)-F.Y(Math.min(b.net,ymax))); }
+    ctx.globalAlpha=1;
+    const sb=bmap.get(m); if(sb){ ctx.strokeStyle=css('--ink'); ctx.lineWidth=1.5; ctx.strokeRect(F.X(sb.m)-bw/2-1.5,F.Y(Math.min(sb.net,ymax))-1.5,bw+3,F.Y(0)-F.Y(Math.min(sb.net,ymax))+3); }
+    ctx.strokeStyle=css('--bad'); ctx.setLineDash([6,4]); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(box.x,F.Y(1)); ctx.lineTo(box.x+box.w,F.Y(1)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=css('--beam'); ctx.fillRect(F.X(0)-1.5,box.y,3,box.h);
+    cm.onclick=ev=>{ const r=cm.getBoundingClientRect(), xm=Math.round(-41+82*((ev.clientX-r.left)-box.x)/box.w); if(xm&&bmap.has(xm)){ view.shb.m=xm; schedule(); } }; }
+  const qm=v=>'q '+(v<0?'− '+(-v):'+ '+v);
+  const sb=bmap.get(m), kindTxt={linear:'Linear cavity: standing wave.',bidir:'Ring without an isolator: the two directions form a standing wave (assumed equal, patterns aligned at the crystal centre).',twist:'Twisted-mode pair: the intensity in the crystal is uniform.',travel:'Ring with an optical isolator: travelling wave, uniform intensity.'}[H.kind];
+  let t=`${kindTxt} The small-signal gain is ${fmt(H.x,3)}× the loss`+(H.standing?`, so at the nodes of mode q the gain stays up to ${fmt(H.x,3)}× the clamped value.`:`; it saturates uniformly down to the clamped value, leaving nothing for other modes.`)+` Mode ${qm(m)}: gain available ${fmt(sb.G,3)}× threshold, own gain line and filters ×${fmt(sb.r,3)}, net ${fmt(sb.net,3)}.`;
+  t+= H.nStart ? ` ${H.nStart} of the 80 neighbouring modes shown reach threshold, so the laser runs multimode.` : ' No neighbouring mode reaches threshold: single-mode operation is stable against hole burning.';
+  if((H.nStart>0)!==(R.nLas>1)) t+=' The mode count in the results uses a simpler rule (Model assumptions), so the two can differ.';
+  note.textContent=t;
+}
+$('#shbPos').oninput=e=>{ view.shb.u=+e.target.value; schedule(); };
+$('#shbM').oninput=e=>{ const v=parseInt(e.target.value,10); if(isFinite(v)&&v!==0){ view.shb.m=v; schedule(); } };
+$('#shbBest').onclick=()=>{ view.shb.m=null; schedule(); };
+
 const setSpan=v=>{ view.spanLog=v; schedule(); };
 $('#spanSl').oninput=e=>setSpan(+e.target.value);
 $('#zGain').onclick=()=>{ const g=S.els.find(e=>e.type==='gain'); if(g) setSpan(Math.log10(3*g.dnuTHz*1e12)); };
@@ -1255,9 +1345,10 @@ function schedule(){ if(pend) return; pend=true; requestAnimationFrame(()=>{ pen
 function update(){
   let R; try{ R=analyze(S); }catch(err){ console.error(err); R={valid:false,warn:['Internal error: '+err.message],info:[]}; }
   try{ R.rays=traceAll(R); }catch(err){ console.error(err); R.rays=null; }
+  try{ R.shb=shbAnalyze(R,S); }catch(err){ console.error(err); R.shb=null; }
   LAST=R;
   renderResults(R); updateCardInfo(R);
-  drawLayout(R); drawRays(R); drawBeam(R); drawSweep(R); drawSpec(R);
+  drawLayout(R); drawRays(R); drawBeam(R); drawSweep(R); drawSpec(R); drawShb(R);
 }
 new ResizeObserver(()=>schedule()).observe(document.body);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>schedule());
