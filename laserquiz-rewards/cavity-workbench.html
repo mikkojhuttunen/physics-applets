@@ -130,7 +130,22 @@ footer li{margin:2px 0}
   <section class="panel" aria-labelledby="hlay">
     <h2 id="hlay">Layout <span style="font-weight:400;color:var(--muted);font-size:13px">(schematic, not to scale)</span></h2>
     <div class="cvwrap"><canvas id="cvLayout" height="290" role="img" aria-label="Cavity layout schematic"></canvas></div>
-    <div class="legend"><span><i style="background:var(--beam)"></i>beam</span><span><i style="background:#2f9e6b"></i>pump</span><span><i style="background:var(--crystal);height:9px"></i>gain crystal</span></div>
+    <div class="legend"><span><i style="background:var(--beam)"></i>beam</span><span><i style="background:#2f9e6b"></i>pump</span><span><i style="background:var(--crystal);height:9px"></i>gain crystal</span><span><i style="background:var(--f1)"></i>offset ray</span><span><i style="background:var(--f2)"></i>tilted ray</span><span>rays in the tangential plane, offsets exaggerated (largest excursion drawn at about mirror half-size)</span></div>
+  </section>
+
+  <section class="panel" aria-labelledby="hray">
+    <h2 id="hray">Ray trace over round trips <span style="font-weight:400;color:var(--muted);font-size:13px">(paraxial rays, shown for stable and unstable cavities)</span></h2>
+    <div class="ctl">
+      <label>Plane <select id="rayPlane"><option value="T">tangential</option><option value="S">sagittal</option></select></label>
+      <label>Round trips <input type="range" id="rayN" min="1" max="40" step="1" aria-label="Number of round trips"></label><output id="rayNOut" style="min-width:20px;font-weight:600"></output>
+      <label>Offset ray y<sub>0</sub> (mm) <input type="number" id="rayY" step="0.1" min="0" style="width:64px"></label>
+      <label>Tilted ray θ<sub>0</sub> (mrad) <input type="number" id="rayU" step="0.1" min="0" style="width:64px"></label>
+      <label>Aperture radius (mm) <input type="number" id="rayAp" step="0.5" min="0.1" style="width:64px"></label>
+    </div>
+    <canvas id="cvRay" height="260" role="img" aria-label="Ray height versus round trips"></canvas>
+    <div class="legend"><span><i style="background:var(--f1)"></i>offset ray: starts parallel to the axis at height y<sub>0</sub></span><span><i style="background:var(--f2)"></i>tilted ray: starts on the axis at angle θ<sub>0</sub></span><span><i style="height:0;border-top:2px dashed var(--bad);background:none"></i>aperture</span></div>
+    <p class="note" id="rayNote"></p>
+    <p class="note">Both rays start just before element 1 and use the same round-trip ABCD matrices as the beam calculation. In a stable cavity they oscillate about the axis forever; in an unstable one they walk off and are lost at the aperture (✕). Change a gap or a mirror and watch how quickly the rays escape: that tells you which way to move towards the stable region.</p>
   </section>
 
   <div class="two">
@@ -202,6 +217,7 @@ footer li{margin:2px 0}
     <summary><strong>Model assumptions</strong> – read before trusting a number</summary>
     <ul>
       <li><strong>Optics.</strong> Paraxial ABCD matrices in reduced distances (d/n), so the q-parameter eigenvalue of the round trip directly gives the physical beam radius. Curved mirrors at incidence angle θ: f<sub>T</sub> = (R/2)cos θ, f<sub>S</sub> = R/(2cos θ). Brewster-cut slabs: effective distances L/n³ (tangential) and L/n (sagittal), with L the path length inside the crystal (Kogelnik).</li>
+      <li><strong>Ray trace.</strong> Paraxial rays (y, n·θ) pushed through the same round-trip matrices, so they exist whether or not a Gaussian eigenmode does. The round-trip Gouy phase θ = arccos m sets how fast a ray circles the axis; if θ/2π is close to a fraction p/q with small q the ray closes on itself after q round trips and transverse modes become degenerate. For |m| &gt; 1 a ray grows by |m| + √(m² − 1) per round trip. Apertures only stop rays; their diffraction loss is not modelled.</li>
       <li><strong>Thermal lens.</strong> Thin lens at the crystal centre, f = πKw<sub>p</sub>²/(P<sub>heat</sub>·dn/dT) with P<sub>heat</sub> = quantum defect × absorbed pump. It ignores end-face bulging, stress birefringence and aberrations, and overestimates the lens for very tight pump spots, so use the calibration factor if you have a measured value. The Ti:sapphire example uses 0.3 as an assumption, not a measurement.</li>
       <li><strong>Threshold and power.</strong> Ideal four-level rate-equation estimate: P<sub>th</sub> = hν<sub>p</sub>π(w<sub>l</sub>²+w<sub>p</sub>²)γ / (2·N<sub>pass</sub>·σ·τ), slope = (λ<sub>p</sub>/λ<sub>l</sub>)·η<sub>overlap</sub>·0.9·T/γ. No excited-state absorption, upconversion or reabsorption, so thresholds are optimistic.</li>
       <li><strong>Mode selection.</strong> Every cavity mode inside the gain window is given a ratio x = (gain)/(round-trip loss incl. filter losses). The best mode wins. In a travelling-wave ring (ring + optical diode) homogeneous broadening allows only that one mode; the margin to the runner-up tells you how prone it is to mode hops. With spatial hole burning (linear cavity, or ring without a diode) modes whose x is within half of the excess over threshold also lase; a twisted-mode pair reduces this to 10 %.</li>
@@ -329,6 +345,68 @@ function propagate(ops, end, qT0, qS0, lam, nSamp){
   return {Z,WT,WS,rec,total:z};
 }
 
+/* ---- element positions along the forward path (geometry only, no eigenmode needed) ---- */
+function geomRec(ops, end){
+  let z=0; const rec={};
+  for(let i=0;i<end;i++){
+    const o=ops[i];
+    if(o.k==='m') rec[o.ei]={z0:z};
+    else if(o.k==='s'){ z+=o.len; if(o.ei>=0 && rec[o.ei]) rec[o.ei].z1=z; }
+  }
+  return {rec, len:z};
+}
+
+/* ---- paraxial ray (y, n*theta) over n round trips; works for unstable cavities too ----
+   Samples carry the unfolded distance zu, the position s on the forward layout path, the travel
+   sign sg along that path, the reflection count (each reflection mirrors the tangential offset)
+   and a nudge (-1 end of a travelled stretch, +1 start of one) so the layout picks the right leg. */
+function traceRay(ops, o){
+  const {fwdEnd, linear, fwdLen, rtLen, plane, y0, u0, n, ap, isMir}=o;
+  const sOf=zr=> linear&&zr>fwdLen ? 2*fwdLen-zr : zr;
+  const sgOf=i=> (!linear||i<fwdEnd) ? 1 : -1;
+  const slab=i=> ops[i].k==='s' && ops[i].len>0;
+  const M=ops.length, nextSg=new Array(M), prevSg=new Array(M);
+  for(let i=0;i<M;i++){
+    let s=1; for(let j=1;j<=M;j++){ const q=(i+j)%M; if(slab(q)){ s=sgOf(q); break; } } nextSg[i]=s;
+    let p=1; for(let j=1;j<=M;j++){ const q=(i-j+M)%M; if(slab(q)){ p=sgOf(q); break; } } prevSg[i]=p;
+  }
+  let y=y0, u=u0, refl=0;
+  const pts=[{zu:0, s:0, sg:1, y, refl, nd:1}];
+  for(let rt=0;rt<n;rt++){
+    let zr=0;
+    for(let i=0;i<M;i++){
+      const op=ops[i];
+      if(op.k==='m'){
+        if(isMir[op.ei]){ const zu=rt*rtLen+zr, s=sOf(zr);
+          pts.push({zu, s, sg:prevSg[i], y, refl, nd:-1, mir:1}); refl++; pts.push({zu, s, sg:nextSg[i], y, refl, nd:1, mir:2}); }
+      } else if(op.k==='l'){ u-=y/(plane==='T'?op.fT:op.fS); }
+      else {
+        const y1=y+(plane==='T'?op.dT:op.dS)*u;
+        if(Math.abs(y1)>ap){
+          const lim=y1>0?ap:-ap, t=(lim-y)/(y1-y), z1=zr+t*op.len;
+          const p={zu:rt*rtLen+z1, s:sOf(z1), sg:sgOf(i), y:lim, refl, nd:-1, rt:rt+1};
+          pts.push(p); return {pts, lost:p};
+        }
+        y=y1; zr+=op.len;
+        pts.push({zu:rt*rtLen+zr, s:sOf(zr), sg:sgOf(i), y, refl, nd:-1});
+      }
+    }
+  }
+  return {pts, lost:null};
+}
+
+/* ---- what the round-trip m says about ray behaviour ---- */
+function rayRegime(m){
+  if(!isFinite(m)) return {kind:'none'};
+  if(Math.abs(m)<1){
+    const th=Math.acos(m), f=th/(2*Math.PI);
+    let deg=null;
+    for(let q=1;q<=10&&!deg;q++){ const p=Math.round(q*f); if(p>0 && Math.abs(q*f-p)<0.01) deg={p,q}; }
+    return {kind:'stable', th, period:1/f, deg};
+  }
+  return {kind:'unstable', M:Math.abs(m)+Math.sqrt(m*m-1)};
+}
+
 /* ---- spectral pieces ---- */
 function gainShape(g,nu){
   const nu0=C0/(g.lamC*1e-9), x=(nu-nu0)/(g.dnuTHz*1e12);
@@ -405,6 +483,7 @@ function analyze(st){
   // optical round trip
   let p=0, geo=0; for(const o of ops) if(o.k==='s'){p+=o.len*o.nopt; geo+=o.len;}
   R.p=p; R.geo=geo; R.fsr=C0/p;
+  const gr=geomRec(ops,fwdEnd); R.zrec=gr.rec; R.fwdLen=gr.len;
   // loss budget
   let g0=0, Tout=0, Lpass=0;
   els.forEach((e,i)=>{const l=elLoss(e); Tout+=hits[i]*l.T; Lpass+=hits[i]*l.L;});
@@ -572,7 +651,7 @@ const PRESETS = {
 /* ===== UI ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let S=PRESETS.ex1.build();
-const view={spanLog:null, center:'mode', sweep:'pump'};
+const view={spanLog:null, center:'mode', sweep:'pump', ray:{plane:'T', n:8, y0:0.5, u0:1, ap:5}};
 const NAMES={mirror_flat:'Flat mirror',mirror_curved:'Curved mirror',lens:'Lens',gain:'Gain crystal',etalon:'Etalon',brf:'Lyot filter (BRF)',filter:'Bandpass filter',diode:'Optical diode',plate:'Glass plate',twist:'Twisted-mode λ/4 pair'};
 const css=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const isMirror=e=>e.type==='mirror_flat'||e.type==='mirror_curved';
@@ -742,17 +821,17 @@ const FC=()=>[css('--f1'),css('--f2'),css('--f3'),css('--f4')];
 /* ---------- layout schematic ---------- */
 function drawLayout(R){
   const cv=$('#cvLayout');
-  if(!R.valid||!R.prof){ msg(cv,'Layout appears once the cavity is stable.'); return; }
-  const {ctx,w,h}=setup(cv), els=S.els, N=els.length, total=R.prof.total;
-  const pos=els.map((e,i)=>{const r=R.rec[i]; return r?(r.z0+(r.z1!=null?r.z1:r.z0))/2:0;});
+  if(!R.zrec){ msg(cv,'Add at least two elements to see the layout.'); return; }
+  const {ctx,w,h}=setup(cv), els=S.els, N=els.length, total=R.fwdLen||1;
+  const pos=els.map((e,i)=>{const r=R.zrec[i]; return r?(r.z0+(r.z1!=null?r.z1:r.z0))/2:0;});
   const mI=[]; els.forEach((e,i)=>{ if(isMirror(e)) mI.push(i); });
   const K=mI.length, ring=S.mode==='ring';
   let V=[];
   if(ring){
-    if(K===4) V=[[.2,.62],[.2,.38],[.84,.82],[.84,.18]];
+    if(K===4) V=[[.2,.62],[.2,.38],[.84,.78],[.84,.22]];
     else if(K>=2){ for(let j=0;j<K;j++){ const a=-Math.PI/2+2*Math.PI*j/K; V.push([.5+.36*Math.cos(a),.5+.34*Math.sin(a)]); } }
   } else if(K>=2){
-    for(let j=0;j<K;j++){ const y=(j===0||j===K-1)?.5:(j%2?.22:.78); V.push([.08+.84*j/(K-1),y]); }
+    for(let j=0;j<K;j++){ const y=(j===0||j===K-1)?.5:(j%2?.22:.78); V.push([.14+.72*j/(K-1),y]); }
   }
   V=V.map(p=>[p[0]*w,p[1]*h]);
   const nrm=(dx,dy)=>{const l=Math.hypot(dx,dy)||1;return [dx/l,dy/l];};
@@ -770,7 +849,31 @@ function drawLayout(R){
   if(K<2){ ctx.ellipse(w/2,h/2,.36*w,.34*h,0,0,2*Math.PI); }
   else { V.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); if(ring) ctx.closePath(); }
   ctx.stroke();
+  // rays (tangential plane): offset along the left normal of the travel direction, sign flipped per reflection
+  if(R.rays){
+    let ym=1e-9; for(const r of [R.rays.T.off,R.rays.T.tilt]) if(r) for(const p of r.pts) ym=Math.max(ym,Math.abs(p.y));
+    const k=11/ym, eps=1e-6*total;
+    const geo=(p)=>{ const q=at(p.s+p.nd*p.sg*eps), d=[q.dx*p.sg,q.dy*p.sg], off=p.y*k*(p.refl%2?-1:1); return {d, o:[-d[1]*off, d[0]*off]}; };
+    const tr=(p)=>{ const g=geo(p), q=at(p.s+p.nd*p.sg*eps); return [q.x+g.o[0], q.y+g.o[1]]; };
+    // a reflection is drawn at the point where the offset incoming ray meets the mirror surface
+    const hit=(pre,post)=>{ const a=geo(pre), b=geo(post), V=at(pre.s-pre.sg*eps), n=nrm(b.d[0]-a.d[0],b.d[1]-a.d[1]);
+      const dn=a.d[0]*n[0]+a.d[1]*n[1], lam=Math.abs(dn)>0.05 ? -(a.o[0]*n[0]+a.o[1]*n[1])/dn : 0;
+      return [V.x+a.o[0]+lam*a.d[0], V.y+a.o[1]+lam*a.d[1]]; };
+    [['off',css('--f1')],['tilt',css('--f2')]].forEach(([key,col])=>{
+      const r=R.rays.T[key]; if(!r) return;
+      ctx.strokeStyle=col; ctx.lineWidth=1.2; ctx.globalAlpha=.75; ctx.beginPath();
+      r.pts.forEach((p,j)=>{ if(p.mir===2) return; const [x,y]=(p.mir===1&&r.pts[j+1]) ? hit(p,r.pts[j+1]) : tr(p); j?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); ctx.globalAlpha=1;
+      if(r.lost){ const [x,y]=tr(r.lost); ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x-6,y-6); ctx.lineTo(x+6,y+6); ctx.moveTo(x+6,y-6); ctx.lineTo(x-6,y+6); ctx.stroke(); }
+    });
+  }
   const ink=css('--ink'), panel=css('--panel');
+  // keep arrows and their labels inside the canvas
+  const room=(x,y,d,m)=>{ let t=1e9; if(d[0]>1e-9) t=Math.min(t,(w-m-x)/d[0]); if(d[0]<-1e-9) t=Math.min(t,(m-x)/d[0]); if(d[1]>1e-9) t=Math.min(t,(h-m-y)/d[1]); if(d[1]<-1e-9) t=Math.min(t,(m-y)/d[1]); return t; };
+  const label=(text,x,y,d,col)=>{ ctx.fillStyle=col; ctx.textBaseline='middle'; const tw=ctx.measureText(text).width;
+    let lx=x+d[0]*(tw/2+8), ly=y+d[1]*12;
+    if(lx-tw/2<4||lx+tw/2>w-4||ly<8||ly>h-8){ lx=x+8; ly=Math.min(Math.max(y,10),h-10); ctx.textAlign='left'; if(lx+tw>w-4){ lx=x-8; ctx.textAlign='right'; } }
+    else ctx.textAlign='center';
+    ctx.fillText(text,lx,ly); };
   const arrow=(x0,y0,x1,y1,col)=>{ const d=nrm(x1-x0,y1-y0); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-d[0]*9-d[1]*5,y1-d[1]*9+d[0]*5); ctx.lineTo(x1-d[0]*9+d[1]*5,y1-d[1]*9-d[0]*5); ctx.closePath(); ctx.fill(); };
   // elements
@@ -791,7 +894,7 @@ function drawLayout(R){
       else { ctx.moveTo(-t[0]*14,-t[1]*14); ctx.lineTo(t[0]*14,t[1]*14); }
       ctx.stroke();
       if(e.dich){ ctx.lineWidth=1.5; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(-t[0]*14-n[0]*5,-t[1]*14-n[1]*5); ctx.lineTo(t[0]*14-n[0]*5,t[1]*14-n[1]*5); ctx.stroke(); ctx.setLineDash([]); }
-      if(e.T>0.5){ ctx.restore(); ctx.save(); arrow(p.x+din[0]*6,p.y+din[1]*6,p.x+din[0]*50,p.y+din[1]*50,css('--beam')); ctx.fillStyle=css('--beam'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('output',p.x+din[0]*72,p.y+din[1]*72); }
+      if(e.T>0.5){ ctx.restore(); ctx.save(); const L=Math.max(20,Math.min(50,room(p.x,p.y,din,8))); arrow(p.x+din[0]*6,p.y+din[1]*6,p.x+din[0]*L,p.y+din[1]*L,css('--beam')); label('output',p.x+din[0]*L,p.y+din[1]*L,din,css('--beam')); }
     } else if(e.type==='gain'){
       const L=46, Wd=15; ctx.rotate(Math.atan2(dy,dx)); ctx.fillStyle=css('--crystal'); ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.beginPath();
       const sk=e.brew?7:0; ctx.moveTo(-L/2+sk,-Wd/2); ctx.lineTo(L/2+sk,-Wd/2); ctx.lineTo(L/2-sk,Wd/2); ctx.lineTo(-L/2-sk,Wd/2); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -818,18 +921,60 @@ function drawLayout(R){
   // pump arrow
   if(gi>=0){ const mi=els.findIndex(e=>isMirror(e)&&e.dich);
     if(mi>=0){ const a=at(pos[gi]), b=at(pos[mi]); const d=nrm(b.x-a.x,b.y-a.y); const ex=b.x+d[0]*4, ey=b.y+d[1]*4;
-      arrow(ex+d[0]*58,ey+d[1]*58,ex+d[0]*8,ey+d[1]*8,'#2f9e6b'); ctx.fillStyle='#2f9e6b'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('pump',ex+d[0]*74,ey+d[1]*74); } }
+      const L=Math.max(24,Math.min(58,room(ex,ey,d,8))); arrow(ex+d[0]*L,ey+d[1]*L,ex+d[0]*8,ey+d[1]*8,'#2f9e6b'); label('pump',ex+d[0]*L,ey+d[1]*L,d,'#2f9e6b'); } }
   // badges
   els.forEach((e,i)=>{ const p=at(pos[i]); const off=(i%2?1:-1)*24; const bx=p.x-p.dy*off, by=p.y+p.dx*off;
     ctx.fillStyle=ink; ctx.beginPath(); ctx.arc(bx,by,9,0,2*Math.PI); ctx.fill(); ctx.fillStyle=panel; ctx.font='bold 11px '+css('--sans'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(i+1,bx,by+.5); });
   ctx.font='12px '+css('--sans'); ctx.fillStyle=css('--muted'); ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   ctx.fillText(`round trip: ${fmt(R.geo*1000,4)} mm geometric, ${fmt(R.p*1000,4)} mm optical`,10,h-8);
+  if(!R.valid){ ctx.fillStyle=css('--bad'); ctx.font='bold 13px '+css('--sans'); ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(R.stT===false||R.stS===false ? 'UNSTABLE in the '+(!R.stT&&!R.stS?'tangential and sagittal planes':!R.stT?'tangential plane':'sagittal plane')+' – follow the rays' : (R.warn[0]||''),10,8); }
+}
+
+/* ---------- ray trace plot ---------- */
+function traceAll(R){
+  if(!R.ops||!R.zrec) return null;
+  const isMir=S.els.map(isMirror), rv=view.ray, base={fwdEnd:R.fwdEnd, linear:S.mode==='linear', fwdLen:R.fwdLen, rtLen:R.geo, n:rv.n, ap:rv.ap*MM, isMir};
+  const out={};
+  for(const plane of ['T','S']){
+    out[plane]={
+      off: rv.y0>0 ? traceRay(R.ops,Object.assign({plane,y0:rv.y0*MM,u0:0},base)) : null,
+      tilt: rv.u0>0 ? traceRay(R.ops,Object.assign({plane,y0:0,u0:rv.u0*1e-3},base)) : null };
+  }
+  return out;
+}
+function drawRays(R){
+  const cv=$('#cvRay'), note=$('#rayNote');
+  if(!R.rays){ msg(cv,'Add at least two elements to trace rays.'); note.textContent=''; return; }
+  const rv=view.ray, pl=rv.plane, rs=R.rays[pl];
+  const {ctx,w,h}=setup(cv), box={x:58,y:14,w:w-72,h:h-58}, ap=rv.ap;
+  const F=frame(ctx,box,[0,rv.n],[-ap*1.15,ap*1.15],{xl:'round trips (unfolded beam path, starting at element 1)',yl:'ray height y (mm)'});
+  ctx.strokeStyle=css('--bad'); ctx.setLineDash([5,4]); ctx.lineWidth=1.3; ctx.beginPath(); [-ap,ap].forEach(v=>{ctx.moveTo(box.x,F.Y(v));ctx.lineTo(box.x+box.w,F.Y(v));}); ctx.stroke(); ctx.setLineDash([]);
+  ctx.save(); ctx.beginPath(); ctx.rect(box.x,box.y,box.w,box.h); ctx.clip();
+  [['off',css('--f1')],['tilt',css('--f2')]].forEach(([key,col])=>{
+    const r=rs[key]; if(!r) return;
+    ctx.strokeStyle=col; ctx.lineWidth=1.6; ctx.beginPath();
+    r.pts.forEach((p,j)=>{ const x=F.X(p.zu/R.geo), y=F.Y(p.y/MM); j?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke();
+    if(r.lost){ const x=F.X(r.lost.zu/R.geo), y=F.Y(r.lost.y/MM); ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x-6,y-6); ctx.lineTo(x+6,y+6); ctx.moveTo(x+6,y-6); ctx.lineTo(x-6,y+6); ctx.stroke(); }
+  });
+  ctx.restore();
+  const m=pl==='T'?R.mT:R.mS, g=rayRegime(m), name=pl==='T'?'tangential':'sagittal', bits=[];
+  if(g.kind==='stable'){
+    bits.push(`${name}: m = ${fmt(m,3)}, round-trip Gouy phase θ = ${fmt(g.th*180/Math.PI,3)}°, so a ray circles the axis once every ${fmt(g.period,3)} round trips.`);
+    if(Math.abs(m)>0.95) bits.push('Close to the edge of the stability range: a small change in a gap or the thermal lens can make the cavity unstable.');
+    if(g.deg) bits.push(`θ/2π ≈ ${g.deg.p}/${g.deg.q}: the ray closes on itself after ${g.deg.q} round trips, so transverse modes are nearly degenerate with the TEM₀₀ mode. Shift a gap slightly to move away from this point.`);
+  } else if(g.kind==='unstable'){
+    bits.push(`${name}: m = ${fmt(m,3)}, |m| > 1, so the cavity is unstable and a ray grows by ×${fmt(g.M,3)} per round trip.`);
+  }
+  const lost=[['off','offset ray'],['tilt','tilted ray']].filter(([k])=>rs[k]&&rs[k].lost).map(([k,l])=>`${l} lost in round trip ${rs[k].lost.rt}`);
+  if(lost.length) bits.push(lost.join(', ')+'.');
+  note.textContent=bits.join(' ');
 }
 
 /* ---------- beam profile ---------- */
 function drawBeam(R){
   const cv=$('#cvBeam');
-  if(!R.valid||!R.prof){ msg(cv,'Beam profile appears once the cavity is stable.'); return; }
+  if(!R.valid||!R.prof){ msg(cv,'No Gaussian eigenmode: the beam profile appears once the cavity is stable. See the ray trace.'); return; }
   const {ctx,w,h}=setup(cv), P=R.prof, log=$('#logW').checked;
   const box={x:58,y:14,w:w-72,h:h-58};
   const zs=P.Z.map(z=>z*1e3), wt=P.WT.map(v=>v*1e6), ws=P.WS.map(v=>v*1e6);
@@ -942,6 +1087,11 @@ $('#zModes').onclick=()=>{ if(LAST&&LAST.fsr) setSpan(Math.log10(25*LAST.fsr)); 
 $('#cMode').onclick=()=>{view.center='mode';$('#cMode').setAttribute('aria-pressed','true');$('#cGain').setAttribute('aria-pressed','false');schedule();};
 $('#cGain').onclick=()=>{view.center='gain';$('#cGain').setAttribute('aria-pressed','true');$('#cMode').setAttribute('aria-pressed','false');schedule();};
 $('#logW').onchange=()=>schedule();
+function syncRay(){ const r=view.ray; $('#rayPlane').value=r.plane; $('#rayN').value=r.n; $('#rayNOut').textContent=r.n; $('#rayY').value=r.y0; $('#rayU').value=r.u0; $('#rayAp').value=r.ap; }
+$('#rayPlane').onchange=e=>{ view.ray.plane=e.target.value; schedule(); };
+$('#rayN').oninput=e=>{ view.ray.n=+e.target.value; $('#rayNOut').textContent=view.ray.n; schedule(); };
+[['#rayY','y0',0],['#rayU','u0',0],['#rayAp','ap',0.1]].forEach(([id,k,lo])=>{ $(id).oninput=e=>{ const v=parseFloat(e.target.value); if(!isFinite(v)||v<lo) return; view.ray[k]=v; schedule(); }; });
+syncRay();
 
 /* ---------- results ---------- */
 let LAST=null;
@@ -1001,9 +1151,10 @@ let pend=false;
 function schedule(){ if(pend) return; pend=true; requestAnimationFrame(()=>{ pend=false; update(); }); }
 function update(){
   let R; try{ R=analyze(S); }catch(err){ console.error(err); R={valid:false,warn:['Internal error: '+err.message],info:[]}; }
+  try{ R.rays=traceAll(R); }catch(err){ console.error(err); R.rays=null; }
   LAST=R;
   renderResults(R); updateCardInfo(R);
-  drawLayout(R); drawBeam(R); drawSweep(R); drawSpec(R);
+  drawLayout(R); drawRays(R); drawBeam(R); drawSweep(R); drawSpec(R);
 }
 new ResizeObserver(()=>schedule()).observe(document.body);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>schedule());
