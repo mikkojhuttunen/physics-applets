@@ -17,7 +17,10 @@ Each course has its own folder with an `index.html` listing its applets.
   activation analysis with the activity build-up curve, and α decay of Am-241),
   and a quantum distributions explorer (Fermi–Dirac, Bose–Einstein and Maxwell–Boltzmann occupation
   numbers against energy with a temperature slider, fixed-N or fixed-μ normalisation, and mean energy
-  per particle against temperature).
+  per particle against temperature), and a pn junction and bipolar transistor explorer (Sect. 2.8: band
+  diagram with quasi-Fermi levels, carrier densities, space charge and field, and I–V for a pn diode, an
+  npn and a pnp transistor; sliders for doping, E_F − E_i, block widths, bias, material, temperature and
+  lifetime; Gummel plot, output characteristics, current gain and emitter-current budget).
 - `fys240-optics/`
 - `fys310-solid-state-physics/` — lattice viewer (3D lattices with primitive vectors, Brillouin zones with empty-lattice bands, 2D Bravais lattices), Van Hove and DOS explorer,
   band structure explorer (empty lattice, weak potential, Al/Si/Ge/GaAs/diamond

@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>pn junction and bipolar transistors: bands, carriers and currents</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys232-structure-of-matter.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
+<style>
+:root{ --ce:var(--blue); --ch:var(--red); --ntint:color-mix(in srgb,var(--blue) 20%,transparent); --ptint:color-mix(in srgb,var(--red) 20%,transparent); }
+.wrap{max-width:1240px;margin:0 auto;padding:16px 16px 32px}
+.sub{margin:0 0 12px}
+.topbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 12px}
+.topbar .seg{min-width:min(100%,380px)}
+.eq{margin:0 0 14px;line-height:1.9;display:flex;flex-wrap:wrap;gap:0 26px;font-family:var(--font-body)}
+.eq .m{color:var(--text-dim);font-size:var(--fs-small);margin-left:6px}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.2;margin:0 2px}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.layout{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:12px}
+.main{min-width:0;display:flex;flex-direction:column;gap:12px}
+.ctl{margin-bottom:12px}
+.ctl:last-child{margin-bottom:0}
+.ctl .lab{display:block;font-size:var(--fs-label);color:var(--text-dim);margin-bottom:6px}
+.card h2{display:flex;align-items:center;gap:8px}
+.tag{display:inline-block;min-width:1.5em;text-align:center;padding:1px 7px;border-radius:999px;font-size:var(--fs-small);font-weight:600;color:var(--text);border:1px solid var(--border)}
+.tag.n{background:var(--ntint);border-color:var(--ce)}
+.tag.p{background:var(--ptint);border-color:var(--ch)}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.presets button{text-align:left}
+.seg{display:flex;width:100%}
+.seg button{white-space:nowrap;padding:7px 8px;font-size:var(--fs-small)}
+.blkinfo{margin:4px 0 0;font-family:var(--font-mono);font-size:var(--fs-tiny);color:var(--text-dim);line-height:1.5}
+label.chk{display:flex;align-items:flex-start;gap:8px;font-size:var(--fs-small);color:var(--text-dim);line-height:1.4}
+label.chk input{margin-top:2px}
+.figure-box{padding:8px 8px 6px}
+.chartbox{position:relative}
+canvas{display:block;width:100%}
+#cBand{height:400px;touch-action:pan-y;cursor:crosshair}
+#cCar{height:240px;touch-action:pan-y;cursor:crosshair}
+#cField{height:250px;touch-action:pan-y;cursor:crosshair}
+#cIV,#cGum,#cOut{height:280px}
+@media (max-width:520px){#cBand{height:340px}#cCar{height:210px}#cField{height:230px}#cIV,#cGum,#cOut{height:250px}}
+.fig-title{font-size:var(--fs-small);color:var(--text-dim);margin:2px 4px 6px;display:flex;justify-content:space-between;align-items:center;gap:6px 14px;flex-wrap:wrap}
+.fig-title b{color:var(--text);font-weight:600}
+.fig-note{font-size:var(--fs-small);color:var(--text-dim);margin:4px 6px 4px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin:6px 6px 2px;font-size:var(--fs-small);color:var(--text-dim)}
+.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.legend i{display:inline-block;width:20px;height:0;border-top:2.5px solid var(--c)}
+.legend i.dash{border-top-style:dashed;border-top-width:2px}
+.legend i.sw{width:12px;height:12px;border:1px solid var(--border);background:var(--c)}
+.legend label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.msg{padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 8px 8px 0;font-size:var(--fs-body);line-height:1.5}
+.msg b{font-weight:600}
+.msg p{margin:0 0 6px}.msg p:last-child{margin:0}
+.msg .warn{margin:6px 0 0}
+dl.rd{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0 22px;margin:0}
+dl.rd>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)}
+dl.rd dt{color:var(--text-dim);font-size:var(--fs-small)}
+dl.rd dd{margin:0;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--fs-small);text-align:right;white-space:nowrap}
+.budget{margin-top:12px}
+.budget .row{display:grid;grid-template-columns:minmax(120px,210px) 1fr 74px;gap:8px;align-items:center;font-size:var(--fs-small);color:var(--text-dim);margin:4px 0}
+.budget .bar{height:10px;border-radius:5px;background:var(--panel-2);overflow:hidden;border:1px solid var(--border)}
+.budget .bar>b{display:block;height:100%;min-width:2px;background:var(--c)}
+.budget .row span:last-child{font-family:var(--font-mono);text-align:right;color:var(--text)}
+.tip{position:fixed;pointer-events:none;display:none;z-index:20;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 9px;font-size:var(--fs-small);line-height:1.5;box-shadow:0 2px 10px rgba(0,0,0,.28);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tip b{font-weight:600}
+[hidden]{display:none!important}
+details{color:var(--text-dim);font-size:var(--fs-body)}
+summary{cursor:pointer;color:var(--text)}
+details p{margin:8px 0;max-width:84ch}
+details ul{margin:6px 0 8px;padding-left:1.2rem;max-width:84ch;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>pn junction and bipolar transistors</h1>
+  <p class="sub">FYS.232 Structure of Matter · Ch. 2, Sect. 2.8 Semiconductor Devices · band diagram, carrier densities, space charge and currents of a diode and of npn and pnp transistors</p>
+
+  <div class="topbar">
+    <div class="seg" id="segDev" role="group" aria-label="Device">
+      <button data-d="pn" class="active" aria-pressed="true">pn junction</button>
+      <button data-d="npn" aria-pressed="false">npn transistor</button>
+      <button data-d="pnp" aria-pressed="false">pnp transistor</button>
+    </div>
+  </div>
+  <div class="eq card" id="eqs"></div>
+
+  <div class="layout">
+    <div class="side">
+      <section class="card">
+        <h2>Bias</h2>
+        <div id="biasCtl"></div>
+      </section>
+
+      <div id="blocks" class="side"></div>
+
+      <section class="card">
+        <h2>Material and temperature</h2>
+        <div class="ctl">
+          <div class="seg" id="segMat" role="group" aria-label="Material">
+            <button data-m="Si" class="active" aria-pressed="true">Si</button>
+            <button data-m="Ge" aria-pressed="false">Ge</button>
+            <button data-m="GaAs" aria-pressed="false">GaAs</button>
+          </div>
+          <p class="blkinfo" id="matInfo"></p>
+        </div>
+        <div class="ctl">
+          <label class="slider-label" for="temp"><span>Temperature T</span><span class="val" id="tval"></span></label>
+          <input id="temp" type="range" min="200" max="450" step="1" value="300">
+        </div>
+        <div class="ctl">
+          <label class="slider-label" for="tau"><span>Minority-carrier lifetime τ</span><span class="val" id="tauval"></span></label>
+          <input id="tau" type="range" min="-9" max="-4" step="0.05" value="-6">
+        </div>
+        <div class="ctl">
+          <label class="chk"><input type="checkbox" id="scr"><span>Add generation–recombination in the depletion layers (non-ideal diode, I<sub>SCR</sub> ∝ n<sub>i</sub>w/2τ)</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Examples</h2>
+        <div class="presets" id="presets"></div>
+      </section>
+    </div>
+
+    <div class="main">
+      <div class="msg" id="msg"></div>
+
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Energy bands</b> and quasi-Fermi levels along the device</span><span id="hint">hover or touch for values</span></div>
+        <div class="chartbox"><canvas id="cBand" role="img" aria-label="Band diagram of the device"></canvas></div>
+        <div class="legend" id="legBand">
+          <span style="--c:var(--text)"><i></i>E<sub>c</sub>, E<sub>v</sub></span>
+          <span style="--c:var(--ce)"><i></i>E<sub>Fn</sub> (electrons)</span>
+          <span style="--c:var(--ch)"><i class="dash"></i>E<sub>Fp</sub> (holes)</span>
+          <span style="--c:var(--ntint)"><i class="sw"></i>n-type</span>
+          <span style="--c:var(--ptint)"><i class="sw"></i>p-type</span>
+          <label><input type="checkbox" id="showEi"> intrinsic level E<sub>i</sub></label>
+        </div>
+        <p class="fig-note">Energies in eV with the Fermi level of the reference region (n-side, or the base) at 0. The horizontal axis is compressed (each stretch is drawn at length<sup>0.42</sup>) so that thin depletion layers stay visible; true lengths are given under the axis. Shaded: depletion layers with ionised dopants (+ donors, − acceptors).</p>
+      </div>
+
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Carrier densities</b> n(x) and p(x), logarithmic</span></div>
+        <canvas id="cCar" role="img" aria-label="Electron and hole densities along the device"></canvas>
+        <p class="fig-note">Minority carriers are injected under forward bias (their density at the depletion edge rises by e<sup>eV/k<sub>B</sub>T</sup>) and extracted under reverse bias (density falls to nearly zero), then relax toward equilibrium over the diffusion length L = √(Dτ) or are collected at the ohmic end contact.</p>
+      </div>
+
+      <div class="figure-box">
+        <div class="fig-title"><span><b>Space charge</b> and <b>electric field</b> (depletion approximation)</span></div>
+        <canvas id="cField" role="img" aria-label="Space charge density and electric field"></canvas>
+      </div>
+
+      <div id="ivPn" class="figure-box">
+        <div class="fig-title"><span><b>Current–voltage characteristic</b> (area 100 µm × 100 µm)</span>
+          <span class="seg" id="segIV" style="width:auto"><button data-s="log" class="active" aria-pressed="true">log |I|</button><button data-s="lin" aria-pressed="false">linear</button></span></div>
+        <canvas id="cIV" role="img" aria-label="Diode current versus voltage"></canvas>
+        <p class="fig-note" id="ivNote"></p>
+      </div>
+
+      <div id="ivBjt" class="two">
+        <div class="figure-box">
+          <div class="fig-title"><span><b>Gummel plot</b>: I<sub>C</sub> and I<sub>B</sub> against V<sub>BE</sub></span></div>
+          <canvas id="cGum" role="img" aria-label="Collector and base current versus base-emitter voltage"></canvas>
+        </div>
+        <div class="figure-box">
+          <div class="fig-title"><span><b>Output characteristics</b>: I<sub>C</sub> against V<sub>CE</sub></span></div>
+          <canvas id="cOut" role="img" aria-label="Collector current versus collector-emitter voltage"></canvas>
+          <p class="fig-note">Curves differ by a factor 2 in current (ΔV<sub>BE</sub> = k<sub>B</sub>T ln 2); the bold curve is the present V<sub>BE</sub>.</p>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2>Readouts</h2>
+        <dl class="rd" id="rd"></dl>
+        <div class="budget" id="budget" hidden></div>
+      </section>
+
+      <details>
+        <summary>Model and notes</summary>
+        <p>Each block is a uniformly doped, fully ionised semiconductor in the abrupt-junction, depletion approximation: the depletion layer of a junction has width w = √(2ε(V<sub>bi</sub> − V)(1/N<sub>A</sub> + 1/N<sub>D</sub>)/e), and it extends x<sub>p</sub> = w·N<sub>D</sub>/(N<sub>A</sub>+N<sub>D</sub>) into the p side and x<sub>n</sub> = w·N<sub>A</sub>/(N<sub>A</sub>+N<sub>D</sub>) into the n side, so the more lightly doped side is depleted deeper. The built-in voltage is eV<sub>bi</sub> = (E<sub>c</sub> − E<sub>F</sub>)<sub>p</sub> − (E<sub>c</sub> − E<sub>F</sub>)<sub>n</sub> = k<sub>B</sub>T ln(n<sub>n0</sub>p<sub>p0</sub>/n<sub>i</sub>²). The doping and E<sub>F</sub> − E<sub>i</sub> sliders are two views of the same quantity: n<sub>0</sub> = n<sub>i</sub>e<sup>(E<sub>F</sub>−E<sub>i</sub>)/k<sub>B</sub>T</sup>.</p>
+        <p>Outside the depletion layers the bands are flat and the minority carriers obey the diffusion equation with the boundary condition of the law of the junction, Δc = c<sub>0</sub>(e<sup>eV<sub>j</sub>/k<sub>B</sub>T</sup> − 1), at the depletion edge and Δc = 0 at the ohmic end contact. For a block of neutral width W′ this gives the flux (D/L)Δc·coth(W′/L): the long-diode result I<sub>S</sub> = A·e·n<sub>i</sub>²(D<sub>p</sub>/L<sub>p</sub>N<sub>D</sub> + D<sub>n</sub>/L<sub>n</sub>N<sub>A</sub>) for W′ ≫ L and a current ∝ 1/W′ for W′ ≪ L (short diode). The transistor is the same model with two junctions; the base minority-carrier profile has a boundary value at both ends, which reproduces the Ebers–Moll behaviour (active, saturation, cut-off) with no extra assumptions.</p>
+        <p>Quantities in the transistor readouts: β = I<sub>C</sub>/I<sub>B</sub>; emitter injection efficiency γ = electron current injected into the base / total emitter current; base transport factor α<sub>T</sub> = fraction of the injected carriers that survive the base; α = γα<sub>T</sub> = I<sub>C</sub>/I<sub>E</sub>. To maximise β: dope the emitter much more heavily than the base (γ → 1) and make the base much thinner than its diffusion length (α<sub>T</sub> → 1). The Early voltage V<sub>A</sub> = I<sub>C</sub>/(∂I<sub>C</sub>/∂V<sub>CE</sub>) comes from the shrinking neutral base width as the collector depletion layer widens.</p>
+        <p>Not included, so absolute numbers are idealised: band-gap narrowing and Auger recombination in heavily doped regions (they limit real β to about 50–300 instead of the thousands an ideal 10<sup>19</sup> cm<sup>−3</sup> emitter would give), incomplete ionisation, degenerate statistics (flagged when doping exceeds 0.1·N<sub>c</sub> or 0.1·N<sub>v</sub>), high-level injection (flagged), series resistance, and impact ionisation in the transistor. Junction voltages are limited to V<sub>bi</sub> − 50 mV where the depletion approximation fails. Reverse breakdown of the diode uses the empirical abrupt-junction estimate V<sub>BR</sub> ≈ 60 (E<sub>g</sub>/1.1 eV)<sup>3/2</sup> (N/10<sup>16</sup> cm<sup>−3</sup>)<sup>−3/4</sup> V for the lighter side, not less than 4E<sub>g</sub>/e, with an avalanche multiplication factor 1/(1 − (V/V<sub>BR</sub>)³). Mobilities: Caughey–Thomas fit for Si, rougher fits for Ge and GaAs, ∝ T<sup>−3/2</sup>; the lifetime is the same for all regions. n<sub>i</sub> follows from E<sub>g</sub>(T) (Varshni) and N<sub>c,v</sub> ∝ T<sup>3/2</sup>.</p>
+      </details>
+    </div>
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+/* ===== Device physics model: abrupt homojunctions, depletion approximation,
+   Boltzmann statistics, low-level injection, diffusion in neutral regions
+   with ohmic outer contacts (finite widths). Units: cm, s, eV, V, A. ===== */
+const Q = 1.602176634e-19, KB = 8.617333262e-5, EPS0 = 8.8541878128e-14;
+
+const MATERIALS = {
+  Si:   { label: 'Si',   Eg0: 1.17,   va: 4.73e-4,  vb: 636, Nc: 2.86e19, Nv: 2.66e19, er: 11.7,
+          mun: { max: 1414, min: 68.5, nref: 9.2e16, a: 0.711 },
+          mup: { max: 470.5, min: 44.9, nref: 2.23e17, a: 0.719 } },
+  Ge:   { label: 'Ge',   Eg0: 0.7437, va: 4.77e-4,  vb: 235, Nc: 1.04e19, Nv: 6.0e18, er: 16.0,
+          mun: { max: 3900, min: 300, nref: 1e18, a: 0.6 },
+          mup: { max: 1900, min: 100, nref: 1e18, a: 0.6 } },
+  GaAs: { label: 'GaAs', Eg0: 1.519,  va: 5.405e-4, vb: 204, Nc: 4.7e17, Nv: 7.0e18, er: 12.9,
+          mun: { max: 9000, min: 400, nref: 6e16, a: 0.5 },
+          mup: { max: 450, min: 30, nref: 1e17, a: 0.5 } }
+};
+
+function matAt(name, T) {
+  const m = MATERIALS[name];
+  const Eg = m.Eg0 - m.va * T * T / (T + m.vb);
+  const s = Math.pow(T / 300, 1.5);
+  const Nc = m.Nc * s, Nv = m.Nv * s, Vt = KB * T;
+  const ni = Math.sqrt(Nc * Nv) * Math.exp(-Eg / (2 * Vt));
+  return { name, m, Eg, Nc, Nv, Vt, ni, eps: m.er * EPS0, T };
+}
+
+function mobility(par, N, T) {
+  return (par.min + (par.max - par.min) / (1 + Math.pow(N / par.nref, par.a))) * Math.pow(T / 300, -1.5);
+}
+
+/* Equilibrium properties of one uniformly doped, fully ionised region */
+function regionProps(mp, type, N) {
+  const ni = mp.ni, h = N / 2;
+  const maj = h + Math.sqrt(h * h + ni * ni), min = ni * ni / maj;
+  const n0 = type === 'n' ? maj : min, p0 = type === 'n' ? min : maj;
+  return { type, N, n0, p0,
+           dc: mp.Vt * Math.log(mp.Nc / n0),   // Ec - EF  (eV)
+           phi: mp.Vt * Math.log(n0 / ni) };   // EF - Ei  (eV)
+}
+
+/* N (cm^-3) from the Fermi-level position phi = EF - Ei (eV) */
+function dopingFromPhi(mp, phi) {
+  return Math.abs(2 * mp.ni * Math.sinh(phi / mp.Vt));
+}
+
+/* sinh(u)/sinh(w) for 0 <= u <= w without overflow */
+function shr(u, w) {
+  if (w < 1e-8) return w === 0 ? 0 : u / w;
+  if (w > 20) return Math.exp(u - w) * (1 - Math.exp(-2 * u)) / (1 - Math.exp(-2 * w));
+  return Math.sinh(u) / Math.sinh(w);
+}
+
+/* cfg = { mat, T, tau, scr, blocks:[{type,N,W}], Vf:[forward bias per junction] }
+   W in cm. Returns the full device state. */
+function buildDevice(cfg) {
+  const mp = matAt(cfg.mat, cfg.T);
+  const nb = cfg.blocks.length, nj = nb - 1;
+  const R = cfg.blocks.map(b => Object.assign({ W: b.W }, regionProps(mp, b.type, b.N)));
+  const flags = { punch: false, clamp: false, highInj: false };
+
+  // ---- junctions
+  const J = [];
+  for (let j = 0; j < nj; j++) {
+    const A = R[j], B = R[j + 1];
+    const Veq = B.dc - A.dc, sg = Math.sign(Veq), Vbi = Math.abs(Veq);
+    let Vf = cfg.Vf[j];
+    if (Vf > Vbi - 0.05) { Vf = Vbi - 0.05; flags.clamp = true; }
+    const bar = Vbi - Vf;
+    const Wd = Math.sqrt(2 * mp.eps * bar / Q * (1 / A.N + 1 / B.N));
+    J.push({ j, sg, Vbi, Vf, bar, Wd0: Wd, xl: Wd * B.N / (A.N + B.N), xr: Wd * A.N / (A.N + B.N) });
+  }
+  // ---- terminal potentials (block 1 is the reference; pn: block 0 is p, block 1 is n)
+  const ref = nb === 2 ? 1 : 1;
+  const V = new Array(nb).fill(0);
+  V[ref] = 0;
+  for (let i = ref - 1; i >= 0; i--) V[i] = V[i + 1] - J[i].sg * J[i].Vf;
+  for (let i = ref + 1; i < nb; i++) V[i] = V[i - 1] + J[i - 1].sg * J[i - 1].Vf;
+
+  // ---- punch-through: depletion layers must leave a neutral slice in each block
+  for (let i = 0; i < nb; i++) {
+    const dl = i > 0 ? J[i - 1].xr : 0, dr = i < nj ? J[i].xl : 0;
+    if (dl + dr > 0.98 * R[i].W) {
+      flags.punch = true;
+      const f = 0.98 * R[i].W / (dl + dr);
+      if (i > 0) { J[i - 1].xr *= f; J[i - 1].xl *= f; }
+      if (i < nj) { J[i].xl *= f; J[i].xr *= f; }
+    }
+  }
+  J.forEach(g => { g.W = g.xl + g.xr; });
+
+  // ---- positions
+  let X = 0;
+  R.forEach((r, i) => {
+    r.X0 = X; X += r.W; r.X1 = X;
+    r.dl = i > 0 ? J[i - 1].xr : 0;
+    r.dr = i < nj ? J[i].xl : 0;
+    r.Wn = Math.max(r.W - r.dl - r.dr, 0.02 * r.W);
+    r.xa = r.X0 + r.dl; r.xb = r.X1 - r.dr;
+    r.EF = -V[i];
+    r.Ec = r.EF + r.dc;
+    r.V = V[i];
+  });
+  J.forEach(g => { g.x = R[g.j].X1; g.dEc = R[g.j + 1].Ec - R[g.j].Ec; });
+
+  // ---- minority-carrier diffusion in each neutral region
+  R.forEach((r, i) => {
+    const minority = r.type === 'p' ? 'n' : 'p';
+    r.minority = minority;
+    r.c0 = minority === 'n' ? r.n0 : r.p0;
+    const mu = mobility(minority === 'n' ? mp.m.mun : mp.m.mup, r.N, cfg.T);
+    r.mu = mu; r.D = mu * mp.Vt; r.L = Math.sqrt(r.D * cfg.tau);
+    r.ea = i === 0 ? 1 : Math.exp(J[i - 1].Vf / mp.Vt);        // c(edge)/c0 (law of the junction)
+    r.eb = i === nb - 1 ? 1 : Math.exp(J[i].Vf / mp.Vt);
+    r.dca = r.c0 * (r.ea - 1);
+    r.dcb = r.c0 * (r.eb - 1);
+    const w = r.Wn / r.L;
+    const coth = 1 / Math.tanh(w), csch = w > 700 ? 0 : 1 / Math.sinh(w);
+    r.Fl = r.D / r.L * (r.dca * coth - r.dcb * csch);   // flux (+x) at left neutral edge
+    r.Fr = r.D / r.L * (r.dca * csch - r.dcb * coth);   // flux (+x) at right neutral edge
+    r.w = w;
+    if (Math.max(r.dca, r.dcb) > r.N) flags.highInj = true;
+  });
+
+  // ---- junction currents, conventional current along +x (A/cm^2)
+  J.forEach(g => {
+    const A = R[g.j], B = R[g.j + 1];
+    let Fn, Fp;
+    if (A.type === 'p') { Fn = A.Fr; Fp = B.Fl; } else { Fp = A.Fr; Fn = B.Fl; }
+    g.Jn = -Q * Fn; g.Jp = Q * Fp;
+    g.Jid = g.Jn + g.Jp;
+    g.dir = A.type === 'p' ? 1 : -1;
+    g.Jscr = cfg.scr ? g.dir * Q * mp.ni * g.W / (2 * cfg.tau) * (Math.exp(g.Vf / (2 * mp.Vt)) - 1) : 0;
+    g.Jtot = g.Jid + g.Jscr;
+  });
+  return { cfg, mp, R, J, V, flags, nb, nj, Wtot: X };
+}
+
+/* pn diode: block 0 = p, block 1 = n; V forward bias; returns current density */
+function pnJ(cfg, V) {
+  const d = buildDevice(Object.assign({}, cfg, { Vf: [V] }));
+  return { d, J: d.J[0].Jtot };
+}
+
+/* Bipolar transistor currents (A/cm^2 of area). type: 'npn' | 'pnp'. */
+function bjtCurrents(d, type) {
+  const s = type === 'npn' ? 1 : -1;
+  const IE = -s * d.J[0].Jtot, IC = -s * d.J[1].Jtot, IB = IE - IC;
+  const E = d.R[0], B = d.R[1];
+  const Fb1 = B.Fl, Fb2 = B.Fr, Fe = Math.abs(E.Fr);
+  const act = Fb1 > 0;
+  return { IE, IC, IB, beta: IC / IB, alpha: IC / IE,
+           gamma: act ? Fb1 / (Fb1 + Fe) : NaN, alphaT: act ? Fb2 / Fb1 : NaN, Fb1, Fb2, Fe };
+}
+
+/* ---- profile sampling for the plots ------------------------------------ */
+const DISP_EXP = 0.42;
+
+function segmentsOf(d) {
+  const seg = [];
+  d.R.forEach((r, i) => {
+    if (i > 0) { const g = d.J[i - 1]; seg.push({ kind: 'depR', j: i - 1, x0: g.x, x1: g.x + g.xr }); }
+    seg.push({ kind: 'neu', i, x0: r.xa, x1: r.xb });
+    if (i < d.nj) { const g = d.J[i]; seg.push({ kind: 'depL', j: i, x0: g.x - g.xl, x1: g.x }); }
+  });
+  seg.forEach(s => { s.len = s.x1 - s.x0; s.disp = Math.max(0.12, Math.pow(s.len * 1e4, DISP_EXP)); });
+  const tot = seg.reduce((a, s) => a + s.disp, 0);
+  let acc = 0;
+  seg.forEach(s => { s.u0 = acc / tot; acc += s.disp; s.u1 = acc / tot; });
+  return seg;
+}
+
+function sampleProfile(d, nTot) {
+  nTot = nTot || 420;
+  const mp = d.mp, Vt = mp.Vt, ln10 = Math.LN10;
+  const seg = segmentsOf(d);
+  const P = { u: [], x: [], Ec: [], Ev: [], EFn: [], EFp: [], lgn: [], lgp: [], E: [], rho: [], seg };
+  seg.forEach(s => {
+    const n = Math.max(10, Math.round(nTot * (s.u1 - s.u0)));
+    for (let k = 0; k <= n; k++) {
+      // cluster samples near both ends of neutral regions (exponential tails)
+      const t = s.kind === 'neu' ? 0.5 * (1 - Math.cos(Math.PI * k / n)) : k / n;
+      const x = s.x0 + t * s.len, u = s.u0 + t * (s.u1 - s.u0);
+      let Ec, EFn, EFp, lgn, lgp, E = 0, rho = 0;
+      if (s.kind === 'neu') {
+        const r = d.R[s.i]; Ec = r.Ec;
+        const w = r.Wn / r.L, ss = Math.min(Math.max((x - r.xa) / r.L, 0), w);
+        // minority density c = c0 + dc, written without cancellation: stays positive
+        // (and exact at the edges, c = c0 exp(Vf/Vt)) even in deep reverse bias
+        const sa = shr(w - ss, w), sb = shr(ss, w);
+        const ea = r.ea, eb = r.eb;
+        const c = Math.max(r.c0 * (Math.max(1 - sa - sb, 0) + ea * sa + eb * sb), 1e-300);
+        const Ev = Ec - mp.Eg;
+        if (r.type === 'n') {
+          EFn = r.EF;
+          EFp = Ev - Vt * Math.log(c / mp.Nv);
+          lgn = Math.log(r.n0) / ln10; lgp = Math.log(c) / ln10;
+        } else {
+          EFp = r.EF;
+          EFn = Ec + Vt * Math.log(c / mp.Nc);
+          lgp = Math.log(r.p0) / ln10; lgn = Math.log(c) / ln10;
+        }
+      } else {
+        const g = d.J[s.j], A = d.R[g.j], B = d.R[g.j + 1];
+        const sgn = Math.sign(A.Ec - B.Ec);          // +1: left side is higher in energy
+        const D = Math.abs(g.dEc), al = D / (g.xl * g.W), ar = D / (g.xr * g.W);
+        if (s.kind === 'depL') {
+          const dx = x - (g.x - g.xl);
+          Ec = A.Ec - sgn * al * dx * dx; E = -sgn * 2 * al * dx;
+        } else {
+          const dx = (g.x + g.xr) - x;
+          Ec = B.Ec + sgn * ar * dx * dx; E = -sgn * 2 * ar * dx;
+        }
+        const nBlk = A.type === 'n' ? A : B, pBlk = A.type === 'p' ? A : B;
+        EFn = nBlk.EF; EFp = pBlk.EF;
+        const Ev = Ec - mp.Eg;
+        lgn = (Math.log(mp.Nc) + (EFn - Ec) / Vt) / ln10;
+        lgp = (Math.log(mp.Nv) + (Ev - EFp) / Vt) / ln10;
+        const qN = (s.kind === 'depL' ? A : B);
+        rho = (qN.type === 'n' ? 1 : -1) * qN.N;
+      }
+      P.u.push(u); P.x.push(x); P.Ec.push(Ec); P.Ev.push(Ec - mp.Eg);
+      P.EFn.push(EFn); P.EFp.push(EFp); P.lgn.push(lgn); P.lgp.push(lgp);
+      P.E.push(E); P.rho.push(rho);
+    }
+  });
+  return P;
+}
+
+if (false) module.exports = { MATERIALS, matAt, mobility, regionProps, dopingFromPhi, buildDevice, pnJ, bjtCurrents, sampleProfile, segmentsOf, Q, KB, EPS0 };
+
+</script>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const AREA = 1e-4;                       // cm^2 (100 um x 100 um)
+const PAD_L = 62, PAD_R = 16;            // shared by the three position plots so the x axes line up
+
+/* ------------------------------------------------------------------ state */
+const DEF = () => ({
+  pn:  { p: { lN: 16, lW: 1.7 }, n: { lN: 16, lW: 1.7 } },
+  bjt: { E: { lN: 18, lW: 0.3 }, B: { lN: 17, lW: -0.4 }, C: { lN: 16, lW: 1.0 } }
+});
+const S = { dev: 'pn', mat: 'Si', T: 300, lTau: -6, scr: false, par: DEF(),
+            V: 0.55, VBE: 0.65, VCE: 3, ivLog: true, showEi: false, hoverU: null, cur: null };
+
+const roles = () => {
+  if (S.dev === 'pn') return [{ key: 'p', type: 'p', name: 'p-type block' }, { key: 'n', type: 'n', name: 'n-type block' }];
+  const e = S.dev === 'npn' ? 'n' : 'p', b = S.dev === 'npn' ? 'p' : 'n';
+  return [{ key: 'E', type: e, name: 'Emitter' }, { key: 'B', type: b, name: 'Base' }, { key: 'C', type: e, name: 'Collector' }];
+};
+const store = () => S.dev === 'pn' ? S.par.pn : S.par.bjt;
+
+/* --------------------------------------------------------------- helpers */
+const SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+const supInt = e => (e < 0 ? '⁻' : '') + String(Math.abs(e)).split('').map(c => SUP[+c]).join('');
+function sci(x, d) {
+  d = d === undefined ? 1 : d;
+  if (!isFinite(x)) return x > 0 ? '∞' : '−∞';
+  if (x === 0) return '0';
+  let e = Math.floor(Math.log10(Math.abs(x))), m = x / Math.pow(10, e);
+  if (Math.abs(+m.toFixed(d)) >= 10) { m /= 10; e++; }
+  return m.toFixed(d) + '×10' + supInt(e);
+}
+const sciE = (x, d) => { d = d === undefined ? 1 : d; return isFinite(x) && x !== 0 ? x.toExponential(d).replace('e+', 'e') : '0'; };
+function eng(x, unit, sig) {
+  sig = sig || 3;
+  if (!isFinite(x)) return '—';
+  if (x === 0) return '0 ' + unit;
+  const pre = [[1e-15, 'f'], [1e-12, 'p'], [1e-9, 'n'], [1e-6, 'µ'], [1e-3, 'm'], [1, ''], [1e3, 'k'], [1e6, 'M']];
+  const a = Math.abs(x); let i = 0;
+  for (let k = 0; k < pre.length; k++) if (a >= pre[k][0] * 0.9995) i = k;
+  const v = x / pre[i][0], dec = Math.max(0, sig - 1 - Math.floor(Math.log10(Math.abs(v))));
+  return v.toFixed(dec) + ' ' + pre[i][1] + unit;
+}
+function len(cm) {                       // length with a sensible unit
+  const um = cm * 1e4;
+  if (um < 0.0995) return (cm * 1e7).toFixed(um < 0.0095 ? 1 : 0) + ' nm';
+  if (um < 10) return um.toFixed(2) + ' µm';
+  if (um < 1000) return um.toFixed(um < 100 ? 1 : 0) + ' µm';
+  return (um / 1e4).toFixed(2) + ' cm';
+}
+const sgn = (v, d) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d);
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function pal() {
+  const v = cssv;
+  return { text: v('--text'), dim: v('--text-dim'), faint: v('--text-faint'), grid: v('--grid'), border: v('--border'),
+           panel: v('--panel'), panel2: v('--panel-2'), ce: v('--blue'), ch: v('--red'), acc: v('--accent'),
+           green: v('--green'), orange: v('--orange'), violet: v('--violet'),
+           ntint: 'color-mix(in srgb,' + v('--blue') + ' 22%, transparent)',
+           ptint: 'color-mix(in srgb,' + v('--red') + ' 22%, transparent)',
+           accSoft: 'color-mix(in srgb,' + v('--violet') + ' 18%, transparent)' };
+}
+const font = (px, w) => (w || 400) + ' ' + px + 'px ' + (cssv('--font-body') || 'system-ui, sans-serif');
+function fit(c) {
+  const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+  if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  return { g, w, h };
+}
+function niceStep(range, target) {
+  const raw = range / target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
+}
+const tickTxt = v => (Math.abs(v) < 1e-9 ? '0' : String(+v.toFixed(3)));
+function ptsPath(g, xs, ys, clip) {
+  let pen = false;
+  g.beginPath();
+  for (let i = 0; i < xs.length; i++) {
+    if (!isFinite(ys[i])) { pen = false; continue; }
+    if (!pen) { g.moveTo(xs[i], ys[i]); pen = true; } else g.lineTo(xs[i], ys[i]);
+  }
+}
+
+/* ------------------------------------------------------ physics wrappers */
+function makeCfg() {
+  const rs = roles(), st = store();
+  return { mat: S.mat, T: S.T, tau: Math.pow(10, S.lTau), scr: S.scr,
+           blocks: rs.map(r => ({ type: r.type, N: Math.pow(10, st[r.key].lN), W: Math.pow(10, st[r.key].lW) * 1e-4 })), Vf: [0] };
+}
+const vbiOf = (mp, a, b) => Math.abs(regionProps(mp, b.type, b.N).dc - regionProps(mp, a.type, a.N).dc);
+function breakdownV(mp, N1, N2) {
+  const N = Math.min(N1, N2);
+  return Math.max(60 * Math.pow(mp.Eg / 1.1, 1.5) * Math.pow(N / 1e16, -0.75), 4 * mp.Eg);
+}
+function pnCurrent(cfg, V, vbr) {
+  const Vc = Math.max(V, -vbr);
+  let J = pnJ(cfg, Vc).J;
+  if (V < 0) { const a = Math.abs(V) / vbr; J *= a >= 1 ? 1e6 : Math.min(1 / (1 - a * a * a), 1e6); }
+  return J * AREA;
+}
+function bjtAt(cfg, type, VBE, VCE) {
+  const d = buildDevice(Object.assign({}, cfg, { Vf: [VBE, VBE - VCE] }));
+  const c = bjtCurrents(d, type);
+  return { d, IC: c.IC * AREA, IB: c.IB * AREA, IE: c.IE * AREA, c };
+}
+
+function compute() {
+  const cfg = makeCfg(), mp = matAt(S.mat, S.T), bl = cfg.blocks, out = { cfg, mp };
+  if (S.dev === 'pn') {
+    out.vbi = vbiOf(mp, bl[0], bl[1]);
+    out.vbr = breakdownV(mp, bl[0].N, bl[1].N);
+    out.breakdown = S.V <= -out.vbr;
+    const Vc = Math.max(S.V, -out.vbr);
+    out.d = buildDevice(Object.assign({}, cfg, { Vf: [Vc] }));
+    out.I = pnCurrent(cfg, S.V, out.vbr);
+    const long = buildDevice(Object.assign({}, cfg, { Vf: [0.2] }));
+    out.warn = [];
+  } else {
+    out.vbiE = vbiOf(mp, bl[0], bl[1]); out.vbiC = vbiOf(mp, bl[1], bl[2]);
+    const r = bjtAt(cfg, S.dev, S.VBE, S.VCE);
+    out.d = r.d; out.IC = r.IC; out.IB = r.IB; out.IE = r.IE; out.c = r.c;
+    const h = 0.1, a = bjtAt(cfg, S.dev, S.VBE, S.VCE + h).IC, b = bjtAt(cfg, S.dev, S.VBE, Math.max(S.VCE - h, 0)).IC;
+    const slope = (a - b) / (S.VCE + h - Math.max(S.VCE - h, 0));
+    out.VA = slope > 0 && r.IC > 0 ? r.IC / slope : Infinity;
+    out.bvc = breakdownV(mp, bl[1].N, bl[2].N);
+  }
+  out.P = sampleProfile(out.d, 440);
+  return out;
+}
+
+/* --------------------------------------------------------------- controls */
+const fmtN = lN => sciE(Math.pow(10, lN), 1) + ' cm⁻³';
+function phiRange(type) {
+  const mp = matAt(S.mat, S.T);
+  const a = regionProps(mp, type, 1e14).phi, b = regionProps(mp, type, 1e19).phi;
+  return [Math.min(a, b), Math.max(a, b)];
+}
+function syncBlock(r) {
+  const st = store()[r.key], mp = matAt(S.mat, S.T), N = Math.pow(10, st.lN);
+  const rp = regionProps(mp, r.type, N);
+  const [lo, hi] = phiRange(r.type), ph = $('phi_' + r.key);
+  ph.min = lo.toFixed(4); ph.max = hi.toFixed(4); ph.value = rp.phi.toFixed(4);
+  $('lN_' + r.key).value = st.lN;
+  $('lNv_' + r.key).textContent = fmtN(st.lN);
+  $('phv_' + r.key).textContent = sgn(rp.phi, 3) + ' eV';
+  $('lW_' + r.key).value = st.lW;
+  $('lWv_' + r.key).textContent = len(Math.pow(10, st.lW) * 1e-4);
+  const deg = (r.type === 'n' ? rp.n0 : rp.p0) > 0.1 * (r.type === 'n' ? mp.Nc : mp.Nv);
+  $('inf_' + r.key).innerHTML = 'E<sub>c</sub> − E<sub>F</sub> = ' + rp.dc.toFixed(3) + ' eV · E<sub>F</sub> − E<sub>v</sub> = ' + (mp.Eg - rp.dc).toFixed(3) + ' eV<br>n₀ = ' + sciE(rp.n0, 1) + ' · p₀ = ' + sciE(rp.p0, 1) + ' cm⁻³' +
+    (deg ? '<br><span style="color:var(--orange)">heavy doping: Boltzmann statistics only approximate</span>' : '');
+}
+function buildBlocks() {
+  const rs = roles(), host = $('blocks'), st = store();
+  host.innerHTML = '';
+  rs.forEach(r => {
+    const dop = r.type === 'n' ? 'Donors N<sub>D</sub>' : 'Acceptors N<sub>A</sub>';
+    const sec = document.createElement('section'); sec.className = 'card';
+    sec.innerHTML =
+      '<h2><span class="tag ' + r.type + '">' + r.type + '</span>' + r.name + '</h2>' +
+      '<div class="ctl"><label class="slider-label" for="lN_' + r.key + '"><span>' + dop + '</span><span class="val" id="lNv_' + r.key + '"></span></label>' +
+      '<input id="lN_' + r.key + '" type="range" min="14" max="19" step="0.01"></div>' +
+      '<div class="ctl"><label class="slider-label" for="phi_' + r.key + '"><span>Fermi level E<sub>F</sub> − E<sub>i</sub></span><span class="val" id="phv_' + r.key + '"></span></label>' +
+      '<input id="phi_' + r.key + '" type="range" step="0.001"></div>' +
+      '<div class="ctl"><label class="slider-label" for="lW_' + r.key + '"><span>Block width</span><span class="val" id="lWv_' + r.key + '"></span></label>' +
+      '<input id="lW_' + r.key + '" type="range" min="-1" max="2.3" step="0.01">' +
+      '<p class="blkinfo" id="inf_' + r.key + '"></p></div>';
+    host.appendChild(sec);
+    $('lN_' + r.key).addEventListener('input', e => { st[r.key].lN = +e.target.value; syncBlock(r); biasRanges(); refresh(); });
+    $('phi_' + r.key).addEventListener('input', e => {
+      const mp = matAt(S.mat, S.T), N = dopingFromPhi(mp, +e.target.value);
+      st[r.key].lN = clamp(Math.log10(Math.max(N, 1)), 14, 19); syncBlock(r); biasRanges(); refresh();
+    });
+    $('lW_' + r.key).addEventListener('input', e => { st[r.key].lW = +e.target.value; syncBlock(r); refresh(); });
+    syncBlock(r);
+  });
+}
+function bjtLabels() {
+  return S.dev === 'npn' ? { be: 'V<sub>BE</sub>', ce: 'V<sub>CE</sub>', beN: 'base–emitter voltage', ceN: 'collector–emitter voltage' }
+                         : { be: 'V<sub>EB</sub>', ce: 'V<sub>EC</sub>', beN: 'emitter–base voltage', ceN: 'emitter–collector voltage' };
+}
+function buildBias() {
+  const host = $('biasCtl');
+  if (S.dev === 'pn') {
+    host.innerHTML =
+      '<div class="ctl"><label class="slider-label" for="vV"><span>Voltage V (p side positive)</span><span class="val" id="vVv"></span></label>' +
+      '<input id="vV" type="range" min="-10" max="0.7" step="0.005">' +
+      '<div class="presets" style="margin-top:6px"><button class="btn small" data-v="rev">Reverse</button><button class="btn small" data-v="zero">Zero</button><button class="btn small" data-v="fwd">Forward</button></div></div>';
+    $('vV').addEventListener('input', e => { S.V = +e.target.value; refresh(); });
+    host.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
+      const c = compute();
+      S.V = b.dataset.v === 'rev' ? -5 : b.dataset.v === 'zero' ? 0 : Math.min(0.8 * c.vbi, c.vbi - 0.05);
+      biasRanges(); refresh();
+    }));
+  } else {
+    const L = bjtLabels();
+    host.innerHTML =
+      '<div class="ctl"><label class="slider-label" for="vBE"><span>' + L.be + ' (' + L.beN + ')</span><span class="val" id="vBEv"></span></label>' +
+      '<input id="vBE" type="range" min="0" max="0.9" step="0.005"></div>' +
+      '<div class="ctl"><label class="slider-label" for="vCE"><span>' + L.ce + ' (' + L.ceN + ')</span><span class="val" id="vCEv"></span></label>' +
+      '<input id="vCE" type="range" min="0" max="12" step="0.01"></div>' +
+      '<div class="ctl"><span class="blkinfo" id="regionTag"></span></div>';
+    $('vBE').addEventListener('input', e => { S.VBE = +e.target.value; refresh(); });
+    $('vCE').addEventListener('input', e => { S.VCE = +e.target.value; refresh(); });
+  }
+  biasRanges();
+}
+function biasRanges() {
+  const cfg = makeCfg(), mp = matAt(S.mat, S.T), bl = cfg.blocks;
+  if (S.dev === 'pn') {
+    const vmax = vbiOf(mp, bl[0], bl[1]) - 0.05;
+    $('vV').max = vmax.toFixed(3); S.V = clamp(S.V, -10, vmax); $('vV').value = S.V;
+  } else {
+    const vmax = vbiOf(mp, bl[0], bl[1]) - 0.05;
+    $('vBE').max = vmax.toFixed(3); S.VBE = clamp(S.VBE, 0, vmax); $('vBE').value = S.VBE; $('vCE').value = S.VCE;
+  }
+}
+function setSeg(id, attr, val) {
+  document.querySelectorAll('#' + id + ' button').forEach(b => { const on = b.dataset[attr] === val; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
+}
+
+/* --------------------------------------------------------------- presets */
+const PRE = {
+  pn: [
+    { n: 'Symmetric Si diode, 10¹⁶ / 10¹⁶', mat: 'Si', T: 300, lTau: -6, p: [16, 1.7], q: [16, 1.7], V: 0.6 },
+    { n: 'Asymmetric p⁺n, 10¹⁸ / 10¹⁵', mat: 'Si', T: 300, lTau: -6, p: [18, 1.7], q: [15, 1.7], V: 0 },
+    { n: 'Short diode (2 µm blocks)', mat: 'Si', T: 300, lTau: -6, p: [16, 0.3], q: [16, 0.3], V: 0.6 },
+    { n: 'Heavily doped 10¹⁸ / 10¹⁸, reverse', mat: 'Si', T: 300, lTau: -6, p: [18, 1.7], q: [18, 1.7], V: -3 },
+    { n: 'Germanium diode (small gap)', mat: 'Ge', T: 300, lTau: -6, p: [16, 1.7], q: [16, 1.7], V: 0.2 },
+    { n: 'GaAs diode (wide gap)', mat: 'GaAs', T: 300, lTau: -8, p: [16, 1.7], q: [16, 1.7], V: 1.0 },
+    { n: 'Hot Si diode, 400 K', mat: 'Si', T: 400, lTau: -6, p: [16, 1.7], q: [16, 1.7], V: 0.4 }
+  ],
+  bjt: [
+    { n: 'Good transistor: heavy emitter, thin base', e: [18, 0.3], b: [17, -0.4], c: [16, 1.0], VBE: 0.65, VCE: 3 },
+    { n: 'Poor emitter: N_E below N_B', e: [16, 0.3], b: [17, -0.4], c: [16, 1.0], VBE: 0.65, VCE: 3 },
+    { n: 'Wide base: carriers recombine', e: [18, 0.3], b: [17, 1.5], c: [16, 1.0], VBE: 0.65, VCE: 3 },
+    { n: 'Thin lightly doped base: Early effect', e: [18, 0.3], b: [16.5, -0.6], c: [15.5, 1.0], VBE: 0.6, VCE: 6 },
+    { n: 'Punch-through', e: [18, 0.3], b: [15.5, -0.5], c: [14.5, 1.2], VBE: 0.5, VCE: 9 },
+    { n: 'Saturation (switch on)', e: [18, 0.3], b: [17, -0.4], c: [16, 1.0], VBE: 0.72, VCE: 0.08 },
+    { n: 'Cut-off (switch off)', e: [18, 0.3], b: [17, -0.4], c: [16, 1.0], VBE: 0.2, VCE: 3 }
+  ]
+};
+function buildPresets() {
+  const host = $('presets'), list = S.dev === 'pn' ? PRE.pn : PRE.bjt;
+  host.innerHTML = '';
+  list.forEach((p, i) => {
+    const b = document.createElement('button'); b.className = 'btn small'; b.textContent = p.n; b.dataset.i = i;
+    b.addEventListener('click', () => applyPreset(p));
+    host.appendChild(b);
+  });
+}
+function applyPreset(p) {
+  if (S.dev === 'pn') {
+    S.mat = p.mat; S.T = p.T; S.lTau = p.lTau;
+    S.par.pn.p = { lN: p.p[0], lW: p.p[1] }; S.par.pn.n = { lN: p.q[0], lW: p.q[1] }; S.V = p.V;
+  } else {
+    S.par.bjt.E = { lN: p.e[0], lW: p.e[1] }; S.par.bjt.B = { lN: p.b[0], lW: p.b[1] }; S.par.bjt.C = { lN: p.c[0], lW: p.c[1] };
+    S.VBE = p.VBE; S.VCE = p.VCE;
+  }
+  syncGlobal(); roles().forEach(syncBlock); biasRanges(); refresh();
+}
+function syncGlobal() {
+  setSeg('segMat', 'm', S.mat);
+  $('temp').value = S.T; $('tval').textContent = S.T + ' K';
+  $('tau').value = S.lTau; $('tauval').textContent = eng(Math.pow(10, S.lTau), 's', 2);
+  $('scr').checked = S.scr; $('showEi').checked = S.showEi;
+  const mp = matAt(S.mat, S.T);
+  $('matInfo').innerHTML = 'E<sub>g</sub> = ' + mp.Eg.toFixed(3) + ' eV · n<sub>i</sub> = ' + sciE(mp.ni, 2) + ' cm⁻³ · ε<sub>r</sub> = ' + mp.m.er + '<br>k<sub>B</sub>T = ' + (mp.Vt * 1000).toFixed(1) + ' meV';
+}
+
+/* ---------------------------------------------------------------- messages */
+function eqHtml() {
+  if (S.dev === 'pn')
+    return '<div>I = I<sub>S</sub>(e<sup>eV/k<sub>B</sub>T</sup> − 1)<span class="m">Shockley diode equation</span></div>' +
+           '<div>eV<sub>bi</sub> = k<sub>B</sub>T ln<span class="frac"><span>N<sub>A</sub>N<sub>D</sub></span><span>n<sub>i</sub>²</span></span><span class="m">built-in voltage</span></div>' +
+           '<div>w = <span style="white-space:nowrap">√(2ε(V<sub>bi</sub>−V)/e · (1/N<sub>A</sub> + 1/N<sub>D</sub>))</span><span class="m">depletion width</span></div>';
+  return '<div>I<sub>E</sub> = I<sub>C</sub> + I<sub>B</sub><span class="m">Kirchhoff</span></div>' +
+         '<div>β = I<sub>C</sub>/I<sub>B</sub> = <span class="frac"><span>α</span><span>1 − α</span></span>, α = γ·α<sub>T</sub><span class="m">current gain</span></div>' +
+         '<div>β ≈ <span class="frac"><span>1</span><span>D<sub>E</sub>N<sub>B</sub>W<sub>B</sub>/(D<sub>B</sub>N<sub>E</sub>W<sub>E</sub>) + W<sub>B</sub>²/2L<sub>B</sub>²</span></span><span class="m">thin-base estimate</span></div>';
+}
+function message(c) {
+  const d = c.d, mp = c.mp, w = [];
+  let html = '';
+  if (S.dev === 'pn') {
+    const g = d.J[0], A = d.R[0], B = d.R[1], V = d.J[0].Vf;
+    const bar = g.bar.toFixed(2);
+    if (Math.abs(S.V) < 0.005) {
+      html = '<p><b>Equilibrium.</b> The Fermi level is flat through the junction. Electrons and holes diffuse across until the field of the uncovered donors and acceptors stops them: the bands bend by eV<sub>bi</sub> = ' + g.Vbi.toFixed(3) + ' eV and a depletion layer of width ' + len(g.W) + ' remains. Diffusion and drift currents cancel, so the net current is zero.</p>';
+    } else if (S.V > 0) {
+      html = '<p><b>Forward bias.</b> The barrier is lowered from ' + g.Vbi.toFixed(2) + ' to ' + bar + ' eV and the depletion layer narrows to ' + len(g.W) + '. Majority carriers diffuse across the smaller barrier and become minority carriers on the far side, where their density at the depletion edge is raised by e<sup>eV/k<sub>B</sub>T</sup> = ' + sci(Math.exp(V / mp.Vt), 1) + '. They recombine within a diffusion length (' + len(A.L) + ' and ' + len(B.L) + '), which gives I = ' + eng(c.I, 'A') + '.</p>';
+    } else if (!c.breakdown) {
+      html = '<p><b>Reverse bias.</b> The barrier grows to ' + bar + ' eV and the depletion layer widens to ' + len(g.W) + ', mostly into the more lightly doped side. Majority carriers cannot climb the barrier; only thermally generated minority carriers within a diffusion length of the junction are swept across, so the current saturates at −I<sub>S</sub> = ' + eng(c.I, 'A') + '.</p>';
+    } else {
+      html = '<p><b>Breakdown.</b> The field at the junction reaches E<sub>max</sub> = ' + eng(2 * g.bar / g.W, 'V/cm', 2) + ' and avalanche (or Zener tunnelling) lets the reverse current rise sharply while the voltage is clamped near −V<sub>BR</sub> = −' + c.vbr.toFixed(1) + ' V.</p>';
+    }
+    if (g.W > 0.98 * Math.min(A.W, B.W)) w.push('The depletion layer fills a whole block (punch-through); the neutral region has disappeared and the abrupt-junction model is out of range.');
+  } else {
+    const e = d.J[0], k = d.J[1], x = c.c;
+    const fE = e.Vf > 0.5 * e.Vbi, fC = k.Vf > 0.5 * k.Vbi;
+    const vol = S.dev === 'npn' ? 'electrons' : 'holes', back = S.dev === 'npn' ? 'holes' : 'electrons';
+    if (!fE && !fC) html = '<p><b>Cut-off.</b> The emitter–base junction is not forward biased, so its barrier (' + e.bar.toFixed(2) + ' eV) is far too high for the emitter ' + vol + ' to enter the base. Only leakage flows: I<sub>C</sub> = ' + eng(c.IC, 'A') + '. The transistor behaves like an open switch.</p>';
+    else if (fE && !fC) html = '<p><b>Forward-active.</b> The emitter junction barrier is lowered to ' + e.bar.toFixed(2) + ' eV, so the heavily doped emitter injects ' + vol + ' into the thin base. Because the base is only ' + len(d.R[1].Wn) + ' wide (diffusion length ' + len(d.R[1].L) + '), ' + (100 * x.alphaT).toFixed(2) + ' % of them reach the reverse-biased collector junction and slide down its barrier into the collector. The small remainder, plus the ' + back + ' injected back into the emitter (' + (100 * (1 - x.gamma)).toFixed(2) + ' % of the emitter current), must be supplied by the base: I<sub>B</sub> = ' + eng(c.IB, 'A') + ' controls I<sub>C</sub> = ' + eng(c.IC, 'A') + ', a gain of β = ' + x.beta.toFixed(0) + '.</p>';
+    else if (fE && fC) html = '<p><b>Saturation.</b> Both junctions are forward biased (V<sub>CB</sub> is small or reversed). The collector now injects carriers back into the base, which cancels part of the emitter current, so I<sub>C</sub> = ' + eng(c.IC, 'A') + ' no longer follows I<sub>B</sub> = ' + eng(c.IB, 'A') + ' (β = ' + x.beta.toFixed(1) + '). In a circuit this is the closed-switch state.</p>';
+    else html = '<p><b>Reverse-active.</b> The roles of emitter and collector are swapped: the collector junction is forward biased and the emitter junction blocks. Because the collector is lighter doped and large, the gain is poor.</p>';
+    if (d.flags.punch) w.push('Punch-through: the depletion layers have consumed the neutral base. The abrupt model is no longer valid and the current blows up.');
+    if (c.IC > 0 && S.VCE - S.VBE > c.bvc) w.push('The collector junction field is beyond the avalanche estimate (BV ≈ ' + c.bvc.toFixed(0) + ' V); impact ionisation is not modelled.');
+  }
+  if (d.flags.clamp) w.push('A junction voltage was limited to V<sub>bi</sub> − 50 mV; the depletion approximation fails beyond that.');
+  if (d.flags.highInj) w.push('High-level injection: the injected minority density exceeds the doping, so quasi-neutrality and the ideal currents no longer hold.');
+  c.R2 = null;
+  return html + w.map(t => '<p class="warn">⚠ ' + t + '</p>').join('');
+}
+
+/* ----------------------------------------------------------------- readouts */
+function readouts(c) {
+  const d = c.d, mp = c.mp, rows = [];
+  const add = (k, v) => rows.push('<div><dt>' + k + '</dt><dd>' + v + '</dd></div>');
+  if (S.dev === 'pn') {
+    const g = d.J[0], A = d.R[0], B = d.R[1];
+    add('V<sub>bi</sub>', g.Vbi.toFixed(3) + ' V');
+    add('Barrier e(V<sub>bi</sub> − V)', g.bar.toFixed(3) + ' eV');
+    add('Depletion width w', len(g.W));
+    add('x<sub>p</sub> (into p) / x<sub>n</sub> (into n)', len(g.xl) + ' / ' + len(g.xr));
+    add('Peak field', eng(2 * g.bar / g.W, 'V/cm', 3));
+    add('Neutral widths p / n', len(A.Wn) + ' / ' + len(B.Wn));
+    add('Diffusion lengths L<sub>n</sub> / L<sub>p</sub>', len(A.L) + ' / ' + len(B.L));
+    add('Regime', (A.Wn < A.L || B.Wn < B.L) ? ((A.Wn < A.L && B.Wn < B.L) ? 'short diode' : 'mixed') : 'long diode');
+    const Is = Math.abs(pnJ(c.cfg, -3).J) * AREA;
+    add('Saturation current I<sub>S</sub>', eng(Is, 'A'));
+    add('Current I', eng(c.I, 'A'));
+    add('V<sub>BR</sub> (estimate)', c.vbr.toFixed(1) + ' V');
+  } else {
+    const e = d.J[0], k = d.J[1], x = c.c, E = d.R[0], B = d.R[1], C = d.R[2];
+    const nm = S.dev === 'npn' ? ['BE', 'BC'] : ['EB', 'CB'];
+    add('V<sub>bi</sub> emitter / collector junction', e.Vbi.toFixed(2) + ' / ' + k.Vbi.toFixed(2) + ' V');
+    add('Forward bias V<sub>' + nm[0] + '</sub> / V<sub>' + nm[1] + '</sub>', sgn(e.Vf, 3) + ' / ' + sgn(k.Vf, 2) + ' V');
+    add('Depletion w, emitter / collector jn.', len(e.W) + ' / ' + len(k.W));
+    add('Metallurgical base width', len(B.W));
+    add('Neutral base width', len(B.Wn));
+    add('Base diffusion length', len(B.L));
+    add('I<sub>E</sub>', eng(c.IE, 'A'));
+    add('I<sub>C</sub>', eng(c.IC, 'A'));
+    add('I<sub>B</sub>', eng(c.IB, 'A'));
+    add('β = I<sub>C</sub>/I<sub>B</sub>', isFinite(x.beta) && c.IB > 0 ? x.beta.toFixed(x.beta < 100 ? 1 : 0) : '—');
+    add('α = I<sub>C</sub>/I<sub>E</sub>', isFinite(x.alpha) ? x.alpha.toFixed(4) : '—');
+    add('γ (emitter efficiency)', isFinite(x.gamma) ? x.gamma.toFixed(4) : '—');
+    add('α<sub>T</sub> (base transport)', isFinite(x.alphaT) ? x.alphaT.toFixed(4) : '—');
+    add('Early voltage V<sub>A</sub>', isFinite(c.VA) ? c.VA.toFixed(0) + ' V' : '∞');
+  }
+  $('rd').innerHTML = rows.join('');
+  const bud = $('budget');
+  if (S.dev === 'pn') { bud.hidden = true; return; }
+  const x = c.c;
+  if (!(x.Fb1 > 0) || !(c.IE > 0)) { bud.hidden = true; return; }
+  const tot = x.Fb1 + x.Fe, toC = x.Fb2 / tot, rec = (x.Fb1 - x.Fb2) / tot, back = x.Fe / tot;
+  const vol = S.dev === 'npn' ? 'electrons' : 'holes', bk = S.dev === 'npn' ? 'holes' : 'electrons';
+  const row = (lab, f, col) => '<div class="row" style="--c:' + col + '"><span>' + lab + '</span><div class="bar"><b style="width:' + Math.max(0, f * 100) + '%"></b></div><span>' + (f * 100).toFixed(f < 0.1 ? 3 : 1) + ' %</span></div>';
+  bud.hidden = false;
+  bud.innerHTML = '<h2 style="margin-top:4px">Where the emitter current goes</h2>' +
+    row(vol + ' reaching the collector (→ I<sub>C</sub>)', toC, 'var(--green)') +
+    row(vol + ' lost to recombination in the base', rec, 'var(--orange)') +
+    row(bk + ' injected back into the emitter', back, 'var(--red)');
+}
+
+/* ----------------------------------------------------------- position plots */
+function posGeom(w, h, T, B) { return { L: PAD_L, R: PAD_R, T, B, pw: w - PAD_L - PAD_R, ph: h - T - B, w, h }; }
+function segAt(P, u) { for (const s of P.seg) if (u >= s.u0 && u <= s.u1) return s; return P.seg[P.seg.length - 1]; }
+function nearest(P, u) {
+  let lo = 0, hi = P.u.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (P.u[m] < u) lo = m; else hi = m; }
+  return Math.abs(P.u[lo] - u) < Math.abs(P.u[hi] - u) ? lo : hi;
+}
+function drawHover(g, G, P, c) {
+  if (S.hoverU === null) return;
+  const x = G.L + S.hoverU * G.pw;
+  g.save(); g.strokeStyle = c.dim; g.setLineDash([3, 3]); g.lineWidth = 1;
+  g.beginPath(); g.moveTo(Math.round(x) + .5, G.T); g.lineTo(Math.round(x) + .5, G.T + G.ph); g.stroke(); g.restore();
+}
+
+function drawBand(c) {
+  const { g, w, h } = fit($('cBand')), C = pal(), P = c.P, d = c.d, mp = c.mp;
+  const G = posGeom(w, h, 78, 52), X = u => G.L + u * G.pw;
+  // energy window
+  let emin = Infinity, emax = -Infinity;
+  for (let i = 0; i < P.Ec.length; i++) { emin = Math.min(emin, P.Ev[i]); emax = Math.max(emax, P.Ec[i]); }
+  d.R.forEach(r => { emin = Math.min(emin, r.EF); emax = Math.max(emax, r.EF); });
+  const pad = 0.1 * (emax - emin) + 0.25; emin -= pad; emax += pad;
+  const Y = e => G.T + G.ph * (1 - (e - emin) / (emax - emin));
+  // grid + y axis
+  const step = niceStep(emax - emin, 6);
+  g.font = font(11); g.textAlign = 'right'; g.textBaseline = 'middle'; g.lineWidth = 1;
+  for (let v = Math.ceil(emin / step) * step; v <= emax; v += step) {
+    const y = Math.round(Y(v)) + .5;
+    g.strokeStyle = C.grid; g.beginPath(); g.moveTo(G.L, y); g.lineTo(G.L + G.pw, y); g.stroke();
+    g.fillStyle = C.dim; g.fillText(tickTxt(v), G.L - 7, y);
+  }
+  g.fillStyle = C.text; g.save(); g.translate(13, G.T + G.ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.font = font(12);
+  g.fillText('Electron energy (eV)', 0, 0); g.restore();
+  // device strip
+  const SY = 10, SH = 50;
+  g.textBaseline = 'middle';
+  P.seg.forEach(s => {
+    const x0 = X(s.u0), x1 = X(s.u1);
+    let type, name = '', N = 0, key = '';
+    if (s.kind === 'neu') { const r = d.R[s.i], rl = roles()[s.i]; type = r.type; name = rl.name; N = r.N; key = rl.key; }
+    else { const gj = d.J[s.j]; const blk = s.kind === 'depL' ? d.R[s.j] : d.R[s.j + 1]; type = blk.type; N = blk.N; }
+    g.fillStyle = type === 'n' ? C.ntint : C.ptint; g.fillRect(x0, SY, x1 - x0, SH);
+    if (s.kind !== 'neu') {
+      g.fillStyle = C.accSoft; g.fillRect(x0, SY, x1 - x0, SH); g.fillRect(x0, G.T, x1 - x0, G.ph);
+      g.fillStyle = C.dim; g.font = font(12, 600); g.textAlign = 'center';
+      const sym = type === 'n' ? '+' : '−', n = Math.max(1, Math.floor((x1 - x0) / 13));
+      for (let k = 0; k < Math.min(n, 4); k++) g.fillText(sym, x0 + (k + 0.5) * (x1 - x0) / Math.min(n, 4), SY + SH / 2 - 7 + (k % 2) * 14);
+    } else {
+      const wpx = x1 - x0;
+      g.fillStyle = C.text; g.textAlign = 'center';
+      if (wpx > 120) { g.font = font(12, 600); g.fillText(name + '  (' + type + ')', (x0 + x1) / 2, SY + 17); g.font = font(11); g.fillStyle = C.dim; g.fillText((type === 'n' ? 'N_D' : 'N_A') + ' = ' + sciE(N, 1) + ' cm⁻³', (x0 + x1) / 2, SY + 35); }
+      else if (wpx > 52) { g.font = font(12, 600); g.fillText(S.dev === 'pn' ? type : key + ' (' + type + ')', (x0 + x1) / 2, SY + 17); g.font = font(10); g.fillStyle = C.dim; g.fillText(sciE(N, 0), (x0 + x1) / 2, SY + 35); }
+      else { g.font = font(11, 600); g.fillText(type, (x0 + x1) / 2, SY + SH / 2); }
+    }
+  });
+  g.strokeStyle = C.border; g.strokeRect(X(0) + .5, SY + .5, G.pw, SH);
+  // contacts
+  g.fillStyle = C.dim; g.fillRect(X(0) - 5, SY + 6, 5, SH - 12); g.fillRect(X(1), SY + 6, 5, SH - 12);
+  // gap fill and bands
+  g.save(); g.beginPath(); g.rect(G.L, G.T, G.pw, G.ph); g.clip();
+  g.beginPath();
+  for (let i = 0; i < P.u.length; i++) { const x = X(P.u[i]), y = Y(P.Ec[i]); if (i) g.lineTo(x, y); else g.moveTo(x, y); }
+  for (let i = P.u.length - 1; i >= 0; i--) g.lineTo(X(P.u[i]), Y(P.Ev[i]));
+  g.closePath(); g.fillStyle = C.panel2; g.fill();
+  P.seg.forEach(s => { if (s.kind !== 'neu') { g.fillStyle = C.accSoft; g.fillRect(X(s.u0), G.T, X(s.u1) - X(s.u0), G.ph); } });
+  const xs = P.u.map(X);
+  if (S.showEi) {
+    const dci = mp.Vt * Math.log(mp.Nc / mp.ni);
+    g.strokeStyle = C.faint; g.setLineDash([2, 4]); g.lineWidth = 1.2;
+    ptsPath(g, xs, P.Ec.map(e => Y(e - dci))); g.stroke(); g.setLineDash([]);
+  }
+  g.lineJoin = 'round';
+  g.strokeStyle = C.text; g.lineWidth = 2.2;
+  ptsPath(g, xs, P.Ec.map(Y)); g.stroke();
+  ptsPath(g, xs, P.Ev.map(Y)); g.stroke();
+  g.lineWidth = 1.8; g.strokeStyle = C.ce;
+  ptsPath(g, xs, P.EFn.map(Y)); g.stroke();
+  g.strokeStyle = C.ch; g.setLineDash([6, 5]);
+  ptsPath(g, xs, P.EFp.map(Y)); g.stroke(); g.setLineDash([]);
+  // barrier annotations
+  d.J.forEach(gj => {
+    const A = d.R[gj.j], B = d.R[gj.j + 1], su = P.seg.filter(s => s.kind === 'depL' && s.j === gj.j)[0];
+    const xj = X(su.u1), yA = Y(A.Ec), yB = Y(B.Ec);
+    if (Math.abs(yA - yB) > 16) {
+      g.strokeStyle = C.orange; g.fillStyle = C.orange; g.lineWidth = 1.4;
+      const ya = yA < yB ? yA + 3 : yA - 3, yb = yA < yB ? yB - 3 : yB + 3;
+      g.beginPath(); g.moveTo(xj, ya); g.lineTo(xj, yb); g.stroke();
+      const dir = yb > ya ? 1 : -1;
+      [[xj, yb, dir], [xj, ya, -dir]].forEach(([x, y, dd]) => { g.beginPath(); g.moveTo(x, y); g.lineTo(x - 4, y - 7 * dd); g.lineTo(x + 4, y - 7 * dd); g.closePath(); g.fill(); });
+      g.font = font(11, 600); g.textAlign = 'left'; g.textBaseline = 'middle';
+      g.fillText(gj.bar.toFixed(2) + ' eV', xj + 7, (ya + yb) / 2);
+    }
+  });
+  // line labels (right edge)
+  const lab = (txt, e, col, dy) => { const y = Y(e) + (dy || 0); if (y > G.T + 6 && y < G.T + G.ph - 6) { g.fillStyle = col; g.font = font(11, 600); g.textAlign = 'right'; g.textBaseline = 'bottom'; g.fillText(txt, G.L + G.pw - 4, y - 3); } };
+  const lastIdx = P.u.length - 1;
+  lab('E_c', P.Ec[lastIdx], C.text); lab('E_v', P.Ev[lastIdx], C.text);
+  const a = Y(P.EFn[lastIdx]), b = Y(P.EFp[lastIdx]);
+  if (Math.abs(a - b) < 13) lab('E_Fn = E_Fp', P.EFn[lastIdx], C.green);
+  else { lab('E_Fn', P.EFn[lastIdx], C.ce); lab('E_Fp', P.EFp[lastIdx], C.ch); }
+  g.restore();
+  g.strokeStyle = C.border; g.lineWidth = 1; g.strokeRect(G.L + .5, G.T + .5, G.pw, G.ph);
+  // x-axis annotations
+  g.font = font(11); g.fillStyle = C.dim; g.textBaseline = 'top'; g.textAlign = 'center';
+  P.seg.forEach(s => {
+    const xm = (X(s.u0) + X(s.u1)) / 2;
+    if (s.kind === 'neu' && X(s.u1) - X(s.u0) > 74) g.fillText('neutral ' + len(s.len), xm, G.T + G.ph + 8);
+  });
+  d.J.forEach(gj => {
+    const su = P.seg.filter(s => s.kind === 'depL' && s.j === gj.j)[0];
+    g.fillStyle = C.orange; g.fillText('depletion ' + len(gj.W), X(su.u1), G.T + G.ph + 24);
+    g.strokeStyle = C.orange; g.beginPath(); g.moveTo(X(su.u1) + .5, G.T + G.ph); g.lineTo(X(su.u1) + .5, G.T + G.ph + 6); g.stroke();
+  });
+  g.fillStyle = C.dim; g.textAlign = 'center'; g.fillText('position (axis compressed)', G.L + G.pw / 2, h - 14);
+  drawHover(g, G, P, C);
+  return G;
+}
+
+function drawCar(c) {
+  const { g, w, h } = fit($('cCar')), C = pal(), P = c.P, mp = c.mp;
+  const G = posGeom(w, h, 12, 34), X = u => G.L + u * G.pw;
+  let top = -Infinity, bot = Infinity;
+  for (let i = 0; i < P.u.length; i++) { top = Math.max(top, P.lgn[i], P.lgp[i]); bot = Math.min(bot, P.lgn[i], P.lgp[i]); }
+  const ymax = Math.ceil(top + 0.3), ymin = Math.max(Math.floor(bot - 0.3), ymax - 24);
+  const Y = v => G.T + G.ph * (1 - (v - ymin) / (ymax - ymin));
+  g.font = font(11); g.textAlign = 'right'; g.textBaseline = 'middle'; g.lineWidth = 1;
+  const st = ymax - ymin > 14 ? 4 : 2;
+  for (let v = Math.ceil(ymin / st) * st; v <= ymax; v += st) {
+    const y = Math.round(Y(v)) + .5;
+    g.strokeStyle = C.grid; g.beginPath(); g.moveTo(G.L, y); g.lineTo(G.L + G.pw, y); g.stroke();
+    g.fillStyle = C.dim; g.fillText('1e' + v, G.L - 7, y);
+  }
+  g.fillStyle = C.text; g.save(); g.translate(13, G.T + G.ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.font = font(12);
+  g.fillText('Density (cm⁻³)', 0, 0); g.restore();
+  g.save(); g.beginPath(); g.rect(G.L, G.T, G.pw, G.ph); g.clip();
+  P.seg.forEach(s => { if (s.kind !== 'neu') { g.fillStyle = C.accSoft; g.fillRect(X(s.u0), G.T, X(s.u1) - X(s.u0), G.ph); } });
+  const xs = P.u.map(X), lni = Math.log10(mp.ni);
+  g.strokeStyle = C.faint; g.setLineDash([3, 4]); g.lineWidth = 1.2; g.beginPath(); g.moveTo(G.L, Y(lni)); g.lineTo(G.L + G.pw, Y(lni)); g.stroke(); g.setLineDash([]);
+  g.fillStyle = C.dim; g.font = font(11); g.textAlign = 'left'; g.textBaseline = 'bottom'; g.fillText('n_i', G.L + 5, Y(lni) - 2);
+  g.lineWidth = 2.2; g.lineJoin = 'round';
+  g.strokeStyle = C.ce; ptsPath(g, xs, P.lgn.map(Y)); g.stroke();
+  g.strokeStyle = C.ch; ptsPath(g, xs, P.lgp.map(Y)); g.stroke();
+  g.font = font(12, 600); g.textAlign = 'left'; g.textBaseline = 'middle';
+  // curve names where they are well separated, at the first neutral region
+  const i0 = nearest(P, P.seg[0].u0 + 0.5 * (P.seg[0].u1 - P.seg[0].u0));
+  g.fillStyle = C.ce; g.fillText('n(x)', X(P.u[i0]) - 14, Y(P.lgn[i0]) + (P.lgn[i0] > P.lgp[i0] ? -12 : 12));
+  g.fillStyle = C.ch; g.fillText('p(x)', X(P.u[i0]) + 14, Y(P.lgp[i0]) + (P.lgp[i0] > P.lgn[i0] ? -12 : 12));
+  g.restore();
+  g.strokeStyle = C.border; g.strokeRect(G.L + .5, G.T + .5, G.pw, G.ph);
+  g.fillStyle = C.dim; g.font = font(11); g.textAlign = 'center'; g.textBaseline = 'top'; g.fillText('position (same axis as the band diagram)', G.L + G.pw / 2, G.T + G.ph + 9);
+  drawHover(g, G, P, C);
+  return G;
+}
+
+function drawField(c) {
+  const { g, w, h } = fit($('cField')), C = pal(), P = c.P;
+  const gap = 26, hh = (h - 12 - 34 - gap) / 2;
+  const G1 = posGeom(w, h, 12, h - 12 - hh), G2 = posGeom(w, h, 12 + hh + gap, 34), X = u => G1.L + u * G1.pw;
+  // charge: signed log scale
+  const s0 = 12, rs = P.rho.map(r => r === 0 ? 0 : Math.sign(r) * Math.max(0, Math.log10(Math.abs(r)) - s0));
+  const rm = Math.max(1, ...rs.map(Math.abs)) * 1.15;
+  const Y1 = v => G1.T + G1.ph * (0.5 - v / (2 * rm));
+  g.lineWidth = 1; g.font = font(11); g.textBaseline = 'middle';
+  g.strokeStyle = C.grid; g.beginPath(); g.moveTo(G1.L, Math.round(Y1(0)) + .5); g.lineTo(G1.L + G1.pw, Math.round(Y1(0)) + .5); g.stroke();
+  const polys = [[1, C.ntint, C.ce], [-1, C.ptint, C.ch]];
+  g.save(); g.beginPath(); g.rect(G1.L, G1.T, G1.pw, G1.ph); g.clip();
+  polys.forEach(([sg, fill, stroke]) => {
+    g.beginPath(); let open = false, started = false;
+    for (let i = 0; i < P.u.length; i++) {
+      const v = sg * rs[i] > 0 ? rs[i] : 0;
+      if (!started) { g.moveTo(X(P.u[i]), Y1(0)); started = true; }
+      g.lineTo(X(P.u[i]), Y1(v));
+    }
+    g.lineTo(X(P.u[P.u.length - 1]), Y1(0)); g.closePath(); g.fillStyle = fill; g.fill();
+  });
+  g.restore();
+  // labels for peak magnitudes
+  const lbl = (sg, txt, col) => {
+    const i = rs.findIndex(v => sg * v > 0); if (i < 0) return;
+    g.fillStyle = col; g.font = font(11, 600); g.textAlign = 'left';
+    g.fillText(txt, X(P.u[i]) + 4, Y1(0) + (sg > 0 ? -(G1.ph * 0.5 * Math.abs(rs[i]) / rm) - 8 : (G1.ph * 0.5 * Math.abs(rs[i]) / rm) + 8));
+  };
+  const hasPos = P.rho.find(v => v > 0), hasNeg = P.rho.find(v => v < 0);
+  if (hasPos) lbl(1, '+eN_D = +' + sciE(hasPos, 0), C.ce);
+  if (hasNeg) lbl(-1, '−eN_A = −' + sciE(-hasNeg, 0), C.ch);
+  g.fillStyle = C.dim; g.font = font(11); g.textAlign = 'right';
+  g.fillText('+', G1.L - 8, G1.T + 8); g.fillText('0', G1.L - 8, Y1(0)); g.fillText('−', G1.L - 8, G1.T + G1.ph - 8);
+  g.save(); g.translate(13, G1.T + G1.ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillStyle = C.text; g.font = font(12);
+  g.fillText('ρ/e (log scale)', 0, 0); g.restore();
+  g.strokeStyle = C.border; g.strokeRect(G1.L + .5, G1.T + .5, G1.pw, G1.ph);
+  // field
+  let emin = Math.min(0, ...P.E), emax = Math.max(0, ...P.E);
+  if (emax - emin < 1) emax = emin + 1;
+  const unit = Math.max(Math.abs(emin), Math.abs(emax)) > 5e4 ? [1e3, 'kV/cm'] : [1, 'V/cm'];
+  const pad = 0.12 * (emax - emin); emin -= pad; emax += pad;
+  const Y2 = v => G2.T + G2.ph * (1 - (v - emin) / (emax - emin));
+  const st = niceStep((emax - emin) / unit[0], 4);
+  g.textAlign = 'right'; g.font = font(11);
+  for (let v = Math.ceil(emin / unit[0] / st) * st; v * unit[0] <= emax; v += st) {
+    const y = Math.round(Y2(v * unit[0])) + .5;
+    g.strokeStyle = C.grid; g.beginPath(); g.moveTo(G2.L, y); g.lineTo(G2.L + G2.pw, y); g.stroke();
+    g.fillStyle = C.dim; g.fillText(tickTxt(v), G2.L - 7, y);
+  }
+  g.save(); g.beginPath(); g.rect(G2.L, G2.T, G2.pw, G2.ph); g.clip();
+  g.beginPath(); g.moveTo(X(P.u[0]), Y2(0));
+  for (let i = 0; i < P.u.length; i++) g.lineTo(X(P.u[i]), Y2(P.E[i]));
+  g.lineTo(X(P.u[P.u.length - 1]), Y2(0)); g.closePath(); g.fillStyle = C.accSoft; g.fill();
+  g.strokeStyle = C.acc; g.lineWidth = 2; g.lineJoin = 'round'; ptsPath(g, P.u.map(X), P.E.map(Y2)); g.stroke();
+  g.restore();
+  c.d.J.forEach(gj => {
+    const su = P.seg.filter(s => s.kind === 'depL' && s.j === gj.j)[0], Em = 2 * gj.bar / gj.W;
+    g.fillStyle = C.text; g.font = font(11, 600); g.textAlign = 'left'; g.textBaseline = 'middle';
+    const sg2 = Math.sign(P.E[nearest(P, su.u1)]) || -1;
+    g.fillText('|E|max = ' + (Em / unit[0]).toFixed(Em / unit[0] < 10 ? 1 : 0) + ' ' + unit[1], X(su.u1) + 8, Y2(sg2 * Em) + (sg2 < 0 ? -10 : 10));
+  });
+  g.strokeStyle = C.border; g.strokeRect(G2.L + .5, G2.T + .5, G2.pw, G2.ph);
+  g.save(); g.translate(13, G2.T + G2.ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillStyle = C.text; g.font = font(12);
+  g.fillText('Field E (' + unit[1] + ')', 0, 0); g.restore();
+  g.fillStyle = C.dim; g.font = font(11); g.textAlign = 'center'; g.textBaseline = 'top'; g.fillText('position (same axis as the band diagram)', G2.L + G2.pw / 2, G2.T + G2.ph + 9);
+  drawHover(g, G1, P, C); drawHover(g, G2, P, C);
+}
+
+/* ------------------------------------------------------------- I-V plots */
+function axes(g, G, C, xr, yr, xlab, ylab, xfmt, yfmt, xs, ys) {
+  g.lineWidth = 1; g.font = font(11); g.textBaseline = 'middle'; g.textAlign = 'right';
+  const X = v => G.L + G.pw * (v - xr[0]) / (xr[1] - xr[0]), Y = v => G.T + G.ph * (1 - (v - yr[0]) / (yr[1] - yr[0]));
+  for (let v = Math.ceil(yr[0] / ys - 1e-9) * ys; v <= yr[1] + 1e-9; v += ys) {
+    const y = Math.round(Y(v)) + .5; g.strokeStyle = Math.abs(v) < 1e-9 * ys ? C.faint : C.grid;
+    g.beginPath(); g.moveTo(G.L, y); g.lineTo(G.L + G.pw, y); g.stroke(); g.fillStyle = C.dim; g.fillText(yfmt(v), G.L - 7, y);
+  }
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let v = Math.ceil(xr[0] / xs - 1e-9) * xs; v <= xr[1] + 1e-9; v += xs) {
+    const x = Math.round(X(v)) + .5; g.strokeStyle = Math.abs(v) < 1e-9 * xs ? C.faint : C.grid;
+    g.beginPath(); g.moveTo(x, G.T); g.lineTo(x, G.T + G.ph); g.stroke(); g.fillStyle = C.dim; g.fillText(xfmt(v), x, G.T + G.ph + 6);
+  }
+  g.strokeStyle = C.border; g.strokeRect(G.L + .5, G.T + .5, G.pw, G.ph);
+  g.fillStyle = C.text; g.font = font(12); g.textBaseline = 'alphabetic'; g.fillText(xlab, G.L + G.pw / 2, G.h - 6);
+  g.save(); g.translate(13, G.T + G.ph / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillText(ylab, 0, 0); g.restore();
+  return { X, Y };
+}
+const engAxis = (v, u) => { const a = Math.abs(v); if (a === 0) return '0'; const p = [[1e-9, 'n'], [1e-6, 'µ'], [1e-3, 'm'], [1, '']]; let k = 3; for (let i = 0; i < p.length; i++) if (a < p[i][0] * 999.5) { k = i; break; } return +(v / p[k][0]).toPrecision(3) + p[k][1] + u; };
+
+function drawIV(c) {
+  const { g, w, h } = fit($('cIV')), C = pal();
+  const G = posGeom(w, h, 12, 40); G.pw = w - 66 - PAD_R; G.L = 66;
+  const cfg = c.cfg, vmaxP = c.vbi - 0.05, vminP = Math.max(Math.min(-2, Math.floor(S.V) - 1), -10);
+  const N = 260, V = [], I = [];
+  for (let k = 0; k <= N; k++) { let v = vminP + (vmaxP - vminP) * k / N; if (Math.abs(v) < 1e-4) v = 1e-4; V.push(v); I.push(pnCurrent(cfg, v, c.vbr)); }
+  const xr = [vminP, vmaxP], xs = niceStep(vmaxP - vminP, 8);
+  let marker = { v: clamp(S.V, vminP, vmaxP), i: c.I };
+  if (S.ivLog) {
+    const L = I.map(v => Math.log10(Math.abs(v) + 1e-300)); const top = Math.ceil(Math.max(...L) + 0.2);
+    let bot = Math.min(...L.filter((v, i) => Math.abs(V[i]) > 0.02)); bot = Math.max(Math.floor(bot - 0.3), top - 22);
+    const { X, Y } = axes(g, G, C, xr, [bot, top], 'Voltage V (V)', 'Current |I| (A)', v => +v.toFixed(2) + '', v => '1e' + v, xs, top - bot > 12 ? 4 : 2);
+    g.save(); g.beginPath(); g.rect(G.L, G.T, G.pw, G.ph); g.clip(); g.lineWidth = 2.2; g.lineJoin = 'round';
+    for (const [sg, col] of [[1, C.ce], [-1, C.ch]]) { g.strokeStyle = col; ptsPath(g, V.map(X), I.map((v, i) => v * sg > 0 ? Y(L[i]) : NaN)); g.stroke(); }
+    g.restore();
+    if (Math.abs(c.I) > 0) { g.fillStyle = C.acc; g.strokeStyle = C.panel; g.lineWidth = 2; g.beginPath(); g.arc(X(marker.v), clamp(Y(Math.log10(Math.abs(c.I))), G.T, G.T + G.ph), 5.5, 0, 6.2832); g.fill(); g.stroke(); }
+    g.font = font(11, 600); g.textAlign = 'left'; g.textBaseline = 'top';
+    g.fillStyle = C.ce; g.fillText('forward (I > 0)', G.L + 8, G.T + 6); g.fillStyle = C.ch; g.fillText('reverse (I < 0)', G.L + 8, G.T + 22);
+  } else {
+    let ref = I[N], k1 = I.findIndex(v => v > 1e-3); if (k1 > 0) ref = I[k1]; const ymax = Math.max(ref * 1.1, 1e-12), ymin = -0.12 * ymax;
+    const u = ymax >= 1e-3 ? [1e-3, 'mA'] : ymax >= 1e-6 ? [1e-6, 'µA'] : ymax >= 1e-9 ? [1e-9, 'nA'] : [1e-12, 'pA'];
+    const ys = niceStep((ymax - ymin) / u[0], 5) * u[0];
+    const { X, Y } = axes(g, G, C, xr, [ymin, ymax], 'Voltage V (V)', 'Current I (' + u[1] + ')', v => +v.toFixed(2) + '', v => tickTxt(v / u[0]), xs, ys);
+    g.save(); g.beginPath(); g.rect(G.L, G.T, G.pw, G.ph); g.clip(); g.lineWidth = 2.2; g.lineJoin = 'round'; g.strokeStyle = C.ce;
+    ptsPath(g, V.map(X), I.map(Y)); g.stroke(); g.restore();
+    g.fillStyle = C.acc; g.strokeStyle = C.panel; g.lineWidth = 2; g.beginPath(); g.arc(X(marker.v), clamp(Y(c.I), G.T, G.T + G.ph), 5.5, 0, 6.2832); g.fill(); g.stroke();
+  }
+  $('ivNote').innerHTML = 'Marker: present voltage. V<sub>BR</sub> estimate ' + c.vbr.toFixed(1) + ' V (the reverse branch is shown only down to the slider range). ' + (S.scr ? 'Non-ideal generation–recombination current included.' : 'Ideal Shockley behaviour; tick the box on the left to add depletion-layer generation–recombination.');
+}
+
+function drawGum(c) {
+  const { g, w, h } = fit($('cGum')), C = pal();
+  const G = posGeom(w, h, 12, 40); G.L = 66; G.pw = w - 66 - PAD_R;
+  const cfg = c.cfg, v0 = 0.15, v1 = c.vbiE - 0.05, N = 120, V = [], IC = [], IB = [];
+  for (let k = 0; k <= N; k++) { const v = v0 + (v1 - v0) * k / N, r = bjtAt(cfg, S.dev, v, S.VCE); V.push(v); IC.push(Math.log10(Math.max(r.IC, 1e-300))); IB.push(Math.log10(Math.max(r.IB, 1e-300))); }
+  const fin = IC.concat(IB).filter(v => v > -250);
+  const top = Math.ceil(Math.max(...fin) + 0.2), bot = Math.max(Math.floor(Math.min(...fin)), top - 20);
+  const { X, Y } = axes(g, G, C, [v0, v1], [bot, top], S.dev === 'npn' ? 'V_BE (V)' : 'V_EB (V)', 'Current (A)', v => +v.toFixed(2) + '', v => '1e' + v, niceStep(v1 - v0, 5), top - bot > 12 ? 4 : 2);
+  g.save(); g.beginPath(); g.rect(G.L, G.T, G.pw, G.ph); g.clip(); g.lineWidth = 2.2; g.lineJoin = 'round';
+  g.strokeStyle = C.ce; ptsPath(g, V.map(X), IC.map(Y)); g.stroke();
+  g.strokeStyle = C.orange; ptsPath(g, V.map(X), IB.map(Y)); g.stroke(); g.restore();
+  const x = X(clamp(S.VBE, v0, v1)); g.strokeStyle = C.dim; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(x, G.T); g.lineTo(x, G.T + G.ph); g.stroke(); g.setLineDash([]);
+  [[c.IC, C.ce], [c.IB, C.orange]].forEach(([i, col]) => { if (i > 0) { g.fillStyle = col; g.strokeStyle = C.panel; g.lineWidth = 2; g.beginPath(); g.arc(x, clamp(Y(Math.log10(i)), G.T, G.T + G.ph), 5, 0, 6.2832); g.fill(); g.stroke(); } });
+  g.font = font(11, 600); g.textAlign = 'left'; g.textBaseline = 'top'; g.fillStyle = C.ce; g.fillText('I_C', G.L + 8, G.T + 6); g.fillStyle = C.orange; g.fillText('I_B', G.L + 8, G.T + 22);
+}
+
+function drawOut(c) {
+  const { g, w, h } = fit($('cOut')), C = pal();
+  const G = posGeom(w, h, 12, 40); G.L = 66; G.pw = w - 66 - PAD_R;
+  const cfg = c.cfg, N = 90, vce = [], k0 = -2, k1 = 2, fam = [];
+  for (let k = 0; k <= N; k++) vce.push(12 * Math.pow(k / N, 1.6));
+  vce.sort((a, b) => a - b);
+  for (let k = k0; k <= k1; k++) {
+    const vb = clamp(S.VBE + k * c.mp.Vt * Math.LN2, 0, c.vbiE - 0.05);
+    fam.push({ k, vb, I: vce.map(v => bjtAt(cfg, S.dev, vb, v).IC) });
+  }
+  const mx = Math.max(...fam.map(f => Math.max(...f.I.filter(Number.isFinite))), 1e-15) * 1.12;
+  const u = mx >= 1e-3 ? [1e-3, 'mA'] : mx >= 1e-6 ? [1e-6, 'µA'] : mx >= 1e-9 ? [1e-9, 'nA'] : [1e-12, 'pA'];
+  const ys = niceStep(mx / u[0], 5) * u[0];
+  const { X, Y } = axes(g, G, C, [0, 12], [0, mx], S.dev === 'npn' ? 'V_CE (V)' : 'V_EC (V)', 'I_C (' + u[1] + ')', v => +v.toFixed(1) + '', v => tickTxt(v / u[0]), 2, ys);
+  g.save(); g.beginPath(); g.rect(G.L, G.T, G.pw, G.ph); g.clip(); g.lineJoin = 'round';
+  fam.forEach(f => {
+    g.lineWidth = f.k === 0 ? 2.8 : 1.4; g.strokeStyle = f.k === 0 ? C.ce : C.dim; g.globalAlpha = f.k === 0 ? 1 : 0.75;
+    ptsPath(g, vce.map(X), f.I.map(Y)); g.stroke();
+  });
+  g.globalAlpha = 1; g.restore();
+  g.fillStyle = C.dim; g.font = font(10); g.textAlign = 'right'; g.textBaseline = 'bottom';
+  fam.forEach(f => { const y = Y(f.I[f.I.length - 1]); if (y > G.T + 8) g.fillText(f.vb.toFixed(3) + ' V', G.L + G.pw - 3, y - 2); });
+  if (c.IC > 0) { g.fillStyle = C.acc; g.strokeStyle = C.panel; g.lineWidth = 2; g.beginPath(); g.arc(X(S.VCE), clamp(Y(c.IC), G.T, G.T + G.ph), 5.5, 0, 6.2832); g.fill(); g.stroke(); }
+  g.font = font(11, 600); g.fillStyle = C.dim; g.textAlign = 'left'; g.textBaseline = 'top';
+  g.fillText('saturation', G.L + 8, G.T + 6);
+}
+
+/* ------------------------------------------------------------------ hover */
+const tip = $('tip');
+function tipFor(c, u, ev) {
+  const P = c.P, i = nearest(P, u), s = segAt(P, u), d = c.d, rs = roles();
+  const reg = s.kind === 'neu' ? rs[s.i].name + ' (' + d.R[s.i].type + ')' : 'depletion layer';
+  tip.innerHTML = '<b>' + reg + '</b><br>x = ' + (P.x[i] * 1e4).toFixed(P.x[i] * 1e4 < 10 ? 3 : 1) + ' µm<br>E<sub>c</sub> = ' + P.Ec[i].toFixed(3) + ' eV<br>n = ' + sciE(Math.pow(10, P.lgn[i]), 2) + ' cm⁻³<br>p = ' + sciE(Math.pow(10, P.lgp[i]), 2) + ' cm⁻³<br>E = ' + eng(P.E[i], 'V/cm', 3);
+  tip.style.display = 'block';
+  const bw = tip.offsetWidth, bh = tip.offsetHeight;
+  tip.style.left = (ev.clientX + 16 + bw > window.innerWidth ? ev.clientX - bw - 16 : ev.clientX + 16) + 'px';
+  tip.style.top = Math.max(8, Math.min(ev.clientY - bh / 2, window.innerHeight - bh - 8)) + 'px';
+}
+function wireHover(id) {
+  const cv = $(id);
+  const move = ev => {
+    if (!S.cur) return;
+    const r = cv.getBoundingClientRect(), u = (ev.clientX - r.left - PAD_L) / (r.width - PAD_L - PAD_R);
+    if (u < 0 || u > 1) { leave(); return; }
+    S.hoverU = u; drawPos(S.cur); tipFor(S.cur, u, ev);
+  };
+  const leave = () => { S.hoverU = null; tip.style.display = 'none'; if (S.cur) drawPos(S.cur); };
+  cv.addEventListener('pointermove', move); cv.addEventListener('pointerdown', move); cv.addEventListener('pointerleave', leave);
+}
+
+/* ---------------------------------------------------------------- refresh */
+function drawPos(c) { drawBand(c); drawCar(c); drawField(c); }
+function drawAll(c) {
+  drawPos(c);
+  if (S.dev === 'pn') drawIV(c); else { drawGum(c); drawOut(c); }
+}
+let raf = 0;
+function refresh() {
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(() => {
+    const c = compute(); S.cur = c;
+    if (S.dev === 'pn') { $('vVv').textContent = sgn(S.V, 3) + ' V'; }
+    else {
+      $('vBEv').textContent = S.VBE.toFixed(3) + ' V'; $('vCEv').textContent = S.VCE.toFixed(2) + ' V';
+      const e = c.d.J[0], k = c.d.J[1], fE = e.Vf > 0.5 * e.Vbi, fC = k.Vf > 0.5 * k.Vbi;
+      $('regionTag').innerHTML = 'Operating region: <b style="color:var(--text)">' + (fE && !fC ? 'forward-active' : fE && fC ? 'saturation' : !fE && !fC ? 'cut-off' : 'reverse-active') + '</b>';
+    }
+    $('msg').innerHTML = message(c);
+    readouts(c);
+    drawAll(c);
+  });
+}
+
+/* ------------------------------------------------------------ device mode */
+function setDevice(dv) {
+  S.dev = dv; setSeg('segDev', 'd', dv);
+  $('ivPn').hidden = dv !== 'pn'; $('ivBjt').hidden = dv === 'pn';
+  $('eqs').innerHTML = eqHtml();
+  buildBias(); buildBlocks(); buildPresets(); syncGlobal(); refresh();
+}
+document.querySelectorAll('#segDev button').forEach(b => b.addEventListener('click', () => setDevice(b.dataset.d)));
+document.querySelectorAll('#segMat button').forEach(b => b.addEventListener('click', () => {
+  S.mat = b.dataset.m; syncGlobal(); roles().forEach(syncBlock); biasRanges(); refresh();
+}));
+document.querySelectorAll('#segIV button').forEach(b => b.addEventListener('click', () => {
+  S.ivLog = b.dataset.s === 'log'; setSeg('segIV', 's', b.dataset.s); refresh();
+}));
+$('temp').addEventListener('input', e => { S.T = +e.target.value; syncGlobal(); roles().forEach(syncBlock); biasRanges(); refresh(); });
+$('tau').addEventListener('input', e => { S.lTau = +e.target.value; syncGlobal(); refresh(); });
+$('scr').addEventListener('change', e => { S.scr = e.target.checked; refresh(); });
+$('showEi').addEventListener('change', e => { S.showEi = e.target.checked; refresh(); });
+['cBand', 'cCar', 'cField'].forEach(wireHover);
+
+window.addEventListener('resize', refresh);
+if (window.ResizeObserver) new ResizeObserver(refresh).observe(document.querySelector('.wrap'));
+const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+if (mq && mq.addEventListener) mq.addEventListener('change', refresh);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+
+window.__app = { S, compute, setDevice, applyPreset, PRE, refresh };   // exposed for tests
+setDevice('pn');
+})();
+
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
