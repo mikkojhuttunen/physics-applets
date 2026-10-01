@@ -1,9 +1,10 @@
-const CACHE_NAME = "physics-applets-v29";
+const CACHE_NAME = "physics-applets-v30";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
   "assets/css/base.css",
   "assets/css/applet.css",
+  "assets/css/fys232-structure-of-matter.css",
   "assets/css/fys240-optics.css",
   "assets/css/fys310-solid-state-physics.css",
   "assets/js/course-back.js",
@@ -13,6 +14,7 @@ const APP_SHELL = [
   "fys232-structure-of-matter/interatomic-potential-explorer.html",
   "fys232-structure-of-matter/binding-energy-curve.html",
   "fys232-structure-of-matter/quantum-distributions-explorer.html",
+  "fys232-structure-of-matter/chained_decay.html",
   "fys240-optics/index.html",
   "fys240-optics/term-alias/index.html",
   "fys240-optics/term-alias/index.html",
