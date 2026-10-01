@@ -20,7 +20,7 @@ Current contents:
   review.
 
 - `cavity-workbench.html` — laser cavity workbench: build ring/linear cavities
-  from mirrors, lenses, gain crystals, etalons, BRF and diode elements
+  from mirrors, lenses, gain crystals, etalons, BRF and optical isolator elements
   (ABCD + Gaussian beams, mode selection, linewidth). Presets reproduce the
   HW6 Nd:YAG and Ti:sapphire designs. Carries a `noindex` meta tag. Draft,
   pending instructor physics review.

@@ -220,7 +220,7 @@ footer li{margin:2px 0}
       <li><strong>Ray trace.</strong> Paraxial rays (y, n·θ) pushed through the same round-trip matrices, so they exist whether or not a Gaussian eigenmode does. The round-trip Gouy phase θ = arccos m sets how fast a ray circles the axis; if θ/2π is close to a fraction p/q with small q the ray closes on itself after q round trips and transverse modes become degenerate. For |m| &gt; 1 a ray grows by |m| + √(m² − 1) per round trip. Apertures only stop rays; their diffraction loss is not modelled.</li>
       <li><strong>Thermal lens.</strong> Thin lens at the crystal centre, f = πKw<sub>p</sub>²/(P<sub>heat</sub>·dn/dT) with P<sub>heat</sub> = quantum defect × absorbed pump. It ignores end-face bulging, stress birefringence and aberrations, and overestimates the lens for very tight pump spots, so use the calibration factor if you have a measured value. The Ti:sapphire example uses 0.3 as an assumption, not a measurement.</li>
       <li><strong>Threshold and power.</strong> Ideal four-level rate-equation estimate: P<sub>th</sub> = hν<sub>p</sub>π(w<sub>l</sub>²+w<sub>p</sub>²)γ / (2·N<sub>pass</sub>·σ·τ), slope = (λ<sub>p</sub>/λ<sub>l</sub>)·η<sub>overlap</sub>·0.9·T/γ. No excited-state absorption, upconversion or reabsorption, so thresholds are optimistic.</li>
-      <li><strong>Mode selection.</strong> Every cavity mode inside the gain window is given a ratio x = (gain)/(round-trip loss incl. filter losses). The best mode wins. In a travelling-wave ring (ring + optical diode) homogeneous broadening allows only that one mode; the margin to the runner-up tells you how prone it is to mode hops. With spatial hole burning (linear cavity, or ring without a diode) modes whose x is within half of the excess over threshold also lase; a twisted-mode pair reduces this to 10 %.</li>
+      <li><strong>Mode selection.</strong> Every cavity mode inside the gain window is given a ratio x = (gain)/(round-trip loss incl. filter losses). The best mode wins. In a travelling-wave ring (ring + optical isolator) homogeneous broadening allows only that one mode; the margin to the runner-up tells you how prone it is to mode hops. With spatial hole burning (linear cavity, or ring without an isolator) modes whose x is within half of the excess over threshold also lase; a twisted-mode pair reduces this to 10 %.</li>
       <li><strong>Filters.</strong> Etalons: Airy function with finesse π√R/(1−R), each face of reflectivity R, tilt and tune shift the comb. Lyot filter: plates of thickness d, 2d, 4d in quartz (Δn = 0.0092), T = Π cos²(πτ<sub>j</sub>(ν−ν<sub>peak</sub>)). Bandpass: Gaussian. Filters are assumed to sit where the beam is collimated enough; a tilted solid etalon in a strongly diverging beam loses finesse, which is not modelled.</li>
       <li><strong>Linewidth.</strong> Single mode: technical linewidth ν·δp/p (path-length noise) added in quadrature to the Schawlow–Townes limit 2πhν(Δν<sub>c</sub>)²/P. Multimode: the frequency span of the lasing modes.</li>
       <li>This applet is a first draft for teaching; the physics and the example designs are awaiting instructor review.</li>
@@ -493,7 +493,7 @@ function analyze(st){
   R.h = R.travelling?0 : (st.mode==='linear' && R.hasTwist)?0.1 : 0.5;
   R.dichroic = els.some(e=>(e.type==='mirror_curved'||e.type==='mirror_flat') && e.dich);
   if(g && !R.dichroic) R.warn.push('No mirror is marked as a pump window (HT at the pump wavelength) – the pump has no way in.');
-  if(st.mode==='ring' && !R.hasDiode) R.info.push('Ring without an optical diode is bidirectional: the two beams form a partial standing wave, so spatial hole burning returns.');
+  if(st.mode==='ring' && !R.hasDiode) R.info.push('Ring without an optical isolator is bidirectional: the two beams form a partial standing wave, so spatial hole burning returns.');
   if(st.mode==='linear') R.info.push('Linear cavity: the standing wave leaves unsaturated gain at its nodes (spatial hole burning).');
   if(!R.stable){ R.valid=false; R.lasing=false; R.warn.unshift('Cavity is unstable in the '+(!R.stT&&!R.stS?'tangential and sagittal planes':!R.stT?'tangential plane':'sagittal plane')+'.'); return R; }
   R.valid=true;
@@ -652,7 +652,7 @@ const PRESETS = {
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let S=PRESETS.ex1.build();
 const view={spanLog:null, center:'mode', sweep:'pump', ray:{plane:'T', n:8, y0:0.5, u0:1, ap:5}};
-const NAMES={mirror_flat:'Flat mirror',mirror_curved:'Curved mirror',lens:'Lens',gain:'Gain crystal',etalon:'Etalon',brf:'Lyot filter (BRF)',filter:'Bandpass filter',diode:'Optical diode',plate:'Glass plate',twist:'Twisted-mode λ/4 pair'};
+const NAMES={mirror_flat:'Flat mirror',mirror_curved:'Curved mirror',lens:'Lens',gain:'Gain crystal',etalon:'Etalon',brf:'Lyot filter (BRF)',filter:'Bandpass filter',diode:'Optical isolator',plate:'Glass plate',twist:'Twisted-mode λ/4 pair'};
 const css=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const isMirror=e=>e.type==='mirror_flat'||e.type==='mirror_curved';
 
@@ -683,7 +683,7 @@ const PAL=[
   ['Mirrors',[['mirror_flat','Flat mirror'],['mirror_curved','Curved mirror'],['lens','Lens']]],
   ['Gain',[['gain','Gain crystal'],['gainB','Brewster crystal']]],
   ['Spectral',[['etalonThin','Thin etalon'],['etalonThick','Thick etalon'],['brf','Lyot filter'],['filter','Bandpass']]],
-  ['Other',[['diode','Optical diode'],['plate','Glass plate'],['twist','Twisted-mode pair']]]
+  ['Other',[['diode','Optical isolator'],['plate','Glass plate'],['twist','Twisted-mode pair']]]
 ];
 function addEl(key){
   let e;
@@ -908,8 +908,8 @@ function drawLayout(R){
     } else if(e.type==='filter'){
       ctx.rotate(Math.atan2(dy,dx)); ctx.setLineDash([4,3]); ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(0,-15); ctx.lineTo(0,15); ctx.stroke(); ctx.setLineDash([]);
     } else if(e.type==='diode'){
-      ctx.rotate(Math.atan2(dy,dx)); ctx.fillStyle=panel; ctx.lineWidth=1.8; ctx.fillRect(-16,-11,32,22); ctx.strokeRect(-16,-11,32,22);
-      ctx.fillStyle=ink; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.rotate(-Math.atan2(dy,dx)); ctx.font='bold 12px '+css('--sans'); ctx.fillText('FR',0,0);
+      ctx.rotate(Math.atan2(dy,dx)); ctx.fillStyle=panel; ctx.lineWidth=1.8; ctx.fillRect(-17,-11,34,22); ctx.strokeRect(-17,-11,34,22);
+      ctx.fillStyle=ink; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.rotate(-Math.atan2(dy,dx)); ctx.font='bold 12px '+css('--sans'); ctx.fillText('ISO',0,0);
     } else if(e.type==='plate'){
       ctx.rotate(Math.atan2(dy,dx)+(e.brew?0.6:0)); ctx.fillStyle=css('--crystal'); ctx.globalAlpha=.6; ctx.fillRect(-2.5,-13,5,26); ctx.globalAlpha=1; ctx.strokeRect(-2.5,-13,5,26);
     } else if(e.type==='lens'){
@@ -1122,7 +1122,7 @@ function renderResults(R){
     const add=(pass,text,val)=>ok.push(`<li><span class="${pass===true?'ok':pass===false?'bad':'warn'}" aria-hidden="true">${pass===true?'✓':pass===false?'✗':'~'}</span><span>${text}</span><span style="color:var(--muted)">${val||''}</span></li>`);
     add(R.stable&&pumpStable(),'Stable at every pump level up to the set power','');
     add(R.multiTEM?false:true,'Pump spot no larger than the TEM<sub>00</sub> mode',fmt(R.ratio,3)+'×');
-    add(R.travelling?true:(R.h<=0.1?null:false),'Travelling wave (no spatial hole burning)',R.travelling?'ring + diode':R.hasTwist&&S.mode==='linear'?'twisted-mode':'');
+    add(R.travelling?true:(R.h<=0.1?null:false),'Travelling wave (no spatial hole burning)',R.travelling?'ring + isolator':R.hasTwist&&S.mode==='linear'?'twisted-mode':'');
     if(R.lasing){
       add(R.nLas===1,'Single longitudinal mode',R.nLas===1?'':R.nLas+' modes');
       add(R.nLas===1?(R.margin>=1e-3?true:null):null,'Mode-hop margin ≥ 0.1 %',R.nLas===1?fmt(R.margin*100,2)+' %':'');
