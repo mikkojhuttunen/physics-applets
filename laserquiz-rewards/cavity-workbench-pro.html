@@ -649,7 +649,7 @@ function mkState(){
 // cavity-workbench-pro.html (teachers) is the master copy. cavity-workbench.html (students) is generated
 // from it by setting EDITION='student' and deleting everything between the PRO-ONLY markers, so the
 // full DHW designs (the homework answers) are not in the student page source. See README.md.
-const EDITION='student';
+const EDITION='pro';
 const PRESETS = {
   dhw1: {label:'DHW1 – Nd:YAG ring, 1064 nm, >5 W (starting cavity)', build(){
     const s=mkState(); s.mode='ring'; s.pump={P:16,wp:185}; s.target={lam:1064.2,P:5,lw:1,tol:0.5};
@@ -680,6 +680,33 @@ const PRESETS = {
     ]; return s; }}
 };
 /* PRO-ONLY-START */
+if(EDITION==='pro') Object.assign(PRESETS,{
+  ex1: {label:'DHW1 full design – Nd:YAG ring with isolator and etalon', build(){
+    const s=mkState(); s.mode='ring'; s.pump={P:16,wp:185}; s.target={lam:1064.2,P:5,lw:1,tol:0.5};
+    s.els=[
+      mkEl('mirror_curved',{R:150,aoi:8,dich:true,gap:120}),
+      mkEl('gain',{mat:'ndyag',L:10,brew:false,gap:120}),
+      mkEl('mirror_curved',{R:150,aoi:8,gap:60}),
+      mkEl('mirror_flat',{gap:15}),
+      mkEl('diode',{L:10,gap:8}),
+      mkEl('etalon',{d:1.7,n:1.45,Rs:90,gap:15}),
+      mkEl('mirror_flat',{T:7,gap:60})
+    ]; tuneToTarget(s); return s; }},
+  ex2: {label:'DHW2 full design – Ti:sapphire ring with isolator, BRF and two etalons', build(){
+    const s=mkState(); s.mode='ring'; s.pump={P:9,wp:30}; s.thermalCal=0.3; s.target={lam:780.24,P:1,lw:1,tol:0.3};
+    s.noise={nm:1,lock:true};
+    s.els=[
+      mkEl('mirror_curved',{R:100,aoi:10,dich:true,gap:52}),
+      mkEl('gain',{mat:'tisa',L:10,brew:true,gap:52}),
+      mkEl('mirror_curved',{R:100,aoi:10,gap:300}),
+      mkEl('mirror_flat',{gap:60}),
+      mkEl('diode',{L:10,gap:30}),
+      mkEl('brf',{N:3,d1:0.4,lam:780.24,gap:30}),
+      mkEl('etalon',{d:0.5,n:1.45,Rs:73,gap:30}),
+      mkEl('etalon',{d:10,n:1.45,Rs:85,gap:60}),
+      mkEl('mirror_flat',{T:4,gap:300})
+    ]; tuneToTarget(s); return s; }}
+});
 /* PRO-ONLY-END */
 
 /* ===== UI ===== */
@@ -816,6 +843,8 @@ $$('[data-p]').forEach(el=>{
 function setMode(m){ S.mode=m; syncControls(); renderBench(); schedule(); }
 $('#modeRing').onclick=()=>setMode('ring'); $('#modeLinear').onclick=()=>setMode('linear');
 /* PRO-ONLY-START */
+if(EDITION==='pro'){ document.title='Laser cavity workbench, teacher edition – FYS.501';
+  $('header p').insertAdjacentHTML('afterend','<p style="color:var(--bad);font-weight:600">Teacher edition: the example list includes the full DHW1 and DHW2 designs. Share cavity-workbench.html with students, not this page.</p>'); }
 /* PRO-ONLY-END */
 $('#preset').innerHTML=Object.entries(PRESETS).map(([k,p])=>`<option value="${k}">${esc(p.label)}</option>`).join('');
 function loadState(s){ S=s; if(typeof ASTIG_INTRO==='string') $('#astigNote').innerHTML=ASTIG_INTRO; view.spanLog=null; view.sweep='pump'; syncControls(); renderBench(); buildSweepSel(); schedule(); }
