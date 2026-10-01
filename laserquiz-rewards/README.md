@@ -19,5 +19,11 @@ Current contents:
   SESAM/KLM/Mamyshev comparison panel, draft, pending instructor physics
   review.
 
+- `cavity-workbench.html` — laser cavity workbench: build ring/linear cavities
+  from mirrors, lenses, gain crystals, etalons, BRF and diode elements
+  (ABCD + Gaussian beams, mode selection, linewidth). Presets reproduce the
+  HW6 Nd:YAG and Ti:sapphire designs. Carries a `noindex` meta tag. Draft,
+  pending instructor physics review.
+
 Do not add links to this folder from `index.html`, `manifest.json`, or any
 other page's navigation.

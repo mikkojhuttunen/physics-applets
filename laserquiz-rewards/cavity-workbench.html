@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Laser cavity workbench – FYS.501</title>
+<style>
+:root{
+  --bench:#dde4e1; --hole:#c6cfcb; --panel:#f6f8f7; --panel2:#eef2f0; --ink:#14242a; --muted:#56676d; --line:#bcc8c4;
+  --beam:#d12d3a; --tan:#d4570f; --sag:#0b7a8a; --ok:#1f7a45; --bad:#b3261e; --warn:#9a6700; --crystal:#bfe3d6; --accent:#14242a; --focus:#1a5fd0;
+  --f1:#7b57c2; --f2:#b07f12; --f3:#2c8a57; --f4:#a0458a; --gainc:#8aa0a8;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bench:#151c1f; --hole:#1f292d; --panel:#1d2629; --panel2:#243034; --ink:#e4ecec; --muted:#93a6ab; --line:#33434a;
+    --beam:#ff5a66; --tan:#ff8a4d; --sag:#46c8d8; --ok:#5bd08a; --bad:#ff7a70; --warn:#e3b341; --crystal:#2b5a4d; --accent:#e4ecec; --focus:#7aa7ff;
+    --f1:#a78bfa; --f2:#e0b040; --f3:#5bd08a; --f4:#e585c8; --gainc:#6f858d; }
+}
+*{box-sizing:border-box}
+html{font-family:var(--sans);color:var(--ink);background:var(--bench)}
+body{margin:0;min-height:100vh;
+  background-image:radial-gradient(var(--hole) 1.6px, transparent 1.8px);background-size:25px 25px;background-position:12px 12px;
+  font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+header{padding:20px 24px 10px;display:flex;flex-wrap:wrap;gap:12px 28px;align-items:end;justify-content:space-between}
+h1{font-family:var(--serif);font-weight:600;font-size:28px;margin:0;letter-spacing:-.01em}
+header p{margin:2px 0 0;color:var(--muted);max-width:62ch}
+.hctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding:8px 24px 40px;align-items:start}
+@media (max-width:1100px){ main{grid-template-columns:minmax(0,1fr)} aside{position:static!important} }
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+section.panel,aside .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--serif);font-size:18px;margin:0 0 8px;font-weight:600}
+h3{font-size:13px;margin:12px 0 4px;font-weight:650}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.pri{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+input[type=number],input[type=text]{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:3px 6px;width:100%;min-width:0}
+input[type=range]{width:100%;accent-color:var(--sag)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:var(--panel)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.palette{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.palette button{font-size:13px}
+.palette .grp{color:var(--muted);font-size:12px;align-self:center;margin:0 2px 0 8px}
+#strip{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;align-items:flex-start}
+.card{flex:0 0 206px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;position:relative}
+.card.drop{outline:2px dashed var(--sag)}
+.card .ch{display:flex;align-items:center;gap:6px;margin-bottom:6px;cursor:grab}
+.badge{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--panel);font-size:11px;font-weight:700;flex:none}
+.card .nm{font-weight:650;flex:1;font-size:13px;line-height:1.2}
+.card .ib{padding:0 6px;font-size:12px;line-height:20px}
+.prm{display:grid;grid-template-columns:1fr 74px;gap:3px 6px;align-items:center;font-size:12px}
+.prm label{color:var(--muted)}
+.prm .r{grid-column:1/-1}
+.prm.chk{grid-template-columns:auto 1fr;justify-content:start}
+.gapr{margin-top:8px;padding-top:6px;border-top:1px dashed var(--line);display:grid;grid-template-columns:1fr 74px;gap:6px;align-items:center;font-size:12px}
+.einfo{font-size:11.5px;color:var(--muted);margin-top:6px;min-height:1em}
+details.adv{margin-top:6px;font-size:12px}
+details.adv summary{cursor:pointer;color:var(--muted)}
+.cvwrap{position:relative}
+canvas{width:100%;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+.ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 8px;font-size:13px}
+.ctl label{display:inline-flex;gap:6px;align-items:center;color:var(--muted)}
+.ctl select,.ctl input[type=range]{width:auto}
+aside{position:sticky;top:10px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 20px);overflow:auto}
+.gl{display:grid;grid-template-columns:1fr 92px;gap:4px 8px;align-items:center;font-size:13px}
+.gl label{color:var(--muted)}
+.gl .wide{grid-column:1/-1;display:grid;grid-template-columns:1fr 72px;gap:6px;align-items:center}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:13px}
+.kv span:nth-child(odd){color:var(--muted)}
+.kv span:nth-child(even){text-align:right;font-weight:600}
+.big{font-family:var(--serif);font-size:30px;line-height:1.05}
+.big small{font-size:14px;color:var(--muted);font-family:var(--sans)}
+ul.chk{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:13px}
+ul.chk li{display:grid;grid-template-columns:20px 1fr auto;gap:4px}
+.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+.msgs{margin:8px 0 0;padding:0;list-style:none;font-size:12.5px;display:grid;gap:4px}
+.msgs li{padding:5px 8px;border-radius:6px;background:var(--panel2);border-left:3px solid var(--warn)}
+.msgs li.info{border-left-color:var(--muted);color:var(--muted)}
+.msgs li.err{border-left-color:var(--bad)}
+.note{color:var(--muted);font-size:12.5px;margin:4px 0 0;max-width:90ch}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+footer{padding:0 24px 30px;color:var(--muted);font-size:12.5px;max-width:110ch}
+footer details{margin-top:8px}
+footer li{margin:2px 0}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Laser cavity workbench</h1>
+    <p>Place mirrors, crystals, etalons and filters in order around the beam path. Beam size comes from ABCD matrices (tangential and sagittal); threshold, mode selection and linewidth follow from the round-trip loss and the spectral filters.</p>
+  </div>
+  <div class="hctl">
+    <label for="preset" class="sr" style="position:absolute;left:-9999px">Example design</label>
+    <select id="preset" aria-label="Example design"></select>
+    <button id="btnLoad" class="pri">Load example</button>
+    <button id="btnSave">Save design</button>
+    <button id="btnOpen">Open design…</button>
+    <input type="file" id="fileOpen" accept=".json,application/json" hidden>
+  </div>
+</header>
+
+<main>
+<div class="col">
+
+  <section class="panel" aria-labelledby="hbench">
+    <h2 id="hbench">Workbench</h2>
+    <div class="ctl" style="margin-bottom:10px">
+      <span style="color:var(--muted)">Cavity type</span>
+      <span class="seg" role="group" aria-label="Cavity type">
+        <button id="modeRing" aria-pressed="true">Ring (closed loop)</button>
+        <button id="modeLinear" aria-pressed="false">Linear (end mirrors)</button>
+      </span>
+      <span class="note" id="modeNote" style="margin:0"></span>
+    </div>
+    <div class="palette" id="palette"></div>
+    <div id="strip" aria-label="Elements in beam order"></div>
+    <p class="note">Elements are listed in the order the beam meets them. Drag a card (or use ◀ ▶) to reorder. The gap is the free-space distance to the next element; in a ring the last gap returns to element 1; in a linear cavity the first and last elements are the end mirrors and the beam passes the middle elements twice.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="hlay">
+    <h2 id="hlay">Layout <span style="font-weight:400;color:var(--muted);font-size:13px">(schematic, not to scale)</span></h2>
+    <div class="cvwrap"><canvas id="cvLayout" height="290" role="img" aria-label="Cavity layout schematic"></canvas></div>
+    <div class="legend"><span><i style="background:var(--beam)"></i>beam</span><span><i style="background:#2f9e6b"></i>pump</span><span><i style="background:var(--crystal);height:9px"></i>gain crystal</span></div>
+  </section>
+
+  <div class="two">
+    <section class="panel" aria-labelledby="hbeam">
+      <h2 id="hbeam">Beam radius along the cavity</h2>
+      <div class="ctl"><label><input type="checkbox" id="logW"> log scale</label></div>
+      <canvas id="cvBeam" height="290" role="img" aria-label="Beam radius versus position"></canvas>
+      <div class="legend"><span><i style="background:var(--tan)"></i>tangential w<sub>T</sub></span><span><i style="background:var(--sag)"></i>sagittal w<sub>S</sub></span></div>
+    </section>
+    <section class="panel" aria-labelledby="hsw">
+      <h2 id="hsw">Stability scan</h2>
+      <div class="ctl"><label>Scan <select id="sweepSel"></select></label></div>
+      <canvas id="cvSweep" height="290" role="img" aria-label="Stability parameter scan"></canvas>
+      <div class="legend"><span><i style="background:var(--tan)"></i>m<sub>T</sub> = (A+D)/2</span><span><i style="background:var(--sag)"></i>m<sub>S</sub></span><span>stable where both lie between −1 and 1</span></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="hspec">
+    <h2 id="hspec">Spectrum: gain, filters and cavity modes</h2>
+    <div class="ctl">
+      <label>View span <input type="range" id="spanSl" min="6" max="14" step="0.01" aria-label="Spectrum view span"></label>
+      <output id="spanOut" style="min-width:80px;font-weight:600"></output>
+      <button id="zGain">Gain band</button><button id="zIn">Zoom in ×10</button><button id="zOut">Zoom out ×10</button><button id="zModes">≈25 cavity modes</button>
+      <span class="seg" role="group" aria-label="Centre of view"><button id="cMode" aria-pressed="true">Centre on lasing mode</button><button id="cGain" aria-pressed="false">Centre on gain peak</button></span>
+    </div>
+    <canvas id="cvSpec" height="320" role="img" aria-label="Spectrum plot"></canvas>
+    <div class="legend" id="specLegend"></div>
+    <p class="note">Curves are scaled 0–1. The dark line is the ratio of small-signal gain to round-trip loss at each frequency (scaled to the best mode); modes above the dashed threshold line can lase. Zoom in to see individual cavity modes and the etalon passbands.</p>
+  </section>
+</div>
+
+<aside aria-label="Results and settings">
+  <div class="panel">
+    <h2>Pump and environment</h2>
+    <div class="gl">
+      <label for="g_pumpP">Pump power (W)</label><input type="number" id="g_pumpP" data-p="pump.P" step="0.5" min="0">
+      <div class="wide"><input type="range" data-p="pump.P" min="0" max="40" step="0.1" aria-label="Pump power"></div>
+      <label for="g_wp">Pump waist in crystal (µm)</label><input type="number" id="g_wp" data-p="pump.wp" step="1" min="1">
+      <div class="wide"><input type="range" data-p="pump.wp" min="10" max="600" step="1" aria-label="Pump waist"></div>
+      <label for="g_thc">Thermal lens calibration ×</label><input type="number" id="g_thc" data-p="thermalCal" step="0.05" min="0">
+      <label class="wide" style="display:flex;gap:6px"><input type="checkbox" data-p="thermal" id="g_th"> include thermal lens of the pumped crystal</label>
+      <label for="g_ph">Cavity length trim (slides the mode comb; 0–1 = one mode spacing)</label><span></span>
+      <div class="wide"><input type="range" data-p="phase" min="0" max="1" step="0.001" aria-label="Cavity length trim"><input type="number" data-p="phase" step="0.01" min="0" max="1"></div>
+      <label for="g_noise">Path-length noise δp (nm rms)</label><input type="number" id="g_noise" data-p="noise.nm" step="0.1" min="0">
+      <label class="wide" style="display:flex;gap:6px"><input type="checkbox" data-p="noise.lock"> active lock to a reference (noise ÷100)</label>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+      <button id="btnMatch" title="Set the pump waist equal to the cavity mode waist in the crystal">Match pump to mode</button>
+      <button id="btnTune" title="Set BRF/filter centres, etalon tilts and cavity trim so that one mode sits at the target wavelength">Tune to target λ</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Target</h2>
+    <div class="gl">
+      <label for="t_lam">Wavelength (nm)</label><input type="number" id="t_lam" data-p="target.lam" step="0.01">
+      <label for="t_tol">Tolerance (± nm)</label><input type="number" id="t_tol" data-p="target.tol" step="0.05" min="0">
+      <label for="t_P">Output power above (W)</label><input type="number" id="t_P" data-p="target.P" step="0.5" min="0">
+      <label for="t_lw">Linewidth about (MHz)</label><input type="number" id="t_lw" data-p="target.lw" step="0.1" min="0">
+    </div>
+  </div>
+
+  <div class="panel" id="results" aria-live="polite"></div>
+</aside>
+</main>
+
+<footer>
+  <details>
+    <summary><strong>Model assumptions</strong> – read before trusting a number</summary>
+    <ul>
+      <li><strong>Optics.</strong> Paraxial ABCD matrices in reduced distances (d/n), so the q-parameter eigenvalue of the round trip directly gives the physical beam radius. Curved mirrors at incidence angle θ: f<sub>T</sub> = (R/2)cos θ, f<sub>S</sub> = R/(2cos θ). Brewster-cut slabs: effective distances L/n³ (tangential) and L/n (sagittal), with L the path length inside the crystal (Kogelnik).</li>
+      <li><strong>Thermal lens.</strong> Thin lens at the crystal centre, f = πKw<sub>p</sub>²/(P<sub>heat</sub>·dn/dT) with P<sub>heat</sub> = quantum defect × absorbed pump. It ignores end-face bulging, stress birefringence and aberrations, and overestimates the lens for very tight pump spots, so use the calibration factor if you have a measured value. The Ti:sapphire example uses 0.3 as an assumption, not a measurement.</li>
+      <li><strong>Threshold and power.</strong> Ideal four-level rate-equation estimate: P<sub>th</sub> = hν<sub>p</sub>π(w<sub>l</sub>²+w<sub>p</sub>²)γ / (2·N<sub>pass</sub>·σ·τ), slope = (λ<sub>p</sub>/λ<sub>l</sub>)·η<sub>overlap</sub>·0.9·T/γ. No excited-state absorption, upconversion or reabsorption, so thresholds are optimistic.</li>
+      <li><strong>Mode selection.</strong> Every cavity mode inside the gain window is given a ratio x = (gain)/(round-trip loss incl. filter losses). The best mode wins. In a travelling-wave ring (ring + optical diode) homogeneous broadening allows only that one mode; the margin to the runner-up tells you how prone it is to mode hops. With spatial hole burning (linear cavity, or ring without a diode) modes whose x is within half of the excess over threshold also lase; a twisted-mode pair reduces this to 10 %.</li>
+      <li><strong>Filters.</strong> Etalons: Airy function with finesse π√R/(1−R), each face of reflectivity R, tilt and tune shift the comb. Lyot filter: plates of thickness d, 2d, 4d in quartz (Δn = 0.0092), T = Π cos²(πτ<sub>j</sub>(ν−ν<sub>peak</sub>)). Bandpass: Gaussian. Filters are assumed to sit where the beam is collimated enough; a tilted solid etalon in a strongly diverging beam loses finesse, which is not modelled.</li>
+      <li><strong>Linewidth.</strong> Single mode: technical linewidth ν·δp/p (path-length noise) added in quadrature to the Schawlow–Townes limit 2πhν(Δν<sub>c</sub>)²/P. Multimode: the frequency span of the lasing modes.</li>
+      <li>This applet is a first draft for teaching; the physics and the example designs are awaiting instructor review.</li>
+    </ul>
+  </details>
+</footer>
+
+<script>
+/* ===== PHYSICS CORE (pure functions, no DOM) ===== */
+const C0 = 299792458, HP = 6.62607015e-34, MM = 1e-3;
+
+const MATERIALS = {
+  ndyag:  {name:'Nd:YAG',        lamC:1064.2, lamP:808, dnuTHz:0.12,  shape:'lor',   sig:2.8, tauUs:230, n:1.82, K:13,  dndT6:7.3, alphaCm:4},
+  ndyvo4: {name:'Nd:YVO4',       lamC:1064.3, lamP:808, dnuTHz:0.257, shape:'lor',   sig:25,  tauUs:90,  n:2.17, K:5.2, dndT6:3.0, alphaCm:20},
+  tisa:   {name:'Ti:sapphire',   lamC:800,    lamP:532, dnuTHz:100,   shape:'gauss', sig:3,   tauUs:3.2, n:1.76, K:33,  dndT6:13,  alphaCm:3},
+  ybyag:  {name:'Yb:YAG (ignores reabsorption)', lamC:1030, lamP:940, dnuTHz:2.5, shape:'lor', sig:0.2, tauUs:950, n:1.82, K:11, dndT6:9, alphaCm:5},
+  custom: {name:'Custom',        lamC:1000,   lamP:800, dnuTHz:1,     shape:'lor',   sig:2,   tauUs:100, n:1.8,  K:10,  dndT6:8,   alphaCm:4}
+};
+
+const DEFAULTS = {
+  mirror_flat:  {T:0, Lm:0.1, dich:false},
+  mirror_curved:{R:100, T:0, Lm:0.1, aoi:10, dich:false},
+  lens:         {f:100, Lm:0.1},
+  gain:         {mat:'ndyag', L:10, brew:false, loss:0.3},
+  etalon:       {d:1, n:1.45, Rs:75, tilt:0, tune:0, loss:0.3},
+  brf:          {N:3, d1:0.4, lam:780, loss:0.5},
+  filter:       {lam:780, fwhm:1, loss:0.3},
+  diode:        {L:10, n:1.95, loss:1},
+  plate:        {L:2, n:1.45, brew:false, loss:0.2},
+  twist:        {loss:0.3}
+};
+
+/* ---- 2x2 matrix helpers: [A,B,C,D] ---- */
+const mul = (a,b)=>[a[0]*b[0]+a[1]*b[2], a[0]*b[1]+a[1]*b[3], a[2]*b[0]+a[3]*b[2], a[2]*b[1]+a[3]*b[3]];
+
+/* ---- ops: slab (reduced distances dT,dS; real length len; optical index nopt), lens, marker ---- */
+function slabOp(lenMm, n, brew, ei, tag){
+  const L = lenMm*MM;
+  // Brewster-cut: Kogelnik effective distances (L = path length inside medium)
+  const dT = brew ? L/(n*n*n) : L/n, dS = L/n;
+  return {k:'s', len:L, dT, dS, nopt:n, ei, tag};
+}
+const lensOp   = (fT,fS,ei,tag)=>({k:'l', fT, fS, ei, tag});
+const gapOp    = (dMm,ei)=>({k:'s', len:dMm*MM, dT:dMm*MM, dS:dMm*MM, nopt:1, ei:-1, gapAfter:ei});
+const markerOp = (ei)=>({k:'m', ei});
+
+function elementOps(e, i, fth){
+  const ops = [markerOp(i)];
+  switch(e.type){
+    case 'mirror_curved': {
+      const th = (e.aoi||0)*Math.PI/180;              // astigmatic focal lengths of a tilted spherical mirror
+      ops.push(lensOp((e.R/2)*MM*Math.cos(th), (e.R/2)*MM/Math.cos(th), i)); break; }
+    case 'lens': ops.push(lensOp(e.f*MM, e.f*MM, i)); break;
+    case 'gain':
+      ops.push(slabOp(e.L/2, e.n, e.brew, i));
+      ops.push(lensOp(fth, fth, i, 'mid'));            // thermal lens at crystal centre
+      ops.push(slabOp(e.L/2, e.n, e.brew, i)); break;
+    case 'etalon': ops.push(slabOp(e.d, e.n, false, i)); break;
+    case 'brf': { let t=0; for(let j=0;j<e.N;j++) t+=e.d1*Math.pow(2,j); ops.push(slabOp(t, 1.54, true, i)); break; }
+    case 'diode': ops.push(slabOp(e.L, e.n, false, i)); break;
+    case 'plate': ops.push(slabOp(e.L, e.n, e.brew, i)); break;
+  }
+  return ops;
+}
+
+function buildSeq(st, fth){
+  const els=st.els, N=els.length, hits=new Array(N).fill(0);
+  const E = els.map((e,i)=>elementOps(e,i,fth));
+  const ops=[]; let fwdEnd;
+  if(st.mode==='ring'){
+    for(let i=0;i<N;i++){ ops.push(...E[i]); ops.push(gapOp(els[i].gap,i)); hits[i]++; }
+    fwdEnd = ops.length;
+  } else {
+    for(let i=0;i<N;i++){ ops.push(...E[i]); hits[i]++; if(i<N-1) ops.push(gapOp(els[i].gap,i)); }
+    fwdEnd = ops.length;
+    for(let i=N-2;i>=0;i--){
+      ops.push(gapOp(els[i].gap,i));
+      if(i>=1){ ops.push(...E[i].slice().reverse().map(o=>Object.assign({},o,{rev:true}))); hits[i]++; }
+    }
+  }
+  return {ops, fwdEnd, hits};
+}
+
+function roundTrip(ops){
+  let T=[1,0,0,1], S=[1,0,0,1];
+  for(const o of ops){
+    if(o.k==='s'){ T=mul([1,o.dT,0,1],T); S=mul([1,o.dS,0,1],S); }
+    else if(o.k==='l'){ T=mul([1,0,-1/o.fT,1],T); S=mul([1,0,-1/o.fS,1],S); }
+  }
+  return {T,S};
+}
+
+function eigenQ(M){
+  const [A,B,,D]=M, m=(A+D)/2;
+  if(!(Math.abs(m)<1) || Math.abs(B)<1e-14) return {m, stable:false};
+  const re=(D-A)/(2*B), im=-Math.sqrt(1-m*m)/Math.abs(B), a=re*re+im*im;
+  return {m, stable:true, q:{re:re/a, im:-im/a}};   // q = 1/(1/q)
+}
+const wOf=(q,lam)=>Math.sqrt(lam/Math.PI*(q.re*q.re+q.im*q.im)/q.im);
+
+function propagate(ops, end, qT0, qS0, lam, nSamp){
+  let qT={...qT0}, qS={...qS0}, z=0, total=0;
+  for(let i=0;i<end;i++) if(ops[i].k==='s') total+=ops[i].len;
+  const step=total/(nSamp||500);
+  const Z=[],WT=[],WS=[], rec={};
+  const push=()=>{Z.push(z);WT.push(wOf(qT,lam));WS.push(wOf(qS,lam));};
+  push();
+  const inv=(q)=>{const a=q.re*q.re+q.im*q.im;return {re:q.re/a,im:-q.im/a};};
+  const lensQ=(q,f)=>{const v=inv(q); v.re-=1/f; return inv(v);};
+  for(let i=0;i<end;i++){
+    const o=ops[i];
+    if(o.k==='m'){ rec[o.ei]={z0:z, wT0:wOf(qT,lam), wS0:wOf(qS,lam)}; }
+    else if(o.k==='l'){
+      qT=lensQ(qT,o.fT); qS=lensQ(qS,o.fS);
+      if(o.tag==='mid') Object.assign(rec[o.ei],{zm:z, wTm:wOf(qT,lam), wSm:wOf(qS,lam)});
+    } else {
+      const n=Math.max(1,Math.ceil(o.len/step));
+      for(let s=0;s<n;s++){ qT.re+=o.dT/n; qS.re+=o.dS/n; z+=o.len/n; push(); }
+      if(o.ei>=0 && rec[o.ei]) rec[o.ei].z1=z;
+    }
+  }
+  return {Z,WT,WS,rec,total:z};
+}
+
+/* ---- spectral pieces ---- */
+function gainShape(g,nu){
+  const nu0=C0/(g.lamC*1e-9), x=(nu-nu0)/(g.dnuTHz*1e12);
+  return g.shape==='gauss' ? Math.exp(-4*Math.LN2*x*x) : 1/(1+4*x*x);
+}
+const BRF_DN=0.0092, BRF_KAPPA=1.19;
+function filterT(e,nu){
+  switch(e.type){
+    case 'etalon': {
+      const R=e.Rs/100, Fc=4*R/((1-R)*(1-R));
+      const sr=Math.sin(e.tilt*Math.PI/180)/e.n, ct=Math.sqrt(1-sr*sr);
+      const fsr=C0/(2*e.n*e.d*MM*ct);
+      const s=Math.sin(Math.PI*(nu/fsr+e.tune));
+      return 1/(1+Fc*s*s); }
+    case 'brf': {
+      const nup=C0/(e.lam*1e-9); let T=1;
+      for(let j=0;j<e.N;j++){
+        const tau=BRF_DN*BRF_KAPPA*e.d1*MM*Math.pow(2,j)/C0;
+        const c=Math.cos(Math.PI*tau*(nu-nup)); T*=c*c;
+      } return T; }
+    case 'filter': {
+      const nuc=C0/(e.lam*1e-9), dn=C0*e.fwhm*1e-9/((e.lam*1e-9)**2), x=(nu-nuc)/dn;
+      return Math.exp(-4*Math.LN2*x*x); }
+  }
+  return 1;
+}
+const isFilter=e=>e.type==='etalon'||e.type==='brf'||e.type==='filter';
+const etalonInfo=e=>{const R=e.Rs/100, sr=Math.sin(e.tilt*Math.PI/180)/e.n, ct=Math.sqrt(1-sr*sr);
+  const fsr=C0/(2*e.n*e.d*MM*ct), F=Math.PI*Math.sqrt(R)/(1-R); return {fsr, F, fwhm:fsr/F};};
+
+function thermalF(g, st){
+  const eta=1-Math.exp(-g.alphaCm*g.L/10), Pabs=st.pump.P*eta;
+  const qd=Math.max(0,1-g.lamP/g.lamC), Pheat=Pabs*qd, wp=st.pump.wp*1e-6;
+  const cal=(st.thermalCal==null?1:st.thermalCal);
+  const f = (st.thermal && Pheat>0 && cal>0) ? Math.PI*g.K*wp*wp/(cal*Pheat*g.dndT6*1e-6) : Infinity;
+  return {eta,Pabs,Pheat,f};
+}
+
+function elLoss(e){ // passive + outcoupling (fractions, per traversal)
+  switch(e.type){
+    case 'mirror_flat': case 'mirror_curved': return {T:e.T/100, L:e.Lm/100};
+    case 'lens': return {T:0,L:e.Lm/100};
+    default: return {T:0, L:(e.loss||0)/100};
+  }
+}
+
+function stabilityOnly(st){
+  const gi=st.els.findIndex(e=>e.type==='gain');
+  const th = gi>=0 ? thermalF(st.els[gi],st).f : Infinity;
+  const {ops}=buildSeq(st,th), M=roundTrip(ops);
+  return {mT:(M.T[0]+M.T[3])/2, mS:(M.S[0]+M.S[3])/2};
+}
+
+/* ---- full analysis ---- */
+function analyze(st){
+  const R={warn:[], info:[]}, els=st.els, N=els.length;
+  R.N=N;
+  if(N<2){R.valid=false; R.warn.push('Add at least two elements.'); return R;}
+  if(st.mode==='linear'){
+    const okEnd=e=>e.type==='mirror_flat'||e.type==='mirror_curved';
+    if(!okEnd(els[0])||!okEnd(els[N-1])) R.warn.push('A linear cavity needs a mirror at both ends.');
+  }
+  const gi=els.findIndex(e=>e.type==='gain'); R.gi=gi;
+  if(els.filter(e=>e.type==='gain').length>1) R.warn.push('Only the first gain medium is active; the others act as passive slabs.');
+  const g = gi>=0? els[gi]: null;
+  let th={f:Infinity,eta:0,Pabs:0,Pheat:0};
+  if(g) th=thermalF(g,st);
+  R.th=th;
+  const lam=(g?g.lamC:1064)*1e-9; R.lam=lam;
+  const {ops,fwdEnd,hits}=buildSeq(st,th.f); R.ops=ops; R.fwdEnd=fwdEnd; R.hits=hits;
+  const M=roundTrip(ops); R.M=M;
+  const eT=eigenQ(M.T), eS=eigenQ(M.S);
+  R.mT=eT.m; R.mS=eS.m; R.stable=eT.stable&&eS.stable; R.stT=eT.stable; R.stS=eS.stable;
+  // optical round trip
+  let p=0, geo=0; for(const o of ops) if(o.k==='s'){p+=o.len*o.nopt; geo+=o.len;}
+  R.p=p; R.geo=geo; R.fsr=C0/p;
+  // loss budget
+  let g0=0, Tout=0, Lpass=0;
+  els.forEach((e,i)=>{const l=elLoss(e); Tout+=hits[i]*l.T; Lpass+=hits[i]*l.L;});
+  g0=Tout+Lpass; R.Tout=Tout; R.Lpass=Lpass; R.gamma0=g0;
+  R.hasDiode=els.some(e=>e.type==='diode'); R.hasTwist=els.some(e=>e.type==='twist');
+  R.travelling = st.mode==='ring' && R.hasDiode;
+  R.h = R.travelling?0 : (st.mode==='linear' && R.hasTwist)?0.1 : 0.5;
+  R.dichroic = els.some(e=>(e.type==='mirror_curved'||e.type==='mirror_flat') && e.dich);
+  if(g && !R.dichroic) R.warn.push('No mirror is marked as a pump window (HT at the pump wavelength) – the pump has no way in.');
+  if(st.mode==='ring' && !R.hasDiode) R.info.push('Ring without an optical diode is bidirectional: the two beams form a partial standing wave, so spatial hole burning returns.');
+  if(st.mode==='linear') R.info.push('Linear cavity: the standing wave leaves unsaturated gain at its nodes (spatial hole burning).');
+  if(!R.stable){ R.valid=false; R.lasing=false; R.warn.unshift('Cavity is unstable in the '+(!R.stT&&!R.stS?'tangential and sagittal planes':!R.stT?'tangential plane':'sagittal plane')+'.'); return R; }
+  R.valid=true;
+  // beam profile over forward half
+  const prof=propagate(ops,fwdEnd,eT.q,eS.q,lam,500); R.prof=prof;
+  R.rec=prof.rec;
+  if(!g){ R.warn.push('Add a gain medium to see threshold, power and spectrum.'); return R; }
+  const rc=prof.rec[gi];
+  R.wT=rc.wTm; R.wS=rc.wSm; R.wl=Math.sqrt(R.wT*R.wS); R.astig=R.wT/R.wS;
+  const wp=st.pump.wp*1e-6; R.wp=wp; R.ratio=wp/R.wl;
+  R.eta_ov = R.ratio<=1?1:1/(R.ratio*R.ratio);
+  R.multiTEM = R.ratio>1.15;
+  if(R.multiTEM) R.warn.push('Pump spot is larger than the cavity mode in the crystal – higher-order transverse modes will see gain.');
+  // absorbed power, threshold at line centre with gamma0
+  const nuP=C0/(g.lamP*1e-9), hnuP=HP*nuP;
+  const passes=hits[gi], sigma=g.sig*1e-23, tau=g.tauUs*1e-6;
+  R.Pth0 = hnuP*Math.PI*(R.wl*R.wl+wp*wp)*g0/(2*passes*sigma*tau);
+  R.Pabs=th.Pabs; R.r0=th.Pabs/R.Pth0;
+  // ---- mode enumeration (coarse smooth-envelope pruning, then fine evaluation) ----
+  const nu0=C0/(g.lamC*1e-9), dng=g.dnuTHz*1e12, FSR=R.fsr;
+  const filt=[]; els.forEach((e,i)=>{ if(isFilter(e)) filt.push({e,h:hits[i]}); });
+  const smooth=filt.filter(f=>f.e.type!=='etalon');
+  const gamAt=(nu)=>{ let gam=g0; for(const f of filt) gam+=f.h*(1-filterT(f.e,nu)); return gam; };
+  const Kx=R.r0*g0;
+  R.xAt=(nu)=>Kx*gainShape(g,nu)/gamAt(nu);
+  const bound=(nu)=>{ let gam=g0; for(const f of smooth) gam+=f.h*(1-filterT(f.e,nu)); return Kx*gainShape(g,nu)/gam; };
+  R.xBound=bound;
+  let nuc=nu0;
+  { const W=(g.shape==='lor'?6:2)*dng; let best=-1; const M_=3000;
+    for(let j=0;j<=M_;j++){ const nu=nu0-W+2*W*j/M_; const v=bound(nu); if(v>best){best=v;nuc=nu;} } }
+  const half=Math.min((g.shape==='lor'?3:1.3)*dng, 2e5*FSR);
+  const k0=Math.ceil((nuc-half)/FSR-st.phase), k1=Math.floor((nuc+half)/FSR-st.phase);
+  const nAll=k1-k0+1; const CELL=16;
+  let cells=[];
+  if(nAll<=60000){ cells.push([k0,k1]); }
+  else {
+    const nc=Math.ceil(nAll/CELL), U=new Float64Array(nc); let Um=0;
+    for(let c_=0;c_<nc;c_++){ const kc=k0+c_*CELL+CELL/2; U[c_]=bound((kc+st.phase)*FSR); if(U[c_]>Um)Um=U[c_]; }
+    let cur=null;
+    for(let c_=0;c_<nc;c_++){
+      if(U[c_]>=0.2*Um){ const a_=k0+c_*CELL, b_=Math.min(k1,a_+CELL-1); if(cur&&cur[1]===a_-1) cur[1]=b_; else {cur=[a_,b_]; cells.push(cur);} }
+    }
+  }
+  let cap=0; for(const [ka,kz] of cells) cap+=kz-ka+1;
+  const KS=new Float64Array(cap), XS=new Float64Array(cap);
+  let xb=-1, kb=0, nEval=0, ib=0;
+  for(const [ka,kz] of cells) for(let k=ka;k<=kz;k++){
+    const x=R.xAt((k+st.phase)*FSR); KS[nEval]=k; XS[nEval]=x;
+    if(x>xb){xb=x;kb=k;ib=nEval;}
+    nEval++;
+  }
+  let x2=-1; for(let j=0;j<nEval;j++) if(j!==ib && XS[j]>x2) x2=XS[j];
+  R.cells=cells; R.kb=kb; R.nModesScanned=nEval; R.windowModes=nAll;
+  R.xstar=xb; R.nuStar=(kb+st.phase)*FSR; R.lamStar=C0/R.nuStar;
+  R.margin = x2>0 ? (xb-x2)/xb : 1;
+  R.lasing = xb>1;
+  R.modeFreq=(k)=>(k+st.phase)*FSR;
+  if(!R.lasing){
+    R.nLas=0; R.lasList=[]; R.lasFreq=[]; R.P=0;
+    const lossF=gamAt(R.nuStar)-g0;
+    R.PthAbs=R.Pth0*(g0+lossF)/(g0*gainShape(g,R.nuStar)); R.Pth=R.PthAbs/th.eta;
+    R.warn.push('Below threshold at this pump power.');
+    return R;
+  }
+  // lasing set
+  const xl = R.h===0 ? xb : Math.max(1, xb-R.h*(xb-1));
+  const lf=[]; let cnt=0, kmin=Infinity,kmax=-Infinity;
+  for(let j=0;j<nEval;j++) if(XS[j]>=xl){ const k=KS[j]; cnt++; if(lf.length<4000) lf.push((k+st.phase)*FSR); if(k<kmin)kmin=k; if(k>kmax)kmax=k; }
+  R.nLas=cnt; R.lasFreq=lf; R.span=(kmax-kmin)*FSR;
+  // single mode quantities at the dominant mode
+  R.gammaStar=gamAt(R.nuStar);
+  R.PthAbs=R.Pabs/xb; R.Pth=R.PthAbs/th.eta;
+  R.eta_s=(g.lamP/g.lamC)*R.eta_ov*0.9*(Tout/R.gammaStar);
+  R.P=Math.max(0,R.eta_s*(R.Pabs-R.PthAbs));
+  R.slopeInc=R.eta_s*th.eta;     // vs incident pump
+  // linewidth
+  const dpn=(st.noise.nm*(st.noise.lock?0.01:1))*1e-9;
+  R.dnuTech=R.nuStar*dpn/p;
+  const dnuC=C0*R.gammaStar/(2*Math.PI*p);
+  R.dnuC=dnuC; R.tauC=p/(C0*R.gammaStar);
+  R.dnuST=2*Math.PI*HP*R.nuStar*dnuC*dnuC/Math.max(R.P,1e-12);
+  R.linewidth = cnt===1 ? Math.hypot(R.dnuTech,R.dnuST) : Math.max(R.span,R.dnuTech);
+  return R;
+}
+
+function sweepPump(st,n,Pmax){
+  const out=[]; const s2=JSON.parse(JSON.stringify(st));
+  for(let i=0;i<=n;i++){ s2.pump.P=Pmax*i/n; const r=stabilityOnly(s2); out.push({x:s2.pump.P,mT:r.mT,mS:r.mS}); }
+  return out;
+}
+function sweepGap(st,idx,center,half,n){
+  const out=[]; const s2=JSON.parse(JSON.stringify(st));
+  for(let i=0;i<=n;i++){ const v=Math.max(0.05,center-half+2*half*i/n); s2.els[idx].gap=v; const r=stabilityOnly(s2); out.push({x:v,mT:r.mT,mS:r.mS}); }
+  return out;
+}
+
+/* ---- tune filters/phase so one cavity mode sits exactly on the target wavelength ---- */
+function tuneToTarget(st, lamNm){
+  const lam=(lamNm||st.target.lam), nuT=C0/(lam*1e-9);
+  for(const e of st.els){
+    if(e.type==='etalon'){ const r=etalonInfo(e); let t=Math.ceil(nuT/r.fsr)-nuT/r.fsr; if(t>=1) t-=1; e.tune=t; }
+    if(e.type==='brf') e.lam=lam;
+    if(e.type==='filter') e.lam=lam;
+  }
+  const an=(()=>{ const s2=JSON.parse(JSON.stringify(st)); s2.phase=0; const {ops}=buildSeq(s2,Infinity); let p=0; for(const o of ops) if(o.k==='s') p+=o.len*o.nopt; return p; })();
+  const fsr=C0/an, x=nuT/fsr; st.phase = x-Math.floor(x);
+  return st;
+}
+
+/* ===== PRESETS ===== */
+function mkEl(type, over){
+  const e=Object.assign({type, gap:50}, JSON.parse(JSON.stringify(DEFAULTS[type])), over||{});
+  if(type==='gain'){ e.mat=e.mat||'ndyag'; Object.assign(e, MATERIALS[e.mat], over||{}); }
+  return e;
+}
+function mkState(){
+  return {mode:'ring', els:[], pump:{P:15, wp:180}, thermal:true, thermalCal:1, phase:0,
+          noise:{nm:1, lock:false}, target:{lam:1064, P:5, lw:1, tol:0.5}};
+}
+const PRESETS = {
+  ex1: {label:'HW6 Ex. 1 – Nd:YAG ring, 1064 nm, >5 W', build(){
+    const s=mkState(); s.mode='ring'; s.pump={P:16,wp:185}; s.target={lam:1064.2,P:5,lw:1,tol:0.5};
+    s.els=[
+      mkEl('mirror_curved',{R:150,aoi:8,dich:true,gap:120}),
+      mkEl('gain',{mat:'ndyag',L:10,brew:false,gap:120}),
+      mkEl('mirror_curved',{R:150,aoi:8,gap:60}),
+      mkEl('mirror_flat',{gap:15}),
+      mkEl('diode',{L:10,gap:8}),
+      mkEl('etalon',{d:1.7,n:1.45,Rs:90,gap:15}),
+      mkEl('mirror_flat',{T:7,gap:60})
+    ]; tuneToTarget(s); return s; }},
+  ex2: {label:'HW6 Ex. 2 – Ti:sapphire ring, 780 nm, >1 W', build(){
+    const s=mkState(); s.mode='ring'; s.pump={P:9,wp:30}; s.thermalCal=0.3; s.target={lam:780.24,P:1,lw:1,tol:0.3};
+    s.noise={nm:1,lock:true};
+    s.els=[
+      mkEl('mirror_curved',{R:100,aoi:10,dich:true,gap:52}),
+      mkEl('gain',{mat:'tisa',L:10,brew:true,gap:52}),
+      mkEl('mirror_curved',{R:100,aoi:10,gap:300}),
+      mkEl('mirror_flat',{gap:60}),
+      mkEl('diode',{L:10,gap:30}),
+      mkEl('brf',{N:3,d1:0.4,lam:780.24,gap:30}),
+      mkEl('etalon',{d:0.5,n:1.45,Rs:73,gap:30}),
+      mkEl('etalon',{d:10,n:1.45,Rs:85,gap:60}),
+      mkEl('mirror_flat',{T:4,gap:300})
+    ]; tuneToTarget(s); return s; }},
+  lin: {label:'Linear Nd:YAG, two mirrors (multimode)', build(){
+    const s=mkState(); s.mode='linear'; s.pump={P:10,wp:150}; s.target={lam:1064.2,P:5,lw:1,tol:0.5};
+    s.els=[
+      mkEl('mirror_flat',{dich:true,gap:40}),
+      mkEl('gain',{mat:'ndyag',L:10,gap:150}),
+      mkEl('mirror_curved',{R:300,T:10,aoi:0})
+    ]; return s; }}
+};
+
+/* ===== UI ===== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+let S=PRESETS.ex1.build();
+const view={spanLog:null, center:'mode', sweep:'pump'};
+const NAMES={mirror_flat:'Flat mirror',mirror_curved:'Curved mirror',lens:'Lens',gain:'Gain crystal',etalon:'Etalon',brf:'Lyot filter (BRF)',filter:'Bandpass filter',diode:'Optical diode',plate:'Glass plate',twist:'Twisted-mode λ/4 pair'};
+const css=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const isMirror=e=>e.type==='mirror_flat'||e.type==='mirror_curved';
+
+/* ---------- formatting ---------- */
+function fmt(v,d=3){ if(v==null||!isFinite(v)) return '–'; const a=Math.abs(v); if(a===0) return '0'; if(a>=1e4||a<1e-3) return v.toExponential(2); return +v.toPrecision(d)+''; }
+function fmtHz(v){ if(v==null||!isFinite(v)) return '–'; const a=Math.abs(v);
+  if(a>=1e12) return fmt(v/1e12,3)+' THz'; if(a>=1e9) return fmt(v/1e9,3)+' GHz'; if(a>=1e6) return fmt(v/1e6,3)+' MHz'; if(a>=1e3) return fmt(v/1e3,3)+' kHz'; return fmt(v,3)+' Hz'; }
+function fmtLen(m){ return m>=1?fmt(m,3)+' m': m>=1e-3? fmt(m*1e3,3)+' mm' : fmt(m*1e6,3)+' µm'; }
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- parameter specs for cards ---------- */
+const LOSS={k:'loss',l:'loss (%)',min:0,max:10,step:0.05};
+const PS={
+  mirror_flat:[{k:'T',l:'transmission (%)',min:0,max:60,step:0.1},{k:'Lm',l:'loss (%)',min:0,max:5,step:0.05},{k:'dich',l:'pump window (HT at pump λ)',t:'c'}],
+  mirror_curved:[{k:'R',l:'R (mm)',min:20,max:1000,step:1,sl:1},{k:'aoi',l:'incidence angle (°)',min:0,max:30,step:0.5,sl:1},{k:'T',l:'transmission (%)',min:0,max:60,step:0.1},{k:'Lm',l:'loss (%)',min:0,max:5,step:0.05},{k:'dich',l:'pump window (HT at pump λ)',t:'c'}],
+  lens:[{k:'f',l:'f (mm)',min:-1000,max:1000,step:1,sl:1},{k:'Lm',l:'loss (%)',min:0,max:5,step:0.05}],
+  etalon:[{k:'d',l:'thickness (mm)',min:0.02,max:30,step:0.01},{k:'n',l:'index',min:1,max:4,step:0.01},{k:'Rs',l:'face reflectivity (%)',min:1,max:99,step:0.5},{k:'tilt',l:'tilt (°)',min:0,max:5,step:0.05},{k:'tune',l:'tune (fraction of FSR)',min:0,max:1,step:0.001,sl:1},LOSS],
+  brf:[{k:'N',l:'plates (d, 2d, 4d)',min:1,max:3,step:1},{k:'d1',l:'thinnest plate (mm)',min:0.05,max:5,step:0.01},{k:'lam',l:'peak λ (nm)',min:200,max:3000,step:0.01},LOSS],
+  filter:[{k:'lam',l:'centre λ (nm)',min:200,max:3000,step:0.01},{k:'fwhm',l:'FWHM (nm)',min:0.001,max:500,step:0.01},LOSS],
+  diode:[{k:'L',l:'rotator length (mm)',min:1,max:40,step:0.5},{k:'n',l:'index',min:1,max:3,step:0.01},LOSS],
+  plate:[{k:'L',l:'thickness (mm)',min:0.1,max:30,step:0.1},{k:'n',l:'index',min:1,max:4,step:0.01},{k:'brew',l:'Brewster angle',t:'c'},LOSS],
+  twist:[LOSS]
+};
+const GAIN_ADV=[['lamC','gain centre λ (nm)',0.1],['lamP','pump λ (nm)',1],['dnuTHz','gain FWHM (THz)',0.01],['sig','σ<sub>e</sub> (10⁻¹⁹ cm²)',0.1],['tauUs','τ upper (µs)',0.1],['n','index n',0.01],['K','K (W/m·K)',0.1],['dndT6','dn/dT (10⁻⁶/K)',0.1],['alphaCm','pump abs. α (1/cm)',0.1]];
+
+/* ---------- palette ---------- */
+const PAL=[
+  ['Mirrors',[['mirror_flat','Flat mirror'],['mirror_curved','Curved mirror'],['lens','Lens']]],
+  ['Gain',[['gain','Gain crystal'],['gainB','Brewster crystal']]],
+  ['Spectral',[['etalonThin','Thin etalon'],['etalonThick','Thick etalon'],['brf','Lyot filter'],['filter','Bandpass']]],
+  ['Other',[['diode','Optical diode'],['plate','Glass plate'],['twist','Twisted-mode pair']]]
+];
+function addEl(key){
+  let e;
+  switch(key){
+    case 'gainB': e=mkEl('gain',{brew:true,mat:S.els.find(x=>x.type==='gain')?.mat||'ndyag'}); break;
+    case 'etalonThin': e=mkEl('etalon',{d:0.5,Rs:73}); break;
+    case 'etalonThick': e=mkEl('etalon',{d:10,Rs:85}); break;
+    case 'mirror_flat': e=mkEl('mirror_flat',{}); break;
+    default: e=mkEl(key,{});
+  }
+  e.gap=50;
+  if(S.mode==='linear' && S.els.length>=2) S.els.splice(S.els.length-1,0,e); else S.els.push(e);
+  renderBench(); schedule();
+}
+function buildPalette(){
+  const box=$('#palette'); box.innerHTML='';
+  for(const [g,items] of PAL){
+    const s=document.createElement('span'); s.className='grp'; s.textContent=g; box.appendChild(s);
+    for(const [k,l] of items){ const b=document.createElement('button'); b.textContent='+ '+l; b.addEventListener('click',()=>addEl(k)); box.appendChild(b); }
+  }
+}
+
+/* ---------- bench cards ---------- */
+function elName(e){ if(e.type==='gain') return (e.brew?'Brewster ':'')+'gain: '+(MATERIALS[e.mat]?MATERIALS[e.mat].name.split(' (')[0]:'crystal');
+  if(e.type==='mirror_flat' && e.T>0.5) return 'Output coupler (flat)'; if(e.type==='mirror_curved' && e.T>0.5) return 'Output coupler (curved)';
+  if(e.type==='etalon') return e.d<2?'Thin etalon':'Thick etalon'; return NAMES[e.type]; }
+function inputPair(i,spec,val){
+  const id=`p${i}_${spec.k}`;
+  if(spec.t==='c') return `<div class="prm chk r" style="grid-column:1/-1"><input type="checkbox" id="${id}" data-i="${i}" data-k="${spec.k}" ${val?'checked':''}><label for="${id}">${spec.l}</label></div>`;
+  let h=`<label for="${id}">${spec.l}</label><input type="number" id="${id}" data-i="${i}" data-k="${spec.k}" value="${val}" step="${spec.step}" min="${spec.min}" max="${spec.max}">`;
+  if(spec.sl) h+=`<input class="r" type="range" data-i="${i}" data-k="${spec.k}" data-sl="1" min="${spec.min}" max="${spec.max}" step="${spec.step}" value="${val}" aria-label="${spec.l}">`;
+  return h;
+}
+function renderBench(){
+  const box=$('#strip'); box.innerHTML='';
+  S.els.forEach((e,i)=>{
+    const c=document.createElement('div'); c.className='card'; c.draggable=true; c.dataset.i=i;
+    let body='';
+    if(e.type==='gain'){
+      body+=`<div class="prm"><label for="m${i}">material</label><select id="m${i}" data-i="${i}" data-mat="1" style="grid-column:1/-1">${Object.entries(MATERIALS).map(([k,m])=>`<option value="${k}" ${e.mat===k?'selected':''}>${m.name}</option>`).join('')}</select></div>`;
+      body+=`<div class="prm" style="margin-top:4px">${inputPair(i,{k:'L',l:(e.brew?'path length in crystal (mm)':'length (mm)'),min:0.5,max:60,step:0.5},e.L)}${inputPair(i,{k:'loss',l:'loss per pass (%)',min:0,max:5,step:0.05},e.loss)}</div>`;
+      body+=`<div class="prm chk" style="margin-top:4px">${inputPair(i,{k:'brew',l:'Brewster cut',t:'c'},e.brew)}</div>`;
+      body+=`<details class="adv"><summary>Material data</summary><div class="prm" style="margin-top:4px">${GAIN_ADV.map(([k,l,st])=>`<label for="p${i}_${k}">${l}</label><input type="number" id="p${i}_${k}" data-i="${i}" data-k="${k}" value="${e[k]}" step="${st}">`).join('')}<label for="p${i}_shape">line shape</label><select id="p${i}_shape" data-i="${i}" data-k="shape"><option value="lor" ${e.shape==='lor'?'selected':''}>Lorentzian</option><option value="gauss" ${e.shape==='gauss'?'selected':''}>Gaussian</option></select></div></details>`;
+    } else {
+      body+=`<div class="prm">${(PS[e.type]||[]).map(s=>inputPair(i,s,e[s.k])).join('')}</div>`;
+    }
+    const lastLin = S.mode==='linear' && i===S.els.length-1;
+    c.innerHTML=`<div class="ch" title="Drag to reorder"><span class="badge">${i+1}</span><span class="nm">${esc(elName(e))}</span>
+      <button class="ib" data-act="left" aria-label="Move element ${i+1} earlier">◀</button><button class="ib" data-act="right" aria-label="Move element ${i+1} later">▶</button><button class="ib" data-act="del" aria-label="Delete element ${i+1}">✕</button></div>${body}
+      <div class="einfo" id="info${i}"></div>
+      ${lastLin?'':`<div class="gapr"><label for="gap${i}">${(S.mode==='ring'&&i===S.els.length-1)?'gap back to element 1 (mm)':'gap to next (mm)'}</label><input type="number" id="gap${i}" data-i="${i}" data-k="gap" value="${e.gap}" step="1" min="0.05"></div>`}`;
+    box.appendChild(c);
+  });
+  buildSweepSel();
+}
+$('#strip').addEventListener('input',ev=>{
+  const t=ev.target, i=+t.dataset.i, k=t.dataset.k; if(isNaN(i)||!k) return;
+  if(t.tagName==='SELECT'){ S.els[i][k]=t.value; schedule(); return; }
+  if(t.type==='checkbox') return;
+  const v=parseFloat(t.value); if(!isFinite(v)) return;
+  S.els[i][k]=v;
+  // keep slider / number in sync
+  $$(`[data-i="${i}"][data-k="${k}"]`,$('#strip')).forEach(o=>{ if(o!==t) o.value=v; });
+  schedule();
+});
+$('#strip').addEventListener('change',ev=>{
+  const t=ev.target, i=+t.dataset.i;
+  if(t.dataset.mat){ const e=S.els[i]; e.mat=t.value; const m=MATERIALS[t.value]; Object.assign(e,JSON.parse(JSON.stringify(m))); renderBench(); schedule(); return; }
+  if(t.type==='checkbox'&&t.dataset.k){ S.els[i][t.dataset.k]=t.checked; if(t.dataset.k==='brew'){renderBench();} schedule(); }
+});
+$('#strip').addEventListener('click',ev=>{
+  const b=ev.target.closest('button[data-act]'); if(!b) return; const i=+b.closest('.card').dataset.i;
+  if(b.dataset.act==='del') S.els.splice(i,1);
+  else { const j=i+(b.dataset.act==='left'?-1:1); if(j<0||j>=S.els.length) return; [S.els[i],S.els[j]]=[S.els[j],S.els[i]]; }
+  renderBench(); schedule();
+});
+let dragI=null;
+$('#strip').addEventListener('dragstart',ev=>{ const c=ev.target.closest('.card'); if(!c||ev.target.closest('input,select')){ev.preventDefault();return;} dragI=+c.dataset.i; ev.dataTransfer.effectAllowed='move'; try{ev.dataTransfer.setData('text/plain',''+dragI);}catch(_){} });
+$('#strip').addEventListener('dragover',ev=>{ if(dragI==null) return; ev.preventDefault(); $$('.card.drop').forEach(x=>x.classList.remove('drop')); const c=ev.target.closest('.card'); if(c) c.classList.add('drop'); });
+$('#strip').addEventListener('drop',ev=>{ ev.preventDefault(); const c=ev.target.closest('.card'); $$('.card.drop').forEach(x=>x.classList.remove('drop')); if(!c||dragI==null) return; const j=+c.dataset.i; if(j!==dragI){ const [e]=S.els.splice(dragI,1); S.els.splice(j,0,e); renderBench(); schedule(); } dragI=null; });
+$('#strip').addEventListener('dragend',()=>{ dragI=null; $$('.card.drop').forEach(x=>x.classList.remove('drop')); });
+
+/* ---------- global controls ---------- */
+function getPath(o,p){ return p.split('.').reduce((a,k)=>a[k],o); }
+function setPath(o,p,v){ const ks=p.split('.'); const l=ks.pop(); ks.reduce((a,k)=>a[k],o)[l]=v; }
+function syncControls(){
+  $$('[data-p]').forEach(el=>{ const v=getPath(S,el.dataset.p); if(el.type==='checkbox') el.checked=!!v; else el.value=v; });
+  $('#modeRing').setAttribute('aria-pressed',S.mode==='ring'); $('#modeLinear').setAttribute('aria-pressed',S.mode==='linear');
+  $('#modeNote').textContent = S.mode==='ring'?'Beam circulates once per round trip.':'Beam goes out and back; middle elements are passed twice.';
+}
+$$('[data-p]').forEach(el=>{
+  const h=()=>{ let v; if(el.type==='checkbox') v=el.checked; else { v=parseFloat(el.value); if(!isFinite(v)) return; }
+    setPath(S,el.dataset.p,v); $$(`[data-p="${el.dataset.p}"]`).forEach(o=>{ if(o!==el){ if(o.type==='checkbox') o.checked=v; else o.value=v; } }); schedule(); };
+  el.addEventListener(el.type==='checkbox'?'change':'input',h);
+});
+function setMode(m){ S.mode=m; syncControls(); renderBench(); schedule(); }
+$('#modeRing').onclick=()=>setMode('ring'); $('#modeLinear').onclick=()=>setMode('linear');
+$('#preset').innerHTML=Object.entries(PRESETS).map(([k,p])=>`<option value="${k}">${esc(p.label)}</option>`).join('');
+function loadState(s){ S=s; view.spanLog=null; view.sweep='pump'; syncControls(); renderBench(); buildSweepSel(); schedule(); }
+$('#btnLoad').onclick=()=>loadState(PRESETS[$('#preset').value].build());
+$('#btnSave').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})); a.download='laser_cavity_design.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
+$('#btnOpen').onclick=()=>$('#fileOpen').click();
+$('#fileOpen').onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; f.text().then(t=>{ try{ const s=JSON.parse(t); if(!s.els||!s.mode) throw 0; const base=mkState(); loadState(Object.assign(base,s)); }catch(_){ alert('That file is not a cavity design saved from this workbench.'); } }); ev.target.value=''; };
+$('#btnMatch').onclick=()=>{ if(LAST&&LAST.wl){ S.pump.wp=Math.round(LAST.wl*1e6*10)/10; syncControls(); schedule(); } };
+$('#btnTune').onclick=()=>{ tuneToTarget(S); syncControls(); renderBench(); schedule(); };
+
+/* ---------- canvas helpers ---------- */
+function setup(cv){
+  const dpr=window.devicePixelRatio||1, w=Math.max(200,cv.clientWidth), h=+cv.getAttribute('height');
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  ctx.font='12px '+css('--sans'); return {ctx,w,h};
+}
+function niceTicks(a,b,n=6){ const span=b-a; if(!(span>0)) return [a]; const s0=span/n, mag=Math.pow(10,Math.floor(Math.log10(s0))), f=s0/mag;
+  const step=(f<1.5?1:f<3?2:f<7?5:10)*mag, t=[]; for(let v=Math.ceil(a/step-1e-9)*step; v<=b+step*1e-9; v+=step) t.push(+v.toPrecision(12)); return t; }
+function frame(ctx,box,xr,yr,o){
+  const {x,y,w,h}=box; o=o||{};
+  const X=v=>x+(v-xr[0])/(xr[1]-xr[0])*w, Y=v=>y+h-(v-yr[0])/(yr[1]-yr[0])*h;
+  ctx.strokeStyle=css('--line'); ctx.fillStyle=css('--muted'); ctx.lineWidth=1; ctx.textBaseline='middle';
+  const xt=o.xticks||niceTicks(xr[0],xr[1],6), yt=o.yticks||niceTicks(yr[0],yr[1],5);
+  ctx.beginPath();
+  for(const t of yt){ const yy=Math.round(Y(t))+.5; ctx.moveTo(x,yy); ctx.lineTo(x+w,yy); }
+  for(const t of xt){ const xx=Math.round(X(t))+.5; ctx.moveTo(xx,y); ctx.lineTo(xx,y+h); }
+  ctx.globalAlpha=.45; ctx.stroke(); ctx.globalAlpha=1;
+  ctx.strokeRect(x+.5,y+.5,w,h);
+  ctx.textAlign='right'; for(const t of yt) ctx.fillText((o.yfmt||fmt)(t),x-6,Y(t));
+  ctx.textAlign='center'; ctx.textBaseline='top'; for(const t of xt) ctx.fillText((o.xfmt||fmt)(t),X(t),y+h+5);
+  if(o.xl){ ctx.textBaseline='alphabetic'; ctx.fillText(o.xl,x+w/2,y+h+32); }
+  if(o.yl){ ctx.save(); ctx.translate(x-42,y+h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillText(o.yl,0,0); ctx.restore(); }
+  return {X,Y};
+}
+function msg(cv,text){ const {ctx,w,h}=setup(cv); ctx.fillStyle=css('--muted'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,w/2,h/2); }
+const FC=()=>[css('--f1'),css('--f2'),css('--f3'),css('--f4')];
+
+/* ---------- layout schematic ---------- */
+function drawLayout(R){
+  const cv=$('#cvLayout');
+  if(!R.valid||!R.prof){ msg(cv,'Layout appears once the cavity is stable.'); return; }
+  const {ctx,w,h}=setup(cv), els=S.els, N=els.length, total=R.prof.total;
+  const pos=els.map((e,i)=>{const r=R.rec[i]; return r?(r.z0+(r.z1!=null?r.z1:r.z0))/2:0;});
+  const mI=[]; els.forEach((e,i)=>{ if(isMirror(e)) mI.push(i); });
+  const K=mI.length, ring=S.mode==='ring';
+  let V=[];
+  if(ring){
+    if(K===4) V=[[.2,.62],[.2,.38],[.84,.82],[.84,.18]];
+    else if(K>=2){ for(let j=0;j<K;j++){ const a=-Math.PI/2+2*Math.PI*j/K; V.push([.5+.36*Math.cos(a),.5+.34*Math.sin(a)]); } }
+  } else if(K>=2){
+    for(let j=0;j<K;j++){ const y=(j===0||j===K-1)?.5:(j%2?.22:.78); V.push([.08+.84*j/(K-1),y]); }
+  }
+  V=V.map(p=>[p[0]*w,p[1]*h]);
+  const nrm=(dx,dy)=>{const l=Math.hypot(dx,dy)||1;return [dx/l,dy/l];};
+  const sm=mI.map(i=>pos[i]);
+  function at(s){
+    if(K<2){ const a=2*Math.PI*s/total-Math.PI/2; return {x:w/2+.36*w*Math.cos(a),y:h/2+.34*h*Math.sin(a),dx:-Math.sin(a),dy:Math.cos(a)}; }
+    let s2=s, segs=ring?K:K-1, j=0;
+    if(ring){ if(s2<sm[0]) s2+=total; const ext=sm.concat([sm[0]+total]); for(j=0;j<segs;j++) if(s2>=ext[j]&&s2<ext[j+1]) break; if(j>=segs) j=segs-1;
+      const f=(s2-ext[j])/((ext[j+1]-ext[j])||1), A=V[j], B=V[(j+1)%K], d=nrm(B[0]-A[0],B[1]-A[1]); return {x:A[0]+(B[0]-A[0])*f,y:A[1]+(B[1]-A[1])*f,dx:d[0],dy:d[1]}; }
+    s2=Math.min(Math.max(s2,sm[0]),sm[K-1]); for(j=0;j<segs;j++) if(s2>=sm[j]&&s2<=sm[j+1]) break; if(j>=segs) j=segs-1;
+    const f=(s2-sm[j])/((sm[j+1]-sm[j])||1), A=V[j], B=V[j+1], d=nrm(B[0]-A[0],B[1]-A[1]); return {x:A[0]+(B[0]-A[0])*f,y:A[1]+(B[1]-A[1])*f,dx:d[0],dy:d[1]};
+  }
+  // beam path
+  ctx.lineWidth=2; ctx.strokeStyle=css('--beam'); ctx.lineJoin='round'; ctx.beginPath();
+  if(K<2){ ctx.ellipse(w/2,h/2,.36*w,.34*h,0,0,2*Math.PI); }
+  else { V.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); if(ring) ctx.closePath(); }
+  ctx.stroke();
+  const ink=css('--ink'), panel=css('--panel');
+  const arrow=(x0,y0,x1,y1,col)=>{ const d=nrm(x1-x0,y1-y0); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-d[0]*9-d[1]*5,y1-d[1]*9+d[0]*5); ctx.lineTo(x1-d[0]*9+d[1]*5,y1-d[1]*9-d[0]*5); ctx.closePath(); ctx.fill(); };
+  // elements
+  const gi=R.gi;
+  els.forEach((e,i)=>{
+    const p=at(pos[i]); let dx=p.dx, dy=p.dy; ctx.save(); ctx.translate(p.x,p.y);
+    ctx.lineWidth=2; ctx.strokeStyle=ink; ctx.fillStyle=ink;
+    if(isMirror(e)){
+      let din,dout; const j=mI.indexOf(i);
+      if(K>=2){ if(ring){ const A=V[(j-1+K)%K],B=V[j],C=V[(j+1)%K]; din=nrm(B[0]-A[0],B[1]-A[1]); dout=nrm(C[0]-B[0],C[1]-B[1]); }
+        else if(j===0){ dout=nrm(V[1][0]-V[0][0],V[1][1]-V[0][1]); din=[-dout[0],-dout[1]]; }
+        else if(j===K-1){ din=nrm(V[j][0]-V[j-1][0],V[j][1]-V[j-1][1]); dout=[-din[0],-din[1]]; }
+        else { const A=V[j-1],B=V[j],C=V[j+1]; din=nrm(B[0]-A[0],B[1]-A[1]); dout=nrm(C[0]-B[0],C[1]-B[1]); } }
+      else { din=[dx,dy]; dout=[-dx,-dy]; }
+      let n=nrm(dout[0]-din[0],dout[1]-din[1]); const t=[-n[1],n[0]];
+      ctx.lineWidth=4; ctx.beginPath();
+      if(e.type==='mirror_curved'){ ctx.moveTo(t[0]*-14+n[0]*4,t[1]*-14+n[1]*4); ctx.quadraticCurveTo(-n[0]*6,-n[1]*6,t[0]*14+n[0]*4,t[1]*14+n[1]*4); }
+      else { ctx.moveTo(-t[0]*14,-t[1]*14); ctx.lineTo(t[0]*14,t[1]*14); }
+      ctx.stroke();
+      if(e.dich){ ctx.lineWidth=1.5; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(-t[0]*14-n[0]*5,-t[1]*14-n[1]*5); ctx.lineTo(t[0]*14-n[0]*5,t[1]*14-n[1]*5); ctx.stroke(); ctx.setLineDash([]); }
+      if(e.T>0.5){ ctx.restore(); ctx.save(); arrow(p.x+din[0]*6,p.y+din[1]*6,p.x+din[0]*50,p.y+din[1]*50,css('--beam')); ctx.fillStyle=css('--beam'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('output',p.x+din[0]*72,p.y+din[1]*72); }
+    } else if(e.type==='gain'){
+      const L=46, Wd=15; ctx.rotate(Math.atan2(dy,dx)); ctx.fillStyle=css('--crystal'); ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.beginPath();
+      const sk=e.brew?7:0; ctx.moveTo(-L/2+sk,-Wd/2); ctx.lineTo(L/2+sk,-Wd/2); ctx.lineTo(L/2-sk,Wd/2); ctx.lineTo(-L/2-sk,Wd/2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    } else if(e.type==='etalon'){
+      ctx.rotate(Math.atan2(dy,dx)); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-3,-14); ctx.lineTo(-3,14); ctx.moveTo(3,-14); ctx.lineTo(3,14); ctx.stroke();
+      ctx.globalAlpha=.25; ctx.fillRect(-3,-14,6,28); ctx.globalAlpha=1;
+    } else if(e.type==='brf'){
+      ctx.rotate(Math.atan2(dy,dx)); ctx.lineWidth=2; for(let q=0;q<e.N;q++){ ctx.beginPath(); ctx.moveTo(-8+q*7-5,-13); ctx.lineTo(-8+q*7+5,13); ctx.stroke(); }
+    } else if(e.type==='filter'){
+      ctx.rotate(Math.atan2(dy,dx)); ctx.setLineDash([4,3]); ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(0,-15); ctx.lineTo(0,15); ctx.stroke(); ctx.setLineDash([]);
+    } else if(e.type==='diode'){
+      ctx.rotate(Math.atan2(dy,dx)); ctx.fillStyle=panel; ctx.lineWidth=1.8; ctx.fillRect(-16,-11,32,22); ctx.strokeRect(-16,-11,32,22);
+      ctx.fillStyle=ink; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.rotate(-Math.atan2(dy,dx)); ctx.font='bold 12px '+css('--sans'); ctx.fillText('FR',0,0);
+    } else if(e.type==='plate'){
+      ctx.rotate(Math.atan2(dy,dx)+(e.brew?0.6:0)); ctx.fillStyle=css('--crystal'); ctx.globalAlpha=.6; ctx.fillRect(-2.5,-13,5,26); ctx.globalAlpha=1; ctx.strokeRect(-2.5,-13,5,26);
+    } else if(e.type==='lens'){
+      ctx.rotate(Math.atan2(dy,dx)); ctx.beginPath(); ctx.ellipse(0,0,4,14,0,0,2*Math.PI); ctx.stroke();
+    } else if(e.type==='twist'){
+      ctx.rotate(Math.atan2(dy,dx)); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-4,-12); ctx.lineTo(-4,12); ctx.moveTo(4,-12); ctx.lineTo(4,12); ctx.stroke();
+      ctx.fillStyle=ink; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('λ/4',0,-19);
+    }
+    ctx.restore();
+  });
+  // pump arrow
+  if(gi>=0){ const mi=els.findIndex(e=>isMirror(e)&&e.dich);
+    if(mi>=0){ const a=at(pos[gi]), b=at(pos[mi]); const d=nrm(b.x-a.x,b.y-a.y); const ex=b.x+d[0]*4, ey=b.y+d[1]*4;
+      arrow(ex+d[0]*58,ey+d[1]*58,ex+d[0]*8,ey+d[1]*8,'#2f9e6b'); ctx.fillStyle='#2f9e6b'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('pump',ex+d[0]*74,ey+d[1]*74); } }
+  // badges
+  els.forEach((e,i)=>{ const p=at(pos[i]); const off=(i%2?1:-1)*24; const bx=p.x-p.dy*off, by=p.y+p.dx*off;
+    ctx.fillStyle=ink; ctx.beginPath(); ctx.arc(bx,by,9,0,2*Math.PI); ctx.fill(); ctx.fillStyle=panel; ctx.font='bold 11px '+css('--sans'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(i+1,bx,by+.5); });
+  ctx.font='12px '+css('--sans'); ctx.fillStyle=css('--muted'); ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillText(`round trip: ${fmt(R.geo*1000,4)} mm geometric, ${fmt(R.p*1000,4)} mm optical`,10,h-8);
+}
+
+/* ---------- beam profile ---------- */
+function drawBeam(R){
+  const cv=$('#cvBeam');
+  if(!R.valid||!R.prof){ msg(cv,'Beam profile appears once the cavity is stable.'); return; }
+  const {ctx,w,h}=setup(cv), P=R.prof, log=$('#logW').checked;
+  const box={x:58,y:14,w:w-72,h:h-58};
+  const zs=P.Z.map(z=>z*1e3), wt=P.WT.map(v=>v*1e6), ws=P.WS.map(v=>v*1e6);
+  const mx=Math.max(...wt,...ws), mn=Math.min(...wt,...ws);
+  const zmax=P.total*1e3;
+  let yr=log?[Math.pow(10,Math.floor(Math.log10(mn*.9))),Math.pow(10,Math.ceil(Math.log10(mx*1.05)))]:[0,mx*1.08];
+  const tf=log?v=>Math.log10(v):v=>v; const yrt=[tf(yr[0]),tf(yr[1])];
+  const yticks=log?(()=>{const t=[];for(let e=Math.log10(yr[0]);e<=Math.log10(yr[1])+1e-9;e++)t.push(e);return t;})():null;
+  const F=frame(ctx,box,[0,zmax],yrt,{xl:'position along beam path (mm)',yl:'beam radius w (µm)',yticks:yticks||undefined,yfmt:log?(v=>fmt(Math.pow(10,v),3)):undefined});
+  // element bands
+  S.els.forEach((e,i)=>{ const r=R.rec[i]; if(!r) return; const z0=r.z0*1e3, z1=(r.z1!=null?r.z1:r.z0)*1e3;
+    if(z1-z0>1e-6){ ctx.fillStyle=e.type==='gain'?css('--crystal'):css('--line'); ctx.globalAlpha=e.type==='gain'?.75:.5; ctx.fillRect(F.X(z0),box.y,Math.max(2,F.X(z1)-F.X(z0)),box.h); ctx.globalAlpha=1; }
+    else { ctx.strokeStyle=css('--muted'); ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(F.X(z0),box.y); ctx.lineTo(F.X(z0),box.y+box.h); ctx.stroke(); ctx.setLineDash([]); }
+    const xx=F.X((z0+z1)/2); ctx.fillStyle=css('--ink'); ctx.textAlign='center'; ctx.textBaseline='top'; ctx.font='bold 11px '+css('--sans'); ctx.fillText(i+1,Math.min(Math.max(xx,box.x+6),box.x+box.w-6),box.y+2+(i%2)*12); ctx.font='12px '+css('--sans'); });
+  const line=(arr,col)=>{ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.beginPath(); arr.forEach((v,j)=>{ const x=F.X(zs[j]), y=F.Y(tf(v)); j?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); };
+  line(wt,css('--tan')); line(ws,css('--sag'));
+  if(R.gi>=0 && R.rec[R.gi]){ const r=R.rec[R.gi]; ctx.fillStyle=css('--ink'); ctx.textAlign='left'; ctx.textBaseline='bottom';
+    const tx=Math.min(F.X(r.zm*1e3)+8,box.x+box.w-150); ctx.fillText(`crystal: ${fmt(R.wT*1e6,3)} × ${fmt(R.wS*1e6,3)} µm`,tx,box.y+box.h-6); }
+}
+
+/* ---------- stability sweep ---------- */
+function buildSweepSel(){
+  const sel=$('#sweepSel'); const cur=view.sweep; sel.innerHTML='<option value="pump">pump power (thermal lens)</option>';
+  S.els.forEach((e,i)=>{ if(S.mode==='linear'&&i===S.els.length-1) return; const o=document.createElement('option'); o.value='gap'+i; o.textContent=`gap after element ${i+1} (${elName(e)})`; sel.appendChild(o); });
+  sel.value=[...sel.options].some(o=>o.value===cur)?cur:'pump'; view.sweep=sel.value;
+}
+$('#sweepSel').onchange=e=>{view.sweep=e.target.value; schedule();};
+function drawSweep(R){
+  const cv=$('#cvSweep'); if(S.els.length<2){ msg(cv,'Add elements to scan.'); return; }
+  const {ctx,w,h}=setup(cv), box={x:58,y:14,w:w-72,h:h-58};
+  let data,xl,cur;
+  if(view.sweep==='pump'){ const hasG=S.els.some(e=>e.type==='gain'); if(!hasG){ msg(cv,'Pump scan needs a gain crystal.'); return; }
+    const Pm=Math.max(S.pump.P*1.6,5); data=sweepPump(S,160,Pm); xl='pump power (W)'; cur=S.pump.P; }
+  else { const i=+view.sweep.slice(3); if(!S.els[i]){ view.sweep='pump'; return; } const g=S.els[i].gap; const half=Math.max(5,g*.4); data=sweepGap(S,i,g,half,240); xl=`gap after element ${i+1} (mm)`; cur=g; }
+  const x0=data[0].x,x1=data[data.length-1].x, yr=[-2,2], cl=v=>Math.max(-2,Math.min(2,v));
+  const F=frame(ctx,box,[x0,x1],yr,{xl,yl:'m = (A+D)/2',yticks:[-2,-1,0,1,2]});
+  // stable shading
+  ctx.fillStyle=css('--ok'); ctx.globalAlpha=.16; let run=null;
+  for(let j=0;j<data.length;j++){ const ok=Math.abs(data[j].mT)<1&&Math.abs(data[j].mS)<1; if(ok&&run==null) run=j; if((!ok||j===data.length-1)&&run!=null){ const e=ok?j:j-1; ctx.fillRect(F.X(data[run].x),box.y,Math.max(1,F.X(data[e].x)-F.X(data[run].x)),box.h); run=null; } }
+  ctx.globalAlpha=1; ctx.strokeStyle=css('--bad'); ctx.setLineDash([5,4]); ctx.beginPath(); [-1,1].forEach(v=>{ctx.moveTo(box.x,F.Y(v));ctx.lineTo(box.x+box.w,F.Y(v));}); ctx.stroke(); ctx.setLineDash([]);
+  const line=(k,col)=>{ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.beginPath(); data.forEach((d,j)=>{ const x=F.X(d.x),y=F.Y(cl(d[k])); j?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); };
+  line('mT',css('--tan')); line('mS',css('--sag'));
+  ctx.strokeStyle=css('--ink'); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(F.X(cur),box.y); ctx.lineTo(F.X(cur),box.y+box.h); ctx.stroke();
+  ctx.fillStyle=css('--ink'); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('now',Math.min(F.X(cur)+4,box.x+box.w-28),box.y+3);
+}
+
+/* ---------- spectrum ---------- */
+function specState(R){
+  const g=R.gi>=0?S.els[R.gi]:null; if(!g) return null;
+  const dng=g.dnuTHz*1e12, nu0=C0/(g.lamC*1e-9);
+  if(view.spanLog==null){
+    let sp=3*dng;
+    for(const e of S.els){ if(e.type==='brf'){ const nup=C0/(e.lam*1e-9); let hi=0; for(let d=1e8;d<4e13;d*=1.02){ if(filterT(e,nup+d)<0.5){hi=d;break;} } if(hi) sp=Math.min(sp,8*2*hi); }
+      if(e.type==='filter') sp=Math.min(sp,8*C0*e.fwhm*1e-9/((e.lam*1e-9)**2)); }
+    view.spanLog=Math.log10(Math.max(sp,1e7)); }
+  const sl=$('#spanSl'); sl.min=Math.log10(Math.min(2e6,dng/100)); sl.max=Math.log10(Math.max(6*dng,1e10)); sl.value=view.spanLog;
+  return {g,dng,nu0};
+}
+function drawSpec(R){
+  const cv=$('#cvSpec'), lg=$('#specLegend');
+  const sp=specState(R);
+  if(!sp){ msg(cv,'Add a gain crystal to see the spectrum.'); lg.innerHTML=''; $('#spanOut').textContent=''; return; }
+  const {g,dng,nu0}=sp, span=Math.pow(10,view.spanLog); $('#spanOut').textContent=fmtHz(span);
+  const {ctx,w,h}=setup(cv), box={x:58,y:14,w:w-72,h:h-62};
+  const hasX=R.valid&&R.xAt;
+  const c=(view.center==='mode'&&R.lasing&&hasX)?R.nuStar:(hasX&&view.center==='mode'?R.nuStar:nu0);
+  const a=c-span/2, b=c+span/2;
+  const unit=span>=2e12?[1e12,'THz']:span>=2e9?[1e9,'GHz']:span>=2e6?[1e6,'MHz']:[1e3,'kHz'];
+  const xr=[(a-c)/unit[0],(b-c)/unit[0]];
+  const xstar=hasX?R.xstar:1; const yTop=hasX?Math.max(1.1,(1/xstar)*1.25):1.1;
+  const F=frame(ctx,box,xr,[0,yTop],{xl:`frequency offset from ${fmt(C0/c*1e9,7)} nm (${unit[1]})`,yl:'relative (0–1)',yticks:[0,.25,.5,.75,1].filter(v=>v<=yTop)});
+  const NP=Math.min(1400,Math.floor(box.w*2));
+  const filt=[]; S.els.forEach((e,i)=>{ if(isFilter(e)) filt.push({e,i}); });
+  const cols=FC(); const legend=[`<span><i style="background:var(--gainc)"></i>gain</span>`];
+  // gain
+  const curve=(fn,col,lw,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.setLineDash(dash||[]); ctx.beginPath(); for(let j=0;j<=NP;j++){ const nu=a+(b-a)*j/NP, v=fn(nu); const x=F.X((nu-c)/unit[0]), y=F.Y(v); j?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke(); ctx.setLineDash([]); };
+  ctx.globalAlpha=.18; ctx.fillStyle=css('--gainc'); ctx.beginPath(); ctx.moveTo(F.X(xr[0]),F.Y(0)); for(let j=0;j<=NP;j++){ const nu=a+(b-a)*j/NP; ctx.lineTo(F.X((nu-c)/unit[0]),F.Y(gainShape(g,nu))); } ctx.lineTo(F.X(xr[1]),F.Y(0)); ctx.fill(); ctx.globalAlpha=1;
+  curve(nu=>gainShape(g,nu),css('--gainc'),1.5);
+  let unres=false;
+  filt.forEach((f,j)=>{ const col=cols[j%4]; const fsrE=f.e.type==='etalon'?etalonInfo(f.e).fsr:Infinity;
+    if(fsrE<span/(box.w/4)){ unres=true; legend.push(`<span><i style="background:${col};opacity:.4"></i>${esc(elName(f.e))} (${f.i+1}) – comb too fine to draw at this span</span>`); return; }
+    curve(nu=>filterT(f.e,nu),col,1.3); legend.push(`<span><i style="background:${col}"></i>${esc(elName(f.e))} (${f.i+1})</span>`); });
+  if(hasX){
+    if(unres){ curve(nu=>R.xBound(nu)/xstar,css('--ink'),2,[6,3]); legend.push(`<span><i style="background:var(--ink)"></i>gain ÷ loss, smooth envelope (dashed)</span>`); }
+    else { curve(nu=>R.xAt(nu)/xstar,css('--ink'),2); legend.push(`<span><i style="background:var(--ink)"></i>gain ÷ loss (net)</span>`); }
+    legend.push(`<span><i style="height:0;border-top:2px dashed var(--bad);background:none"></i>threshold</span><span><i style="background:var(--beam);width:3px;height:12px"></i>lasing mode</span>`);
+    const y1=1/xstar; ctx.strokeStyle=css('--bad'); ctx.setLineDash([6,4]); ctx.lineWidth=1.3; ctx.beginPath(); ctx.moveTo(box.x,F.Y(y1)); ctx.lineTo(box.x+box.w,F.Y(y1)); ctx.stroke(); ctx.setLineDash([]);
+    // cavity modes
+    const nIn=span/R.fsr;
+    ctx.save(); ctx.beginPath(); ctx.rect(box.x,box.y,box.w,box.h); ctx.clip();
+    if(nIn<=500){
+      const k0=Math.ceil(a/R.fsr-S.phase), k1=Math.floor(b/R.fsr-S.phase);
+      ctx.strokeStyle=css('--muted'); ctx.lineWidth=1; ctx.globalAlpha=.7; ctx.beginPath();
+      for(let k=k0;k<=k1;k++){ const nu=(k+S.phase)*R.fsr, x=Math.round(F.X((nu-c)/unit[0]))+.5; ctx.moveTo(x,F.Y(0)); ctx.lineTo(x,F.Y(Math.min(R.xAt(nu)/xstar,yTop))); }
+      ctx.stroke(); ctx.globalAlpha=1;
+      legend.push(`<span><i style="background:var(--muted);width:2px;height:12px"></i>cavity modes (spacing ${fmtHz(R.fsr)})</span>`);
+    } else { ctx.fillStyle=css('--muted'); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`≈ ${fmt(nIn,3)} cavity modes in view (spacing ${fmtHz(R.fsr)}) – zoom in to resolve them`,box.x+8,box.y+6); }
+    ctx.strokeStyle=css('--beam'); ctx.fillStyle=css('--beam'); ctx.lineWidth=2.5;
+    const maxDraw=Math.min(R.lasFreq.length,4000);
+    for(let q=0;q<maxDraw;q++){ const nu=R.lasFreq[q]; if(nu<a||nu>b) continue; const xx=F.X((nu-c)/unit[0]), yy=F.Y(Math.min(R.xAt(nu)/xstar,yTop)); ctx.beginPath(); ctx.moveTo(xx,F.Y(0)); ctx.lineTo(xx,yy); ctx.stroke(); ctx.beginPath(); ctx.arc(xx,yy,3,0,2*Math.PI); ctx.fill(); }
+    ctx.restore();
+  }
+  lg.innerHTML=legend.join('');
+}
+const setSpan=v=>{ view.spanLog=v; schedule(); };
+$('#spanSl').oninput=e=>setSpan(+e.target.value);
+$('#zGain').onclick=()=>{ const g=S.els.find(e=>e.type==='gain'); if(g) setSpan(Math.log10(3*g.dnuTHz*1e12)); };
+$('#zIn').onclick=()=>setSpan(view.spanLog-1); $('#zOut').onclick=()=>setSpan(view.spanLog+1);
+$('#zModes').onclick=()=>{ if(LAST&&LAST.fsr) setSpan(Math.log10(25*LAST.fsr)); };
+$('#cMode').onclick=()=>{view.center='mode';$('#cMode').setAttribute('aria-pressed','true');$('#cGain').setAttribute('aria-pressed','false');schedule();};
+$('#cGain').onclick=()=>{view.center='gain';$('#cGain').setAttribute('aria-pressed','true');$('#cMode').setAttribute('aria-pressed','false');schedule();};
+$('#logW').onchange=()=>schedule();
+
+/* ---------- results ---------- */
+let LAST=null;
+function pumpStable(){ const Pm=S.pump.P; if(!S.els.some(e=>e.type==='gain')) return true; const d=sweepPump(S,30,Pm); return d.every(o=>Math.abs(o.mT)<1&&Math.abs(o.mS)<1); }
+function renderResults(R){
+  const box=$('#results'); let h='';
+  const row=(a,b)=>`<span>${a}</span><span>${b}</span>`;
+  const st=R.valid?`<span class="ok">stable</span>`:`<span class="bad">unstable</span>`;
+  if(R.lasing){
+    h+=`<div class="big">${fmt(R.P,3)} <small>W output</small></div><div style="color:var(--muted);margin-bottom:8px">at ${fmt(R.lamStar*1e9,8)} nm · ${R.nLas===1?'single longitudinal mode':(R.nLas>=4000?'≥ 4000':R.nLas)+' longitudinal modes'}</div>`;
+  } else if(R.valid&&R.gi>=0){ h+=`<div class="big">0 <small>W – below threshold</small></div><div style="color:var(--muted);margin-bottom:8px">threshold ≈ ${fmt(R.Pth,3)} W incident</div>`; }
+  else h+=`<h2>Results</h2>`;
+  h+=`<h3>Cavity</h3><div class="kv">`+row('Stability',st+(R.mT!=null?` (m<sub>T</sub> ${fmt(R.mT,2)}, m<sub>S</sub> ${fmt(R.mS,2)})`:''))+row('Round-trip optical length',fmt(R.p*1000,4)+' mm')+row('Mode spacing (FSR)',fmtHz(R.fsr));
+  if(R.valid&&R.wl) { h+=row('Mode radius in crystal (T × S)',`${fmt(R.wT*1e6,3)} × ${fmt(R.wS*1e6,3)} µm`)+row('Pump / mode radius',fmt(R.ratio,3)); }
+  if(R.th&&R.gi>=0) h+=row('Thermal lens f',isFinite(R.th.f)?fmt(R.th.f*1e3,3)+' mm':'none')+row('Absorbed pump',fmt(R.th.Pabs,3)+' W ('+fmt(R.th.eta*100,3)+' %)');
+  h+=`</div>`;
+  if(R.lasing){
+    h+=`<h3>Laser</h3><div class="kv">`+row('Threshold (incident)',fmt(R.Pth,3)+' W')+row('Slope efficiency',fmt(R.slopeInc*100,3)+' %')+row('Round-trip loss γ',fmt(R.gammaStar*100,3)+' % (out-coupled '+fmt(R.Tout*100,3)+' %)')+row('Photon lifetime',fmt(R.tauC*1e9,3)+' ns')+row('Empty-cavity linewidth',fmtHz(R.dnuC))
+      +row('Margin to next mode',R.nLas===1?`${fmt(R.margin*100,2)} % ${R.margin>=1e-3?'<span class="ok">(robust)</span>':R.margin>=1e-4?'<span class="warn">(marginal)</span>':'<span class="bad">(mode-hop prone)</span>'}`:'–')
+      +row(R.nLas===1?'Linewidth (estimate)':'Optical bandwidth',fmtHz(R.linewidth))+`</div>`;
+    if(R.nLas===1) h+=`<p class="note" style="margin-top:4px">technical (path noise) ${fmtHz(R.dnuTech)}, Schawlow–Townes ${fmtHz(R.dnuST)}</p>`;
+  }
+  // checks
+  if(R.valid&&R.gi>=0){
+    const T=S.target, ok=[];
+    const add=(pass,text,val)=>ok.push(`<li><span class="${pass===true?'ok':pass===false?'bad':'warn'}" aria-hidden="true">${pass===true?'✓':pass===false?'✗':'~'}</span><span>${text}</span><span style="color:var(--muted)">${val||''}</span></li>`);
+    add(R.stable&&pumpStable(),'Stable at every pump level up to the set power','');
+    add(R.multiTEM?false:true,'Pump spot no larger than the TEM<sub>00</sub> mode',fmt(R.ratio,3)+'×');
+    add(R.travelling?true:(R.h<=0.1?null:false),'Travelling wave (no spatial hole burning)',R.travelling?'ring + diode':R.hasTwist&&S.mode==='linear'?'twisted-mode':'');
+    if(R.lasing){
+      add(R.nLas===1,'Single longitudinal mode',R.nLas===1?'':R.nLas+' modes');
+      add(R.nLas===1?(R.margin>=1e-3?true:null):null,'Mode-hop margin ≥ 0.1 %',R.nLas===1?fmt(R.margin*100,2)+' %':'');
+      add(Math.abs(R.lamStar*1e9-T.lam)<=T.tol,`Wavelength within ±${fmt(T.tol,2)} nm of ${fmt(T.lam,7)}`,fmt(R.lamStar*1e9,8)+' nm');
+      add(R.P>=T.P,`Output above ${fmt(T.P,3)} W`,fmt(R.P,3)+' W');
+      add(R.nLas===1?R.linewidth<=1.5*T.lw*1e6:false,`Linewidth about ${fmt(T.lw,3)} MHz`,fmtHz(R.linewidth));
+    } else add(false,'Above threshold','');
+    h+=`<h3>Checks against target</h3><ul class="chk">${ok.join('')}</ul>`;
+  }
+  const msgs=[...R.warn.map(m=>`<li class="${/unstable/.test(m)?'err':''}">${esc(m)}</li>`),...R.info.map(m=>`<li class="info">${esc(m)}</li>`)];
+  if(msgs.length) h+=`<ul class="msgs">${msgs.join('')}</ul>`;
+  box.innerHTML=h;
+}
+function updateCardInfo(R){
+  S.els.forEach((e,i)=>{ const el=$('#info'+i); if(!el) return; let t='';
+    if(e.type==='etalon'){ const r=etalonInfo(e); t=`FSR ${fmtHz(r.fsr)} · finesse ${fmt(r.F,3)} · FWHM ${fmtHz(r.fwhm)}`; if(R.rec&&R.rec[i]&&R.valid){ const wv=Math.min(R.rec[i].wT0,R.rec[i].wS0); const zR=Math.PI*wv*wv*(1/(R.lam||1e-6)); if(zR<e.d*1e-3) t+=' · beam diverges inside etalon'; } }
+    else if(e.type==='brf'){ const nup=C0/(e.lam*1e-9); let hi=0; for(let d=1e8;d<4e13;d*=1.02){ if(filterT(e,nup+d)<0.5){hi=d;break;} } t=`passband FWHM ≈ ${fmtHz(2*hi)} (${fmt(2*hi*(e.lam*1e-9)**2/C0*1e9,3)} nm)`; }
+    else if(e.type==='filter'){ t=`FWHM ${fmtHz(C0*e.fwhm*1e-9/((e.lam*1e-9)**2))}`; }
+    else if(e.type==='gain'&&R.th){ t=isFinite(R.th.f)?`thermal lens f ≈ ${fmt(R.th.f*1e3,3)} mm`:'no thermal lens'; }
+    else if(e.type==='mirror_curved'){ const th=e.aoi*Math.PI/180; t=`f<sub>T</sub> ${fmt(e.R/2*Math.cos(th),3)} · f<sub>S</sub> ${fmt(e.R/2/Math.cos(th),3)} mm`; }
+    else if(e.type==='diode'){ t='makes a ring unidirectional'; }
+    if(R.valid&&R.rec&&R.rec[i]&&e.type!=='gain') t+=(t?'<br>':'')+`w ${fmt(R.rec[i].wT0*1e6,3)} × ${fmt(R.rec[i].wS0*1e6,3)} µm`;
+    el.innerHTML=t; });
+}
+
+/* ---------- main update ---------- */
+let pend=false;
+function schedule(){ if(pend) return; pend=true; requestAnimationFrame(()=>{ pend=false; update(); }); }
+function update(){
+  let R; try{ R=analyze(S); }catch(err){ console.error(err); R={valid:false,warn:['Internal error: '+err.message],info:[]}; }
+  LAST=R;
+  renderResults(R); updateCardInfo(R);
+  drawLayout(R); drawBeam(R); drawSweep(R); drawSpec(R);
+}
+new ResizeObserver(()=>schedule()).observe(document.body);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>schedule());
+buildPalette(); syncControls(); renderBench(); buildSweepSel(); update();
+
+</script>
+</body>
+</html>
