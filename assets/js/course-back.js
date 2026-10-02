@@ -4,8 +4,7 @@
     'fys240-optics': 'FYS.240 Optics',
     'fys310-solid-state-physics': 'FYS.310 Solid-State Physics',
     'fys501-laser-physics': 'FYS.501 Laser Physics',
-    'photonics': 'Photonics',
-    'finnmath-app': 'FinnMath-app'
+    'photonics': 'Photonics'
   };
   var parts = location.pathname.split('/').filter(Boolean);
   var file = parts[parts.length - 1] || '';

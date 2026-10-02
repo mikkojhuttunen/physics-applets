@@ -58,7 +58,6 @@ Each course has its own folder with an `index.html` listing its applets.
   index and b–V dispersion with cut-off wavelengths and the single-mode window; selectable mode list
   with vertical and lateral field cuts, |E|² and signed field maps, confinement factor, and
   TE_mn or Marcatili E^x_pq labels).
-- `finnmath-app/`
 
 Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course
 file such as `fys240-optics.css` (course accent), and `applet.css` (panels, sliders, buttons,
