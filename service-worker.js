@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v30";
+const CACHE_NAME = "physics-applets-v31";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "assets/css/applet.css",
   "assets/css/fys240-optics.css",
   "assets/css/fys310-solid-state-physics.css",
+  "assets/css/photonics.css",
   "assets/js/course-back.js",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
@@ -41,6 +42,8 @@ const APP_SHELL = [
   "fys501-laser-physics/spatial-hole-burning.html",
   "fys501-laser-physics/mode-competition.html",
   "fys501-laser-physics/output-coupler-optimization.html",
+  "photonics/index.html",
+  "photonics/waveguide-mode-explorer.html",
   "finnmath-app/index.html"
 ];
 
