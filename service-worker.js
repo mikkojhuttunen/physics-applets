@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v34";
+const CACHE_NAME = "physics-applets-v33";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -17,9 +17,7 @@ const APP_SHELL = [
   "fys232-structure-of-matter/pn-junction-transistor-explorer.html",
   "fys240-optics/index.html",
   "fys240-optics/term-alias/index.html",
-  "fys240-optics/explain-briefly/index.html",
   "fys240-optics/term-alias/index.html",
-  "fys240-optics/explain-briefly/index.html",
   "fys240-optics/plane-wave-explorer.html",
   "fys240-optics/em-spectrum-explorer.html",
   "fys240-optics/anaglyph-3d-viewer.html",
