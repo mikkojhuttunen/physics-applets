@@ -137,6 +137,8 @@ en:{
  errCfg:"This applet has not been connected to its question server yet.",
  openUntil:function(t){return "Open until "+t;},
  noAns:"The teacher has not released the answers yet. Try again soon.",
+ wrongTitle:"This link is for a different session",
+ wrongMsg:"Please scan the QR code that is shown in today's lecture.",
  ended:"The session has ended."
 },
 fi:{
@@ -160,6 +162,8 @@ fi:{
  errCfg:"T\u00e4t\u00e4 sovellusta ei ole viel\u00e4 yhdistetty kysymyspalvelimeen.",
  openUntil:function(t){return "Auki klo "+t+" asti";},
  noAns:"Opettaja ei ole viel\u00e4 julkaissut vastauksia. Yrit\u00e4 pian uudelleen.",
+ wrongTitle:"T\u00e4m\u00e4 linkki on toista istuntoa varten",
+ wrongMsg:"Skannaa t\u00e4m\u00e4n p\u00e4iv\u00e4n luennolla n\u00e4ytett\u00e4v\u00e4 QR-koodi.",
  ended:"Istunto on p\u00e4\u00e4ttynyt."
 }};
 
@@ -167,7 +171,7 @@ var store = {
   get:function(k,d){ try{ var v = localStorage.getItem("fys240explain."+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
   set:function(k,v){ try{ localStorage.setItem("fys240explain."+k, JSON.stringify(v)); }catch(e){} }
 };
-var qp = new URLSearchParams(location.search).get("lang");
+var qs0 = new URLSearchParams(location.search), qp = qs0.get("lang"), TOKEN = qs0.get("s") || "";
 var S = Object.assign({lang:((navigator.language||"").slice(0,2)==="fi"?"fi":"en"), chapters:CH.map(function(c){return c.id;}), shuffle:false}, store.get("settings",{}));
 if(qp==="fi" || qp==="en") S.lang = qp;
 if(S.lang!=="fi" && S.lang!=="en") S.lang = "en";
@@ -183,6 +187,7 @@ function fmtDay(ms){ return new Date(ms).toLocaleString(S.lang==="fi"?"fi-FI":"e
 /* ---------- server access: nothing is stored, every request is checked by the server ---------- */
 function api(params){
   if(!API || API.indexOf("PASTE_")===0) return Promise.reject(new Error("cfg"));
+  if(TOKEN) params.s = TOKEN;
   var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+"="+encodeURIComponent(params[k]); }).join("&");
   return fetch(API + (API.indexOf("?")<0?"?":"&") + qs + "&t=" + Date.now(), {cache:"no-store"})
     .then(function(r){ if(!r.ok) throw new Error("http"); return r.json(); });
@@ -221,11 +226,14 @@ function boot(){
 }
 function showClosed(r){
   stopTimer(); D = null; LIST = null; META = {}; CL = r; applyLang();
-  var msg = (r.msg && r.msg[S.lang]) || tr("closedDefault");
-  show('<div class="wrap"><header class="mast">'+topRow()+'</header><div class="center"><h2 data-h>'+tr("closedTitle")+'</h2><p>'+esc(msg)+'</p>'+
-    (r.next ? '<p><b>'+tr("nextOpen",fmtDay(r.next))+'</b></p>' : '')+
-    '<p>'+tr("autoNote")+'</p><div><button type="button" class="btn" data-act="retry">'+tr("retry")+'</button></div></div></div>', "closed");
-  timerId = setInterval(function(){ api({a:"status"}).then(function(s){ if(s.open) boot(); else { CL = s; } }).catch(function(){}); }, 20000);
+  var wrong = !!r.wrong;
+  var msg = wrong ? tr("wrongMsg") : ((r.msg && r.msg[S.lang]) || tr("closedDefault"));
+  show('<div class="wrap"><header class="mast">'+topRow()+'</header><div class="center"><h2 data-h>'+(wrong?tr("wrongTitle"):tr("closedTitle"))+'</h2><p>'+esc(msg)+'</p>'+
+    (!wrong && r.next ? '<p><b>'+tr("nextOpen",fmtDay(r.next))+'</b></p>' : '')+
+    (wrong ? '' : '<p>'+tr("autoNote")+'</p>')+'<div><button type="button" class="btn" data-act="retry">'+tr("retry")+'</button></div></div></div>', "closed");
+  timerId = setInterval(function(){ api({a:"status"}).then(function(s){
+    if(s.open) boot(); else if(!!s.wrong !== !!(CL && CL.wrong)) showClosed(s); else CL = s;
+  }).catch(function(){}); }, 20000);
 }
 function showError(err){
   stopTimer(); applyLang();
