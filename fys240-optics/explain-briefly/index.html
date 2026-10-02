@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Explain Briefly</title>
+<meta name="description" content="FYS.240 Optics: read an explain-briefly question, agree on an answer in your group, then reveal the model answer. English and Finnish.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Crect width='1' height='9' x='0' fill='%23d7263d'/%3E%3Crect width='1' height='9' x='1' fill='%23d9480f'/%3E%3Crect width='1' height='9' x='2' fill='%23f2b705'/%3E%3Crect width='1' height='9' x='3' fill='%237cb518'/%3E%3Crect width='1' height='9' x='4' fill='%231e8a3e'/%3E%3Crect width='1' height='9' x='5' fill='%230a8490'/%3E%3Crect width='1' height='9' x='6' fill='%231c6fd6'/%3E%3Crect width='1' height='9' x='7' fill='%234f46c8'/%3E%3Crect width='1' height='9' x='8' fill='%238e3fc8'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f1f3f8; --panel:#ffffff; --ink:#0f1a30; --muted:#586279; --line:#d3d9e6;
+  --btn:#0f1a30; --btn-ink:#ffffff; --focus:#1c6fd6; --ans:#eef4ff; --ans-line:#c9d9f5;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0b1120; --panel:#141c2e; --ink:#eaf0fb; --muted:#9aa7c0; --line:#26314a;
+         --btn:#eaf0fb; --btn-ink:#0b1120; --focus:#8bb6ff; --ans:#14233f; --ans-line:#2a4372; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--sans);min-height:100dvh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+[tabindex="-1"]:focus{outline:none}
+h1,h2,h3{margin:0}
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 140px}
+.wrap.q{padding-bottom:40px}
+
+.mast .top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:12px}
+.back{color:var(--muted);font-size:.92rem}
+.lang{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.lang button{border:0;background:transparent;padding:7px 15px;font-weight:700;letter-spacing:.02em}
+.lang button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink)}
+.mast h1{font:700 clamp(2.4rem,8vw,3.7rem)/1.02 var(--serif);letter-spacing:-.02em}
+.mast p{margin:.5rem 0 0;color:var(--muted);max-width:48ch}
+.spectrum{height:9px;border-radius:5px;margin:16px 0 26px;background:var(--spectrum)}
+
+.sec{margin:0 0 26px}
+.sec>h2{font:600 1rem var(--sans);margin-bottom:10px}
+.hint{color:var(--muted);font-size:.9rem;margin:-4px 0 10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:120px;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px}
+.chip{--c:#888;--ci:#fff;position:relative;text-align:left;padding:10px 12px 10px 14px;border-radius:12px;border:2px solid var(--c);background:var(--panel);display:grid;gap:1px}
+.chip .no{font:700 1.5rem/1 var(--serif)}
+.chip .nm{font-size:.83rem;line-height:1.25}
+.chip .ct{font-size:.78rem;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--c);color:var(--ci)}
+.chip[aria-pressed="true"] .ct{color:inherit;opacity:.85}
+.chip[aria-pressed="false"]::after{content:"";position:absolute;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:var(--c)}
+.toolrow{display:flex;gap:10px;margin-top:12px}
+.tbtn{background:none;border:0;padding:6px 2px;text-decoration:underline;color:var(--muted)}
+details.rules{border:1.5px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 14px;margin-bottom:26px}
+details.rules summary{cursor:pointer;font-weight:600}
+details.rules ol{margin:.6rem 0 0;padding-left:1.3rem;color:var(--muted)}
+.dock{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.dock-in{max-width:728px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.dock-in .info{flex:1;color:var(--muted);font-size:.92rem;line-height:1.3}
+.btn{border:0;border-radius:12px;padding:14px 22px;background:var(--btn);color:var(--btn-ink);font-weight:700;font-size:1.05rem}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.wide{width:100%}
+
+/* question page */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.homebtn{background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:600}
+.count{font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+.progress{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:0 0 16px}
+.progress i{display:block;height:100%;background:var(--btn)}
+.qcard{--c:#888;--ci:#fff;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 14px 30px -18px rgba(6,12,28,.5)}
+.qcard .stripe{height:10px;background:var(--c)}
+.qcard .in{padding:18px 18px 22px}
+.qcard .meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.85rem;color:var(--muted);margin-bottom:12px}
+.qcard .tag{background:var(--c);color:var(--ci);font-weight:700;border-radius:6px;padding:1px 9px}
+.qcard .q{font:600 clamp(1.3rem,4.6vw,1.75rem)/1.3 var(--serif);text-wrap:pretty}
+.discuss{margin:14px 2px 0;color:var(--muted);font-size:.95rem}
+.ans{margin-top:14px;background:var(--ans);border:1.5px solid var(--ans-line);border-left:8px solid var(--c);border-radius:14px;padding:14px 16px}
+.ans h3{font:700 .8rem var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.ans p{margin:0;font-size:1.04rem;line-height:1.62}
+.grow{display:grid;gap:10px;margin-top:16px}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.keys{text-align:center;color:var(--muted);font-size:.85rem;margin-top:14px}
+kbd{font:inherit;font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--panel)}
+
+.until{margin:.6rem 0 0;font-size:.9rem;color:var(--muted)}
+.ld{color:var(--muted);font-weight:400;font-style:italic}
+.notice{margin-top:14px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--muted)}
+.center{min-height:60dvh;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.center h2{font:700 clamp(1.7rem,6vw,2.3rem)/1.1 var(--serif)}
+.center p{margin:0;color:var(--muted);max-width:46ch}
+noscript{display:block;padding:20px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"><noscript>This applet needs JavaScript.</noscript></div>
+<script>
+const DATA = {"chapters":[{"id":"3","short":"Waves and polarization","short_fi":"Aallot ja polarisaatio","color":"#d9480f","ink":"#ffffff"},{"id":"4","short":"Field energy and radiation","short_fi":"Kentän energia ja säteily","color":"#f2b705","ink":"#1b1b1b"},{"id":"5","short":"Light–matter and lasing","short_fi":"Valo–aine ja laser","color":"#7cb518","ink":"#1b1b1b"},{"id":"6","short":"Reflection and refraction","short_fi":"Heijastus ja taittuminen","color":"#1e8a3e","ink":"#ffffff"},{"id":"7","short":"Fourier and coherence","short_fi":"Fourier ja koherenssi","color":"#0a8490","ink":"#ffffff"},{"id":"8","short":"Interference","short_fi":"Interferenssi","color":"#1c6fd6","ink":"#ffffff"},{"id":"9","short":"Diffraction","short_fi":"Diffraktio","color":"#4f46c8","ink":"#ffffff"},{"id":"10","short":"Geometrical optics","short_fi":"Geometrinen optiikka","color":"#8e3fc8","ink":"#ffffff"}]};
+</script>
+<script>
+(function(){
+"use strict";
+var API = "https://script.google.com/macros/s/AKfycbyasmZPkTBr1hZNclQx47MHMEdIa8uAlVsvHiOzNyGGJd1annsJ6oak2Ddigc4aD8YV3A/exec";
+var CH = DATA.chapters;
+var chById = {}; CH.forEach(function(c){ chById[c.id] = c; });
+document.documentElement.style.setProperty("--spectrum",
+  "linear-gradient(90deg," + CH.map(function(c,i,a){
+    return c.color+" "+(i/a.length*100).toFixed(2)+"% "+((i+1)/a.length*100).toFixed(2)+"%"; }).join(",") + ")");
+
+var $ = function(s){ return document.querySelector(s); };
+var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+var app = $("#app");
+
+var I = {
+en:{
+ title:"Explain Briefly", back:"Back to FYS.240 Optics course", langLabel:"Language",
+ tagline:"FYS.240 Optics. Read the question together, agree on an answer in your group, and only then reveal the model answer.",
+ how:"How it works",
+ steps:["Read the question on the card.","Discuss in your group and agree on a short answer (a few sentences).","Press Show answer and compare. What did you miss?"],
+ chapters:"Chapters", hint:"Pick the chapters to practise.", all:"Select all", clear:"Clear",
+ order:"Order", inOrder:"Course order", shuffled:"Shuffled",
+ count:function(n){return n+" questions";}, pickOne:"Pick at least one chapter.", start:"Start",
+ home:"\u2190 Start page", chapter:"Chapter",
+ discuss:"Discuss in your group and agree on your answer. Then press Show answer.",
+ show:"Show answer", hide:"Hide answer", answer:"Model answer", prev:"Previous", next:"Next", done:"Finish",
+ keys:"<kbd>Space</kbd> answer \u00a0 <kbd>\u2190</kbd> <kbd>\u2192</kbd> previous / next",
+ of:function(i,n){return i+" / "+n;},
+ loading:"Loading\u2026", closedTitle:"Not open right now",
+ closedDefault:"Explain Briefly is open only during the lecture session. Please wait for your teacher.",
+ nextOpen:function(t){return "Opens next: "+t;}, retry:"Check again",
+ autoNote:"Keep this page open. It unlocks by itself when the session starts.",
+ errNet:"Could not reach the server. Check your connection and try again.",
+ errCfg:"This applet has not been connected to its question server yet.",
+ openUntil:function(t){return "Open until "+t;},
+ noAns:"The teacher has not released the answers yet. Try again soon.",
+ ended:"The session has ended."
+},
+fi:{
+ title:"Selit\u00e4 lyhyesti", back:"Takaisin FYS.240 Optiikka sivulle", langLabel:"Kieli",
+ tagline:"FYS.240 Optiikka. Lukekaa kysymys yhdess\u00e4, sopikaa ryhm\u00e4ss\u00e4 vastaus ja paljastakaa mallivastaus vasta sitten.",
+ how:"N\u00e4in k\u00e4yt\u00e4t",
+ steps:["Lue kysymys kortilta.","Keskustelkaa ryhm\u00e4ss\u00e4 ja sopikaa lyhyt vastaus (muutama lause).","Paina N\u00e4yt\u00e4 vastaus ja vertaa. Mit\u00e4 j\u00e4i puuttumaan?"],
+ chapters:"Luvut", hint:"Valitse luvut, joita haluat harjoitella.", all:"Valitse kaikki", clear:"Tyhjenn\u00e4",
+ order:"J\u00e4rjestys", inOrder:"Kurssin j\u00e4rjestys", shuffled:"Sekoitettu",
+ count:function(n){return n+" kysymyst\u00e4";}, pickOne:"Valitse v\u00e4hint\u00e4\u00e4n yksi luku.", start:"Aloita",
+ home:"\u2190 Aloitussivulle", chapter:"Luku",
+ discuss:"Keskustelkaa ryhm\u00e4ss\u00e4 ja sopikaa vastaus. Paina sitten N\u00e4yt\u00e4 vastaus.",
+ show:"N\u00e4yt\u00e4 vastaus", hide:"Piilota vastaus", answer:"Mallivastaus", prev:"Edellinen", next:"Seuraava", done:"Valmis",
+ keys:"<kbd>V\u00e4li</kbd> vastaus \u00a0 <kbd>\u2190</kbd> <kbd>\u2192</kbd> edellinen / seuraava",
+ of:function(i,n){return i+" / "+n;},
+ loading:"Ladataan\u2026", closedTitle:"Ei auki juuri nyt",
+ closedDefault:"Selit\u00e4 lyhyesti on auki vain luentohetken aikana. Odota opettajan ohjeita.",
+ nextOpen:function(t){return "Aukeaa seuraavaksi: "+t;}, retry:"Tarkista uudelleen",
+ autoNote:"Pid\u00e4 sivu auki. Se avautuu itsest\u00e4\u00e4n, kun istunto alkaa.",
+ errNet:"Palvelimeen ei saatu yhteytt\u00e4. Tarkista verkkoyhteys ja yrit\u00e4 uudelleen.",
+ errCfg:"T\u00e4t\u00e4 sovellusta ei ole viel\u00e4 yhdistetty kysymyspalvelimeen.",
+ openUntil:function(t){return "Auki klo "+t+" asti";},
+ noAns:"Opettaja ei ole viel\u00e4 julkaissut vastauksia. Yrit\u00e4 pian uudelleen.",
+ ended:"Istunto on p\u00e4\u00e4ttynyt."
+}};
+
+var store = {
+  get:function(k,d){ try{ var v = localStorage.getItem("fys240explain."+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  set:function(k,v){ try{ localStorage.setItem("fys240explain."+k, JSON.stringify(v)); }catch(e){} }
+};
+var qp = new URLSearchParams(location.search).get("lang");
+var S = Object.assign({lang:((navigator.language||"").slice(0,2)==="fi"?"fi":"en"), chapters:CH.map(function(c){return c.id;}), shuffle:false}, store.get("settings",{}));
+if(qp==="fi" || qp==="en") S.lang = qp;
+if(S.lang!=="fi" && S.lang!=="en") S.lang = "en";
+S.chapters = (S.chapters||[]).filter(function(id){ return chById[id]; });
+function save(){ store.set("settings", S); }
+function tr(k){ var v = I[S.lang][k]; return typeof v==="function" ? v.apply(null, Array.prototype.slice.call(arguments,1)) : v; }
+function chShort(c){ return S.lang==="fi" ? c.short_fi : c.short; }
+function applyLang(){ document.documentElement.lang = S.lang; document.title = tr("title"); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function fmtTime(ms){ return new Date(ms).toLocaleTimeString(S.lang==="fi"?"fi-FI":"en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Helsinki"}); }
+function fmtDay(ms){ return new Date(ms).toLocaleString(S.lang==="fi"?"fi-FI":"en-GB",{weekday:"short",day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Helsinki"}); }
+
+/* ---------- server access: nothing is stored, every request is checked by the server ---------- */
+function api(params){
+  if(!API || API.indexOf("PASTE_")===0) return Promise.reject(new Error("cfg"));
+  var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+"="+encodeURIComponent(params[k]); }).join("&");
+  return fetch(API + (API.indexOf("?")<0?"?":"&") + qs + "&t=" + Date.now(), {cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw new Error("http"); return r.json(); });
+}
+
+var view = "boot", LIST = null, META = {}, D = null, CL = null, timerId = null, INFO = {until:null};
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId = null; } }
+function show(html, name, keep){
+  var key=null, a=document.activeElement;
+  if(keep && a && a.dataset && a.dataset.act) key = a.dataset.act+"|"+(a.dataset.val==null?"":a.dataset.val);
+  view = name; app.innerHTML = html;
+  if(key){
+    var p=key.split("|"), el=Array.prototype.find.call(app.querySelectorAll("[data-act]"), function(x){ return x.dataset.act===p[0] && (x.dataset.val==null?"":x.dataset.val)===p[1]; });
+    if(el){ el.focus({preventScroll:true}); return; }
+  }
+  var h = app.querySelector("[data-h]"); if(h){ h.setAttribute("tabindex","-1"); h.focus({preventScroll:true}); }
+  if(!keep) window.scrollTo(0,0);
+}
+function langSwitch(){
+  return '<div class="lang" role="group" aria-label="'+tr("langLabel")+'">'+[["en","EN","English"],["fi","FI","Suomi"]].map(function(l){
+    return '<button type="button" data-act="lang" data-val="'+l[0]+'" lang="'+l[0]+'" title="'+l[2]+'" aria-pressed="'+(S.lang===l[0])+'">'+l[1]+'</button>'; }).join("")+'</div>';
+}
+function topRow(){ return '<div class="top"><a class="back" href="../index.html">\u2190 '+tr("back")+'</a>'+langSwitch()+'</div>'; }
+
+/* ---------- boot, closed and error screens ---------- */
+function boot(){
+  stopTimer(); applyLang();
+  show('<div class="wrap"><header class="mast">'+topRow()+'</header><div class="center"><h2 data-h>'+tr("title")+'</h2><p>'+tr("loading")+'</p></div></div>', "boot");
+  api({a:"list"}).then(function(r){
+    if(r.open===false) return showClosed(r);
+    if(!r.items) throw new Error("bad");
+    LIST = r.items; META = {}; LIST.forEach(function(it){ META[it.id] = it; });
+    INFO.until = r.until; D = null;
+    renderStart(); startPoll();
+  }).catch(showError);
+}
+function showClosed(r){
+  stopTimer(); D = null; LIST = null; META = {}; CL = r; applyLang();
+  var msg = (r.msg && r.msg[S.lang]) || tr("closedDefault");
+  show('<div class="wrap"><header class="mast">'+topRow()+'</header><div class="center"><h2 data-h>'+tr("closedTitle")+'</h2><p>'+esc(msg)+'</p>'+
+    (r.next ? '<p><b>'+tr("nextOpen",fmtDay(r.next))+'</b></p>' : '')+
+    '<p>'+tr("autoNote")+'</p><div><button type="button" class="btn" data-act="retry">'+tr("retry")+'</button></div></div></div>', "closed");
+  timerId = setInterval(function(){ api({a:"status"}).then(function(s){ if(s.open) boot(); else { CL = s; } }).catch(function(){}); }, 20000);
+}
+function showError(err){
+  stopTimer(); applyLang();
+  var cfg = err && err.message==="cfg";
+  show('<div class="wrap"><header class="mast">'+topRow()+'</header><div class="center"><h2 data-h>'+tr("title")+'</h2><p>'+(cfg?tr("errCfg"):tr("errNet"))+'</p>'+
+    (cfg?'':'<div><button type="button" class="btn" data-act="retry">'+tr("retry")+'</button></div>')+'</div></div>', "error");
+}
+function startPoll(){
+  stopTimer();
+  timerId = setInterval(function(){
+    api({a:"status"}).then(function(r){
+      if(r.open===false) return showClosed(r);
+      INFO.until = r.until; var u = $(".until"); if(u && r.until) u.textContent = tr("openUntil", fmtTime(r.until));
+    }).catch(function(){});
+  }, 30000);
+}
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState==="visible" && (view==="start" || view==="q")){
+    api({a:"status"}).then(function(r){ if(r.open===false) showClosed(r); }).catch(function(){});
+  }
+});
+function guard(r){ if(r && r.open===false){ showClosed(r); return true; } return false; }
+
+/* ---------- start page ---------- */
+function present(){ return CH.filter(function(c){ return LIST.some(function(it){ return it.ch===c.id; }); }); }
+function countFor(id){ return LIST.filter(function(it){ return it.ch===id; }).length; }
+function pool(){ return LIST.filter(function(it){ return S.chapters.indexOf(it.ch)>=0; }); }
+function renderStart(keep){
+  applyLang();
+  var n = pool().length;
+  var chips = present().map(function(c){ var on = S.chapters.indexOf(c.id)>=0;
+    return '<button type="button" class="chip" data-act="ch" data-val="'+c.id+'" aria-pressed="'+on+'" style="--c:'+c.color+';--ci:'+c.ink+'"><span class="no">'+c.id+'</span><span class="nm">'+esc(chShort(c))+'</span><span class="ct">'+tr("count",countFor(c.id))+'</span></button>'; }).join("");
+  show('<div class="wrap"><header class="mast">'+topRow()+
+    '<h1 data-h>'+tr("title")+'</h1><p>'+tr("tagline")+'</p>'+(INFO.until?'<p class="until">'+tr("openUntil",fmtTime(INFO.until))+'</p>':'')+'<div class="spectrum" aria-hidden="true"></div></header>'+
+    '<details class="rules"><summary>'+tr("how")+'</summary><ol>'+tr("steps").map(function(s){return "<li>"+s+"</li>";}).join("")+'</ol></details>'+
+    '<section class="sec"><h2>'+tr("chapters")+'</h2><p class="hint">'+tr("hint")+'</p><div class="chips">'+chips+'</div>'+
+    '<div class="toolrow"><button type="button" class="tbtn" data-act="allch">'+tr("all")+'</button><button type="button" class="tbtn" data-act="noch">'+tr("clear")+'</button></div></section>'+
+    '<section class="sec"><h2>'+tr("order")+'</h2><div class="seg" role="group">'+
+      '<button type="button" data-act="order" data-val="0" aria-pressed="'+!S.shuffle+'">'+tr("inOrder")+'</button>'+
+      '<button type="button" data-act="order" data-val="1" aria-pressed="'+S.shuffle+'">'+tr("shuffled")+'</button></div></section></div>'+
+    '<div class="dock"><div class="dock-in"><div class="info"><b>'+tr("count",n)+'</b>'+(n<1?'<br>'+tr("pickOne"):"")+'</div>'+
+    '<button type="button" class="btn" data-act="start"'+(n?"":" disabled")+'>'+tr("start")+'</button></div></div>', "start", keep);
+}
+
+/* ---------- question page ---------- */
+function start(){
+  var p = pool().map(function(it){return it.id;}); if(!p.length) return;
+  D = {list:S.shuffle?shuffle(p):p, pos:0, rev:false, notice:false, q:{}, a:{}, asked:{}};
+  renderQ(); window.scrollTo(0,0);
+}
+function ensureQ(id){
+  if(D.asked[id]) return; D.asked[id] = true;
+  var mine = D;
+  api({a:"q", id:id, lang:S.lang}).then(function(r){
+    if(mine!==D) return; if(guard(r)) return;
+    if(r.error || r.q==null) throw new Error("bad");
+    D.q[id] = r.q; if(view==="q" && D.list[D.pos]===id) renderQ(true);
+  }).catch(function(e){ if(mine===D){ D.asked[id] = false; showError(e); } });
+}
+function renderQ(keep){
+  var id = D.list[D.pos], c = chById[META[id].ch], n = D.list.length, last = D.pos===n-1;
+  var qt = D.q[id]; if(qt===undefined) ensureQ(id);
+  var ans;
+  if(D.rev && D.a[id]!==undefined) ans = '<div class="ans"><h3>'+tr("answer")+'</h3><p>'+esc(D.a[id])+'</p></div>';
+  else if(D.notice) ans = '<div class="notice" role="status">'+tr("noAns")+'</div>';
+  else ans = '<p class="discuss">'+tr("discuss")+'</p>';
+  var revealed = D.rev && D.a[id]!==undefined;
+  show('<div class="wrap q"><div class="bar"><button type="button" class="homebtn" data-act="home">'+tr("home")+'</button><span class="count" aria-live="polite">'+tr("of",D.pos+1,n)+'</span></div>'+
+    '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+(D.pos+1)+'"><i style="width:'+((D.pos+1)/n*100).toFixed(1)+'%"></i></div>'+
+    '<article class="qcard" style="--c:'+c.color+';--ci:'+c.ink+'"><div class="stripe"></div><div class="in"><div class="meta"><span class="tag">'+tr("chapter")+' '+c.id+'</span><span>'+esc(chShort(c))+'</span></div>'+
+    '<h2 class="q" data-h>'+(qt===undefined?'<span class="ld">'+tr("loading")+'</span>':esc(qt))+'</h2></div></article>'+ans+
+    '<div class="grow"><button type="button" class="btn wide" data-act="toggle"'+(qt===undefined?" disabled":"")+'>'+(revealed?tr("hide"):tr("show"))+'</button></div>'+
+    '<div class="nav"><button type="button" class="btn ghost" data-act="prev"'+(D.pos?"":" disabled")+'>\u2039 '+tr("prev")+'</button>'+
+    '<button type="button" class="btn ghost" data-act="'+(last?"home":"next")+'">'+(last?tr("done"):tr("next")+' \u203a')+'</button></div>'+
+    '<div class="keys">'+tr("keys")+'</div></div>', "q", true);
+}
+function go(d){ var p = D.pos+d; if(p<0 || p>=D.list.length) return; D.pos=p; D.rev=false; D.notice=false; renderQ(); window.scrollTo(0,0); }
+function toggle(){
+  var id = D.list[D.pos];
+  if(D.q[id]===undefined) return;
+  if(D.rev){ D.rev=false; D.notice=false; renderQ(true); return; }
+  if(D.a[id]!==undefined){ D.rev=true; renderQ(true); return; }
+  var mine = D, b = $("[data-act=toggle]"); if(b) b.disabled = true;
+  api({a:"a", id:id, lang:S.lang}).then(function(r){
+    if(mine!==D) return; if(guard(r)) return;
+    if(!r.answers){ D.notice = true; D.rev = false; renderQ(true); return; }
+    D.a[id] = r.a; D.rev = true; D.notice = false; renderQ(true);
+  }).catch(showError);
+}
+
+var actions = {
+  lang:function(b){ S.lang=b.dataset.val; save(); if(view==="closed") showClosed(CL); else if(view==="start") renderStart(true); else if(view==="error"||view==="boot") boot(); },
+  retry:function(){ boot(); },
+  ch:function(b){ var id=b.dataset.val,k=S.chapters.indexOf(id); if(k>=0) S.chapters.splice(k,1); else S.chapters.push(id); save(); renderStart(true); },
+  allch:function(){ S.chapters = present().map(function(c){return c.id;}); save(); renderStart(true); },
+  noch:function(){ S.chapters = []; save(); renderStart(true); },
+  order:function(b){ S.shuffle = b.dataset.val==="1"; save(); renderStart(true); },
+  start:start,
+  home:function(){ D=null; renderStart(); },
+  toggle:toggle,
+  prev:function(){ go(-1); }, next:function(){ go(1); }
+};
+app.addEventListener("click", function(e){ var b=e.target.closest("[data-act]"); if(!b||b.disabled) return; var f=actions[b.dataset.act]; if(f) f(b,e); });
+document.addEventListener("keydown", function(e){
+  if(view!=="q" || !D || e.ctrlKey||e.metaKey||e.altKey) return;
+  var tag=(e.target.tagName||"").toLowerCase(), onCtl = tag==="button"||tag==="a"||tag==="summary";
+  if((e.key===" "||e.key==="Enter") && !onCtl){ e.preventDefault(); toggle(); }
+  else if(e.key==="ArrowRight"){ e.preventDefault(); if(D.pos<D.list.length-1) go(1); }
+  else if(e.key==="ArrowLeft"){ e.preventDefault(); go(-1); }
+});
+boot();
+})();
+</script>
+</body>
+</html>
