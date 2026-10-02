@@ -23,6 +23,8 @@
 .side{display:flex;flex-direction:column;gap:12px;min-width:0}
 .main{display:flex;flex-direction:column;gap:12px;min-width:0}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.two.top{grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr)}
+@media (max-width:1100px){.two.top{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
 .card{min-width:0}
 .card h2{margin-bottom:8px}
@@ -76,12 +78,13 @@ table.modes td.lbl{font-family:var(--font-body);font-weight:600;text-align:left}
 table.modes td:first-child,table.modes td:nth-child(2){text-align:left;width:1%}
 table.modes tr{cursor:pointer}
 table.modes tr:hover td{background:var(--panel-2)}
+table.modes th.pc,table.modes td.pc{padding-left:3px;padding-right:3px}
 table.modes .tagx{font-family:var(--font-body);font-size:var(--fs-tiny);color:var(--orange);font-weight:500;margin-left:4px}
 .empty{color:var(--text-faint);font-style:italic;font-size:var(--fs-small);padding:6px 2px}
-.maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
 .maps figure{margin:0;min-width:0}
 .maps canvas{height:170px;border-radius:6px;border:1px solid var(--border)}
-.maps figcaption{display:flex;justify-content:space-between;gap:6px;font-size:var(--fs-small);margin-top:4px}
+.maps figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 6px;font-size:var(--fs-small);margin-top:4px}
 .maps figcaption .v{font-family:var(--font-mono);color:var(--text-dim)}
 .notes{font-size:var(--fs-small);color:var(--text-dim);line-height:1.6}
 .notes h3{color:var(--text);font-size:var(--fs-label);margin:12px 0 4px}
@@ -147,7 +150,7 @@ table.modes .tagx{font-family:var(--font-body);font-size:var(--fs-tiny);color:va
     </aside>
 
     <main class="main">
-      <div class="two">
+      <div class="two top">
         <div class="card figure-box">
           <div class="fig-title"><span><b>Cross-section</b> (to scale)</span><span id="xsInfo"></span></div>
           <canvas id="cXS" aria-label="Waveguide cross-section"></canvas>
@@ -156,7 +159,7 @@ table.modes .tagx{font-family:var(--font-body);font-size:var(--fs-tiny);color:va
           <h2>Guided modes at λ</h2>
           <div class="status" id="status"></div>
           <div class="tbl" id="modeTable"></div>
-          <p class="hint">Tick modes to plot them. Γ = fraction of |E|² in the film/core material. λ<sub>c</sub> = cutoff wavelength (EIM). <span style="color:var(--orange)">leaky</span>: EIM mode below the outside slab mode of the same polarisation.</p>
+          <p class="hint">Tick modes to plot them. Core, Strip, Sup. and Sub.: share (%) of ∫|E|² dA of the dominant field in each material region; Core is the confinement factor Γ of the film/core. λ<sub>c</sub> = cutoff wavelength (EIM). <span style="color:var(--orange)">leaky</span>: EIM mode below the outside slab mode of the same polarisation.</p>
         </div>
       </div>
 
@@ -205,7 +208,7 @@ table.modes .tagx{font-family:var(--font-body);font-size:var(--fs-tiny);color:va
         <p>and the same with x and y exchanged for quasi-TM (E<sub>y</sub>). The largest eigenvalues are found by shift-and-invert Arnoldi iteration. Modes of the outside slab that only exist because of the finite window are discarded (N must exceed the outside slab index of the same polarisation). The 2D solver runs in the background; the dispersion plot gets 2D points at 14 wavelengths.</p>
         <h3>Readouts</h3>
         <div class="eq">n<sub>g</sub> = N − λ dN/dλ    b = (N² − n<sub>cl</sub>²)/(n<sub>f</sub>² − n<sub>cl</sub>²)    V = k₀ t (n<sub>f</sub>² − n<sub>cl</sub>²)<sup>1/2</sup>    a = (n<sub>sub</sub>² − n<sub>sup</sub>²)/(n<sub>f</sub>² − n<sub>sub</sub>²)</div>
-        <p>n<sub>cl</sub> = max(n<sub>sub</sub>, n<sub>sup</sub>) and t is the film or core thickness. Material dispersion enters n<sub>g</sub> through N(λ). The grey b–V curves are the analytic asymmetric-slab TE modes for the film alone: channel modes lie below them because lateral confinement costs propagation constant. The single-mode window is where each shown polarisation has exactly one guided (non-leaky) EIM mode. Sellmeier data: fused silica (Malitson 1965), Si₃N₄ (Luke et al. 2015), LiNbO₃ (Zelmon et al. 1997), Si (Salzberg and Villa 1957), GaAs (Marple 1964, approximate), PMMA (Sultanova et al. 2009), SU-8 (Cauchy fit).</p>
+        <p>n<sub>cl</sub> = max(n<sub>sub</sub>, n<sub>sup</sub>) and t is the film or core thickness. Material dispersion enters n<sub>g</sub> through N(λ). The grey b–V curves are the analytic asymmetric-slab TE modes for the film alone: channel modes lie below them because lateral confinement costs propagation constant. The single-mode window is where each shown polarisation has exactly one guided (non-leaky) EIM mode. The Core, Strip, Sup. and Sub. columns split ∫|E|² dA of the dominant field component over the material regions; for an Er:Al₂O₃ loading strip the Strip share is the overlap of the mode with the gain medium. Sellmeier data: fused silica (Malitson 1965), sapphire n<sub>o</sub> (Malitson 1962), Si₃N₄ (Luke et al. 2015), LiNbO₃ (Zelmon et al. 1997), Si (Salzberg and Villa 1957), GaAs (Marple 1964, approximate), PMMA (Sultanova et al. 2009), SU-8 (Cauchy fit), amorphous Al₂O₃ and Er:Al₂O₃ (Cauchy fit to sputtered films, n ≈ 1.65 at 1.55 µm; Er doping at 10²⁰ cm⁻³ changes n negligibly), LiTaO₃ (two-point fit, n<sub>o</sub> ≈ 2.120, n<sub>e</sub> ≈ 2.124 at 1.55 µm, ±0.005).</p>
       </div>
     </main>
   </div>
@@ -232,6 +235,11 @@ function WGCORE() {
     si3n4: { name: 'Si₃N₄', s: [1, 3.0249, sq(0.1353406), 40314, sq(1239.842), 0, 0], r: [0.31, 5.5] },
     ln_e: { name: 'LiNbO₃, n_e', s: [1, 2.9804, 0.02047, 0.5981, 0.0666, 8.9543, 416.08], r: [0.4, 5] },
     ln_o: { name: 'LiNbO₃, n_o', s: [1, 2.6734, 0.01764, 1.2290, 0.05914, 12.614, 474.6], r: [0.4, 5] },
+    lt_e: { name: 'LiTaO₃, n_e (approx.)', s: [1, 3.49474, 0.02789, 0, 0, 1.5, 150], r: [0.5, 2.2] },
+    lt_o: { name: 'LiTaO₃, n_o (approx.)', s: [1, 3.47785, 0.02797, 0, 0, 1.5, 150], r: [0.5, 2.2] },
+    al2o3: { name: 'Al₂O₃, amorphous film', cauchy: [1.646, 0.00962, 0], r: [0.4, 2] },
+    eral2o3: { name: 'Er:Al₂O₃ (amorphous)', cauchy: [1.646, 0.00962, 0], r: [0.4, 2] },
+    sapph: { name: 'Al₂O₃, sapphire n_o', s: [1, 1.4313493, 0.0726631 * 0.0726631, 0.65054713, 0.1193242 * 0.1193242, 5.3414021, 18.028251 * 18.028251], r: [0.2, 5.5] },
     gaas: { name: 'GaAs (approx.)', s: [3.5, 7.4969, sq(0.4082), 1.9347, sq(37.17), 0, 0], r: [0.89, 4.1] },
     si: { name: 'Si', s: [1, 10.6684293, sq(0.301516485), 0.0030434748, sq(1.13475115), 1.54133408, sq(1104)], r: [1.36, 11] },
     custom: { name: 'Custom Sellmeier' }
@@ -679,6 +687,15 @@ function WGCORE() {
       px: grid.xc[bi], py: grid.yc[bj]
     };
   }
+  /* share of ∫|E|² dA in substrate, film/core, strip and superstrate */
+  function fractions(grid, E) {
+    var f = [0, 0, 0, 0], tot = 0;
+    for (var j = 0; j < grid.Ny; j++) for (var i = 0; i < grid.Nx; i++) {
+      var v = E(i, j), e = v * v * grid.dx[i] * grid.dy[j];
+      f[grid.reg[i + grid.Nx * j]] += e; tot += e;
+    }
+    return f.map(function (x) { return tot > 0 ? x / tot : 0; });
+  }
   function fdRun(G, lam, pols, res, grid) {
     var eim = solveEIM(G, lam, pols), ix = eim.ix;
     if (!eim.ok) return { grid: grid, modes: [] };
@@ -690,12 +707,9 @@ function WGCORE() {
       var lim = Math.max(eim.floor, eim.outN[pol] || 0);
       fdSolve(grid, ix, lam, pol, Math.max(4, cnt + 3)).forEach(function (md) {
         if (md.N <= lim + 1e-6) return;
-        var c = classify(grid, md.field), tot = 0, film = 0;
-        for (var j = 0; j < grid.Ny; j++) for (var i = 0; i < grid.Nx; i++) {
-          var g = i + grid.Nx * j, e = md.field[g] * md.field[g] * grid.dx[i] * grid.dy[j];
-          tot += e; if (grid.reg[g] === 1) film += e;
-        }
-        md.m = c.m; md.n = c.n; md.px = c.px; md.py = c.py; md.gamma = film / tot;
+        var c = classify(grid, md.field);
+        md.frac = fractions(grid, function (i, j) { return md.field[i + grid.Nx * j]; });
+        md.m = c.m; md.n = c.n; md.px = c.px; md.py = c.py; md.gamma = md.frac[1];
         md.key = pol + c.m + '_' + c.n;
         while (seen[md.key]) { md.key += '*'; md.dup = (md.dup || 0) + 1; }
         seen[md.key] = 1;
@@ -708,7 +722,7 @@ function WGCORE() {
 
   return {
     MAT: MAT, nMat: nMat, indices: indices, validIx: validIx, confined: confined, stacks: stacks, regionAt: regionAt, coreBox: coreBox,
-    slabModes: slabModes, solveEIM: solveEIM, eimVert: eimVert, eimLat: eimLat, buildGrid: buildGrid, fdRun: fdRun, hqr: hqr
+    fractions: fractions, slabModes: slabModes, solveEIM: solveEIM, eimVert: eimVert, eimLat: eimLat, buildGrid: buildGrid, fdRun: fdRun, hqr: hqr
   };
 }
 
@@ -726,7 +740,7 @@ function WGWORKER() {
       var modes = P.modes.map(function (md) {
         var a = find(Pm, md.key), b = find(Pp, md.key);
         tr.push(md.field.buffer);
-        return { key: md.key, pol: md.pol, m: md.m, n: md.n, dup: md.dup || 0, N: md.N, ng: a && b ? md.N - d.lam * (b.N - a.N) / (2 * dl) : null, gamma: md.gamma, px: md.px, py: md.py, field: md.field };
+        return { key: md.key, pol: md.pol, m: md.m, n: md.n, dup: md.dup || 0, N: md.N, ng: a && b ? md.N - d.lam * (b.N - a.N) / (2 * dl) : null, gamma: md.gamma, frac: md.frac, px: md.px, py: md.py, field: md.field };
       });
       var g = P.grid;
       postMessage({ type: 'point', lam: d.lam, ms: Date.now() - t0, grid: { Nx: g.Nx, Ny: g.Ny, xc: g.xc, yc: g.yc, dx: g.dx, dy: g.dy, reg: g.reg }, modes: modes }, tr);
@@ -772,6 +786,10 @@ var PRESETS = [
   { name: 'Si₃N₄ ridge', s: { geo: 'ridge', t: 0.40, w: 1.20, lam: 1.55, lamMin: 0.60, lamMax: 2.00 }, m: { sup: M('sio2'), film: M('si3n4'), sub: M('sio2') } },
   { name: 'Thin-film LiNbO₃ rib', s: { geo: 'rib', t: 0.60, w: 1.20, tout: 0.30, lam: 1.55, lamMin: 0.80, lamMax: 2.00 }, m: { sup: M('air', 1.0), film: M('ln_e'), sub: M('sio2') } },
   { name: 'SU-8 strip on Si₃N₄ film', s: { geo: 'strip', t: 0.15, w: 2.0, h: 0.80, lam: 1.31, lamMin: 0.60, lamMax: 1.60 }, m: { sup: M('air', 1.0), strip: M('su8'), film: M('si3n4'), sub: M('sio2') } },
+  { name: 'Er:Al₂O₃ strip on TFLN', s: { geo: 'strip', t: 0.30, w: 2.0, h: 0.40, lam: 1.532, lamMin: 0.90, lamMax: 1.70 }, m: { sup: M('air', 1.0), strip: M('eral2o3'), film: M('ln_e'), sub: M('sio2') } },
+  { name: 'Er:Al₂O₃ strip on Si₃N₄', s: { geo: 'strip', t: 0.10, w: 2.0, h: 0.50, lam: 1.532, lamMin: 0.90, lamMax: 1.70 }, m: { sup: M('air', 1.0), strip: M('eral2o3'), film: M('si3n4'), sub: M('sio2') } },
+  { name: 'Er:Al₂O₃ strip on Al₂O₃', s: { geo: 'strip', t: 0.40, w: 2.0, h: 0.40, lam: 1.532, lamMin: 0.90, lamMax: 1.70 }, m: { sup: M('air', 1.0), strip: M('eral2o3'), film: M('al2o3'), sub: M('sio2') } },
+  { name: 'Er:Al₂O₃ strip on TFLT', s: { geo: 'strip', t: 0.30, w: 2.0, h: 0.40, lam: 1.532, lamMin: 0.90, lamMax: 1.70 }, m: { sup: M('air', 1.0), strip: M('eral2o3'), film: M('lt_e'), sub: M('sio2') } },
   { name: 'Buried silica channel', s: { geo: 'buried', t: 6.0, w: 6.0, d: 15.0, lam: 1.55, lamMin: 1.00, lamMax: 1.70 }, m: { sup: M('air', 1.0), film: M('gesio2'), sub: M('sio2') } },
   { name: 'Plain slab', s: { geo: 'strip', t: 0.60, w: 3.0, h: 0.0, lam: 1.55, lamMin: 0.60, lamMax: 2.00 }, m: { sup: M('const', 1.000), strip: M('const', 1.000), film: M('const', 1.600), sub: M('const', 1.450) } }
 ];
@@ -940,7 +958,8 @@ function compute() {
   here.modes.forEach(function (md) {
     var p = findKey(a.modes, md.key), q = findKey(b.modes, md.key);
     md.ng = p && q ? md.N - lam * (q.N - p.N) / (2 * dl) : null;
-    md.gamma = grid ? gammaEIM(G, here.ix, md, grid) : null;
+    md.frac = grid ? fracEIM(G, here.ix, md, grid) : null;
+    md.gamma = md.frac ? md.frac[1] : null;
   });
   /* dispersion sweep */
   var K = 160, lams = [], ser = {}, floorPts = [], topPts = [], outPts = { TE: [], TM: [] }, sm = [];
@@ -1002,13 +1021,9 @@ function ngSeries(pts) {
   }
   return out;
 }
-function gammaEIM(G, ix, md, grid) {
-  var V = C.eimVert(G, ix, md, S.lam, Array.from(grid.yc)), L = C.eimLat(G, md, S.lam, Array.from(grid.xc)), tot = 0, film = 0;
-  for (var j = 0; j < grid.Ny; j++) for (var i = 0; i < grid.Nx; i++) {
-    var e = V[j] * V[j] * L[i] * L[i] * grid.dx[i] * grid.dy[j];
-    tot += e; if (grid.reg[i + grid.Nx * j] === 1) film += e;
-  }
-  return tot > 0 ? film / tot : null;
+function fracEIM(G, ix, md, grid) {
+  var V = C.eimVert(G, ix, md, S.lam, Array.from(grid.yc)), L = C.eimLat(G, md, S.lam, Array.from(grid.xc));
+  return C.fractions(grid, function (i, j) { return V[j] * L[i]; });
 }
 
 /* ---------- 2D FD in a worker ---------- */
@@ -1141,6 +1156,8 @@ function outline(c, X, Y, G, xr) {
 function fieldView(G) {
   var cb = C.coreBox(G), H = cb.y1 - cb.y0, w2 = G.w / 2;
   var px = Math.max(0.7 * G.w, 0.6 * S.lam), py = Math.max(0.8 * H, 0.45 * S.lam);
+  var m0 = E && E.here.modes.length ? E.here.modes[0] : null;
+  if (m0 && m0.n !== null && m0.N > m0.Nout) px = Math.max(px, Math.min(4 * G.w, 3.5 * S.lam / (2 * Math.PI * Math.sqrt(m0.N * m0.N - m0.Nout * m0.Nout))));
   var yr = [cb.y0 - py, cb.y1 + py];
   if (G.geo === 'buried' && yr[1] > -0.2 * H) yr[1] = Math.max(yr[1], 0.15 * H + 0.1);
   return { xr: [-w2 - px, w2 + px], yr: yr };
@@ -1172,6 +1189,7 @@ function drawXS() {
   $('xsInfo').textContent = dims;
 }
 
+function pct(f, r) { return f ? fmt(100 * f[r], 1) : '—'; }
 function drawTable() {
   var src = activeSrc(), modes = activeModes(), floor = E.here.ok ? E.here.floor : NaN;
   var st = [];
@@ -1188,14 +1206,18 @@ function drawTable() {
   var host = $('modeTable');
   if (!E.here.ok) { host.innerHTML = '<div class="empty">A layer has no valid refractive index at this wavelength.</div>'; return; }
   if (!modes.length) { host.innerHTML = '<div class="empty">No guided mode at λ. The film or core must have a higher index than the claddings (n ≤ ' + fmt(floor, 4) + ' here); shorten λ or enlarge the guide.</div>'; return; }
+  var hasStrip = E.G.geo === 'strip' && E.G.h > 0.005;
+  var FRCOLS = [{ r: 1, h: 'Core', t: 'film/core' }].concat(hasStrip ? [{ r: 2, h: 'Strip', t: 'loading strip' }] : [], [{ r: 3, h: 'Sup.', t: 'superstrate (cover)' }, { r: 0, h: 'Sub.', t: 'substrate' }]);
   var rows = modes.map(function (md) {
     var on = selected.indexOf(md.key) >= 0, s = E.ser[md.key], cut = s && s.cut ? fmt(s.cut.lam, 3) : (s ? '&gt; ' + fmt(S.lamMax, 2) : '—');
     var leaky = md.leaky ? '<span class="tagx">leaky</span>' : '';
     return '<tr data-k="' + md.key + '"><td><input type="checkbox" aria-label="Plot ' + label(md, false) + '"' + (on ? ' checked' : '') + '></td>' +
       '<td><span class="sw" style="display:inline-block;background:var(' + (colorOf[md.key] || '--text') + ')"></span></td>' +
-      '<td class="lbl">' + label(md, true) + leaky + '</td><td>' + fmt(md.N, 5) + '</td><td>' + fmt(md.ng, 4) + '</td><td>' + fmt(md.gamma, 3) + '</td><td>' + cut + '</td></tr>';
+      '<td class="lbl">' + label(md, true) + leaky + '</td><td>' + fmt(md.N, 5) + '</td><td>' + fmt(md.ng, 4) + '</td>' +
+      FRCOLS.map(function (q) { return '<td class="pc">' + pct(md.frac, q.r) + '</td>'; }).join('') + '<td>' + cut + '</td></tr>';
   }).join('');
-  host.innerHTML = '<table class="modes"><thead><tr><th></th><th></th><th>Mode</th><th>N<sub>eff</sub></th><th>n<sub>g</sub></th><th>Γ</th><th>λ<sub>c</sub> (µm)</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  host.innerHTML = '<table class="modes"><thead><tr><th></th><th></th><th>Mode</th><th>N<sub>eff</sub></th><th>n<sub>g</sub></th>' +
+    FRCOLS.map(function (q) { return '<th class="pc" title="' + q.t + '">' + q.h + '</th>'; }).join('') + '<th>λ<sub>c</sub> (µm)</th></tr></thead><tbody>' + rows + '</tbody></table>';
   Array.prototype.forEach.call(host.querySelectorAll('tr[data-k]'), function (tr) {
     var k = tr.dataset.k, cb = tr.querySelector('input');
     function toggle(on) { if (on) { if (selected.indexOf(k) < 0) selected.push(k); } else selected = selected.filter(function (x) { return x !== k; }); redraw(); }
@@ -1398,7 +1420,7 @@ function drawMaps() {
   var bg = hexRgb(css('--panel-2')), c1 = hexRgb(css('--violet')), c2 = hexRgb(css('--yellow')), neg = hexRgb(css('--blue')), pos = hexRgb(css('--red'));
   mods.slice(0, 12).forEach(function (md) {
     var fig = document.createElement('figure');
-    fig.innerHTML = '<canvas></canvas><figcaption><span style="color:var(' + (colorOf[md.key] || '--text') + ');font-weight:600">' + label(md, true) + '</span><span class="v">N ' + fmt(md.N, 5) + ' · Γ ' + fmt(md.gamma, 3) + '</span></figcaption>';
+    fig.innerHTML = '<canvas></canvas><figcaption><span style="color:var(' + (colorOf[md.key] || '--text') + ');font-weight:600">' + label(md, true) + '</span><span class="v">N ' + fmt(md.N, 5) + ' · core ' + pct(md.frac, 1) + ' %' + (g.geo === 'strip' && g.h > 0.005 ? ' · strip ' + pct(md.frac, 2) + ' %' : '') + '</span></figcaption>';
     host.appendChild(fig);
     var cv = fig.querySelector('canvas'), G = prep(cv), c = G.c;
     var fv = fieldView(g), f = fitAspect(fv.xr, fv.yr, G.w, G.h), xr = f[0], yr = f[1];
