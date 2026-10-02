@@ -15,6 +15,7 @@
     { "name": "FYS.240 Optics", "url": "fys240-optics/index.html" },
     { "name": "FYS.310 Solid-State Physics", "url": "fys310-solid-state-physics/index.html" },
     { "name": "FYS.501 Laser Physics", "url": "fys501-laser-physics/index.html" },
+    { "name": "Photonics", "url": "photonics/index.html" },
     { "name": "FinnMath-app", "url": "finnmath-app/index.html" }
   ]
 }
