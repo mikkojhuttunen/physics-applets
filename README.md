@@ -36,8 +36,9 @@ Each course has its own folder with an `index.html` listing its applets.
   GaAs), and a mechanical properties explorer (Morse bond and elastic constants,
   stress–strain curve with load, unload, work hardening and necking, edge
   dislocation glide against perfect-crystal slip with interstitial pinning, and
-  a Poisson-ratio block with Y, G and K), and Term Alias (an Alias-style concept
-  card game with dice roll, 60 s timer and "don't say" words, 97 terms).
+  a Poisson-ratio block with Y, G and K), and Term Alias, an Alias-style concept
+  card game with dice roll, optional 60 s timer, instant new cards and unicorn
+  streaks.
 - `fys501-laser-physics/` — laser gain media absorption/emission spectra, a
   Gaussian beam / ABCD-matrix optical cavity stability explorer, and a
   3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
