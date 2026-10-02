@@ -53,10 +53,12 @@ Each course has its own folder with an `index.html` listing its applets.
   explorer (Airy function with phasor sum, free spectral range and scanning,
   finesse, photon lifetime and resolution).
 - `photonics/` — a photonic waveguide mode explorer (strip-loaded, rib, ridge and buried channel
-  guides with constant, Sellmeier-preset or user-entered layer indices; effective index method with
+  guides with constant, Sellmeier-preset or user-entered layer indices, including Er:Al₂O₃ loading strips
+  on TFLN, Si₃N₄, Al₂O₃ or TFLT; effective index method with
   an optional semi-vectorial 2D finite-difference reference solved in a Web Worker; N_eff(λ), group
   index and b–V dispersion with cut-off wavelengths and the single-mode window; selectable mode list
-  with vertical and lateral field cuts, |E|² and signed field maps, confinement factor, and
+  with vertical and lateral field cuts, |E|² and signed field maps, the share of the field in the
+  core, strip, superstrate and substrate, and
   TE_mn or Marcatili E^x_pq labels).
 
 Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course
