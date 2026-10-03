@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v36";
+const CACHE_NAME = "physics-applets-v37";
 const APP_SHELL = [
   "index.html",
   "manifest.json",

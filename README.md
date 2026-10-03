@@ -63,7 +63,9 @@ Each course has its own folder with an `index.html` listing its applets.
   Also an Er:Al₂O₃ strip-loaded waveguide amplifier on Al₂O₃, Si₃N₄, TFLN or TFLT (Er concentration,
   strip and film dimensions, length, pump 980/1480 nm; pump and signal overlaps with the doped strip,
   steady-state rate equations with upconversion, pump/signal propagation, net gain spectrum, gain vs
-  length and pump power). The shared mode solver lives in `assets/js/waveguide-core.js`.
+  length, pump power and Er concentration, with optional concentration-dependent upconversion
+  and ion quenching; an optimizer for strip/film dimensions, concentration and length that maximises
+  net gain or gain per cm). The shared mode solver lives in `assets/js/waveguide-core.js`.
 
 Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course
 file such as `fys240-optics.css` (course accent), and `applet.css` (panels, sliders, buttons,

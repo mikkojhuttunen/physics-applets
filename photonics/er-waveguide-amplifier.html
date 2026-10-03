@@ -66,6 +66,19 @@ canvas{display:block;width:100%}
 .legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .legend i{display:inline-block;width:22px;height:0;border-top:2px solid var(--text-dim)}
 .legend i.dash{border-top-style:dashed}
+table.optv{width:100%;border-collapse:collapse;font-size:var(--fs-small);margin:4px 0 8px}
+table.optv th{font-size:var(--fs-tiny);color:var(--text-faint);font-weight:600;text-align:left;padding:2px 4px}
+table.optv td{padding:2px 4px;vertical-align:middle}
+table.optv td input[type=number]{width:62px;padding:3px 5px;font-size:var(--fs-tiny)}
+table.optv td.nm{color:var(--text-dim)}
+label.chk{display:flex;align-items:center;gap:8px;font-size:var(--fs-small);color:var(--text-dim);margin:0 0 8px}
+.optbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.optbar .hint{margin:0}
+table.optr{width:100%;border-collapse:collapse;font-size:var(--fs-small);margin:4px 0 8px;font-variant-numeric:tabular-nums}
+table.optr th,table.optr td{padding:3px 4px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+table.optr th:first-child,table.optr td:first-child{text-align:left;color:var(--text-dim)}
+table.optr td{font-family:var(--font-mono)}
+table.optr td.up{color:var(--green)}
 .notes{font-size:var(--fs-small);color:var(--text-dim);line-height:1.6}
 .notes h3{color:var(--text);font-size:var(--fs-label);margin:12px 0 4px}
 .notes h3:first-child{margin-top:0}
@@ -100,7 +113,12 @@ canvas{display:block;width:100%}
         <h2>Erbium and device</h2>
         <div id="cEr"></div>
         <div class="grp">Spectroscopy</div>
+        <div class="seg" id="concSeg" role="group" aria-label="Concentration effects">
+          <button type="button" data-v="off">Fixed C<sub>up</sub></button>
+          <button type="button" data-v="on">C<sub>up</sub> ∝ N<sub>Er</sub> + quenching</button>
+        </div>
         <div id="cSpecCtl"></div>
+        <p class="hint" id="concHint"></p>
       </div>
 
       <div class="card">
@@ -123,6 +141,22 @@ canvas{display:block;width:100%}
           <button type="button" data-v="fd">2D FD (reference)</button>
         </div>
         <p class="hint">Both pump and signal use the fundamental mode of the chosen polarisation.</p>
+      </div>
+
+      <div class="card">
+        <h2>Optimizer</h2>
+        <div class="seg" id="objSeg" role="group" aria-label="Objective">
+          <button type="button" data-v="dB">Max net gain (dB)</button>
+          <button type="button" data-v="dBcm">Max gain per cm</button>
+        </div>
+        <table class="optv">
+          <thead><tr><th></th><th>Free parameter</th><th>min</th><th>max</th></tr></thead>
+          <tbody id="optRows"></tbody>
+        </table>
+        <label class="chk"><input type="checkbox" id="optSM" checked> Keep the signal single-mode</label>
+        <div class="optbar"><button type="button" class="btn" id="optRun">Optimize</button><span id="optMsg" class="hint"></span></div>
+        <div id="optRes"></div>
+        <p class="hint">Uses the EIM with the platform, polarisation, pump and signal fixed. Length is found exactly from one long propagation run per candidate. With L free, gain per cm favours the shortest device, so fix L to compare cross-sections. Check the optimum with the 2D solver afterwards.</p>
       </div>
     </aside>
 
@@ -163,6 +197,7 @@ canvas{display:block;width:100%}
             <div class="seg" id="tab2Seg" role="group" aria-label="Signal view">
               <button type="button" data-v="z">Gain along z</button>
               <button type="button" data-v="p">Gain vs pump</button>
+              <button type="button" data-v="n">Gain vs N<sub>Er</sub></button>
             </div>
           </div>
           <canvas id="cB" aria-label="Signal gain"></canvas>
@@ -179,7 +214,7 @@ canvas{display:block;width:100%}
         <p>The integrals run over the doped strip only, so for uniform inversion they reduce to Γ(σ<sub>e</sub>N₂ − σ<sub>a</sub>N₁) with the overlap Γ = ∫<sub>strip</sub>|E|² dA / ∫|E|² dA. Here the inversion is computed locally, so the bright centre of the pump mode inverts more than the edges of the strip. The probe gain spectrum uses the inversion set up by the pump and the signal:</p>
         <div class="eq">G(λ) [dB] = 4.343 [σ<sub>e</sub>(λ) ∫n̄₂ dz − σ<sub>a</sub>(λ) ∫n̄₁ dz] · Γ<sub>s</sub>(λ)/Γ<sub>s</sub>(λ<sub>s</sub>) − α L,   n̄ = ∫N|E<sub>s</sub>|² dA / ∫|E<sub>s</sub>|² dA</div>
         <h3>Spectroscopy and limits of the model</h3>
-        <p>The absorption cross-section is a smooth model of the Er:Al₂O₃ band (peak at 1533 nm, adjustable height); the emission cross-section follows from McCumber theory, σ<sub>e</sub>(λ) = σ<sub>a</sub>(λ) exp[(hc/λ₀ − hc/λ)/kT] with λ₀ = 1532 nm and T = 295 K. Default values are typical of sputtered Al₂O₃:Er films (σ<sub>a</sub>(1533) ≈ 5.7×10⁻²¹ cm², σ<sub>a</sub>(980) ≈ 1.7×10⁻²¹ cm², τ ≈ 7.5 ms, C<sub>up</sub> a few 10⁻¹⁸ cm³/s); use measured data for your films where you have them. Not included: amplified spontaneous emission (it limits gain above roughly 20–30 dB), excited-state absorption, quenched ion pairs, and Er in the film (only the strip is doped). The background loss α is taken equal at pump and signal. Modes come from the effective index method or the semi-vectorial 2D finite-difference solver of the <a href="waveguide-mode-explorer.html">waveguide mode explorer</a>; Γ<sub>s</sub>(λ) for the spectrum is evaluated with the EIM at 25 nm steps and scaled to the selected solver at λ<sub>s</sub>.</p>
+        <p>The absorption cross-section is a smooth model of the Er:Al₂O₃ band (peak at 1533 nm, adjustable height); the emission cross-section follows from McCumber theory, σ<sub>e</sub>(λ) = σ<sub>a</sub>(λ) exp[(hc/λ₀ − hc/λ)/kT] with λ₀ = 1532 nm and T = 295 K. Default values are typical of sputtered Al₂O₃:Er films (σ<sub>a</sub>(1533) ≈ 5.7×10⁻²¹ cm², σ<sub>a</sub>(980) ≈ 1.7×10⁻²¹ cm², τ ≈ 7.5 ms, C<sub>up</sub> a few 10⁻¹⁸ cm³/s); use measured data for your films where you have them. With concentration effects on, the upconversion coefficient grows in proportion to N<sub>Er</sub> (C<sub>up</sub> = C<sub>up</sub>(10²⁰)·N<sub>Er</sub>/10²⁰) and a fraction f<sub>q</sub> = k<sub>q</sub>N<sub>Er</sub> of the ions is quenched: these decay too fast to be inverted, so they only absorb pump and signal. This is what makes an optimum concentration appear. Not included: amplified spontaneous emission (it limits gain above roughly 20–30 dB), excited-state absorption, quenched ion pairs, and Er in the film (only the strip is doped). The background loss α is taken equal at pump and signal. Modes come from the effective index method or the semi-vectorial 2D finite-difference solver of the <a href="waveguide-mode-explorer.html">waveguide mode explorer</a>; Γ<sub>s</sub>(λ) for the spectrum is evaluated with the EIM at 25 nm steps and scaled to the selected solver at λ<sub>s</sub>.</p>
       </div>
     </main>
   </div>
@@ -226,7 +261,7 @@ var PLAT = {
 var S = {
   plat: 'al2o3', t: 0.40, w: 2.0, h: 0.40, sup: 'air', pol: 'TE', solver: 'eim',
   nEr: 1.5, L: 3.0, loss: 0.25, tau: 7.5, cup: 4.0, sigPk: 5.7, sig980: 1.7,
-  pump: 980, Pp: 50, lamS: 1532, PsdBm: -30, tab: 'gain', tab2: 'z'
+  pump: 980, Pp: 50, lamS: 1532, PsdBm: -30, tab: 'gain', tab2: 'z', conc: 'on', qk: 5, obj: 'dB'
 };
 var SPECS = {
   cGeo: [
@@ -242,6 +277,7 @@ var SPECS = {
   cSpecCtl: [
     { k: 'tau', lab: '⁴I₁₃/₂ lifetime', sym: 'τ (ms)', min: 0.5, max: 12, step: 0.1, dec: 1 },
     { k: 'cup', lab: 'Upconversion coefficient', sym: 'C_up (10⁻¹⁸ cm³/s)', min: 0, max: 20, step: 0.1, dec: 1 },
+    { k: 'qk', lab: 'Quenched ions per 10²⁰ cm⁻³', sym: 'f_q (%)', min: 0, max: 30, step: 0.5, dec: 1 },
     { k: 'sigPk', lab: 'Peak absorption, 1533 nm', sym: 'σ_a (10⁻²¹ cm²)', min: 1, max: 10, step: 0.05, dec: 2 },
     { k: 'sig980', lab: 'Pump absorption, 980 nm', sym: 'σ_a (10⁻²¹ cm²)', min: 0.3, max: 5, step: 0.05, dec: 2 }
   ],
@@ -281,6 +317,12 @@ function sync() {
     if (document.activeElement !== c.nb) c.nb.value = v.toFixed(sp.dec);
   });
   CTL.sig980.r.closest('.ctl').hidden = S.pump !== 980;
+  CTL.qk.r.closest('.ctl').hidden = S.conc !== 'on';
+  CTL.cup.r.closest('.ctl').querySelector('label span').textContent = S.conc === 'on' ? 'Upconversion at 10²⁰ cm⁻³' : 'Upconversion coefficient';
+  var ce = concEff();
+  $('concHint').innerHTML = S.conc === 'on'
+    ? 'At ' + fmt(S.nEr, 2) + '×10²⁰ cm⁻³: C<sub>up</sub> = ' + fmt(ce.cup * 1e18, 2) + '×10⁻¹⁸ cm³/s, ' + fmt(100 * ce.fq, 1) + ' % of the ions quenched (always absorbing, never inverted).'
+    : 'C<sub>up</sub> independent of concentration and no quenched ions: more erbium always looks better than it is.';
   Object.keys(SEGS).forEach(function (id) {
     Array.prototype.forEach.call($(id).querySelectorAll('button'), function (b) {
       var on = String(SEGS[id].get()) === b.dataset.v;
@@ -295,7 +337,9 @@ var SEGS = {
   polSeg: { modes: true, get: function () { return S.pol; }, set: function (v) { S.pol = v; } },
   solverSeg: { modes: true, get: function () { return S.solver; }, set: function (v) { S.solver = v; } },
   tabSeg: { view: true, get: function () { return S.tab; }, set: function (v) { S.tab = v; } },
-  tab2Seg: { view: true, get: function () { return S.tab2; }, set: function (v) { S.tab2 = v; } }
+  tab2Seg: { get: function () { return S.tab2; }, set: function (v) { S.tab2 = v; } },
+  concSeg: { get: function () { return S.conc; }, set: function (v) { S.conc = v; } },
+  objSeg: { view: true, get: function () { return S.obj; }, set: function (v) { S.obj = v; } }
 };
 Object.keys(SEGS).forEach(function (id) {
   Array.prototype.forEach.call($(id).querySelectorAll('button'), function (b) {
@@ -335,7 +379,7 @@ function eimField(G, R, md, lam, grid) {
 function stripShare(grid, f) { return C.fractions(grid, function (i, j) { return f[i + grid.Nx * j]; }); }
 
 var MD = null;  /* current modes: {G, grid, Es, Ep, Ns, Np, src, gcurve, eimGs} */
-function computeModesEIM() {
+function computeModesEIM(fast) {
   var G = geom(), pols = polsNow(), ls = S.lamS / 1000, lp = S.pump / 1000;
   var Rs = C.solveEIM(G, ls, pols), Rp = C.solveEIM(G, lp, pols);
   if (!Rs.ok || !Rp.ok) return { G: G, err: 'A layer has no valid refractive index at the pump or signal wavelength.' };
@@ -344,12 +388,14 @@ function computeModesEIM() {
   if (!mp) return { G: G, err: 'No guided pump mode at ' + S.pump + ' nm.' };
   var grid = C.buildGrid(G, Rs.ix, ls, 'normal', Rs);
   var Es = eimField(G, Rs, ms, ls, grid), Ep = eimField(G, Rp, mp, lp, grid);
+  var nSig = Rs.modes.filter(function (m) { return !m.leaky; }).length;
+  if (fast) return { G: G, grid: grid, Es: Es, Ep: Ep, Ns: ms.N, Np: mp.N, src: 'eim', nSig: nSig };
   var gcurve = [];
   for (var l = 1450; l <= 1650.1; l += 25) {
     var R = C.solveEIM(G, l / 1000, pols), m = fundEIM(R);
     gcurve.push([l, m ? stripShare(grid, eimField(G, R, m, l / 1000, grid))[2] : 0]);
   }
-  return { G: G, grid: grid, Es: Es, Ep: Ep, Ns: ms.N, Np: mp.N, src: 'eim', gcurve: gcurve, eimGs: stripShare(grid, Es)[2], ixS: Rs.ix, ixP: Rp.ix };
+  return { G: G, grid: grid, Es: Es, Ep: Ep, Ns: ms.N, Np: mp.N, src: 'eim', gcurve: gcurve, eimGs: stripShare(grid, Es)[2], ixS: Rs.ix, ixP: Rp.ix, nSig: nSig };
 }
 function gInterp(curve, l) {
   if (l <= curve[0][0]) return curve[0][1];
@@ -398,8 +444,14 @@ function prepCells() {
   CELLS = cells;
   OV = { Gp: Gp, Gs: Gs, fp: stripShare(g, MD.Ep), fs: stripShare(g, MD.Es) };
 }
+/* concentration effects: C_up grows linearly with N_Er, a fraction f_q of the ions is quenched */
+function concEff() {
+  if (S.conc !== 'on') return { cup: S.cup * 1e-18, fq: 0 };
+  return { cup: S.cup * 1e-18 * S.nEr, fq: Math.min(0.95, S.qk / 100 * S.nEr) };
+}
 function run(PpW, PsW, L, nz) {
-  var N = S.nEr * 1e20, tau = S.tau * 1e-3, Cup = S.cup * 1e-18, ps = pumpSig(), sa = sigA(S.lamS), se = sigE(S.lamS);
+  var ce0 = concEff(), Ntot = S.nEr * 1e20, Nq = Ntot * ce0.fq, N = Ntot - Nq;
+  var tau = S.tau * 1e-3, Cup = ce0.cup, ps = pumpSig(), sa = sigA(S.lamS), se = sigE(S.lamS);
   var hvp = H * CL / (S.pump * 1e-9), hvs = H * CL / (S.lamS * 1e-9), al = S.loss / 4.3429448;
   var nc = CELLS.length, Gs = OV.Gs;
   function f(Pp, Ps) {
@@ -407,25 +459,40 @@ function run(PpW, PsW, L, nz) {
     for (var c = 0; c < nc; c++) {
       var ce = CELLS[c], Ip = Pp * ce.wp / ce.dA, Is = Ps * ce.ws / ce.dA;
       var Ra = ps.a * Ip / hvp + sa * Is / hvs, Re = ps.e * Ip / hvp + se * Is / hvs, b = Ra + Re + 1 / tau;
-      var n2 = Ra > 0 ? 2 * Ra * N / (b + Math.sqrt(b * b + 4 * Cup * Ra * N)) : 0, n1 = N - n2;
+      var n2 = Ra > 0 ? 2 * Ra * N / (b + Math.sqrt(b * b + 4 * Cup * Ra * N)) : 0, n1 = N - n2 + Nq;
       gp += (ps.a * n1 - ps.e * n2) * ce.wp; gs += (se * n2 - sa * n1) * ce.ws; S1 += n1 * ce.ws; S2 += n2 * ce.ws;
     }
     return { dp: -(gp + al) * Pp, ds: (gs - al) * Ps, S1: S1, S2: S2 };
   }
   var dz = L / nz, z = [0], Pp = [PpW], Ps = [PsW], inv = [], I1 = 0, I2 = 0, prev = f(PpW, PsW);
-  inv.push(Gs > 0 ? prev.S2 / (N * Gs) : 0);
+  inv.push(Gs > 0 ? prev.S2 / (Ntot * Gs) : 0);
   for (var s = 0; s < nz; s++) {
     var p = Pp[s], q = Ps[s];
     var k1 = prev, k2 = f(p + 0.5 * dz * k1.dp, q + 0.5 * dz * k1.ds), k3 = f(p + 0.5 * dz * k2.dp, q + 0.5 * dz * k2.ds), k4 = f(p + dz * k3.dp, q + dz * k3.ds);
     var np = Math.max(0, p + dz / 6 * (k1.dp + 2 * k2.dp + 2 * k3.dp + k4.dp)), nq = Math.max(0, q + dz / 6 * (k1.ds + 2 * k2.ds + 2 * k3.ds + k4.ds));
     var nx = f(np, nq);
     I1 += 0.5 * dz * (prev.S1 + nx.S1); I2 += 0.5 * dz * (prev.S2 + nx.S2);
-    z.push((s + 1) * dz); Pp.push(np); Ps.push(nq); inv.push(Gs > 0 ? nx.S2 / (N * Gs) : 0);
+    z.push((s + 1) * dz); Pp.push(np); Ps.push(nq); inv.push(Gs > 0 ? nx.S2 / (Ntot * Gs) : 0);
     prev = nx;
   }
   return { z: z, Pp: Pp, Ps: Ps, inv: inv, I1: I1, I2: I2 };
 }
-var RES = null;
+var RES = null, LMIN = 0.05, LMAX = 30;
+function gainAtZ(R, PsW, z) {
+  var dz = R.z[1] - R.z[0], i = Math.min(R.z.length - 2, Math.max(0, Math.floor(z / dz))), t = (z - R.z[i]) / dz;
+  return 10 * Math.log10((R.Ps[i] * (1 - t) + R.Ps[i + 1] * t) / PsW);
+}
+/* best length on one long run: maximum gain (dB) or maximum gain per cm */
+function bestOverZ(R, PsW, perCm, zmin, zmax) {
+  zmin = zmin || LMIN; zmax = zmax || LMAX;
+  var b = { g: -Infinity, z: zmin, v: -Infinity, R: R };
+  for (var i = 1; i < R.z.length; i++) {
+    var z = R.z[i]; if (z < zmin - 1e-9 || z > zmax + 1e-9) continue;
+    var g = 10 * Math.log10(R.Ps[i] / PsW), v = perCm ? g / z : g;
+    if (v > b.v) b = { g: g, z: z, v: v, R: R };
+  }
+  return b;
+}
 function model() {
   prepCells();
   var PsW = 1e-3 * Math.pow(10, S.PsdBm / 10), PpW = S.Pp * 1e-3;
@@ -447,7 +514,17 @@ function model() {
   for (i = 1; i < vsP.length; i++) if (vsP[i - 1][1] < 0 && vsP[i][1] >= 0) { thr = vsP[i - 1][0] + (vsP[i][0] - vsP[i - 1][0]) * (-vsP[i - 1][1]) / (vsP[i][1] - vsP[i - 1][1]); break; }
   if (vsP[0][1] >= 0) thr = 0;
   var Gnet = 10 * Math.log10(main.Ps[main.Ps.length - 1] / PsW);
-  RES = { main: main, spec: spec, specDark: specDark, peak: peak, vsP: vsP, Pmax: Pmax, thr: thr, Gnet: Gnet, PsW: PsW, PpW: PpW };
+  var vsN = null, Nmax = Math.max(5, 2 * S.nEr);
+  if (S.tab2 === 'n') {
+    vsN = []; var keep = S.nEr;
+    for (i = 0; i <= 30; i++) {
+      S.nEr = 0.1 + (Nmax - 0.1) * i / 30;
+      var bz = bestOverZ(run(PpW, PsW, LMAX, 150), PsW);
+      vsN.push([S.nEr, gainAtZ(bz.R, PsW, S.L), bz.g, bz.z]);
+    }
+    S.nEr = keep;
+  }
+  RES = { vsN: vsN, Nmax: Nmax, main: main, spec: spec, specDark: specDark, peak: peak, vsP: vsP, Pmax: Pmax, thr: thr, Gnet: Gnet, PsW: PsW, PpW: PpW };
 }
 
 /* ---------- canvas helpers ---------- */
@@ -570,7 +647,7 @@ function drawTiles() {
   $('tiles').innerHTML =
     tile('Pump overlap Γ<sub>p</sub>', fmt(100 * OV.Gp, 1) + ' %', 'core ' + fmt(100 * OV.fp[1], 1) + ' % · sub ' + fmt(100 * OV.fp[0], 1) + ' %', 'pump') +
     tile('Signal overlap Γ<sub>s</sub>', fmt(100 * OV.Gs, 1) + ' %', 'core ' + fmt(100 * OV.fs[1], 1) + ' % · sub ' + fmt(100 * OV.fs[0], 1) + ' %', 'sig') +
-    tile('Net gain at ' + fmt(S.lamS, 1) + ' nm', fmt(Gs, 2) + ' dB', fmt(perCm, 2) + ' dB/cm over ' + fmt(S.L, 2) + ' cm', Gs >= 0 ? 'good' : 'bad') +
+    tile('Net gain at ' + fmt(S.lamS, 1) + ' nm', fmt(Gs, 2) + ' dB', fmt(perCm, 2) + ' dB/cm over ' + fmt(S.L, 2) + ' cm' + (r.peak.g > 20 ? '<br><span style="color:var(--orange)">above ~20 dB, ASE (not modelled) would reduce this</span>' : ''), Gs >= 0 ? 'good' : 'bad') +
     tile('Output signal', fmt(10 * Math.log10(Pout * 1e3), 1) + ' dBm', 'input ' + fmt(S.PsdBm, 1) + ' dBm') +
     tile('Peak net gain', fmt(r.peak.g, 2) + ' dB', 'at ' + r.peak.l + ' nm') +
     tile('Pump absorbed', fmt(100 * (1 - (r.PpW > 0 ? PpOut / r.PpW : 1)), 1) + ' %', 'out ' + fmt(PpOut * 1e3, 1) + ' mW (incl. α)') +
@@ -640,6 +717,7 @@ function drawB() {
   var G = prep($('cB')), c = G.c, box = { x: 56, y: 10, w: G.w - 68, h: G.h - 44 };
   if (!RES) { axes(G, box, [0, 1], [-1, 1], '', 'gain (dB)'); return; }
   var pts, xl, xr;
+  if (S.tab2 === 'n') return drawVsN(G, box);
   if (S.tab2 === 'z') { var m = RES.main; pts = m.z.map(function (z, i) { return [z, 10 * Math.log10(m.Ps[i] / RES.PsW)]; }); xl = 'z (cm)'; xr = [0, S.L]; }
   else { pts = RES.vsP; xl = 'launched pump power (mW)'; xr = [0, RES.Pmax]; }
   var lo = 0, hi = 0; pts.forEach(function (p) { lo = Math.min(lo, p[1]); hi = Math.max(hi, p[1]); });
@@ -657,6 +735,143 @@ function drawB() {
     $('bLegend').innerHTML = '<span><i style="border-color:var(--c-sig)"></i>signal gain from input to z</span><span>● maximum ' + fmt(gm2, 2) + ' dB at z = ' + fmt(zm2, 2) + ' cm' + (zm2 < S.L - 1e-9 ? ' (shorter device is better)' : '') + '</span>';
   } else $('bLegend').innerHTML = '<span><i style="border-color:var(--c-sig)"></i>net gain at ' + fmt(S.lamS, 1) + ' nm for L = ' + fmt(S.L, 2) + ' cm</span><span>● current pump power</span>';
 }
+
+function drawVsN(G, box) {
+  var c = G.c, d = RES.vsN; box.w = G.w - 112;
+  var lo = 0, hi = 0, zmx = 0; d.forEach(function (p) { lo = Math.min(lo, p[1], p[2]); hi = Math.max(hi, p[1], p[2]); zmx = Math.max(zmx, p[3]); });
+  var pad = 0.08 * (hi - lo || 1);
+  var A = axes(G, box, [0, RES.Nmax], [lo - pad, hi + pad], 'N_Er (10²⁰ cm⁻³)', 'net signal gain (dB)', [0, Math.max(1, zmx * 1.08)], 'optimum length (cm)');
+  c.save(); c.beginPath(); c.rect(box.x, box.y, box.w, box.h); c.clip();
+  c.strokeStyle = css('--text-faint'); c.lineWidth = 1; c.beginPath(); c.moveTo(box.x, A.Y(0)); c.lineTo(box.x + box.w, A.Y(0)); c.stroke();
+  c.lineWidth = 2.4; c.strokeStyle = css('--c-sig'); line(c, A, d.map(function (p) { return [p[0], p[1]]; }));
+  c.strokeStyle = css('--green'); c.setLineDash([6, 4]); line(c, A, d.map(function (p) { return [p[0], p[2]]; })); c.setLineDash([]);
+  c.lineWidth = 1.4; c.strokeStyle = css('--text-dim'); c.setLineDash([2, 3]); line(c, A, d.map(function (p) { return [p[0], p[3]]; }), A.Y2); c.setLineDash([]);
+  c.fillStyle = css('--c-sig'); c.beginPath(); c.arc(A.X(S.nEr), A.Y(RES.Gnet), 4, 0, 7); c.fill();
+  c.restore();
+  var best = d.reduce(function (a, p) { return p[2] > a[2] ? p : a; }, d[0]);
+  $('bLegend').innerHTML = '<span><i style="border-color:var(--c-sig)"></i>gain at L = ' + fmt(S.L, 2) + ' cm</span><span><i class="dash" style="border-color:var(--green)"></i>gain at the optimum length</span><span><i style="border-top-style:dotted"></i>optimum length (right)</span><span>best ' + fmt(best[2], 1) + ' dB at ' + fmt(best[0], 2) + '×10²⁰ cm⁻³, L ' + fmt(best[3], 1) + ' cm (pump ' + fmt(S.Pp, 0) + ' mW)</span>';
+}
+
+/* ---------- optimizer: random sampling + Nelder–Mead on the EIM model ---------- */
+var OVARS = [
+  { k: 'w', lab: 'Strip width w (µm)', min: 0.5, max: 6, on: true },
+  { k: 'h', lab: 'Strip height h (µm)', min: 0.1, max: 1.2, on: true },
+  { k: 't', lab: 'Film thickness t (µm)', min: 0.05, max: 1.0, on: true },
+  { k: 'nEr', lab: 'N_Er (10²⁰ cm⁻³)', min: 0.2, max: 8, on: false, log: true },
+  { k: 'L', lab: 'Length L (cm)', min: 0.1, max: 20, on: true }
+];
+OVARS.forEach(function (v) {
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><input type="checkbox" id="ov-' + v.k + '"' + (v.on ? ' checked' : '') + ' aria-label="Optimize ' + v.lab + '"></td><td class="nm">' + v.lab + '</td>' +
+    '<td><input type="number" step="any" id="ovmin-' + v.k + '" value="' + v.min + '" aria-label="' + v.lab + ' minimum"></td><td><input type="number" step="any" id="ovmax-' + v.k + '" value="' + v.max + '" aria-label="' + v.lab + ' maximum"></td>';
+  $('optRows').appendChild(tr);
+  $('ov-' + v.k).addEventListener('change', function (e) { v.on = e.target.checked; });
+  $('ovmin-' + v.k).addEventListener('change', function (e) { var x = parseFloat(e.target.value); if (isFinite(x)) v.min = x; else e.target.value = v.min; });
+  $('ovmax-' + v.k).addEventListener('change', function (e) { var x = parseFloat(e.target.value); if (isFinite(x)) v.max = x; else e.target.value = v.max; });
+});
+var OPT = { running: false, stop: false };
+function optEval(p, vars, Lfree, Lb, noSM) {
+  var save = { S: Object.assign({}, S), MD: MD, CELLS: CELLS, OV: OV }, out;
+  Object.assign(S, p);
+  try {
+    var md = computeModesEIM(true);
+    if (md.err) out = { f: -1e6, why: 'not guided' };
+    else if (!noSM && $('optSM').checked && md.nSig > 1) out = { f: -1e6, why: 'multimode' };
+    else {
+      MD = md; prepCells();
+      var PsW = 1e-3 * Math.pow(10, S.PsdBm / 10), PpW = S.Pp * 1e-3, perCm = S.obj === 'dBcm', b;
+      if (Lfree) b = bestOverZ(run(PpW, PsW, Lb[1], 150), PsW, perCm, Lb[0], Lb[1]);
+      else { var R = run(PpW, PsW, S.L, 80), g = 10 * Math.log10(R.Ps[R.Ps.length - 1] / PsW); b = { g: g, z: S.L, v: perCm ? g / S.L : g }; }
+      out = { f: b.v, g: b.g, L: b.z, gamma: OV.Gs, gammaP: OV.Gp, nSig: md.nSig };
+    }
+  } catch (e) { out = { f: -1e6, why: 'error' }; }
+  Object.assign(S, save.S); MD = save.MD; CELLS = save.CELLS; OV = save.OV;
+  return out;
+}
+function* optimizer(vars, Lfree, Lb, rep) {
+  var n = vars.length, best = null, evals = 0;
+  function toP(x) {
+    var p = {};
+    vars.forEach(function (v, i) { var u = Math.max(0, Math.min(1, x[i])); p[v.k] = v.log ? v.min * Math.pow(v.max / v.min, u) : v.min + u * (v.max - v.min); });
+    return p;
+  }
+  function F(x) {
+    var p = toP(x), r = optEval(p, vars, Lfree, Lb); evals++;
+    if (r.f > -1e5 && (!best || r.f > best.r.f)) best = { p: p, r: r };
+    rep(evals, best);
+    return -r.f;
+  }
+  function fromS() { return vars.map(function (v) { var x = v.log ? Math.log(S[v.k] / v.min) / Math.log(v.max / v.min) : (S[v.k] - v.min) / (v.max - v.min); return Math.max(0, Math.min(1, x)); }); }
+  var start = fromS(), fs = F(start), seed = 2463534242;
+  function rnd() { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; }
+  var pts = [[start, fs]];
+  for (var s = 0; s < 12 * n + 12; s++) { var x = vars.map(rnd); pts.push([x, F(x)]); yield; }
+  pts.sort(function (a, b) { return a[1] - b[1]; });
+  for (var round = 0; round < 3; round++) {
+    var x0 = round === 0 ? pts[0][0] : (best ? vars.map(function (v) { var val = best.p[v.k]; return v.log ? Math.log(val / v.min) / Math.log(v.max / v.min) : (val - v.min) / (v.max - v.min); }) : pts[round][0]);
+    var step = round === 0 ? 0.2 : round === 1 ? 0.08 : 0.03, simp = [x0.slice()], fv = [F(x0)];
+    for (var i = 0; i < n; i++) { var xi = x0.slice(); xi[i] = x0[i] + step <= 1 ? x0[i] + step : x0[i] - step; simp.push(xi); fv.push(F(xi)); yield; }
+    for (var it = 0; it < 60 * n; it++) {
+      var ord = fv.map(function (v, j) { return j; }).sort(function (a, b) { return fv[a] - fv[b]; });
+      simp = ord.map(function (j) { return simp[j]; }); fv = ord.map(function (j) { return fv[j]; });
+      var size = 0; for (i = 1; i <= n; i++) for (var d = 0; d < n; d++) size = Math.max(size, Math.abs(simp[i][d] - simp[0][d]));
+      if (size < 2e-3) break;
+      var cen = new Array(n).fill(0);
+      for (i = 0; i < n; i++) for (d = 0; d < n; d++) cen[d] += simp[i][d] / n;
+      var clip = function (x) { return x.map(function (q) { return Math.max(0, Math.min(1, q)); }); };
+      var xr = clip(cen.map(function (cv, d) { return cv + (cv - simp[n][d]); })), fr = F(xr);
+      if (fr < fv[0]) {
+        var xe = clip(cen.map(function (cv, d) { return cv + 2 * (cv - simp[n][d]); })), fe = F(xe);
+        if (fe < fr) { simp[n] = xe; fv[n] = fe; } else { simp[n] = xr; fv[n] = fr; }
+      } else if (fr < fv[n - 1]) { simp[n] = xr; fv[n] = fr; }
+      else {
+        var xc = cen.map(function (cv, d) { return cv + 0.5 * (simp[n][d] - cv); }), fc = F(xc);
+        if (fc < fv[n]) { simp[n] = xc; fv[n] = fc; }
+        else for (i = 1; i <= n; i++) { simp[i] = simp[i].map(function (q, d) { return simp[0][d] + 0.5 * (q - simp[0][d]); }); fv[i] = F(simp[i]); }
+      }
+      yield;
+    }
+  }
+  return best;
+}
+function optDescribe(p, r, Lfree) {
+  return { w: p.w !== undefined ? p.w : S.w, h: p.h !== undefined ? p.h : S.h, t: p.t !== undefined ? p.t : S.t, nEr: p.nEr !== undefined ? p.nEr : S.nEr, L: Lfree ? r.L : S.L, g: r.g, gcm: r.g / (Lfree ? r.L : S.L), gamma: r.gamma };
+}
+$('optRun').addEventListener('click', function () {
+  if (OPT.running) { OPT.stop = true; return; }
+  if (!MD || MD.err) { $('optMsg').textContent = 'Start from a guided design.'; return; }
+  var vars = OVARS.filter(function (v) { return v.on && v.k !== 'L' && v.max > v.min; });
+  var Lv = OVARS[4], Lfree = Lv.on, Lb = [Math.max(LMIN, Lv.min), Math.min(LMAX, Lv.max)];
+  if (!vars.length && !Lfree) { $('optMsg').textContent = 'Tick at least one parameter.'; return; }
+  var cur = optEval({}, [], Lfree, Lb, true);
+  var before = cur.f > -1e5 ? optDescribe({}, cur, Lfree) : null;
+  OPT.running = true; OPT.stop = false; $('optRun').textContent = 'Stop';
+  var unit = S.obj === 'dBcm' ? ' dB/cm' : ' dB', last = 0, bestNow = null;
+  var gen = optimizer(vars, Lfree, Lb, function (ev, b) {
+    bestNow = b;
+    var now = Date.now(); if (now - last < 120) return; last = now;
+    $('optMsg').textContent = ev + ' evaluations · best ' + (b ? fmt(b.r.f, 2) + unit : '—');
+  });
+  function finish(best) {
+    OPT.running = false; $('optRun').textContent = 'Optimize';
+    best = best || bestNow;
+    if (!best) { $('optMsg').textContent = 'No guided design found within the bounds.'; $('optRes').innerHTML = ''; return; }
+    var a = optDescribe(best.p, best.r, Lfree);
+    $('optMsg').textContent = (OPT.stop ? 'Stopped. ' : 'Done. ') + 'Best ' + fmt(best.r.f, 2) + unit + (before && cur.nSig > 1 && $('optSM').checked ? '. The current design guides ' + cur.nSig + ' signal modes.' : '');
+    var rows = [['w (µm)', 'w', 2], ['h (µm)', 'h', 3], ['t (µm)', 't', 3], ['N_Er (10²⁰)', 'nEr', 2], ['L (cm)', 'L', 2], ['Γ signal (%)', 'gamma', 1, 100], ['Net gain (dB)', 'g', 2], ['Gain (dB/cm)', 'gcm', 2]];
+    $('optRes').innerHTML = '<table class="optr"><thead><tr><th></th><th>' + (Lfree ? 'current, best L' : 'current') + '</th><th>optimum</th></tr></thead><tbody>' + rows.map(function (r) {
+      var k = r[3] || 1, b = before ? before[r[1]] * k : null, o = a[r[1]] * k;
+      return '<tr><td>' + r[0] + '</td><td>' + fmt(b, r[2]) + '</td><td' + (b !== null && Math.abs(o - b) > Math.pow(10, -r[2]) ? ' class="up"' : '') + '>' + fmt(o, r[2]) + '</td></tr>';
+    }).join('') + '</tbody></table><button type="button" class="btn" id="optApply">Apply optimum</button>';
+    $('optApply').addEventListener('click', function () { S.w = a.w; S.h = a.h; S.t = a.t; S.nEr = a.nEr; S.L = a.L; sync(); changed(true); });
+  }
+  (function tick() {
+    if (OPT.stop) return finish(null);
+    var t0 = Date.now(), r;
+    while (Date.now() - t0 < 40) { r = gen.next(); if (r.done) return finish(r.value); }
+    setTimeout(tick, 0);
+  })();
+});
 
 /* ---------- orchestration ---------- */
 var pend = 0, needModes = true, needModel = true;
