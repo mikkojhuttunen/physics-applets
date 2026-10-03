@@ -89,7 +89,7 @@ table.optr td.up{color:var(--green)}
 <body>
 <div class="wrap">
   <h1>Er:Al₂O₃ strip-loaded waveguide amplifier</h1>
-  <p class="sub">An erbium-doped Al₂O₃ strip loads a thin film of Al₂O₃, Si₃N₄, LiNbO₃ (TFLN) or LiTaO₃ (TFLT) on SiO₂. The pump and signal modes are solved for the cross-section, their overlaps with the doped strip feed steady-state erbium rate equations, and the pump and signal are propagated along the device to give the gain spectrum.</p>
+  <p class="sub">An erbium-doped Al₂O₃ strip loads a thin film of Al₂O₃, Si₃N₄, LiNbO₃ (TFLN) or LiTaO₃ (TFLT) on SiO₂, with a SiO₂ top cladding or air above. The pump and signal modes are solved for the cross-section, their overlaps with the doped strip feed steady-state erbium rate equations, and the pump and signal are propagated along the device to give the gain spectrum.</p>
 
   <div class="layout">
     <aside class="side">
@@ -101,9 +101,10 @@ table.optr td.up{color:var(--green)}
           <button type="button" data-v="tfln">TFLN</button>
           <button type="button" data-v="tflt">TFLT</button>
         </div>
-        <div class="seg" id="supSeg" role="group" aria-label="Superstrate">
-          <button type="button" data-v="air">Air cover</button>
-          <button type="button" data-v="sio2">SiO₂ cover</button>
+        <div class="grp">Top cladding (superstrate)</div>
+        <div class="seg" id="supSeg" role="group" aria-label="Top cladding">
+          <button type="button" data-v="sio2">SiO₂ cladding</button>
+          <button type="button" data-v="air">Air (uncladded)</button>
         </div>
         <div id="cGeo"></div>
         <p class="hint">Choosing a platform loads typical dimensions. TFLN and TFLT are taken as x-cut: quasi-TE sees n<sub>e</sub>, quasi-TM sees n<sub>o</sub>.</p>
@@ -265,7 +266,7 @@ var PLAT = {
   tflt: { film: { TE: 'lt_e', TM: 'lt_o' }, t: 0.30, w: 2.0, h: 0.40 }
 };
 var S = {
-  plat: 'al2o3', t: 0.40, w: 2.0, h: 0.40, sup: 'air', pol: 'TE', solver: 'eim',
+  plat: 'al2o3', t: 0.40, w: 2.0, h: 0.40, sup: 'sio2', pol: 'TE', solver: 'eim',
   nEr: 1.5, L: 3.0, loss: 0.25, tau: 7.5, cup: 4.0, sigPk: 5.7, sig980: 1.7,
   pump: 980, Pp: 50, lamS: 1532, PsdBm: -30, tab: 'gain', tab2: 'z', cupMode: 'lin', qMode: 'lin', qk: 5, qf: 10, obj: 'dB'
 };
