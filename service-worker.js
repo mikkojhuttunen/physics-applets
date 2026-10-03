@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v35";
+const CACHE_NAME = "physics-applets-v36";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -8,6 +8,7 @@ const APP_SHELL = [
   "assets/css/fys310-solid-state-physics.css",
   "assets/css/photonics.css",
   "assets/js/course-back.js",
+  "assets/js/waveguide-core.js",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
   "fys232-structure-of-matter/index.html",
@@ -43,7 +44,8 @@ const APP_SHELL = [
   "fys501-laser-physics/mode-competition.html",
   "fys501-laser-physics/output-coupler-optimization.html",
   "photonics/index.html",
-  "photonics/waveguide-mode-explorer.html"
+  "photonics/waveguide-mode-explorer.html",
+  "photonics/er-waveguide-amplifier.html"
 ];
 
 self.addEventListener("install", (event) => {
