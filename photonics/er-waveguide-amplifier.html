@@ -113,9 +113,14 @@ table.optr td.up{color:var(--green)}
         <h2>Erbium and device</h2>
         <div id="cEr"></div>
         <div class="grp">Spectroscopy</div>
-        <div class="seg" id="concSeg" role="group" aria-label="Concentration effects">
-          <button type="button" data-v="off">Fixed C<sub>up</sub></button>
-          <button type="button" data-v="on">C<sub>up</sub> ∝ N<sub>Er</sub> + quenching</button>
+        <div class="seg" id="cupSeg" role="group" aria-label="Upconversion model">
+          <button type="button" data-v="fixed">C<sub>up</sub> fixed</button>
+          <button type="button" data-v="lin">C<sub>up</sub> ∝ N<sub>Er</sub></button>
+        </div>
+        <div class="seg" id="qSeg" role="group" aria-label="Quenching model">
+          <button type="button" data-v="none">No quenching</button>
+          <button type="button" data-v="lin">f<sub>q</sub> ∝ N<sub>Er</sub></button>
+          <button type="button" data-v="const">Fixed f<sub>q</sub></button>
         </div>
         <div id="cSpecCtl"></div>
         <p class="hint" id="concHint"></p>
@@ -198,6 +203,7 @@ table.optr td.up{color:var(--green)}
               <button type="button" data-v="z">Gain along z</button>
               <button type="button" data-v="p">Gain vs pump</button>
               <button type="button" data-v="n">Gain vs N<sub>Er</sub></button>
+              <button type="button" data-v="q">Gain vs quenching</button>
             </div>
           </div>
           <canvas id="cB" aria-label="Signal gain"></canvas>
@@ -214,7 +220,7 @@ table.optr td.up{color:var(--green)}
         <p>The integrals run over the doped strip only, so for uniform inversion they reduce to Γ(σ<sub>e</sub>N₂ − σ<sub>a</sub>N₁) with the overlap Γ = ∫<sub>strip</sub>|E|² dA / ∫|E|² dA. Here the inversion is computed locally, so the bright centre of the pump mode inverts more than the edges of the strip. The probe gain spectrum uses the inversion set up by the pump and the signal:</p>
         <div class="eq">G(λ) [dB] = 4.343 [σ<sub>e</sub>(λ) ∫n̄₂ dz − σ<sub>a</sub>(λ) ∫n̄₁ dz] · Γ<sub>s</sub>(λ)/Γ<sub>s</sub>(λ<sub>s</sub>) − α L,   n̄ = ∫N|E<sub>s</sub>|² dA / ∫|E<sub>s</sub>|² dA</div>
         <h3>Spectroscopy and limits of the model</h3>
-        <p>The absorption cross-section is a smooth model of the Er:Al₂O₃ band (peak at 1533 nm, adjustable height); the emission cross-section follows from McCumber theory, σ<sub>e</sub>(λ) = σ<sub>a</sub>(λ) exp[(hc/λ₀ − hc/λ)/kT] with λ₀ = 1532 nm and T = 295 K. Default values are typical of sputtered Al₂O₃:Er films (σ<sub>a</sub>(1533) ≈ 5.7×10⁻²¹ cm², σ<sub>a</sub>(980) ≈ 1.7×10⁻²¹ cm², τ ≈ 7.5 ms, C<sub>up</sub> a few 10⁻¹⁸ cm³/s); use measured data for your films where you have them. With concentration effects on, the upconversion coefficient grows in proportion to N<sub>Er</sub> (C<sub>up</sub> = C<sub>up</sub>(10²⁰)·N<sub>Er</sub>/10²⁰) and a fraction f<sub>q</sub> = k<sub>q</sub>N<sub>Er</sub> of the ions is quenched: these decay too fast to be inverted, so they only absorb pump and signal. This is what makes an optimum concentration appear. Not included: amplified spontaneous emission (it limits gain above roughly 20–30 dB), excited-state absorption, quenched ion pairs, and Er in the film (only the strip is doped). The background loss α is taken equal at pump and signal. Modes come from the effective index method or the semi-vectorial 2D finite-difference solver of the <a href="waveguide-mode-explorer.html">waveguide mode explorer</a>; Γ<sub>s</sub>(λ) for the spectrum is evaluated with the EIM at 25 nm steps and scaled to the selected solver at λ<sub>s</sub>.</p>
+        <p>The absorption cross-section is a smooth model of the Er:Al₂O₃ band (peak at 1533 nm, adjustable height); the emission cross-section follows from McCumber theory, σ<sub>e</sub>(λ) = σ<sub>a</sub>(λ) exp[(hc/λ₀ − hc/λ)/kT] with λ₀ = 1532 nm and T = 295 K. Default values are typical of sputtered Al₂O₃:Er films (σ<sub>a</sub>(1533) ≈ 5.7×10⁻²¹ cm², σ<sub>a</sub>(980) ≈ 1.7×10⁻²¹ cm², τ ≈ 7.5 ms, C<sub>up</sub> a few 10⁻¹⁸ cm³/s); use measured data for your films where you have them. With concentration effects on, the upconversion coefficient grows in proportion to N<sub>Er</sub> (C<sub>up</sub> = C<sub>up</sub>(10²⁰)·N<sub>Er</sub>/10²⁰) and a fraction f<sub>q</sub> of the ions is quenched, either growing with concentration (f<sub>q</sub> = k<sub>q</sub>N<sub>Er</sub>, clustering) or fixed (set by the deposition process). Quenched ions decay too fast to be inverted (sub-µs instead of ms), so they stay in the ground state and only absorb pump and signal; the remaining ions follow the rate equation above. Quenching and concentration-dependent upconversion are what make an optimum concentration appear. The "Gain vs quenching" view sweeps the quenched share and, for each value, also searches the best N<sub>Er</sub> (0.1–10×10²⁰ cm⁻³) and length (up to 30 cm), which shows how much a lower-quenching film is worth once the design is adapted to it. Not included: amplified spontaneous emission (it limits gain above roughly 20–30 dB), excited-state absorption, partly inverted ion pairs, and Er in the film (only the strip is doped). The background loss α is taken equal at pump and signal. Modes come from the effective index method or the semi-vectorial 2D finite-difference solver of the <a href="waveguide-mode-explorer.html">waveguide mode explorer</a>; Γ<sub>s</sub>(λ) for the spectrum is evaluated with the EIM at 25 nm steps and scaled to the selected solver at λ<sub>s</sub>.</p>
       </div>
     </main>
   </div>
@@ -261,7 +267,7 @@ var PLAT = {
 var S = {
   plat: 'al2o3', t: 0.40, w: 2.0, h: 0.40, sup: 'air', pol: 'TE', solver: 'eim',
   nEr: 1.5, L: 3.0, loss: 0.25, tau: 7.5, cup: 4.0, sigPk: 5.7, sig980: 1.7,
-  pump: 980, Pp: 50, lamS: 1532, PsdBm: -30, tab: 'gain', tab2: 'z', conc: 'on', qk: 5, obj: 'dB'
+  pump: 980, Pp: 50, lamS: 1532, PsdBm: -30, tab: 'gain', tab2: 'z', cupMode: 'lin', qMode: 'lin', qk: 5, qf: 10, obj: 'dB'
 };
 var SPECS = {
   cGeo: [
@@ -277,7 +283,8 @@ var SPECS = {
   cSpecCtl: [
     { k: 'tau', lab: '⁴I₁₃/₂ lifetime', sym: 'τ (ms)', min: 0.5, max: 12, step: 0.1, dec: 1 },
     { k: 'cup', lab: 'Upconversion coefficient', sym: 'C_up (10⁻¹⁸ cm³/s)', min: 0, max: 20, step: 0.1, dec: 1 },
-    { k: 'qk', lab: 'Quenched ions per 10²⁰ cm⁻³', sym: 'f_q (%)', min: 0, max: 30, step: 0.5, dec: 1 },
+    { k: 'qk', lab: 'Quenched share per 10²⁰ cm⁻³', sym: 'k_q (%)', min: 0, max: 30, step: 0.1, dec: 1 },
+    { k: 'qf', lab: 'Quenched share of the ions', sym: 'f_q (%)', min: 0, max: 80, step: 0.5, dec: 1 },
     { k: 'sigPk', lab: 'Peak absorption, 1533 nm', sym: 'σ_a (10⁻²¹ cm²)', min: 1, max: 10, step: 0.05, dec: 2 },
     { k: 'sig980', lab: 'Pump absorption, 980 nm', sym: 'σ_a (10⁻²¹ cm²)', min: 0.3, max: 5, step: 0.05, dec: 2 }
   ],
@@ -317,12 +324,13 @@ function sync() {
     if (document.activeElement !== c.nb) c.nb.value = v.toFixed(sp.dec);
   });
   CTL.sig980.r.closest('.ctl').hidden = S.pump !== 980;
-  CTL.qk.r.closest('.ctl').hidden = S.conc !== 'on';
-  CTL.cup.r.closest('.ctl').querySelector('label span').textContent = S.conc === 'on' ? 'Upconversion at 10²⁰ cm⁻³' : 'Upconversion coefficient';
+  CTL.qk.r.closest('.ctl').hidden = S.qMode !== 'lin';
+  CTL.qf.r.closest('.ctl').hidden = S.qMode !== 'const';
+  CTL.cup.r.closest('.ctl').querySelector('label span').textContent = S.cupMode === 'lin' ? 'Upconversion at 10²⁰ cm⁻³' : 'Upconversion coefficient';
   var ce = concEff();
-  $('concHint').innerHTML = S.conc === 'on'
-    ? 'At ' + fmt(S.nEr, 2) + '×10²⁰ cm⁻³: C<sub>up</sub> = ' + fmt(ce.cup * 1e18, 2) + '×10⁻¹⁸ cm³/s, ' + fmt(100 * ce.fq, 1) + ' % of the ions quenched (always absorbing, never inverted).'
-    : 'C<sub>up</sub> independent of concentration and no quenched ions: more erbium always looks better than it is.';
+  $('concHint').innerHTML = 'At ' + fmt(S.nEr, 2) + '×10²⁰ cm⁻³: C<sub>up</sub> = ' + fmt(ce.cup * 1e18, 2) + '×10⁻¹⁸ cm³/s, ' +
+    (ce.fq > 0 ? fmt(100 * ce.fq, 1) + ' % of the ions quenched (' + fmt(ce.fq * S.nEr, 2) + '×10²⁰ cm⁻³ that only absorb).' : 'no quenched ions.') +
+    (S.cupMode === 'fixed' && S.qMode === 'none' ? ' Without concentration effects, more erbium always looks better than it is.' : '');
   Object.keys(SEGS).forEach(function (id) {
     Array.prototype.forEach.call($(id).querySelectorAll('button'), function (b) {
       var on = String(SEGS[id].get()) === b.dataset.v;
@@ -338,7 +346,8 @@ var SEGS = {
   solverSeg: { modes: true, get: function () { return S.solver; }, set: function (v) { S.solver = v; } },
   tabSeg: { view: true, get: function () { return S.tab; }, set: function (v) { S.tab = v; } },
   tab2Seg: { get: function () { return S.tab2; }, set: function (v) { S.tab2 = v; } },
-  concSeg: { get: function () { return S.conc; }, set: function (v) { S.conc = v; } },
+  cupSeg: { get: function () { return S.cupMode; }, set: function (v) { S.cupMode = v; } },
+  qSeg: { get: function () { return S.qMode; }, set: function (v) { S.qMode = v; } },
   objSeg: { view: true, get: function () { return S.obj; }, set: function (v) { S.obj = v; } }
 };
 Object.keys(SEGS).forEach(function (id) {
@@ -446,8 +455,8 @@ function prepCells() {
 }
 /* concentration effects: C_up grows linearly with N_Er, a fraction f_q of the ions is quenched */
 function concEff() {
-  if (S.conc !== 'on') return { cup: S.cup * 1e-18, fq: 0 };
-  return { cup: S.cup * 1e-18 * S.nEr, fq: Math.min(0.95, S.qk / 100 * S.nEr) };
+  var fq = S.qMode === 'lin' ? S.qk / 100 * S.nEr : S.qMode === 'const' ? S.qf / 100 : 0;
+  return { cup: S.cup * 1e-18 * (S.cupMode === 'lin' ? S.nEr : 1), fq: Math.min(0.95, fq) };
 }
 function run(PpW, PsW, L, nz) {
   var ce0 = concEff(), Ntot = S.nEr * 1e20, Nq = Ntot * ce0.fq, N = Ntot - Nq;
@@ -493,6 +502,27 @@ function bestOverZ(R, PsW, perCm, zmin, zmax) {
   }
   return b;
 }
+/* gain against the quenching strength: current design, best length, best N_Er and length */
+function quenchSweep(PpW, PsW) {
+  var keep = { qMode: S.qMode, qk: S.qk, qf: S.qf, nEr: S.nEr }, mode = S.qMode === 'const' ? 'const' : 'lin', key = mode === 'const' ? 'qf' : 'qk';
+  var cur = S.qMode === 'none' ? 0 : S[key], xmax = Math.max(mode === 'const' ? 20 : 10, 2 * cur), out = [];
+  S.qMode = mode;
+  for (var i = 0; i <= 16; i++) {
+    var q = xmax * i / 16; S[key] = q; S.nEr = keep.nEr;
+    var R = run(PpW, PsW, LMAX, 100), bz = bestOverZ(R, PsW), best = { g: -Infinity, n: 0, z: 0 };
+    var evalN = function (u) { S.nEr = 0.1 * Math.pow(100, u); var r = bestOverZ(run(PpW, PsW, LMAX, 60), PsW); if (r.g > best.g) best = { g: r.g, n: S.nEr, z: r.z }; return r.g; };
+    var ju = 0, jg = -Infinity;
+    for (var j = 0; j <= 12; j++) { var gj = evalN(j / 12); if (gj > jg) { jg = gj; ju = j / 12; } }
+    var ga = Math.max(0, ju - 1 / 12), gb2 = Math.min(1, ju + 1 / 12), gr = 0.618034;
+    for (var it = 0; it < 6; it++) {
+      var u1 = gb2 - gr * (gb2 - ga), u2 = ga + gr * (gb2 - ga);
+      if (evalN(u1) > evalN(u2)) gb2 = u2; else ga = u1;
+    }
+    out.push({ q: q, gL: gainAtZ(R, PsW, S.L), gz: bz.g, zb: bz.z, gb: best.g, nb: best.n, lb: best.z });
+  }
+  Object.assign(S, keep);
+  return { pts: out, key: key, mode: mode, cur: cur, xmax: xmax };
+}
 function model() {
   prepCells();
   var PsW = 1e-3 * Math.pow(10, S.PsdBm / 10), PpW = S.Pp * 1e-3;
@@ -524,7 +554,9 @@ function model() {
     }
     S.nEr = keep;
   }
-  RES = { vsN: vsN, Nmax: Nmax, main: main, spec: spec, specDark: specDark, peak: peak, vsP: vsP, Pmax: Pmax, thr: thr, Gnet: Gnet, PsW: PsW, PpW: PpW };
+  var vsQ = null;
+  if (S.tab2 === 'q') vsQ = quenchSweep(PpW, PsW);
+  RES = { vsQ: vsQ, vsN: vsN, Nmax: Nmax, main: main, spec: spec, specDark: specDark, peak: peak, vsP: vsP, Pmax: Pmax, thr: thr, Gnet: Gnet, PsW: PsW, PpW: PpW };
 }
 
 /* ---------- canvas helpers ---------- */
@@ -718,6 +750,7 @@ function drawB() {
   if (!RES) { axes(G, box, [0, 1], [-1, 1], '', 'gain (dB)'); return; }
   var pts, xl, xr;
   if (S.tab2 === 'n') return drawVsN(G, box);
+  if (S.tab2 === 'q') return drawVsQ(G, box);
   if (S.tab2 === 'z') { var m = RES.main; pts = m.z.map(function (z, i) { return [z, 10 * Math.log10(m.Ps[i] / RES.PsW)]; }); xl = 'z (cm)'; xr = [0, S.L]; }
   else { pts = RES.vsP; xl = 'launched pump power (mW)'; xr = [0, RES.Pmax]; }
   var lo = 0, hi = 0; pts.forEach(function (p) { lo = Math.min(lo, p[1]); hi = Math.max(hi, p[1]); });
@@ -736,6 +769,28 @@ function drawB() {
   } else $('bLegend').innerHTML = '<span><i style="border-color:var(--c-sig)"></i>net gain at ' + fmt(S.lamS, 1) + ' nm for L = ' + fmt(S.L, 2) + ' cm</span><span>● current pump power</span>';
 }
 
+function drawVsQ(G, box) {
+  var c = G.c, Q = RES.vsQ, d = Q.pts; box.w = G.w - 112;
+  var lo = 0, hi = 0, nmx = 0;
+  d.forEach(function (p) { lo = Math.min(lo, p.gL, p.gz, p.gb); hi = Math.max(hi, p.gL, p.gz, p.gb); nmx = Math.max(nmx, p.nb); });
+  var pad = 0.08 * (hi - lo || 1);
+  var xl = Q.mode === 'const' ? 'quenched share f_q (%)' : 'quenched share per 10²⁰ cm⁻³, k_q (%)';
+  var A = axes(G, box, [0, Q.xmax], [lo - pad, hi + pad], xl, 'net signal gain (dB)', [0, Math.max(1, nmx * 1.1)], 'best N_Er (10²⁰ cm⁻³)');
+  c.save(); c.beginPath(); c.rect(box.x, box.y, box.w, box.h); c.clip();
+  c.strokeStyle = css('--text-faint'); c.lineWidth = 1; c.beginPath(); c.moveTo(box.x, A.Y(0)); c.lineTo(box.x + box.w, A.Y(0)); c.stroke();
+  c.lineWidth = 2.4; c.strokeStyle = css('--c-sig'); line(c, A, d.map(function (p) { return [p.q, p.gL]; }));
+  c.lineWidth = 2; c.strokeStyle = css('--cyan'); c.setLineDash([6, 4]); line(c, A, d.map(function (p) { return [p.q, p.gz]; }));
+  c.strokeStyle = css('--green'); c.setLineDash([]); line(c, A, d.map(function (p) { return [p.q, p.gb]; }));
+  c.lineWidth = 1.4; c.strokeStyle = css('--text-dim'); c.setLineDash([2, 3]); line(c, A, d.map(function (p) { return [p.q, p.nb]; }), A.Y2); c.setLineDash([]);
+  c.strokeStyle = css('--text'); c.globalAlpha = 0.6; c.lineWidth = 1; c.beginPath(); c.moveTo(A.X(Q.cur), box.y); c.lineTo(A.X(Q.cur), box.y + box.h); c.stroke(); c.globalAlpha = 1;
+  c.restore();
+  function at(q, k) { var i = Math.min(d.length - 2, Math.floor(q / Q.xmax * (d.length - 1))), t = (q - d[i].q) / (d[i + 1].q - d[i].q); return d[i][k] + t * (d[i + 1][k] - d[i][k]); }
+  var g0 = d[0], gc = at(Q.cur, 'gL'), gbc = at(Q.cur, 'gb'), half = at(Q.cur / 2, 'gL'), halfb = at(Q.cur / 2, 'gb');
+  $('bLegend').innerHTML = '<span><i style="border-color:var(--c-sig)"></i>this design (L = ' + fmt(S.L, 2) + ' cm)</span><span><i class="dash" style="border-color:var(--cyan)"></i>this cross-section and N<sub>Er</sub>, best L</span><span><i style="border-color:var(--green)"></i>best N<sub>Er</sub> and L</span><span><i style="border-top-style:dotted"></i>best N<sub>Er</sub> (right)</span>' +
+    (Q.cur > 0 ? '<span>Halving quenching: ' + signed(half - gc) + ' dB for this design, ' + signed(halfb - gbc) + ' dB with N<sub>Er</sub> and L re-optimised.</span>' : '') +
+    '<span>No quenching: ' + fmt(g0.gL, 1) + ' dB for this design; ' + fmt(g0.gb, 1) + ' dB at ' + fmt(g0.nb, 2) + '×10²⁰ cm⁻³ and L ' + fmt(g0.lb, 1) + ' cm' + (g0.lb >= LMAX - 0.5 ? ' (length limit)' : '') + ' (vs ' + fmt(gbc, 1) + ' dB now).</span>';
+}
+function signed(v) { return (v >= 0 ? '+' : MINUS) + fmt(Math.abs(v), 1); }
 function drawVsN(G, box) {
   var c = G.c, d = RES.vsN; box.w = G.w - 112;
   var lo = 0, hi = 0, zmx = 0; d.forEach(function (p) { lo = Math.min(lo, p[1], p[2]); hi = Math.max(hi, p[1], p[2]); zmx = Math.max(zmx, p[3]); });
