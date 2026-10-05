@@ -1,0 +1,297 @@
+From 672134181e29569ec4155233002ef37a3cc925f8 Mon Sep 17 00:00:00 2001
+From: mikkojhuttunen <mikkojhuttunen@gmail.com>
+Date: Thu, 1 Oct 2026 17:08:02 +0000
+Subject: [PATCH] Cavity workbench: bowtie layout from real arm lengths,
+ astigmatism compensation
+
+Layout: a four-mirror ring is now drawn as a bowtie built from the real
+arm lengths, crystal arm at the bottom with the pump from the left and
+the opposite arm on top with the output to the right, both horizontal;
+only the horizontal direction is stretched to fill the panel. Elements
+carry short names, the output arrow shows the live power and
+wavelength, the pump arrow the pump wavelength, and curved mirrors
+their incidence angle. A note gives the fold angles the arm lengths
+imply and flags when they disagree with the entered angles, or when the
+arm lengths cannot close a planar ring at all. The ray overlay shows
+the first three round trips only.
+
+Astigmatism: new Compensate astigmatism button scans one incidence
+angle for all curved mirrors and keeps the one with m_T = m_S, and
+quotes the textbook two-mirror condition R sin(theta) tan(theta) =
+L(n^2-1)/n^3 for the Brewster crystal for comparison. The incidence
+angle control is labelled as setting astigmatism, the results list
+gains an astigmatism check, and the model notes describe both.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015k2UYA58Ace5jVaSrfKnkj
+---
+ laserquiz-rewards/cavity-workbench.html | 158 +++++++++++++++++++-----
+ 1 file changed, 126 insertions(+), 32 deletions(-)
+
+diff --git a/laserquiz-rewards/cavity-workbench.html b/laserquiz-rewards/cavity-workbench.html
+index 421ffbd..622eb24 100644
+--- a/laserquiz-rewards/cavity-workbench.html
++++ b/laserquiz-rewards/cavity-workbench.html
+@@ -128,9 +128,10 @@ footer li{margin:2px 0}
+   </section>
+ 
+   <section class="panel" aria-labelledby="hlay">
+-    <h2 id="hlay">Layout <span style="font-weight:400;color:var(--muted);font-size:13px">(schematic, not to scale)</span></h2>
+-    <div class="cvwrap"><canvas id="cvLayout" height="290" role="img" aria-label="Cavity layout schematic"></canvas></div>
+-    <div class="legend"><span><i style="background:var(--beam)"></i>beam</span><span><i style="background:#2f9e6b"></i>pump</span><span><i style="background:var(--crystal);height:9px"></i>gain crystal</span><span><i style="background:var(--f1)"></i>offset ray</span><span><i style="background:var(--f2)"></i>tilted ray</span><span>rays in the tangential plane, offsets exaggerated (largest excursion drawn at about mirror half-size)</span></div>
++    <h2 id="hlay">Layout <span id="layScale" style="font-weight:400;color:var(--muted);font-size:13px">(schematic, not to scale)</span></h2>
++    <div class="cvwrap"><canvas id="cvLayout" height="300" role="img" aria-label="Cavity layout schematic"></canvas></div>
++    <div class="legend"><span><i style="background:var(--beam)"></i>beam</span><span><i style="background:#2f9e6b"></i>pump</span><span><i style="background:var(--crystal);height:9px"></i>gain crystal</span><span><i style="background:var(--f1)"></i>offset ray</span><span><i style="background:var(--f2)"></i>tilted ray</span><span>rays in the tangential plane, offsets exaggerated, first 3 round trips</span></div>
++    <p class="note" id="layoutNote"></p>
+   </section>
+ 
+   <section class="panel" aria-labelledby="hray">
+@@ -195,7 +196,9 @@ footer li{margin:2px 0}
+     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+       <button id="btnMatch" title="Set the pump waist equal to the cavity mode waist in the crystal">Match pump to mode</button>
+       <button id="btnTune" title="Set BRF/filter centres, etalon tilts and cavity trim so that one mode sits at the target wavelength">Tune to target λ</button>
++      <button id="btnAstig" title="Set the incidence angle of the curved mirrors so that the mode in the crystal is round">Compensate astigmatism</button>
+     </div>
++    <p class="note" id="astigNote">Tilting a curved mirror by θ makes it astigmatic: f<sub>T</sub> = (R/2)cos θ, f<sub>S</sub> = R/(2cos θ). A Brewster-cut crystal is astigmatic the opposite way (effective lengths L/n³ and L/n). With the right fold angle the two cancel and the mode in the crystal is round.</p>
+   </div>
+ 
+   <div class="panel">
+@@ -218,6 +221,8 @@ footer li{margin:2px 0}
+     <ul>
+       <li><strong>Optics.</strong> Paraxial ABCD matrices in reduced distances (d/n), so the q-parameter eigenvalue of the round trip directly gives the physical beam radius. Curved mirrors at incidence angle θ: f<sub>T</sub> = (R/2)cos θ, f<sub>S</sub> = R/(2cos θ). Brewster-cut slabs: effective distances L/n³ (tangential) and L/n (sagittal), with L the path length inside the crystal (Kogelnik).</li>
+       <li><strong>Ray trace.</strong> Paraxial rays (y, n·θ) pushed through the same round-trip matrices, so they exist whether or not a Gaussian eigenmode does. The round-trip Gouy phase θ = arccos m sets how fast a ray circles the axis; if θ/2π is close to a fraction p/q with small q the ray closes on itself after q round trips and transverse modes become degenerate. For |m| &gt; 1 a ray grows by |m| + √(m² − 1) per round trip. Apertures only stop rays; their diffraction loss is not modelled.</li>
++      <li><strong>Astigmatism compensation.</strong> The button scans one common incidence angle θ for all curved mirrors and keeps the one where both planes see the same cavity, m<sub>T</sub> = m<sub>S</sub> (equal stability ranges, round beam in the arms). For comparison it quotes the textbook two-mirror condition for the Brewster crystal, R sin θ tan θ = L(n²−1)/n³ with L the path length in the crystal (Kogelnik et al. 1972). Brewster surfaces elsewhere (BRF, plates) also enter the scan.</li>
++      <li><strong>Layout.</strong> A four-mirror ring is drawn as a bowtie from the real arm lengths, with the crystal arm at the bottom and the two arms horizontal; only the horizontal direction is stretched to fill the panel. The fold angles that close this bowtie are compared with the incidence angles you entered, which are what the beam calculation uses.</li>
+       <li><strong>Thermal lens.</strong> Thin lens at the crystal centre, f = πKw<sub>p</sub>²/(P<sub>heat</sub>·dn/dT) with P<sub>heat</sub> = quantum defect × absorbed pump. It ignores end-face bulging, stress birefringence and aberrations, and overestimates the lens for very tight pump spots, so use the calibration factor if you have a measured value. The Ti:sapphire example uses 0.3 as an assumption, not a measurement.</li>
+       <li><strong>Threshold and power.</strong> Ideal four-level rate-equation estimate: P<sub>th</sub> = hν<sub>p</sub>π(w<sub>l</sub>²+w<sub>p</sub>²)γ / (2·N<sub>pass</sub>·σ·τ), slope = (λ<sub>p</sub>/λ<sub>l</sub>)·η<sub>overlap</sub>·0.9·T/γ. No excited-state absorption, upconversion or reabsorption, so thresholds are optimistic.</li>
+       <li><strong>Mode selection.</strong> Every cavity mode inside the gain window is given a ratio x = (gain)/(round-trip loss incl. filter losses). The best mode wins. In a travelling-wave ring (ring + optical isolator) homogeneous broadening allows only that one mode; the margin to the runner-up tells you how prone it is to mode hops. With spatial hole burning (linear cavity, or ring without an isolator) modes whose x is within half of the excess over threshold also lase; a twisted-mode pair reduces this to 10 %.</li>
+@@ -407,6 +412,34 @@ function rayRegime(m){
+   return {kind:'unstable', M:Math.abs(m)+Math.sqrt(m*m-1)};
+ }
+ 
++/* ---- astigmatism: mode ellipticity in the crystal, and the fold angle that removes it ---- */
++// Compensated means both planes see the same cavity: equal round-trip m, hence equal stability
++// ranges and a round beam in the arms. The waist ratio in the crystal alone is a weak indicator.
++function astigState(st){
++  const gi=st.els.findIndex(e=>e.type==='gain'); if(gi<0) return null;
++  const g=st.els[gi], th=thermalF(g,st).f, {ops,fwdEnd}=buildSeq(st,th), M=roundTrip(ops);
++  const eT=eigenQ(M.T), eS=eigenQ(M.S); if(!eT.stable||!eS.stable) return null;
++  const r=propagate(ops,fwdEnd,eT.q,eS.q,g.lamC*1e-9,40).rec[gi];
++  return {mT:eT.m, mS:eS.m, ratio:r.wTm/r.wSm};
++}
++function compensateAstig(st){
++  const cm=st.els.filter(e=>e.type==='mirror_curved');
++  if(!cm.length) return {err:'There is no curved mirror to tilt.'};
++  if(!st.els.some(e=>e.type==='gain')) return {err:'Add a gain crystal first.'};
++  const s2=JSON.parse(JSON.stringify(st)); let best=null;
++  for(let a=0;a<=30.0001;a+=0.05){
++    s2.els.forEach(e=>{ if(e.type==='mirror_curved') e.aoi=a; });
++    const r=astigState(s2); if(r==null) continue;
++    const c=Math.abs(r.mT-r.mS); if(!best||c<best.c-1e-9) best={a,c};
++  }
++  if(!best) return {err:'No incidence angle between 0° and 30° gives a stable cavity.'};
++  const th=Math.round(best.a*10)/10; cm.forEach(e=>e.aoi=th);
++  const g=st.els.find(e=>e.type==='gain'), dl=g.brew ? g.L*(g.n*g.n-1)/(g.n**3) : 0, Rm=cm.reduce((p,e)=>p+e.R,0)/cm.length;
++  let est=null;
++  if(cm.length===2 && dl>0){ let lo=0, hi=Math.PI/4; for(let k=0;k<60;k++){ const m=(lo+hi)/2; if(Rm*Math.sin(m)*Math.tan(m)<dl) lo=m; else hi=m; } est=lo*180/Math.PI; }
++  return Object.assign({theta:th, est, dl, Rm, n:cm.length}, astigState(st));
++}
++
+ /* ---- spectral pieces ---- */
+ function gainShape(g,nu){
+   const nu0=C0/(g.lamC*1e-9), x=(nu-nu0)/(g.dnuTHz*1e12);
+@@ -667,7 +700,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
+ const LOSS={k:'loss',l:'loss (%)',min:0,max:10,step:0.05};
+ const PS={
+   mirror_flat:[{k:'T',l:'transmission (%)',min:0,max:60,step:0.1},{k:'Lm',l:'loss (%)',min:0,max:5,step:0.05},{k:'dich',l:'pump window (HT at pump λ)',t:'c'}],
+-  mirror_curved:[{k:'R',l:'R (mm)',min:20,max:1000,step:1,sl:1},{k:'aoi',l:'incidence angle (°)',min:0,max:30,step:0.5,sl:1},{k:'T',l:'transmission (%)',min:0,max:60,step:0.1},{k:'Lm',l:'loss (%)',min:0,max:5,step:0.05},{k:'dich',l:'pump window (HT at pump λ)',t:'c'}],
++  mirror_curved:[{k:'R',l:'R (mm)',min:20,max:1000,step:1,sl:1},{k:'aoi',l:'incidence angle θ (°), sets astigmatism',min:0,max:30,step:0.5,sl:1},{k:'T',l:'transmission (%)',min:0,max:60,step:0.1},{k:'Lm',l:'loss (%)',min:0,max:5,step:0.05},{k:'dich',l:'pump window (HT at pump λ)',t:'c'}],
+   lens:[{k:'f',l:'f (mm)',min:-1000,max:1000,step:1,sl:1},{k:'Lm',l:'loss (%)',min:0,max:5,step:0.05}],
+   etalon:[{k:'d',l:'thickness (mm)',min:0.02,max:30,step:0.01},{k:'n',l:'index',min:1,max:4,step:0.01},{k:'Rs',l:'face reflectivity (%)',min:1,max:99,step:0.5},{k:'tilt',l:'tilt (°)',min:0,max:5,step:0.05},{k:'tune',l:'tune (fraction of FSR)',min:0,max:1,step:0.001,sl:1},LOSS],
+   brf:[{k:'N',l:'plates (d, 2d, 4d)',min:1,max:3,step:1},{k:'d1',l:'thinnest plate (mm)',min:0.05,max:5,step:0.01},{k:'lam',l:'peak λ (nm)',min:200,max:3000,step:0.01},LOSS],
+@@ -782,13 +815,21 @@ $$('[data-p]').forEach(el=>{
+ function setMode(m){ S.mode=m; syncControls(); renderBench(); schedule(); }
+ $('#modeRing').onclick=()=>setMode('ring'); $('#modeLinear').onclick=()=>setMode('linear');
+ $('#preset').innerHTML=Object.entries(PRESETS).map(([k,p])=>`<option value="${k}">${esc(p.label)}</option>`).join('');
+-function loadState(s){ S=s; view.spanLog=null; view.sweep='pump'; syncControls(); renderBench(); buildSweepSel(); schedule(); }
++function loadState(s){ S=s; if(typeof ASTIG_INTRO==='string') $('#astigNote').innerHTML=ASTIG_INTRO; view.spanLog=null; view.sweep='pump'; syncControls(); renderBench(); buildSweepSel(); schedule(); }
+ $('#btnLoad').onclick=()=>loadState(PRESETS[$('#preset').value].build());
+ $('#btnSave').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})); a.download='laser_cavity_design.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
+ $('#btnOpen').onclick=()=>$('#fileOpen').click();
+ $('#fileOpen').onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; f.text().then(t=>{ try{ const s=JSON.parse(t); if(!s.els||!s.mode) throw 0; const base=mkState(); loadState(Object.assign(base,s)); }catch(_){ alert('That file is not a cavity design saved from this workbench.'); } }); ev.target.value=''; };
+ $('#btnMatch').onclick=()=>{ if(LAST&&LAST.wl){ S.pump.wp=Math.round(LAST.wl*1e6*10)/10; syncControls(); schedule(); } };
+ $('#btnTune').onclick=()=>{ tuneToTarget(S); syncControls(); renderBench(); schedule(); };
++const ASTIG_INTRO=$('#astigNote').innerHTML;
++$('#btnAstig').onclick=()=>{
++  const r=compensateAstig(S), el=$('#astigNote');
++  if(r.err){ el.innerHTML=ASTIG_INTRO+' <strong>'+esc(r.err)+'</strong>'; return; }
++  let t=` <strong>Set θ = ${fmt(r.theta,3)}° on ${r.n===1?'the curved mirror':r.n===2?'both curved mirrors':'all '+r.n+' curved mirrors'}: m<sub>T</sub> = ${fmt(r.mT,3)}, m<sub>S</sub> = ${fmt(r.mS,3)}, w<sub>T</sub>/w<sub>S</sub> in the crystal = ${fmt(r.ratio,3)}.</strong>`;
++  if(r.est!=null) t+=` Textbook check for the Brewster crystal: R sin θ tan θ = L(n²−1)/n³ = ${fmt(r.dl,3)} mm with R = ${fmt(r.Rm,3)} mm gives θ ≈ ${fmt(r.est,3)}°.`;
++  else if(r.dl===0) t+=' The crystal is not Brewster-cut, so there is nothing to compensate and the best angle is simply the smallest one.';
++  el.innerHTML=ASTIG_INTRO+t; renderBench(); schedule(); };
+ 
+ /* ---------- canvas helpers ---------- */
+ function setup(cv){
+@@ -827,17 +868,46 @@ function drawLayout(R){
+   const {ctx,w,h}=setup(cv), els=S.els, N=els.length, total=R.fwdLen||1;
+   const pos=els.map((e,i)=>{const r=R.zrec[i]; return r?(r.z0+(r.z1!=null?r.z1:r.z0))/2:0;});
+   const mI=[]; els.forEach((e,i)=>{ if(isMirror(e)) mI.push(i); });
+-  const K=mI.length, ring=S.mode==='ring';
+-  let V=[];
+-  if(ring){
+-    if(K===4) V=[[.2,.62],[.2,.38],[.84,.78],[.84,.22]];
+-    else if(K>=2){ for(let j=0;j<K;j++){ const a=-Math.PI/2+2*Math.PI*j/K; V.push([.5+.36*Math.cos(a),.5+.34*Math.sin(a)]); } }
+-  } else if(K>=2){
+-    for(let j=0;j<K;j++){ const y=(j===0||j===K-1)?.5:(j%2?.22:.78); V.push([.14+.72*j/(K-1),y]); }
+-  }
+-  V=V.map(p=>[p[0]*w,p[1]*h]);
++  const K=mI.length, ring=S.mode==='ring', gi=R.gi;
+   const nrm=(dx,dy)=>{const l=Math.hypot(dx,dy)||1;return [dx/l,dy/l];};
+   const sm=mI.map(i=>pos[i]);
++  let V=[], scaleTxt='(schematic, not to scale)', note='';
++  if(ring && K===4){
++    // bowtie from the real arm lengths: crystal arm at the bottom, opposite arm on top, both horizontal
++    const segL=[0,1,2,3].map(j=> j<3 ? sm[j+1]-sm[j] : sm[0]+total-sm[3]);
++    let p=0;
++    if(gi>=0){ const zg=pos[gi]<sm[0]?pos[gi]+total:pos[gi]; for(let j=0;j<4;j++){ const z1=j<3?sm[j+1]:sm[0]+total; if(zg>=sm[j]&&zg<=z1){p=j;break;} } }
++    else if(segL[0]+segL[2]>segL[1]+segL[3]) p=1;
++    const a=segL[p], d1=segL[(p+1)%4], b=segL[(p+2)%4], d2=segL[(p+3)%4];
++    let s1=((a+b)+(d1*d1-d2*d2)/(a+b))/2, s2=(a+b)-s1; const H2=d1*d1-s1*s1, closes=H2>0&&s1>0&&s2>0;
++    if(!closes){ s1=s2=(a+b)/2; }
++    const H=closes?Math.sqrt(H2):0.6*Math.max(a,b);
++    const P=[]; P[p]=[0,H]; P[(p+1)%4]=[a,H]; P[(p+2)%4]=[a-s1,0]; P[(p+3)%4]=[a-s1+b,0];
++    const xs=P.map(q=>q[0]), x0=Math.min(...xs), x1=Math.max(...xs), W=Math.max(x1-x0,1e-9);
++    const mx=Math.min(130,w*.14), myT=58, myB=62, aw=w-2*mx, ah=h-myT-myB;
++    const sc=Math.min(aw/W, ah/H), kx=Math.max(1,Math.min(4,aw/(W*sc)));
++    V=P.map(q=>[w/2+(q[0]-(x0+x1)/2)*sc*kx, myT+ah/2+(q[1]-H/2)*sc]);
++    if(closes){
++      scaleTxt=`(arm lengths and element spacing to scale; horizontal stretched ×${fmt(kx,2)})`;
++      const fold=P.map((B,j)=>{ const A=P[(j+3)%4], C=P[(j+1)%4], u=nrm(A[0]-B[0],A[1]-B[1]), v=nrm(C[0]-B[0],C[1]-B[1]); return Math.acos(Math.max(-1,Math.min(1,u[0]*v[0]+u[1]*v[1])))*90/Math.PI; });
++      const curv=mI.map((i,j)=>({i,j})).filter(o=>els[o.i].type==='mirror_curved');
++      note=`To close with these arm lengths the bowtie needs fold (incidence) angles of `+mI.map((i,j)=>`${fmt(fold[j],3)}° at ${i+1}`).join(', ')+'.';
++      const off=curv.filter(o=>Math.abs(fold[o.j]-els[o.i].aoi)>2);
++      if(off.length) note+=` The curved-mirror angles used in the beam calculation are `+off.map(o=>`${fmt(els[o.i].aoi,3)}° at ${o.i+1}`).join(', ')+`. In a real cavity they are the same angle: smaller fold angles need longer horizontal arms or shorter crossing arms.`;
++    } else {
++      scaleTxt='(schematic: these arm lengths cannot close a planar bowtie)';
++      const L4=[a,d1,b,d2], mxL=Math.max(...L4), rest=L4.reduce((q,v)=>q+v,0)-mxL;
++      note = mxL>=rest
++        ? `No planar four-mirror ring has these arm lengths: the longest arm (${fmt(mxL*1e3,4)} mm) is at least as long as the other three together (${fmt(rest*1e3,4)} mm). The drawing keeps the order of the elements but not the scale.`
++        : `The two crossing arms are too short compared with the horizontal arms for a planar bowtie to close, so the drawing is not to scale.`;
++    }
++  } else if(ring && K>=2){
++    for(let j=0;j<K;j++){ const a=-Math.PI/2+2*Math.PI*j/K; V.push([(.5+.36*Math.cos(a))*w,(.5+.34*Math.sin(a))*h]); }
++  } else if(K>=2){
++    for(let j=0;j<K;j++){ const y=(j===0||j===K-1)?.5:(j%2?.22:.78); V.push([(.14+.72*j/(K-1))*w,y*h]); }
++    if(K===2) scaleTxt='(element spacing to scale)';
++  }
++  $('#layScale').textContent=scaleTxt; $('#layoutNote').textContent=note;
+   function at(s){
+     if(K<2){ const a=2*Math.PI*s/total-Math.PI/2; return {x:w/2+.36*w*Math.cos(a),y:h/2+.34*h*Math.sin(a),dx:-Math.sin(a),dy:Math.cos(a)}; }
+     let s2=s, segs=ring?K:K-1, j=0;
+@@ -853,7 +923,8 @@ function drawLayout(R){
+   ctx.stroke();
+   // rays (tangential plane): offset along the left normal of the travel direction, sign flipped per reflection
+   if(R.rays){
+-    let ym=1e-9; for(const r of [R.rays.T.off,R.rays.T.tilt]) if(r) for(const p of r.pts) ym=Math.max(ym,Math.abs(p.y));
++    const zl=3*R.geo*(1+1e-9);
++    let ym=1e-9; for(const r of [R.rays.T.off,R.rays.T.tilt]) if(r) for(const p of r.pts) if(p.zu<=zl) ym=Math.max(ym,Math.abs(p.y));
+     const k=11/ym, eps=1e-6*total;
+     const geo=(p)=>{ const q=at(p.s+p.nd*p.sg*eps), d=[q.dx*p.sg,q.dy*p.sg], off=p.y*k*(p.refl%2?-1:1); return {d, o:[-d[1]*off, d[0]*off]}; };
+     const tr=(p)=>{ const g=geo(p), q=at(p.s+p.nd*p.sg*eps); return [q.x+g.o[0], q.y+g.o[1]]; };
+@@ -863,23 +934,22 @@ function drawLayout(R){
+       return [V.x+a.o[0]+lam*a.d[0], V.y+a.o[1]+lam*a.d[1]]; };
+     [['off',css('--f1')],['tilt',css('--f2')]].forEach(([key,col])=>{
+       const r=R.rays.T[key]; if(!r) return;
+-      ctx.strokeStyle=col; ctx.lineWidth=1.2; ctx.globalAlpha=.75; ctx.beginPath();
+-      r.pts.forEach((p,j)=>{ if(p.mir===2) return; const [x,y]=(p.mir===1&&r.pts[j+1]) ? hit(p,r.pts[j+1]) : tr(p); j?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); ctx.globalAlpha=1;
+-      if(r.lost){ const [x,y]=tr(r.lost); ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x-6,y-6); ctx.lineTo(x+6,y+6); ctx.moveTo(x+6,y-6); ctx.lineTo(x-6,y+6); ctx.stroke(); }
++      ctx.strokeStyle=col; ctx.lineWidth=1; ctx.globalAlpha=.7; ctx.beginPath();
++      for(let j=0;j<r.pts.length;j++){ const p=r.pts[j]; if(p.zu>zl) break; if(p.mir===2) continue; const [x,y]=(p.mir===1&&r.pts[j+1]) ? hit(p,r.pts[j+1]) : tr(p); j?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke(); ctx.globalAlpha=1;
++      if(r.lost&&r.lost.zu<=zl){ const [x,y]=tr(r.lost); ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x-6,y-6); ctx.lineTo(x+6,y+6); ctx.moveTo(x+6,y-6); ctx.lineTo(x-6,y+6); ctx.stroke(); }
+     });
+   }
+   const ink=css('--ink'), panel=css('--panel');
+   // keep arrows and their labels inside the canvas
+   const room=(x,y,d,m)=>{ let t=1e9; if(d[0]>1e-9) t=Math.min(t,(w-m-x)/d[0]); if(d[0]<-1e-9) t=Math.min(t,(m-x)/d[0]); if(d[1]>1e-9) t=Math.min(t,(h-m-y)/d[1]); if(d[1]<-1e-9) t=Math.min(t,(m-y)/d[1]); return t; };
+-  const label=(text,x,y,d,col)=>{ ctx.fillStyle=col; ctx.textBaseline='middle'; const tw=ctx.measureText(text).width;
+-    let lx=x+d[0]*(tw/2+8), ly=y+d[1]*12;
+-    if(lx-tw/2<4||lx+tw/2>w-4||ly<8||ly>h-8){ lx=x+8; ly=Math.min(Math.max(y,10),h-10); ctx.textAlign='left'; if(lx+tw>w-4){ lx=x-8; ctx.textAlign='right'; } }
+-    else ctx.textAlign='center';
+-    ctx.fillText(text,lx,ly); };
++  // label beside an arrow: above (side -1) or below (+1) a horizontal-ish arrow, to the side of a vertical one
++  // (xa,ya) is the arrow end at the mirror; the text starts there and runs outward
++  const label=(text,xa,ya,xb,yb,col,side)=>{ ctx.fillStyle=col; ctx.textBaseline='middle'; const tw=ctx.measureText(text).width;
++    if(Math.abs(xb-xa)>=Math.abs(yb-ya)){ const r=xb>xa; let x=r?xa+2:xa-2; if(r&&x+tw>w-4) x=w-4-tw; if(!r&&x-tw<4) x=4+tw; ctx.textAlign=r?'left':'right'; ctx.fillText(text,x,ya+side*14); }
++    else { const xr=Math.max(xa,xb); ctx.textAlign=xr+8+tw<w-4?'left':'right'; ctx.fillText(text,xr+8+tw<w-4?xr+8:Math.min(xa,xb)-8,Math.min(Math.max((ya+yb)/2,10),h-10)); } };
+   const arrow=(x0,y0,x1,y1,col)=>{ const d=nrm(x1-x0,y1-y0); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
+     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-d[0]*9-d[1]*5,y1-d[1]*9+d[0]*5); ctx.lineTo(x1-d[0]*9+d[1]*5,y1-d[1]*9-d[0]*5); ctx.closePath(); ctx.fill(); };
+   // elements
+-  const gi=R.gi;
+   els.forEach((e,i)=>{
+     const p=at(pos[i]); let dx=p.dx, dy=p.dy; ctx.save(); ctx.translate(p.x,p.y);
+     ctx.lineWidth=2; ctx.strokeStyle=ink; ctx.fillStyle=ink;
+@@ -896,7 +966,8 @@ function drawLayout(R){
+       else { ctx.moveTo(-t[0]*14,-t[1]*14); ctx.lineTo(t[0]*14,t[1]*14); }
+       ctx.stroke();
+       if(e.dich){ ctx.lineWidth=1.5; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(-t[0]*14-n[0]*5,-t[1]*14-n[1]*5); ctx.lineTo(t[0]*14-n[0]*5,t[1]*14-n[1]*5); ctx.stroke(); ctx.setLineDash([]); }
+-      if(e.T>0.5){ ctx.restore(); ctx.save(); const L=Math.max(20,Math.min(50,room(p.x,p.y,din,8))); arrow(p.x+din[0]*6,p.y+din[1]*6,p.x+din[0]*L,p.y+din[1]*L,css('--beam')); label('output',p.x+din[0]*L,p.y+din[1]*L,din,css('--beam')); }
++      if(e.T>0.5){ ctx.restore(); ctx.save(); const L=Math.max(20,Math.min(64,room(p.x,p.y,din,8))), xa=p.x+din[0]*8, ya=p.y+din[1]*8, xb=p.x+din[0]*L, yb=p.y+din[1]*L;
++        arrow(xa,ya,xb,yb,css('--beam')); label(R.lasing?`${fmt(R.P,3)} W, ${fmt(R.lamStar*1e9,7)} nm`:'output',xa,ya,xb,yb,css('--beam'),-1); }
+     } else if(e.type==='gain'){
+       const L=46, Wd=15; ctx.rotate(Math.atan2(dy,dx)); ctx.fillStyle=css('--crystal'); ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.beginPath();
+       const sk=e.brew?7:0; ctx.moveTo(-L/2+sk,-Wd/2); ctx.lineTo(L/2+sk,-Wd/2); ctx.lineTo(L/2-sk,Wd/2); ctx.lineTo(-L/2-sk,Wd/2); ctx.closePath(); ctx.fill(); ctx.stroke();
+@@ -923,14 +994,36 @@ function drawLayout(R){
+   // pump arrow
+   if(gi>=0){ const mi=els.findIndex(e=>isMirror(e)&&e.dich);
+     if(mi>=0){ const a=at(pos[gi]), b=at(pos[mi]); const d=nrm(b.x-a.x,b.y-a.y); const ex=b.x+d[0]*4, ey=b.y+d[1]*4;
+-      const L=Math.max(24,Math.min(58,room(ex,ey,d,8))); arrow(ex+d[0]*L,ey+d[1]*L,ex+d[0]*8,ey+d[1]*8,'#2f9e6b'); label('pump',ex+d[0]*L,ey+d[1]*L,d,'#2f9e6b'); } }
+-  // badges
+-  els.forEach((e,i)=>{ const p=at(pos[i]); const off=(i%2?1:-1)*24; const bx=p.x-p.dy*off, by=p.y+p.dx*off;
+-    ctx.fillStyle=ink; ctx.beginPath(); ctx.arc(bx,by,9,0,2*Math.PI); ctx.fill(); ctx.fillStyle=panel; ctx.font='bold 11px '+css('--sans'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(i+1,bx,by+.5); });
++      const L=Math.max(24,Math.min(64,room(ex,ey,d,8))); arrow(ex+d[0]*L,ey+d[1]*L,ex+d[0]*8,ey+d[1]*8,'#2f9e6b'); label(`${fmt(els[gi].lamP,4)} nm pump`,ex+d[0]*8,ey+d[1]*8,ex+d[0]*L,ey+d[1]*L,'#2f9e6b',1); } }
++  // badges (inside for elements on an arm, outside for mirrors), element names outside, θ at curved mirrors
++  const cx=V.length?V.reduce((q,v)=>q+v[0],0)/V.length:w/2, cy=V.length?V.reduce((q,v)=>q+v[1],0)/V.length:h/2;
++  const badge=(x,y,i)=>{ ctx.fillStyle=ink; ctx.beginPath(); ctx.arc(x,y,9,0,2*Math.PI); ctx.fill(); ctx.fillStyle=panel; ctx.font='bold 11px '+css('--sans'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(i+1,x,y+.5); };
++  const short=e=>e.type==='gain'?(MATERIALS[e.mat]?MATERIALS[e.mat].name.split(' (')[0]:'crystal')+(e.brew?' (Brewster)':''):e.type==='etalon'?(e.d<2?'thin etalon':'thick etalon'):({brf:'BRF',filter:'bandpass',diode:'isolator',plate:'plate',lens:'lens',twist:'λ/4 pair'})[e.type]||'';
++  const boxes=[];
++  // mirrors first, so element names can avoid their badges
++  els.forEach((e,i)=>{ const p=at(pos[i]);
++    if(isMirror(e)){
++      const up=K>=2&&!(S.mode==='linear'&&K===2)?(p.y<=cy):true, bx=p.x, by=p.y+(up?-30:30); badge(bx,by,i);
++      boxes.push({x0:bx-11,x1:bx+11,y0:by-11,y1:by+11});
++      if(e.type==='mirror_curved'&&(ring||e.aoi>0)){ const inR=p.x<cx; ctx.font='12px '+css('--sans'); ctx.fillStyle=css('--muted'); ctx.textBaseline='middle'; ctx.textAlign=inR?'left':'right'; ctx.fillText(`θ ${fmt(e.aoi,3)}°`,bx+(inR?14:-14),by); }
++    } });
++  els.forEach((e,i)=>{ if(isMirror(e)) return; const p=at(pos[i]);
++    let n=[-p.dy,p.dx]; const dot=(p.x-cx)*n[0]+(p.y-cy)*n[1]; if(dot<-1e-6||(Math.abs(dot)<=1e-6&&n[1]>0)) n=[-n[0],-n[1]];
++    badge(p.x-n[0]*24,p.y-n[1]*24,i);
++    const t=short(e); if(!t) return; ctx.font='12px '+css('--sans'); const tw=ctx.measureText(t).width;
++    // candidate spots: outside the arm in rows, then inside beyond the badge; first free one wins
++    const cand=[27,42,57].map(r=>r).concat([-46,-61,-76]);
++    let pick=null;
++    for(const r of cand){ const lx=Math.min(Math.max(p.x+n[0]*r,tw/2+3),w-tw/2-3), ly=p.y+n[1]*r; if(ly<9||ly>h-20) continue;
++      const bx={x0:lx-tw/2-3,x1:lx+tw/2+3,y0:ly-7,y1:ly+7};
++      if(!boxes.some(q=>q.x0<bx.x1&&bx.x0<q.x1&&q.y0<bx.y1&&bx.y0<q.y1)){ pick={lx,ly,bx}; break; }
++      if(!pick) pick={lx,ly,bx,taken:true}; }
++    if(!pick) return;
++    boxes.push(pick.bx); ctx.fillStyle=ink; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(t,pick.lx,pick.ly); });
+   ctx.font='12px '+css('--sans'); ctx.fillStyle=css('--muted'); ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+-  ctx.fillText(`round trip: ${fmt(R.geo*1000,4)} mm geometric, ${fmt(R.p*1000,4)} mm optical`,10,h-8);
+-  if(!R.valid){ ctx.fillStyle=css('--bad'); ctx.font='bold 13px '+css('--sans'); ctx.textAlign='left'; ctx.textBaseline='top';
+-    ctx.fillText(R.stT===false||R.stS===false ? 'UNSTABLE in the '+(!R.stT&&!R.stS?'tangential and sagittal planes':!R.stT?'tangential plane':'sagittal plane')+' – follow the rays' : (R.warn[0]||''),10,8); }
++  ctx.fillText(`round trip ${fmt(R.geo*1000,4)} mm (optical ${fmt(R.p*1000,4)} mm)`,10,h-8);
++  if(!R.valid){ ctx.fillStyle=css('--bad'); ctx.font='bold 13px '+css('--sans'); ctx.textAlign='right'; ctx.textBaseline='alphabetic';
++    ctx.fillText(R.stT===false||R.stS===false ? 'UNSTABLE in the '+(!R.stT&&!R.stS?'tangential and sagittal planes':!R.stT?'tangential plane':'sagittal plane')+' – follow the rays' : (R.warn[0]||''),w-10,h-8); }
+ }
+ 
+ /* ---------- ray trace plot ---------- */
+@@ -1122,6 +1215,7 @@ function renderResults(R){
+     const add=(pass,text,val)=>ok.push(`<li><span class="${pass===true?'ok':pass===false?'bad':'warn'}" aria-hidden="true">${pass===true?'✓':pass===false?'✗':'~'}</span><span>${text}</span><span style="color:var(--muted)">${val||''}</span></li>`);
+     add(R.stable&&pumpStable(),'Stable at every pump level up to the set power','');
+     add(R.multiTEM?false:true,'Pump spot no larger than the TEM<sub>00</sub> mode',fmt(R.ratio,3)+'×');
++    { const dm=Math.abs(R.mT-R.mS); add(dm<0.1?true:dm<0.3?null:false,'Astigmatism compensated (m<sub>T</sub> ≈ m<sub>S</sub>)',fmt(R.mT,2)+' / '+fmt(R.mS,2)); }
+     add(R.travelling?true:(R.h<=0.1?null:false),'Travelling wave (no spatial hole burning)',R.travelling?'ring + isolator':R.hasTwist&&S.mode==='linear'?'twisted-mode':'');
+     if(R.lasing){
+       add(R.nLas===1,'Single longitudinal mode',R.nLas===1?'':R.nLas+' modes');
+-- 
+2.43.0
+

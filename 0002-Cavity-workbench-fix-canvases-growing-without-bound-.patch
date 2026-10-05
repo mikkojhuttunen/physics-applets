@@ -1,0 +1,36 @@
+From 1aca3369bd15b2aaba21dbbb64bdc7e84e1bf128 Mon Sep 17 00:00:00 2001
+From: mikkojhuttunen <mikkojhuttunen@gmail.com>
+Date: Thu, 1 Oct 2026 16:37:23 +0000
+Subject: [PATCH 2/2] Cavity workbench: fix canvases growing without bound on
+ high-DPI screens
+
+setup() read the CSS height from the canvas height attribute and then
+wrote height*devicePixelRatio back into that same attribute, so on a
+Retina display every redraw doubled the canvas height until the browser
+refused to allocate it and showed a broken canvas. The CSS height is now
+read once from the markup, stored in data-h and set as style.height.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015k2UYA58Ace5jVaSrfKnkj
+---
+ laserquiz-rewards/cavity-workbench.html | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/laserquiz-rewards/cavity-workbench.html b/laserquiz-rewards/cavity-workbench.html
+index 2c10c1d..bff96a3 100644
+--- a/laserquiz-rewards/cavity-workbench.html
++++ b/laserquiz-rewards/cavity-workbench.html
+@@ -792,7 +792,9 @@ $('#btnTune').onclick=()=>{ tuneToTarget(S); syncControls(); renderBench(); sche
+ 
+ /* ---------- canvas helpers ---------- */
+ function setup(cv){
+-  const dpr=window.devicePixelRatio||1, w=Math.max(200,cv.clientWidth), h=+cv.getAttribute('height');
++  // CSS height comes from the markup once; cv.height is the backing store and is rewritten with dpr below
++  if(!cv.dataset.h){ cv.dataset.h=cv.getAttribute('height'); cv.style.height=cv.dataset.h+'px'; }
++  const dpr=window.devicePixelRatio||1, w=Math.max(200,cv.clientWidth), h=+cv.dataset.h;
+   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
+   const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+   ctx.font='12px '+css('--sans'); return {ctx,w,h};
+-- 
+2.43.0
+

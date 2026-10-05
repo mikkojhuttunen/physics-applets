@@ -3,169 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chained Radioactive Decay</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Chained Radioactive Decay — FYS.232 Structure of Matter</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys232-structure-of-matter.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
 <style>
   :root{
-    --bg:#F7F4EC; --surface:#FFFFFF; --ink:#20283B; --ink-soft:#4B5468; --muted:#8A8474;
-    --grid:#E2DCC9; --grid-strong:#C9C2AC; --accent:#B9662F; --accent-soft:#F0DFCB;
-    --nA:#20283B; --nB:#C0392B; --nC:#1D8A5F;
-    --shadow: 0 1px 2px rgba(32,40,59,0.06), 0 6px 20px rgba(32,40,59,0.06);
-    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#171A20; --surface:#1F232B; --ink:#EDEAE1; --ink-soft:#C6C2B6; --muted:#8B8C8F;
-      --grid:#2B2F38; --grid-strong:#3A3F4A; --accent:#E1A165; --accent-soft:#3A2E20;
-      --nA:#EDEAE1; --nB:#E2685B; --nC:#4FC594;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.25);
-    }
-  }
-  :root[data-theme="dark"]{
-      --bg:#171A20; --surface:#1F232B; --ink:#EDEAE1; --ink-soft:#C6C2B6; --muted:#8B8C8F;
-      --grid:#2B2F38; --grid-strong:#3A3F4A; --accent:#E1A165; --accent-soft:#3A2E20;
-      --nA:#EDEAE1; --nB:#E2685B; --nC:#4FC594;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.25);
-  }
-  html,body{ height:100%; margin:0; }
-  *{ box-sizing:border-box; }
-  body{
-    background:var(--bg); color:var(--ink); font-family:'Inter',system-ui,-apple-system,sans-serif;
-    -webkit-font-smoothing:antialiased;
+    --surface:var(--panel); --ink:var(--text); --ink-soft:var(--text-dim); --muted:var(--text-faint);
+    --grid-strong:var(--text-faint);
+    --nA:var(--text); --nB:var(--red); --nC:var(--green);
   }
   #app{
     min-height:100%; display:flex; flex-direction:column;
-    padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px)); gap:16px;
-    max-width:1220px; margin:0 auto;
+    padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px)); gap:14px;
+    max-width:1180px; margin:0 auto;
   }
-  header{ display:flex; flex-direction:column; gap:4px; padding-top:2px; }
-  h1{
-    font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:clamp(21px,3.2vw,28px);
-    letter-spacing:-0.01em; margin:0; line-height:1.15;
-  }
-  .sub{ color:var(--ink-soft); font-size:14px; max-width:70ch; line-height:1.5; }
-  .chain{ font-family:'IBM Plex Mono',monospace; font-size:15px; margin-top:2px; }
+  header{ display:flex; flex-direction:column; gap:4px; }
+  .sub{ max-width:70ch; }
+  .chain{ font-family:var(--font-mono); font-size:var(--fs-body); }
   .chain b{ font-weight:600; }
-  .layout{ display:flex; gap:16px; flex:1; min-height:0; }
+  .chain .dim{ color:var(--text-dim); font-size:var(--fs-small); }
+  .layout{ display:flex; gap:14px; flex:1; min-height:0; }
   @media (max-width: 780px){ .layout{ flex-direction:column; } }
   aside.controls{
-    background:var(--surface); border:1px solid var(--grid); border-radius:14px; padding:16px;
-    width:300px; flex-shrink:0; display:flex; flex-direction:column; gap:16px; box-shadow:var(--shadow);
+    width:300px; flex-shrink:0; display:flex; flex-direction:column; gap:16px;
     height:fit-content; max-height:calc(100vh - 160px); overflow-y:auto;
   }
   @media (max-width: 780px){ aside.controls{ width:100%; max-height:none; } }
-  .group-label{ font-size:11px; color:var(--muted); font-weight:600; margin-bottom:8px; letter-spacing:0.02em; }
+  aside.controls h2{ margin:0 0 8px; }
+  .slider-row{ display:flex; flex-direction:column; gap:2px; }
   .preset-row{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
-  button.pill-btn{
-    font-family:'IBM Plex Mono',monospace; font-size:12.5px; background:var(--bg);
-    border:1px solid var(--grid); color:var(--ink); border-radius:8px; padding:9px 4px;
-    cursor:pointer; transition:background .12s ease, border-color .12s ease, color .12s ease;
-  }
-  button.pill-btn:hover{ border-color:var(--grid-strong); }
-  button.pill-btn.active{ background:var(--ink); color:var(--surface); border-color:var(--ink); }
-  button.pill-btn:focus-visible, .toggle:focus-visible, input[type="range"]:focus-visible{
-    outline:2px solid var(--accent); outline-offset:2px;
-  }
-  .slider-row{ display:flex; flex-direction:column; gap:8px; }
-  .slider-heading{ display:flex; justify-content:space-between; align-items:baseline; }
-  .slider-heading .group-label{ margin-bottom:0; }
-  .slider-val{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); }
-  input[type="range"]{
-    -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:2px;
-    background:var(--grid-strong); outline-offset:4px;
-  }
-  input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:16px;height:16px;border-radius:50%; background:var(--accent);
-    cursor:pointer; border:2px solid var(--surface); box-shadow:0 0 0 1px var(--grid-strong);
-  }
-  input[type="range"]::-moz-range-thumb{
-    width:16px;height:16px;border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--surface);
-  }
-  .toggles{ display:flex; flex-direction:column; gap:8px; }
+  .preset-row .btn{ padding:8px 6px; }
+  .toggles{ display:flex; flex-direction:column; gap:6px; }
   .toggle{
-    display:flex; align-items:center; gap:10px; cursor:pointer; padding:6px 8px; border-radius:8px;
-    border:1px solid transparent; background:transparent; font-size:13.5px; color:var(--ink-soft);
+    display:flex; align-items:center; gap:10px; cursor:pointer; padding:6px 8px; border-radius:var(--radius-ctl);
+    border:1px solid transparent; background:transparent; font-size:var(--fs-label); color:var(--text-dim);
     width:100%; text-align:left; font-family:inherit;
   }
-  .toggle:hover{ background:var(--bg); }
+  .toggle:hover{ background:var(--panel-2); }
   .swatch{ width:22px; height:0; border-top-width:3px; border-top-style:solid; flex-shrink:0; }
   .swatch.dashed{ border-top-style:dashed; }
   .switch{
-    margin-left:auto; width:32px; height:18px; border-radius:999px; background:var(--grid);
+    margin-left:auto; width:32px; height:18px; border-radius:999px; background:var(--border);
     position:relative; flex-shrink:0; transition:background .15s ease;
   }
   .switch::after{
     content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%;
-    background:var(--surface); box-shadow:0 1px 2px rgba(0,0,0,0.25); transition:transform .15s ease;
+    background:var(--panel); box-shadow:0 1px 2px rgba(0,0,0,0.25); transition:transform .15s ease;
   }
   .toggle.on .switch{ background:var(--accent); }
   .toggle.on .switch::after{ transform:translateX(14px); }
-  .toggle.on{ color:var(--ink); }
+  .toggle.on{ color:var(--text); }
   .box{
-    font-family:'IBM Plex Mono',monospace; font-size:12.5px; display:flex; flex-direction:column; gap:6px;
-    background:var(--bg); border-radius:10px; padding:12px; border:1px solid var(--grid);
+    font-family:var(--font-mono); font-size:var(--fs-small); display:flex; flex-direction:column; gap:6px;
+    background:var(--panel-2); border-radius:10px; padding:12px; border:1px solid var(--border);
   }
   .box .eq-row{ display:flex; gap:8px; align-items:baseline; }
   .box .eq-tag{ width:20px; flex-shrink:0; font-weight:600; }
   .box .eq-expr{ word-break:break-word; }
-  .box .divider{ border-top:1px dashed var(--grid-strong); margin:4px 0; }
-  .box .fine{ font-family:'Inter',sans-serif; font-size:11.5px; color:var(--muted); line-height:1.4; }
+  .box .divider{ border-top:1px dashed var(--border); margin:4px 0; }
+  .box .fine{ font-family:var(--font-body); font-size:var(--fs-tiny); color:var(--text-dim); line-height:1.4; }
   .readout .row{ display:flex; justify-content:space-between; gap:8px; }
-  .readout .row span:first-child{ color:var(--muted); }
+  .readout .row span:first-child{ color:var(--text-dim); }
   .tip{
-    font-size:12px; color:var(--ink-soft); line-height:1.5; background:var(--accent-soft);
-    border-radius:10px; padding:10px 12px; border:1px solid var(--grid);
+    font-size:var(--fs-small); color:var(--text); line-height:1.5; background:var(--accent-soft);
+    border-radius:10px; padding:10px 12px;
   }
-  main.stage{
-    flex:1; background:var(--surface); border:1px solid var(--grid); border-radius:14px;
-    box-shadow:var(--shadow); min-height:380px; position:relative; overflow:hidden; touch-action:none;
-  }
+  main.stage{ flex:1; min-height:380px; position:relative; touch-action:none; }
   canvas{ width:100%; height:100%; display:block; cursor:grab; }
   canvas.pinching{ cursor:grabbing; }
   .zoom-reset{
-    position:absolute; top:10px; right:10px; z-index:5; font-family:'IBM Plex Mono',monospace; font-size:11px;
-    background:var(--surface); color:var(--ink-soft); border:1px solid var(--grid); border-radius:8px;
-    padding:6px 10px; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .15s ease;
+    position:absolute; top:10px; right:10px; z-index:5;
+    opacity:0; pointer-events:none; transition:opacity .15s ease;
   }
   .zoom-reset.visible{ opacity:1; pointer-events:auto; }
   .zoom-hint{
-    position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:11px; color:var(--muted);
-    background:var(--surface); border:1px solid var(--grid); border-radius:999px; padding:4px 12px; z-index:5;
+    position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:var(--fs-tiny); color:var(--text-dim);
+    background:var(--panel); border:1px solid var(--border); border-radius:999px; padding:4px 12px; z-index:5;
     pointer-events:none; opacity:0.85;
   }
 </style>
 </head>
+</head>
 <body>
-<a href="index.html" style="display:inline-block;margin:14px 0 4px;font-size:0.82rem;color:inherit;opacity:0.7;text-decoration:underline;">&larr; FYS.232 Structure of Matter</a>
-
 <div id="app">
   <header>
     <h1>Chained radioactive decay</h1>
-    <div class="chain"><b style="color:var(--nA)">A</b> → <b style="color:var(--nB)">B</b> → <b style="color:var(--nC)">C</b> <span style="color:var(--muted); font-size:12px;">(C stable)</span></div>
+    <div class="chain"><b style="color:var(--nA)">A</b> → <b style="color:var(--nB)">B</b> → <b style="color:var(--nC)">C</b> <span class="dim">(C stable)</span></div>
     <div class="sub">A decays into B — which is itself radioactive — before B finally decays into stable C. B's amount is a tug-of-war: fed by A's decay, drained by its own.</div>
   </header>
 
   <div class="layout">
-    <aside class="controls">
+    <aside class="card controls">
       <div>
-        <div class="group-label">SCENARIO</div>
+        <h2>Scenario</h2>
         <div class="preset-row" id="presetRow"></div>
       </div>
 
       <div class="slider-row">
-        <div class="slider-heading"><div class="group-label">HALF-LIFE OF A</div><span class="slider-val" id="hlALabel">2.0</span></div>
+        <label class="slider-label" for="hlASlider"><span>Half-life of A</span><span class="val" id="hlALabel">2.0</span></label>
         <input type="range" id="hlASlider" min="0.2" max="15" value="2" step="0.1">
       </div>
 
       <div class="slider-row">
-        <div class="slider-heading"><div class="group-label">HALF-LIFE OF B</div><span class="slider-val" id="hlBLabel">6.0</span></div>
+        <label class="slider-label" for="hlBSlider"><span>Half-life of B</span><span class="val" id="hlBLabel">6.0</span></label>
         <input type="range" id="hlBSlider" min="0.2" max="15" value="6" step="0.1">
       </div>
 
       <div>
-        <div class="group-label">SHOW</div>
+        <h2>Show</h2>
         <div class="toggles">
           <button class="toggle on" id="toggleB" type="button">
             <span class="swatch" style="border-color:var(--nB)"></span>
@@ -191,7 +137,7 @@
       </div>
 
       <div class="slider-row">
-        <div class="group-label">TIME CURSOR</div>
+        <label class="slider-label" for="tSlider"><span>Time cursor</span></label>
         <input type="range" id="tSlider" min="0" max="1000" value="0" step="1">
       </div>
 
@@ -202,9 +148,9 @@
       <div class="tip">Watch N<sub>B</sub>: it rises while A is still plentiful, peaks exactly where A's feed rate equals B's own decay rate, then falls as B empties into C.</div>
     </aside>
 
-    <main class="stage">
+    <main class="figure-box stage">
       <canvas id="plot"></canvas>
-      <button class="zoom-reset" id="zoomReset" type="button">Reset view</button>
+      <button class="btn small zoom-reset" id="zoomReset" type="button">Reset view</button>
       <div class="zoom-hint">drag to move cursor · pinch/scroll to zoom time</div>
     </main>
   </div>
@@ -239,6 +185,7 @@
   const zoomResetBtn = document.getElementById('zoomReset');
 
   function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  const MONO = css('--font-mono') || 'monospace';
   function fmt(v){
     if (!isFinite(v)) return '—';
     if (Math.abs(v) < 1e-4) return '0';
@@ -335,7 +282,7 @@
   ];
   PRESETS.forEach(p=>{
     const b = document.createElement('button');
-    b.className = 'pill-btn';
+    b.className = 'btn small';
     b.type = 'button';
     b.textContent = p.label;
     b.addEventListener('click', ()=>{
@@ -440,7 +387,7 @@
 
   function drawGrid(v,pw,ph){
     ctx.strokeStyle = css('--grid'); ctx.lineWidth=1; ctx.fillStyle = css('--muted');
-    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.font = '11px ' + MONO;
 
     const xstep = niceStep(v.xmax-v.xmin,6);
     const xstart = Math.ceil(v.xmin/xstep)*xstep;
@@ -503,7 +450,7 @@
       ctx.strokeStyle=m.color; ctx.lineWidth=1; ctx.globalAlpha=0.55; ctx.setLineDash([2,3]);
       ctx.beginPath(); ctx.moveTo(px,PAD.t); ctx.lineTo(px,PAD.t+ph); ctx.stroke();
       ctx.setLineDash([]); ctx.globalAlpha=1;
-      ctx.fillStyle=m.color; ctx.font='600 10px IBM Plex Mono, monospace'; ctx.textAlign='center';
+      ctx.fillStyle=m.color; ctx.font='600 10px ' + MONO; ctx.textAlign='center';
       ctx.fillText(m.label, px, PAD.t+11);
     });
   }
@@ -525,7 +472,7 @@
       ctx.fillStyle=it.color;
       ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle=css('--surface'); ctx.lineWidth=1.8; ctx.stroke();
-      ctx.font='700 12px IBM Plex Mono, monospace'; ctx.fillStyle=it.color;
+      ctx.font='700 12px ' + MONO; ctx.fillStyle=it.color;
       const rightSide = px > PAD.l+pw*0.72;
       ctx.textAlign = rightSide?'right':'left';
       ctx.fillText(it.label, px+(rightSide?-10:10), py-9);
