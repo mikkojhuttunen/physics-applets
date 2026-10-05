@@ -1,4 +1,4 @@
-# Physics & Math Applets
+# Physics Applets
 
 Standalone, self-contained HTML applets for teaching. Each file has no external
 dependencies (no CDN, no build step) and runs directly in a browser.
