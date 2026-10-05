@@ -10,7 +10,7 @@
  * While API still holds the PASTE_ placeholder the script does nothing, so it is safe to deploy first.
  */
 (function () {
-  var API = "PASTE_APPS_SCRIPT_EXEC_URL_HERE";
+  var API = "https://script.google.com/macros/s/AKfycbxH1sXj0fjxEvpTMNYoD5ywZhO2mY__wKwYXA09BjN7VSpZQoel7WiyjHj0IVstAI1fgw/exec";
   var me = document.currentScript;
   if (!me) return;
   var ID = me.getAttribute("data-id") || "";
