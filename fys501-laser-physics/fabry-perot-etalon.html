@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script src="../assets/js/gate.js" data-id="fys501/fabry-perot-etalon"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fabry–Pérot Etalon Explorer</title>
 <link rel="stylesheet" href="../assets/css/base.css">
@@ -57,8 +58,8 @@ details p{margin:8px 0}
         <input id="sR" type="range" min="0" max="1000" step="1" value="207">
       </div>
       <div class="ctrl">
-        <label for="sD"><span>Thickness d</span> <span class="val" id="vD"></span></label>
-        <input id="sD" type="range" min="-5" max="-1" step="0.005" value="-3">
+        <label for="sD"><span>Thickness / mirror spacing d</span> <span class="val" id="vD"></span></label>
+        <input id="sD" type="range" min="-5" max="-0.3" step="0.005" value="-3">
       </div>
       <div class="ctrl">
         <label for="sN"><span>Refractive index n</span> <span class="val" id="vN"></span></label>
@@ -79,6 +80,7 @@ details p{margin:8px 0}
       <button class="btn small" data-p="etalon">Intracavity solid etalon</button>
       <button class="btn small" data-p="scan">Scanning FP (air, 5 cm)</button>
       <button class="btn small" data-p="ref">High-finesse cavity</button>
+      <button class="btn small" data-p="hw33">HW3.3 FP interferometer</button>
     </div>
   </div>
 
@@ -246,14 +248,18 @@ const PRESETS = {
   plate:  { R:0.04,   d:1e-3, n:1.50, th:0, lam:633 },
   etalon: { R:0.80,   d:1e-3, n:1.45, th:0, lam:1064 },
   scan:   { R:0.99,   d:0.05, n:1.00, th:0, lam:633 },
-  ref:    { R:0.9995, d:0.10, n:1.00, th:0, lam:1064 }
+  ref:    { R:0.9995, d:0.10, n:1.00, th:0, lam:1064 },
+  hw33:   { R:0.95,   d:0.20, n:1.00, th:0, lam:null }   /* HW3.3: L = 20 cm, R = 95 %; wavelength left unchanged */
 };
+/* exact values set by an example button; cleared as soon as the matching slider is moved */
+const ex = { R:null, d:null };
+const DMAX = 0.5;   /* maximum thickness / mirror spacing, 50 cm */
 
 /* ---------- parameters ---------- */
 function P(){
-  const omr = Math.pow(10, LOMR0 + (LOMR1-LOMR0)*(+$('sR').value/1000));
+  const omr = ex.R !== null ? 1 - ex.R : Math.pow(10, LOMR0 + (LOMR1-LOMR0)*(+$('sR').value/1000));
   const R = 1 - omr;
-  const d = Math.pow(10, +$('sD').value), n = +$('sN').value;
+  const d = ex.d !== null ? ex.d : Math.min(Math.pow(10, +$('sD').value), DMAX), n = +$('sN').value;
   const th = +$('sTh').value*PI/180, lam = +$('sL').value*1e-9;
   const Lopt = 2*n*d*Math.cos(th);
   const fsr = C0/Lopt, nu0 = C0/lam, m = Lopt/lam;
@@ -669,6 +675,8 @@ let raf = 0;
 const schedule = () => { if(!raf) raf = requestAnimationFrame(() => { raf = 0; update(); }); };
 
 ['sR','sD','sN','sTh','sL','sDet','sSep','sRho','cFam','cRef'].forEach(id => $(id).addEventListener('input', schedule));
+$('sR').addEventListener('input', () => { ex.R = null; });
+$('sD').addEventListener('input', () => { ex.d = null; });
 $('cLock').addEventListener('change', () => { st.lockSpan = null; schedule(); });
 
 $('tabs').addEventListener('click', e => {
@@ -687,7 +695,9 @@ $('segZoom').addEventListener('click', e => {
 document.querySelectorAll('.presets button').forEach(b => b.addEventListener('click', () => {
   const q = PRESETS[b.dataset.p];
   $('sR').value = Math.round(1000*(Math.log10(1 - q.R) - LOMR0)/(LOMR1 - LOMR0));
-  $('sD').value = Math.log10(q.d); $('sN').value = q.n; $('sTh').value = q.th; $('sL').value = q.lam;
+  $('sD').value = Math.log10(q.d); $('sN').value = q.n; $('sTh').value = q.th;
+  if(q.lam !== null) $('sL').value = q.lam;
+  ex.R = q.R; ex.d = q.d;
   $('cLock').checked = false; st.lockSpan = null;
   update();
 }));

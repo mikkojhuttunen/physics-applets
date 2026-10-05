@@ -66,6 +66,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (new URL(event.request.url).hostname === "script.google.com") return; // gate API: never cache
   const sameOrigin = new URL(event.request.url).origin === self.location.origin;
   const request = sameOrigin ? new Request(event.request, { cache: "no-cache" }) : event.request;
   event.respondWith(
