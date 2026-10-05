@@ -17,7 +17,10 @@ Each course has its own folder with an `index.html` listing its applets.
   activation analysis with the activity build-up curve, and α decay of Am-241),
   and a quantum distributions explorer (Fermi–Dirac, Bose–Einstein and Maxwell–Boltzmann occupation
   numbers against energy with a temperature slider, fixed-N or fixed-μ normalisation, and mean energy
-  per particle against temperature).
+  per particle against temperature), and a pn junction and bipolar transistor explorer (Sect. 2.8: band
+  diagram with quasi-Fermi levels, carrier densities, space charge and field, and I–V for a pn diode, an
+  npn and a pnp transistor; sliders for doping, E_F − E_i, block widths, bias, material, temperature and
+  lifetime; Gummel plot, output characteristics, current gain and emitter-current budget).
 - `fys240-optics/`
 - `fys310-solid-state-physics/` — lattice viewer (3D lattices with primitive vectors, Brillouin zones with empty-lattice bands, 2D Bravais lattices), Van Hove and DOS explorer,
   band structure explorer (empty lattice, weak potential, Al/Si/Ge/GaAs/diamond
@@ -33,8 +36,9 @@ Each course has its own folder with an `index.html` listing its applets.
   GaAs), and a mechanical properties explorer (Morse bond and elastic constants,
   stress–strain curve with load, unload, work hardening and necking, edge
   dislocation glide against perfect-crystal slip with interstitial pinning, and
-  a Poisson-ratio block with Y, G and K), and Term Alias (an Alias-style concept
-  card game with dice roll, 60 s timer and "don't say" words, 97 terms).
+  a Poisson-ratio block with Y, G and K), and Term Alias, an Alias-style concept
+  card game with dice roll, optional 60 s timer, instant new cards and unicorn
+  streaks.
 - `fys501-laser-physics/` — laser gain media absorption/emission spectra, a
   Gaussian beam / ABCD-matrix optical cavity stability explorer, and a
   3-/4-level (ruby, Nd:YAG) laser rate-equation solver, a spatial hole burning
@@ -48,7 +52,20 @@ Each course has its own folder with an `index.html` listing its applets.
   superpositions, ABCD propagation and M² focusing), and a Fabry–Pérot etalon
   explorer (Airy function with phasor sum, free spectral range and scanning,
   finesse, photon lifetime and resolution).
-- `finnmath-app/`
+- `photonics/` — a photonic waveguide mode explorer (strip-loaded, rib, ridge and buried channel
+  guides with constant, Sellmeier-preset or user-entered layer indices, including Er:Al₂O₃ loading strips
+  on TFLN, Si₃N₄, Al₂O₃ or TFLT; effective index method with
+  an optional semi-vectorial 2D finite-difference reference solved in a Web Worker; N_eff(λ), group
+  index and b–V dispersion with cut-off wavelengths and the single-mode window; selectable mode list
+  with vertical and lateral field cuts, |E|² and signed field maps, the share of the field in the
+  core, strip, superstrate and substrate, and
+  TE_mn or Marcatili E^x_pq labels).
+  Also an Er:Al₂O₃ strip-loaded waveguide amplifier on Al₂O₃, Si₃N₄, TFLN or TFLT (Er concentration,
+  strip and film dimensions, length, pump 980/1480 nm; pump and signal overlaps with the doped strip,
+  steady-state rate equations with upconversion, pump/signal propagation, net gain spectrum, gain vs
+  length, pump power and Er concentration, with optional concentration-dependent upconversion
+  and ion quenching; an optimizer for strip/film dimensions, concentration and length that maximises
+  net gain or gain per cm). The shared mode solver lives in `assets/js/waveguide-core.js`.
 
 Shared styling lives in `assets/css/`: `base.css` (colour, font and theme tokens), a per-course
 file such as `fys240-optics.css` (course accent), and `applet.css` (panels, sliders, buttons,

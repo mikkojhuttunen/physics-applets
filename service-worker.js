@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v30";
+const CACHE_NAME = "physics-applets-v39";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -7,14 +7,16 @@ const APP_SHELL = [
   "assets/css/fys232-structure-of-matter.css",
   "assets/css/fys240-optics.css",
   "assets/css/fys310-solid-state-physics.css",
+  "assets/css/photonics.css",
   "assets/js/course-back.js",
+  "assets/js/waveguide-core.js",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
   "fys232-structure-of-matter/index.html",
   "fys232-structure-of-matter/interatomic-potential-explorer.html",
   "fys232-structure-of-matter/binding-energy-curve.html",
   "fys232-structure-of-matter/quantum-distributions-explorer.html",
-  "fys232-structure-of-matter/chained_decay.html",
+  "fys232-structure-of-matter/pn-junction-transistor-explorer.html",
   "fys240-optics/index.html",
   "fys240-optics/term-alias/index.html",
   "fys240-optics/term-alias/index.html",
@@ -42,7 +44,9 @@ const APP_SHELL = [
   "fys501-laser-physics/spatial-hole-burning.html",
   "fys501-laser-physics/mode-competition.html",
   "fys501-laser-physics/output-coupler-optimization.html",
-  "finnmath-app/index.html"
+  "photonics/index.html",
+  "photonics/waveguide-mode-explorer.html",
+  "photonics/er-waveguide-amplifier.html"
 ];
 
 self.addEventListener("install", (event) => {
@@ -63,6 +67,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (new URL(event.request.url).hostname === "script.google.com") return; // gate API: never cache
   const sameOrigin = new URL(event.request.url).origin === self.location.origin;
   const request = sameOrigin ? new Request(event.request, { cache: "no-cache" }) : event.request;
   event.respondWith(
