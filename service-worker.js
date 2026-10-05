@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v35";
+const CACHE_NAME = "physics-applets-v36";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -8,6 +8,7 @@ const APP_SHELL = [
   "assets/css/fys310-solid-state-physics.css",
   "assets/css/photonics.css",
   "assets/js/course-back.js",
+  "assets/js/gate.js",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
   "fys232-structure-of-matter/index.html",
@@ -64,6 +65,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (new URL(event.request.url).hostname === "script.google.com") return; // gate API: never cache
   const sameOrigin = new URL(event.request.url).origin === self.location.origin;
   const request = sameOrigin ? new Request(event.request, { cache: "no-cache" }) : event.request;
   event.respondWith(
