@@ -1,4 +1,4 @@
-const CACHE_NAME = "physics-applets-v39";
+const CACHE_NAME = "physics-applets-v40";
 const APP_SHELL = [
   "index.html",
   "manifest.json",
@@ -45,8 +45,7 @@ const APP_SHELL = [
   "fys501-laser-physics/mode-competition.html",
   "fys501-laser-physics/output-coupler-optimization.html",
   "photonics/index.html",
-  "photonics/waveguide-mode-explorer.html",
-  "photonics/er-waveguide-amplifier.html"
+  "photonics/waveguide-mode-explorer.html"
 ];
 
 self.addEventListener("install", (event) => {
