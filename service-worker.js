@@ -4,6 +4,7 @@ const APP_SHELL = [
   "manifest.json",
   "assets/css/base.css",
   "assets/css/applet.css",
+  "assets/css/fys232-structure-of-matter.css",
   "assets/css/fys240-optics.css",
   "assets/css/fys310-solid-state-physics.css",
   "assets/css/photonics.css",
