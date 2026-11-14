@@ -3,90 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Binding energy per nucleon: fission and fusion</title>
+<title>Binding energy per nucleon: fission and fusion — FYS.232 Structure of Matter</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys232-structure-of-matter.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
 <style>
 :root{
-  --bg:#f5f5f2; --fg:#17181e; --muted:#5b6570; --card:#ffffff; --card2:#eeeeea; --border:#d9dbd3; --grid:rgba(0,0,0,.08);
-  --accent:#1f6feb; --curve:#1f6feb; --sel:#d9480f;
-  --fus:#6b4ce6; --fis:#d9730d; --app:#0d8fa1; --exo:#2b8a3e; --endo:#e03131;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  --fg:var(--text); --muted:var(--text-dim); --card:var(--panel); --card2:var(--panel-2);
+  --curve:var(--accent); --sel:var(--orange);
+  --fus:var(--blue); --fis:var(--orange); --app:var(--cyan); --exo:var(--green); --endo:var(--red);
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0e0f13; --fg:#eceef2; --muted:#9aa4af; --card:#17181e; --card2:#1f2128; --border:#2c2f38; --grid:rgba(255,255,255,.08);
-    --accent:#5c9dff; --curve:#5c9dff; --sel:#ff8a4c;
-    --fus:#9d85ff; --fis:#f2914b; --app:#23c7d9; --exo:#51cf66; --endo:#ff6b6b;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0e0f13; --fg:#eceef2; --muted:#9aa4af; --card:#17181e; --card2:#1f2128; --border:#2c2f38; --grid:rgba(255,255,255,.08);
-  --accent:#5c9dff; --curve:#5c9dff; --sel:#ff8a4c;
-  --fus:#9d85ff; --fis:#f2914b; --app:#23c7d9; --exo:#51cf66; --endo:#ff6b6b;
-}
-html{scroll-padding-top:env(safe-area-inset-top,0px);}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 .wrap{max-width:1180px;margin:0 auto;padding:16px 16px 28px}
-h1{font-size:1.25rem;margin:0 0 2px;font-weight:650;letter-spacing:-.01em}
-.sub{color:var(--muted);margin:0 0 12px;font-size:.9rem}
-.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 12px;overflow-x:auto;line-height:1.7;white-space:nowrap}
-.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--card2)}
-.seg button{flex:1;padding:7px 10px;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.86rem;font-weight:500;cursor:pointer;border-right:1px solid var(--border)}
-.seg button:last-child{border-right:0}
-.seg button:hover{color:var(--fg)}
+.sub{margin:0 0 12px}
+.eq{margin:0 0 12px;line-height:1.7;white-space:nowrap}
+.seg{display:flex}
 .seg button[aria-pressed=true]{background:var(--mc,var(--accent));color:#fff;font-weight:600}
 .seg.modes{margin-bottom:12px;flex-wrap:wrap}
 .seg.modes button{min-width:120px}
-.seg.small button{padding:4px 9px;font-size:.78rem;white-space:nowrap}
-button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg.small button{padding:4px 9px;font-size:var(--fs-small);white-space:nowrap}
+canvas:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .main{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);grid-template-rows:auto 1fr;gap:12px;align-items:start}
 .main>.plotbox{grid-column:1;grid-row:1}
 .main>.side{grid-column:2;grid-row:1 / span 2}
 .main>.ledger{grid-column:1;grid-row:2;margin-top:0}
 @media (max-width:900px){.main{grid-template-columns:minmax(0,1fr);grid-template-rows:none}.main>.plotbox,.main>.side,.main>.ledger{grid-column:1;grid-row:auto}}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
 .plotbox{padding:10px 10px 8px}
 .head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:0 4px 6px}
-.head h2{margin:0;font-size:.92rem;font-weight:650}
+.head h2{margin:0}
 canvas{display:block;width:100%;touch-action:pan-y;cursor:crosshair;border-radius:6px}
-.legend{display:flex;flex-wrap:wrap;gap:3px 14px;margin:6px 4px 0;font-size:.76rem;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:3px 14px;margin:6px 4px 0}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:5px;border:2px solid currentColor}
 .legend i.fill{background:currentColor}
 .legend i.sw{width:14px;height:9px;border-radius:2px;border:0;opacity:.45}
-.hover{margin:4px 4px 0;font-size:.8rem;color:var(--muted);min-height:1.3em;font-variant-numeric:tabular-nums}
+.hover{margin:4px 4px 0;font-size:var(--fs-small);color:var(--text-dim);min-height:1.3em;font-variant-numeric:tabular-nums}
 .side{display:flex;flex-direction:column;gap:10px}
-.panel h3{margin:0 0 8px;font-size:.95rem;font-weight:650;color:var(--mc,var(--accent))}
-.panel p{margin:0 0 8px;font-size:.84rem;color:var(--muted)}
+.panel h3{margin:0 0 8px;color:var(--mc,var(--accent))}
+.panel p{margin:0 0 8px;font-size:var(--fs-label);color:var(--text-dim)}
 .ctl{margin:0 0 10px}
-.ctl label,.ctl .lab{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;color:var(--muted);margin-bottom:2px}
-.ctl .val{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
-input[type=range]{width:100%;accent-color:var(--mc,var(--accent));margin:0;height:26px}
+.ctl .lab{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-label);color:var(--text-dim);margin-bottom:2px}
+.ctl .slider-label span.val{color:var(--mc,var(--accent))}
+input[type=range]{accent-color:var(--mc,var(--accent));margin:0}
+input[type=range]::-webkit-slider-thumb{background:var(--mc,var(--accent))}
+input[type=range]::-moz-range-thumb{background:var(--mc,var(--accent))}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}
-.chips .cl{font-size:.78rem;color:var(--muted);width:100%}
-.chip{appearance:none;border:1px solid var(--border);background:var(--card2);color:var(--fg);font:inherit;font-size:.8rem;padding:4px 9px;border-radius:8px;cursor:pointer}
+.chips .cl{font-size:var(--fs-small);color:var(--text-dim);width:100%}
+.chip{font-size:var(--fs-small);padding:4px 9px}
 .chip:hover{border-color:var(--mc,var(--accent))}
 .chip[aria-pressed=true]{background:var(--mc,var(--accent));border-color:var(--mc,var(--accent));color:#fff}
 .chip.step{padding:2px 9px;font-weight:700}
 .reads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 8px}
-.read{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:6px 10px;min-width:0}
+.read{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:6px 10px;min-width:0}
 .read.wide{grid-column:1/-1}
-.read .k{font-size:.72rem;color:var(--muted)}
-.read .v{font-size:1.12rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
-.read .s{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.read .k{font-size:var(--fs-tiny);color:var(--text-dim)}
+.read .v{font-family:var(--font-mono);font-size:1.1rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.3}
+.read .s{font-size:var(--fs-tiny);color:var(--text-dim);font-variant-numeric:tabular-nums}
 .pos{color:var(--exo)} .neg{color:var(--endo)}
-.verdict{border-left:4px solid var(--vc,var(--muted));background:var(--card2);border-radius:0 8px 8px 0;padding:7px 11px;font-size:.84rem;margin:0 0 4px}
+.verdict{border-left:4px solid var(--vc,var(--text-dim));background:var(--panel-2);border-radius:0 8px 8px 0;padding:7px 11px;font-size:var(--fs-label);margin:0 0 4px}
 .ledger{min-width:0}
-.ledger h3{margin:0 0 6px;font-size:.92rem}
+.ledger h3{margin:0 0 6px}
 .scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.8rem;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-small);font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 th,td{padding:4px 6px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
-th{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
-tr.tot td{font-weight:650;border-bottom:0}
-.note{font-size:.78rem;color:var(--muted);margin:6px 0 0}
-details{margin-top:12px;color:var(--muted);font-size:.86rem}
-summary{cursor:pointer;color:var(--fg)}
+th:first-child,td:first-child{text-align:left;font-family:var(--font-body)}
+th{font-family:var(--font-body);font-size:var(--fs-tiny);text-transform:uppercase;letter-spacing:.04em;color:var(--text-dim);font-weight:600}
+tr.tot td{font-weight:600;border-bottom:0}
+.note{margin:6px 0 0}
+details{margin-top:12px;color:var(--text-dim);font-size:var(--fs-body)}
+summary{cursor:pointer;color:var(--text)}
 details p,details li{margin:6px 0}
 .minicv{margin-top:6px}
 .minicv canvas{cursor:default;touch-action:auto}
@@ -132,7 +115,7 @@ sup{font-size:.7em;line-height:0}
       <section class="card panel" id="pExplore" style="--mc:var(--accent)">
         <h3>Selected nucleus</h3>
         <div class="ctl">
-          <label for="sA">Mass number A <span class="val" id="vA"></span></label>
+          <label class="slider-label" for="sA"><span>Mass number A</span> <span class="val" id="vA"></span></label>
           <input id="sA" type="range" min="1" max="263" step="1" value="56">
         </div>
         <div class="chips" id="exChips"></div>
@@ -146,11 +129,11 @@ sup{font-size:.7em;line-height:0}
         <div class="chips" id="fisTargets"><span class="cl">Target nucleus (or click the curve)</span></div>
         <div class="chips" id="fisChannels"><span class="cl">Channels from the lecture (²³⁵U + n)</span></div>
         <div class="ctl">
-          <label for="sA1">Light fragment A₁ <span class="val" id="vA1"></span></label>
+          <label class="slider-label" for="sA1"><span>Light fragment A₁</span> <span class="val" id="vA1"></span></label>
           <input id="sA1" type="range" min="1" max="120" step="1" value="92">
         </div>
         <div class="ctl">
-          <label for="sNu">Prompt neutrons ν <span class="val" id="vNu"></span></label>
+          <label class="slider-label" for="sNu"><span>Prompt neutrons ν</span> <span class="val" id="vNu"></span></label>
           <input id="sNu" type="range" min="0" max="6" step="1" value="2">
         </div>
         <div class="chips"><span class="cl">Charge of the light fragment</span>
@@ -181,7 +164,7 @@ sup{font-size:.7em;line-height:0}
         <div class="reads" id="appReads"></div>
         <div id="naaBox">
           <div class="ctl" style="margin-bottom:0">
-            <label for="sT">Irradiation time t <span class="val" id="vT"></span></label>
+            <label class="slider-label" for="sT"><span>Irradiation time t</span> <span class="val" id="vT"></span></label>
             <input id="sT" type="range" min="0" max="6" step="0.01" value="2">
           </div>
           <div class="minicv"><canvas id="cv2" role="img" aria-label="Induced activity R(t) divided by its saturation value versus irradiation time in half-lives"></canvas></div>
@@ -369,6 +352,7 @@ const PL = 46, PR = 12, PT = 12, PB = 38;
 let G = null; // geometry cache
 
 function css(){ const c = getComputedStyle(document.documentElement); return n => c.getPropertyValue(n).trim(); }
+const FONT = (getComputedStyle(document.documentElement).getPropertyValue('--font-body').trim() || 'system-ui, sans-serif');
 
 function niceStep(range, target){
   const raw = range / target, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
@@ -393,7 +377,7 @@ function render(){
   const modeC = S.mode === 'fis' ? fis : S.mode === 'fus' ? fus : S.mode === 'app' ? c('--app') : selC;
 
   ctx.clearRect(0, 0, W, H);
-  ctx.font = '12px system-ui, sans-serif';
+  ctx.font = '12px ' + FONT;
   const inX = a => a >= v.x0 && a <= v.x1;
 
   // regions
@@ -402,7 +386,7 @@ function render(){
     if (x1 - x0 < 2) return;
     ctx.save(); ctx.globalAlpha = 0.09; ctx.fillStyle = col; ctx.fillRect(x0, PT, x1 - x0, H - PT - PB); ctx.restore();
     ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.font = '600 11px system-ui, sans-serif';
+    ctx.font = '600 11px ' + FONT;
     const tw = ctx.measureText(txt[0]).width;
     if (x1 - x0 > tw + 14) ctx.fillText(txt[0], (x0 + x1) / 2, PT + 5);
     else if (x1 - x0 > 46) ctx.fillText(txt[1], (x0 + x1) / 2, PT + 5);
@@ -411,7 +395,7 @@ function render(){
   if (fisStart) shade(fisStart - 0.5, v.x1, fis, ['splitting a nucleus releases energy', 'fission']);
 
   // grid + axes
-  ctx.font = '11px system-ui, sans-serif'; ctx.lineWidth = 1;
+  ctx.font = '11px ' + FONT; ctx.lineWidth = 1;
   const xs = niceStep(v.x1 - v.x0, W / 70), ys = niceStep(v.y1 - v.y0, H / 55);
   ctx.strokeStyle = grid; ctx.fillStyle = muted;
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
@@ -433,7 +417,7 @@ function render(){
   if (PEAK >= v.y0 && PEAK <= v.y1){
     ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = muted; ctx.globalAlpha = 0.7;
     ctx.beginPath(); ctx.moveTo(PL, Y(PEAK)); ctx.lineTo(W - PR, Y(PEAK)); ctx.stroke(); ctx.restore();
-    ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.font = '10.5px system-ui, sans-serif';
+    ctx.fillStyle = muted; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.font = '10.5px ' + FONT;
     if (S.view !== 'light' && !narrow) ctx.fillText('maximum ' + f(PEAK, 3) + ' (' + nm(28, 62) + ')', W - PR - 4, Y(PEAK) - 2);
   }
 
@@ -453,7 +437,7 @@ function render(){
   const hit = (r1, r2) => !(r1.x1 < r2.x0 || r2.x1 < r1.x0 || r1.y1 < r2.y0 || r2.y1 < r1.y0);
 
   // labelled nuclides
-  ctx.font = '600 11.5px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.font = '600 11.5px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
   const NARROW = { full:[4,56,235], light:[2,4,8,12,16,20,28], peak:[40,56,62,78] };
   (narrow ? NARROW[S.view] : LABELS[S.view]).forEach(A => {
     if (!inX(A)) return;
@@ -468,7 +452,7 @@ function render(){
 
   // boxed labels with collision avoidance. cands: [align, base, dx, dy]
   const place = (text, x, y, col, cands) => {
-    ctx.font = '600 11.5px system-ui, sans-serif';
+    ctx.font = '600 11.5px ' + FONT;
     const w = ctx.measureText(text).width + 8, h = 16;
     const rectFor = (al, ba, dx, dy) => {
       let x0 = al === 'left' ? x + dx : al === 'right' ? x + dx - w : x + dx - w / 2;
@@ -750,7 +734,7 @@ function drawBuild(){
   c2.width = W * dpr; c2.height = H * dpr; c2.style.width = W + 'px'; c2.style.height = H + 'px'; x.setTransform(dpr, 0, 0, dpr, 0, 0);
   const c = css(), muted = c('--muted'), grid = c('--grid'), col = c('--app'), sel = c('--sel');
   const l = 34, r = 8, t = 8, b = 24, X = a => l + a / 6 * (W - l - r), Y = a => H - b - a * (H - t - b);
-  x.font = '10.5px system-ui, sans-serif'; x.textBaseline = 'middle';
+  x.font = '10.5px ' + FONT; x.textBaseline = 'middle';
   for (let i = 0; i <= 6; i++){ x.strokeStyle = grid; x.beginPath(); x.moveTo(X(i) + .5, t); x.lineTo(X(i) + .5, H - b); x.stroke(); x.fillStyle = muted; x.textAlign = 'center'; x.fillText(String(i), X(i), H - b + 10); }
   for (const a of [0, .5, .75, .875, 1]){ x.strokeStyle = grid; x.beginPath(); x.moveTo(l, Y(a)); x.lineTo(W - r, Y(a)); x.stroke(); x.fillStyle = muted; x.textAlign = 'right'; x.fillText(String(a), l - 4, Y(a)); }
   x.textAlign = 'center'; x.fillText('t / T½', l + (W - l - r) / 2, H - 4);

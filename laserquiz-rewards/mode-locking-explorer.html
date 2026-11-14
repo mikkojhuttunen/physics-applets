@@ -194,7 +194,7 @@
         <div class="field">
           <label>Absorber recovery time, τ_A <span class="val" id="v-tauA">0 (instant)</span></label>
           <input type="range" id="s-tauA" min="0" max="60" step="1" value="0">
-          <div class="hint">0 = an idealized instantaneous saturable absorber (this is effectively what Kerr-lens mode-locking provides — no real absorption, just an intensity-dependent spatial loss). Larger values mimic a real SESAM's finite carrier-recombination recovery.</div>
+          <div class="hint">0 = an idealized instantaneous saturable absorber (this is effectively what Kerr-lens mode-locking provides — no real absorption, just an intensity-dependent spatial loss). Larger values mimic a real SESAM's finite carrier-recombination recovery; τ_A is measured in time bins (the pulse is roughly 8–10 bins wide), so τ_A ≫ 10 is a slow absorber relative to the pulse.</div>
         </div>
 
         <button class="runbtn" onclick="runSelfStart();">▶ Run from noise (new seed)</button>
@@ -231,7 +231,7 @@
   <!-- ================= TAB 3 (removed): MECHANISMS / MAMYSHEV ================= -->
 
   <footer class="note">
-    <b>Model &amp; approximations (Tab 2):</b> single polarization, single transverse mode, scalar field on a 256-point time grid, one round trip = one split-step update (gain + gain-bandwidth filtering + dispersion applied in the frequency domain via FFT; SPM and the saturable absorber applied pointwise in time). Units throughout are arbitrary/normalized, chosen for clear qualitative behavior rather than matched to a specific real cavity. A small persistent noise term is added every round trip, standing in for spontaneous emission — this is also what makes the simulation self-starting rather than needing a manually seeded pulse. Passive mode-locking, active mechanisms (e.g. acousto-optic modulators) not modeled.
+    <b>Model &amp; approximations (Tab 2):</b> single polarization, single transverse mode, scalar field on a 256-point time grid, one round trip = one split-step update (gain + gain-bandwidth filtering + dispersion applied in the frequency domain via FFT; SPM and the saturable absorber applied pointwise in time; a finite-recovery absorber is integrated along the time axis, so τ_A is in time bins). The net dispersion D is β₂L: D &lt; 0 is anomalous (soliton-like pulse shaping together with SPM), D &gt; 0 is normal. Units throughout are arbitrary/normalized, chosen for clear qualitative behavior rather than matched to a specific real cavity. A small persistent noise term is added every round trip, standing in for spontaneous emission — this is also what makes the simulation self-starting rather than needing a manually seeded pulse. Passive mode-locking, active mechanisms (e.g. acousto-optic modulators) not modeled.
     <br><br>
     <b>Draft / bonus content</b> — flagged for instructor review before wider distribution.
   </footer>
@@ -390,6 +390,8 @@ const ML_Nt = 256;
 const ML_omega = new Float64Array(ML_Nt);
 for(let k=0;k<ML_Nt;k++){ const kk = k<=ML_Nt/2? k : k-ML_Nt; ML_omega[k] = 2*Math.PI*kk/ML_Nt; }
 
+let mlQcarry = 0;  // absorber state at the last time bin of the previous round trip (the time axis is periodic)
+
 function mlRandn(){
   let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
   return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
@@ -445,13 +447,20 @@ function mlStep(re, im, q, p){
       re[i]*=s; im[i]*=s;
     }
   } else {
+    // Finite recovery time tauA, in TIME BINS: integrate dq/dt = -(q-q0)/tauA - q*I/EsatA along the fast-time
+    // axis inside this round trip (exact exponential step per bin, I held constant over the bin), carrying q
+    // from bin to bin and from the end of one round trip to the start of the next. (Earlier versions advanced
+    // q once per round trip, which made tauA a recovery time in round trips, not bins.)
+    let qp = mlQcarry;
     for(let i=0;i<Nt;i++){
       const I = re[i]*re[i]+im[i]*im[i];
-      const dq = ( -(q[i]-p.q0)/p.tauA - q[i]*I/p.EsatA );
-      q[i] = Math.max(q[i]+dq, 0);
-      const s = Math.sqrt(Math.max(1-q[i],0));
+      const kap = 1/p.tauA + I/p.EsatA, qeq = (p.q0/p.tauA)/kap;
+      qp = qeq + (qp-qeq)*Math.exp(-kap);
+      q[i] = qp;
+      const s = Math.sqrt(Math.max(1-qp,0));
       re[i]*=s; im[i]*=s;
     }
+    mlQcarry = qp;
   }
 
   // persistent noise floor
@@ -463,7 +472,7 @@ function mlStep(re, im, q, p){
   for(let k=0;k<Nt;k++){
     const w = ML_omega[k];
     const amp_ = Math.exp(gSat - p.l - p.Dg*w*w);
-    const ph = -0.5*p.D*w*w;
+    const ph = 0.5*p.D*w*w;   // D = beta2*L: D<0 anomalous, D>0 normal (matches the slider label)
     const c=amp_*Math.cos(ph), s=amp_*Math.sin(ph);
     const nr = re[k]*c - im[k]*s, ni = re[k]*s + im[k]*c;
     re[k]=nr; im[k]=ni;
@@ -493,7 +502,7 @@ function mlAnalyze(re, im){
 
 const MECH_PRESETS = {
   klm:  { tauA:0,  label:'Ideal fast SA (KLM-like)' },
-  sesam:{ tauA:25, label:'Realistic SESAM' }
+  sesam:{ tauA:10, label:'Realistic SESAM' }
 };
 
 function readSSParams(){
@@ -552,6 +561,7 @@ function runSelfStart(){
   const Nt = ML_Nt;
   const re = new Float64Array(Nt), im = new Float64Array(Nt);
   const q = new Float64Array(Nt).fill(p.q0);
+  mlQcarry = p.q0;
   for(let i=0;i<Nt;i++){ re[i]=0.01*mlRandn(); im[i]=0.01*mlRandn(); }
 
   ssSnapshots = [];

@@ -3,87 +3,68 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Interatomic potential: Lennard-Jones and Morse</title>
+<title>Interatomic potential: Lennard-Jones and Morse — FYS.232 Structure of Matter</title>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/fys232-structure-of-matter.css">
+<link rel="stylesheet" href="../assets/css/applet.css">
 <style>
 :root{
-  --bg:#ffffff; --fg:#1b1f24; --muted:#5b6570; --card:#f4f5f7; --border:#d3d8de; --grid:#e6e9ed;
-  --lj:#1f6feb; --morse:#d9480f; --r0:#2f9e44; --de:#7048e8; --rep:#e03131; --att:#0c8599; --accent:#1f6feb;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  --fg:var(--text); --muted:var(--text-dim); --card:var(--panel);
+  --lj:var(--blue); --morse:var(--orange); --r0:var(--green); --de:var(--violet); --rep:var(--red); --att:var(--cyan);
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
-    --lj:#5c9dff; --morse:#ff8a4c; --r0:#51cf66; --de:#9775fa; --rep:#ff6b6b; --att:#3bc9db; --accent:#5c9dff;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#14171b; --fg:#e6e9ec; --muted:#9aa4af; --card:#1d2126; --border:#323942; --grid:#262b31;
-  --lj:#5c9dff; --morse:#ff8a4c; --r0:#51cf66; --de:#9775fa; --rep:#ff6b6b; --att:#3bc9db; --accent:#5c9dff;
-}
-html{scroll-padding-top:env(safe-area-inset-top,0px);}
-*{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
 .wrap{max-width:1180px;margin:0 auto;padding:16px 16px 28px;}
-h1{font-size:1.25rem;margin:0 0 2px;font-weight:650}
-.sub{color:var(--muted);margin:0 0 14px;font-size:.9rem}
-.eq{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:0 0 14px;overflow-x:auto;line-height:1.9}
-.eq .m{display:inline-block;min-width:5.2em;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:650;font-size:.8rem}
+.sub{margin:0 0 14px}
+.eq{margin:0 0 14px;line-height:1.9}
+.eq .m{display:inline-block;min-width:5.2em;font-family:var(--font-body);font-weight:600;font-size:var(--fs-small)}
 .presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center}
-.presets .lab{font-size:.82rem;color:var(--muted);margin-right:2px}
-.pnote{font-size:.8rem;color:var(--muted);min-height:1.3em;margin-bottom:10px}
-.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:.84rem;padding:5px 10px;border-radius:8px;cursor:pointer}
-.btn:hover{border-color:var(--accent)}
-.btn:focus-visible,input:focus-visible,.seg button:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.presets .lab{font-size:var(--fs-label);color:var(--text-dim);margin-right:2px}
+.pnote{font-size:var(--fs-small);color:var(--text-dim);min-height:1.3em;margin-bottom:10px}
+canvas:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .layout{display:grid;grid-template-columns:minmax(270px,320px) minmax(0,1fr);gap:14px;align-items:start}
 @media (max-width:860px){.layout{grid-template-columns:1fr}}
 .side{display:flex;flex-direction:column;gap:12px}
 .main{min-width:0}
-.grp{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--gc,var(--accent));border-radius:12px;padding:10px 14px 12px;display:flex;flex-direction:column;gap:11px}
-.grp h2{margin:0;font-size:.95rem;font-weight:650;color:var(--gc,var(--accent))}
+.grp{display:flex;flex-direction:column;gap:11px;border-top:3px solid var(--gc,var(--accent))}
+.grp h2{margin:0;color:var(--gc,var(--accent))}
 .grp.pot{--gc:var(--r0)}
 .grp.vib{--gc:var(--de)}
-.ctl label,.ctl .lab{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px}
-.ctl .val{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
-.hint{font-size:.76rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
-input[type=range]{width:100%;accent-color:var(--accent)}
-.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
-.seg button{flex:1;padding:5px 8px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:.82rem;cursor:pointer;border-right:1px solid var(--border)}
-.seg button:last-child{border-right:0}
-.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
-label.chk{display:flex;gap:8px;align-items:center;font-size:.84rem;color:var(--fg);cursor:pointer}
-.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--sc,var(--muted));border-radius:0 10px 10px 0}
-.status .pill{font-weight:650;color:var(--sc,var(--muted))}
-.status .txt{color:var(--muted);font-size:.88rem}
+.ctl .lab{display:block;font-size:var(--fs-label);color:var(--text-dim);margin-bottom:4px}
+.hint{font-size:var(--fs-small);color:var(--text-dim);margin-top:2px;font-variant-numeric:tabular-nums}
+.seg{display:flex;width:100%}
+.seg button{padding:7px 8px;font-size:var(--fs-small)}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff;font-weight:600}
+label.chk{display:flex;gap:8px;align-items:center;cursor:pointer}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--sc,var(--text-dim));border-radius:0 10px 10px 0}
+.status .pill{font-weight:600;color:var(--sc,var(--text-dim))}
+.status .txt{color:var(--text-dim);font-size:var(--fs-body)}
 .reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 12px}
-.read{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
-.read .k{font-size:.76rem;color:var(--muted)}
-.read .v{font-size:1.2rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.35}
-.read .v .ln{display:block}
-.read .v.two{font-size:.9rem}
-.read .v .ln{white-space:nowrap}
-.read .s{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.read{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.read .k{font-size:var(--fs-small);color:var(--text-dim)}
+.read .v{font-family:var(--font-mono);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.35}
+.read .v .ln{display:block;white-space:nowrap}
+.read .v.two{font-size:var(--fs-body)}
+.read .s{font-size:var(--fs-small);color:var(--text-dim);font-variant-numeric:tabular-nums}
 .read .s .ln{display:block}
 .read .s .tag{font-size:.62rem;padding:0 5px}
-.tag{display:inline-block;font-style:normal;font-size:.68rem;font-weight:650;padding:0 6px;margin-right:6px;border-radius:5px;color:#fff;vertical-align:1px}
+.tag{display:inline-block;font-family:var(--font-body);font-style:normal;font-size:.68rem;font-weight:600;padding:0 6px;margin-right:6px;border-radius:5px;color:#fff;vertical-align:1px}
 .tag.lj{background:var(--lj)}
 .tag.mo{background:var(--morse)}
-.plotbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 10px 8px;margin-bottom:12px}
-.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:2px 4px 6px;font-size:.78rem;color:var(--muted)}
+.plotbox{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-panel);padding:10px 10px 8px;margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:2px 4px 6px}
 .legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:5px}
 .legend i.dash{border-top-style:dashed}
 .legend i.dot{border-top-style:dotted}
 canvas{display:block;width:100%;touch-action:pan-y;cursor:ew-resize}
-.cap{margin:6px 4px 0;font-size:.78rem;color:var(--muted)}
-table.cmp{width:100%;border-collapse:collapse;font-size:.84rem}
+.cap{margin:6px 4px 0;font-size:var(--fs-small);color:var(--text-dim)}
+table.cmp{width:100%;border-collapse:collapse;font-size:var(--fs-label)}
 table.cmp th,table.cmp td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}
-table.cmp th{font-weight:650}
+table.cmp th{font-weight:600}
 table.cmp tr:last-child td{border-bottom:0}
-table.cmp td:first-child{color:var(--muted)}
-.dim{color:var(--muted);font-size:.9em}
-details{margin-top:14px;color:var(--muted);font-size:.88rem}
-summary{cursor:pointer;color:var(--fg)}
+table.cmp td:first-child{color:var(--text-dim)}
+.dim{color:var(--text-dim);font-size:.9em}
+details{margin-top:14px;color:var(--text-dim);font-size:var(--fs-body)}
+summary{cursor:pointer;color:var(--text)}
 details p{margin:8px 0;max-width:80ch}
 </style>
 </head>
@@ -98,7 +79,7 @@ details p{margin:8px 0;max-width:80ch}
 
   <div class="layout">
     <div class="side">
-      <section class="grp pot">
+      <section class="card grp pot">
         <h2>Potential</h2>
         <div class="ctl">
           <span class="lab">Model</span>
@@ -109,27 +90,27 @@ details p{margin:8px 0;max-width:80ch}
           </div>
         </div>
         <div class="ctl">
-          <label for="sD">Well depth D (dissociation energy): <span class="val" id="vD"></span></label>
+          <label class="slider-label" for="sD"><span>Well depth D (dissociation energy)</span> <span class="val" id="vD"></span></label>
           <input id="sD" type="range" min="-2.52" max="1.3" step="0.001" value="0.68">
           <div class="hint" id="hD"></div>
         </div>
         <div class="ctl">
-          <label for="sR">Equilibrium separation r₀ (bond length): <span class="val" id="vR"></span></label>
+          <label class="slider-label" for="sR"><span>Equilibrium separation r₀ (bond length)</span> <span class="val" id="vR"></span></label>
           <input id="sR" type="range" min="-1.3" max="-0.1" step="0.001" value="-1.13">
           <div class="hint" id="hR"></div>
         </div>
         <div class="ctl" id="ctlA">
-          <label for="sA">Morse width parameter a: <span class="val" id="vA"></span></label>
+          <label class="slider-label" for="sA"><span>Morse width parameter a</span> <span class="val" id="vA"></span></label>
           <input id="sA" type="range" min="0.45" max="2.1" step="0.001" value="1.29">
           <div class="hint" id="hA"></div>
           <div class="presets" style="margin:6px 0 0"><button class="btn" id="bMatch">Match LJ curvature (a = 6/r₀)</button></div>
         </div>
       </section>
 
-      <section class="grp">
+      <section class="card grp">
         <h2>Probe and display</h2>
         <div class="ctl">
-          <label for="sP">Probe separation r: <span class="val" id="vP"></span></label>
+          <label class="slider-label" for="sP"><span>Probe separation r</span> <span class="val" id="vP"></span></label>
           <input id="sP" type="range" min="0.5" max="3" step="0.001" value="1.3">
           <div class="hint">or drag on the figure, or focus it and use ← →</div>
         </div>
@@ -143,10 +124,10 @@ details p{margin:8px 0;max-width:80ch}
         <label class="chk"><input type="checkbox" id="chkH"> Show harmonic (spring) approximation</label>
       </section>
 
-      <section class="grp vib">
+      <section class="card grp vib">
         <h2>Vibration (optional)</h2>
         <div class="ctl">
-          <label for="sMu">Reduced mass μ: <span class="val" id="vMu"></span></label>
+          <label class="slider-label" for="sMu"><span>Reduced mass μ</span> <span class="val" id="vMu"></span></label>
           <input id="sMu" type="range" min="-0.4" max="2.18" step="0.001" value="-0.3">
           <div class="hint" id="hMu"></div>
         </div>
@@ -285,7 +266,7 @@ details p{margin:8px 0;max-width:80ch}
   }
 
   /* ---------- canvas helpers ---------- */
-  function font(c, px, wt){ c.font = (wt||400) + ' ' + px + 'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'; }
+  function font(c, px, wt){ c.font = (wt||400) + ' ' + px + 'px ' + (css('--font-body') || 'system-ui, sans-serif'); }
   function niceStep(span, target){
     const raw = span/target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
     return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10)*p;

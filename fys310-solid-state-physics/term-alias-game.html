@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Term Alias: FYS.310 Concept Card Game</title>
+<title>Term Alias</title>
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/fys310-solid-state-physics.css">
 <link rel="stylesheet" href="../assets/css/applet.css">
@@ -99,7 +99,41 @@
   .rules summary { cursor: pointer; color: var(--text); font-weight: 500; }
   .rules ul { margin: 8px 0 2px; padding-left: 1.1rem; line-height: 1.6; }
 
+  .timerbox { flex-wrap: wrap; }
+  .tbtn { min-width: 138px; padding: 12px 16px; font-size: .85rem; }
+  .tbtn.off { border-color: var(--green); color: var(--green); }
+  .tbtn[disabled], .btn-ghost[disabled] { opacity: .45; cursor: default; }
+  .actions { flex-direction: column; align-items: center; }
+  .subs { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .card.deal { animation: deal .38s cubic-bezier(.2,.9,.3,1.2); }
+  @keyframes deal { from { transform: rotateY(180deg) translateX(80px) rotate(9deg); opacity: 0; } }
+
+  .unicorns { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 60; }
+  .uni { position: absolute; left: 0; width: var(--s); animation: run var(--dur) linear var(--delay) both; will-change: transform; }
+  @keyframes run { from { transform: translateX(-560px); } to { transform: translateX(calc(100vw + 60px)); } }
+  .uni .bob { animation: bob .36s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-16px) rotate(2.5deg); } }
+  .uni svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .uni .leg { transform-box: fill-box; transform-origin: 50% 0; animation: leg .36s ease-in-out infinite alternate; }
+  .uni .lf2 { animation-delay: -.04s; } .uni .lb1 { animation-delay: -.36s; } .uni .lb2 { animation-delay: -.4s; }
+  @keyframes leg { from { transform: rotate(-42deg); } to { transform: rotate(42deg); } }
+  .uni .tail { transform-box: fill-box; transform-origin: 100% 0; animation: tail .3s ease-in-out infinite alternate; }
+  @keyframes tail { from { transform: rotate(-7deg); } to { transform: rotate(9deg); } }
+  .uni .trail { position: absolute; right: 86%; top: 50%; width: 440px; height: calc(var(--s) * .13); opacity: .85;
+    background: linear-gradient(to bottom, #f0553f 16.6%, #f2914b 0 33.3%, #e8d44d 0 50%, #3ecf6e 0 66.6%, #3e8ef7 0 83.3%, #7b5cfa 0);
+    -webkit-mask-image: linear-gradient(to left, #000, transparent); mask-image: linear-gradient(to left, #000, transparent); }
+  .uni .sp { position: absolute; font-size: 1.1rem; animation: twinkle .5s ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: .15; transform: scale(.6) rotate(0); } to { opacity: 1; transform: scale(1.2) rotate(40deg); } }
+  .streakbanner { position: fixed; left: 50%; top: 30%; transform: translate(-50%,-50%) scale(.3); opacity: 0; z-index: 70; pointer-events: none;
+    font: 700 clamp(2.1rem, 10vw, 3.6rem)/1.1 var(--font-body); text-align: center; white-space: nowrap;
+    background: linear-gradient(90deg, #f0553f, #f2914b, #e8d44d, #3ecf6e, #3e8ef7, #7b5cfa); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.35)); }
+  .streakbanner.show { animation: bannerpop 2.8s cubic-bezier(.2,1.3,.4,1) both; }
+  @keyframes bannerpop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.3) rotate(-6deg); } 14% { opacity: 1; transform: translate(-50%,-50%) scale(1.08) rotate(2deg); }
+    22% { transform: translate(-50%,-50%) scale(1) rotate(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-58%) scale(1); } }
+
   @media (prefers-reduced-motion: reduce) {
+    .unicorns { display: none; } .card.deal { animation: none; }
     .card { transition-duration: .01s; } .dice3d, .shadow { animation: none; } .cube { transition-duration: .4s; } .ring.danger .num { animation: none; }
   }
 </style>
@@ -116,6 +150,7 @@
       <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="44" fill="none" stroke-width="7"/><circle class="bar" id="bar" cx="50" cy="50" r="44" fill="none" stroke-width="7"/></svg>
       <div class="num" id="num">60</div>
     </div>
+    <button class="btn-ghost tbtn" id="tbtn">⏹ Stop timer</button>
   </div>
 
   <div class="stage" id="stage">
@@ -137,7 +172,10 @@
   </div>
 
   <div class="actions">
-    <button class="btn-ghost ok" id="gotit" hidden>✓ Guessed it</button>
+    <div class="subs">
+      <button class="btn-ghost ok" id="gotit" hidden>✓ Guessed it</button>
+      <button class="btn-ghost" id="skip" hidden>⏭ New card</button>
+    </div>
     <button class="btn-main" id="main">🎲 Roll &amp; draw a card</button>
   </div>
 
@@ -145,6 +183,7 @@
     <span>Cards left <b id="sLeft">0</b></span>
     <span>Played <b id="sPlayed">0</b></span>
     <span>Guessed <b id="sGot">0</b></span>
+    <span>Streak <b id="sStreak">0</b></span>
     <button id="mute" aria-pressed="false">Sound: on</button>
     <button id="reset">Reset</button>
   </div>
@@ -153,6 +192,9 @@
     <summary>How to play</summary>
     <ul>
       <li>One player draws a card and explains the term; teammates guess. The clock starts when the card is revealed.</li>
+      <li>Timer off? Press <em>Stop timer</em> to play without a clock. Press it again to bring the clock back.</li>
+      <li><em>New card</em> swaps the card at once and the timer keeps running, but it breaks your streak.</li>
+      <li>Guess three cards in a row and the unicorns come galloping.</li>
       <li>Do not say the term or any word marked <em>Don't say</em>. No gestures, no spelling, no "rhymes with".</li>
       <li>Press <em>Guessed it</em> when the team gets it. The card ends the moment the timer hits zero.</li>
       <li>Use the topic chips to play only the chapters you want to revise. Cards do not repeat until the filtered deck is used up.</li>
@@ -160,14 +202,17 @@
   </details>
 </div>
 
+<div class="unicorns" id="unicorns" aria-hidden="true"></div>
+<div class="streakbanner" id="banner" role="status"></div>
+
 <script>
-const DATA = {"cats": ["Crystal structure & reciprocal lattice", "Bonding in solids", "Mechanical properties", "Lattice vibrations & thermal properties", "Electrons in solids", "Semiconductors", "Dielectrics & quantum models"], "terms": [{"t": "Bravais lattice", "c": 0}, {"t": "Primitive cell", "c": 0}, {"t": "Wigner–Seitz cell", "c": 0}, {"t": "Diamond structure", "c": 0}, {"t": "Face-centered cubic (fcc)", "c": 0}, {"t": "Primitive cubic (Simple cubic)", "c": 0}, {"t": "Body-centered cubic (bcc)", "c": 0}, {"t": "Zincblende structure", "c": 0}, {"t": "Ewald construction", "c": 0}, {"t": "Brillouin zone", "c": 0}, {"t": "Structure factor", "c": 0}, {"t": "Laue condition", "c": 0}, {"t": "Fourier series", "c": 0}, {"t": "Reciprocal lattice", "c": 0}, {"t": "Truncated octahedron", "c": 0}, {"t": "Covalent bond", "c": 1}, {"t": "Ionic bond", "c": 1}, {"t": "Van der Waals bond", "c": 1}, {"t": "Metallic bond", "c": 1}, {"t": "Hydrogen bond", "c": 1}, {"t": "Antisymmetric wavefunction", "c": 1}, {"t": "Madelung constant", "c": 1}, {"t": "Pauli exclusion principle", "c": 1}, {"t": "Stress–Strain curve", "c": 2}, {"t": "Elastic deformation", "c": 2}, {"t": "Plastic deformation", "c": 2}, {"t": "Elastic constants", "c": 2}, {"t": "Stress", "c": 2}, {"t": "Strain", "c": 2}, {"t": "Young's modulus", "c": 2}, {"t": "Shear modulus", "c": 2}, {"t": "Necking", "c": 2}, {"t": "True stress", "c": 2}, {"t": "Lattice defects", "c": 2}, {"t": "Work hardening", "c": 2}, {"t": "Ductile material", "c": 2}, {"t": "Brittle material", "c": 2}, {"t": "Tensile stress", "c": 2}, {"t": "Dispersion relation", "c": 3}, {"t": "Phonon", "c": 3}, {"t": "Heat capacity", "c": 3}, {"t": "Thermal expansion", "c": 3}, {"t": "Optical phonon branch", "c": 3}, {"t": "Acoustic phonon branch", "c": 3}, {"t": "1st Brillouin zone", "c": 3}, {"t": "Density of states (DOS)", "c": 3}, {"t": "Debye model", "c": 3}, {"t": "Thermal conductivity", "c": 3}, {"t": "Gamma-point", "c": 3}, {"t": "Electron–phonon scattering", "c": 3}, {"t": "Phonon–phonon scattering", "c": 3}, {"t": "Phonon–impurity scattering", "c": 3}, {"t": "Band structure", "c": 4}, {"t": "Band gap", "c": 4}, {"t": "Electric conductivity", "c": 4}, {"t": "Drude model", "c": 4}, {"t": "Drude–Sommerfeld model", "c": 4}, {"t": "Free-electron model", "c": 4}, {"t": "Fermi surface/energy", "c": 4}, {"t": "Equipartition theorem", "c": 4}, {"t": "Wiedemann–Franz law", "c": 4}, {"t": "Electric-field screening", "c": 4}, {"t": "Screening length", "c": 4}, {"t": "Electronic density of states (DOS)", "c": 4}, {"t": "Bloch theorem", "c": 4}, {"t": "Mean free path", "c": 4}, {"t": "Central equation", "c": 4}, {"t": "Effective mass of an electron", "c": 4}, {"t": "Compound semiconductor", "c": 5}, {"t": "Elemental semiconductor", "c": 5}, {"t": "p-type doping of semiconductors", "c": 5}, {"t": "n-type doping of semiconductors", "c": 5}, {"t": "III–V semiconductors", "c": 5}, {"t": "Intrinsic semiconductor", "c": 5}, {"t": "Hall effect", "c": 5}, {"t": "Mobility", "c": 5}, {"t": "Extrinsic semiconductor", "c": 5}, {"t": "Mass action law", "c": 5}, {"t": "Born–Oppenheimer approximation", "c": 5}, {"t": "Conduction band", "c": 5}, {"t": "Valence band", "c": 5}, {"t": "Matthiessen's rule", "c": 5}, {"t": "Indirect band gap", "c": 5}, {"t": "pn-junction", "c": 5}, {"t": "Tight-binding model", "c": 6}, {"t": "Clausius–Mossotti relation", "c": 6}, {"t": "Lorentz–Lorenz equation", "c": 6}, {"t": "Bra–ket notation", "c": 6}, {"t": "Hilbert space", "c": 6}, {"t": "Polarizability (of an atomic emitter/scatterer)", "c": 6}, {"t": "Local-field effects", "c": 6}, {"t": "Frequency-dependent permittivity", "c": 6}, {"t": "Lorentz model", "c": 6}, {"t": "YAG crystal", "c": 6}, {"t": "Insulator", "c": 6}, {"t": "Metal", "c": 6}, {"t": "Semiconductor", "c": 6}]};
+const DATA = {"cats": ["Crystal structure & reciprocal lattice", "Bonding in solids", "Mechanical properties", "Lattice vibrations & thermal properties", "Electrons in solids", "Semiconductors", "Dielectrics & quantum models"], "terms": [{"t": "Bravais lattice", "c": 0}, {"t": "Primitive cell", "c": 0}, {"t": "Wigner–Seitz cell", "c": 0}, {"t": "Diamond structure", "c": 0}, {"t": "Face-centered cubic (fcc)", "c": 0}, {"t": "Primitive cubic (Simple cubic)", "c": 0}, {"t": "Body-centered cubic (bcc)", "c": 0}, {"t": "Zincblende structure", "c": 0}, {"t": "Ewald construction", "c": 0}, {"t": "Brillouin zone", "c": 0}, {"t": "Structure factor", "c": 0}, {"t": "Laue condition", "c": 0}, {"t": "Fourier series", "c": 0}, {"t": "Reciprocal lattice", "c": 0}, {"t": "Truncated octahedron", "c": 0}, {"t": "Covalent bond", "c": 1}, {"t": "Ionic bond", "c": 1}, {"t": "Van der Waals bond", "c": 1}, {"t": "Metallic bond", "c": 1}, {"t": "Hydrogen bond", "c": 1}, {"t": "Antisymmetric wavefunction", "c": 1}, {"t": "Madelung constant", "c": 1}, {"t": "Pauli exclusion principle", "c": 1}, {"t": "Stress–Strain curve", "c": 2}, {"t": "Elastic deformation", "c": 2}, {"t": "Plastic deformation", "c": 2}, {"t": "Elastic constants", "c": 2}, {"t": "Stress", "c": 2}, {"t": "Strain", "c": 2}, {"t": "Young's modulus", "c": 2}, {"t": "Shear modulus", "c": 2}, {"t": "Necking", "c": 2}, {"t": "True stress", "c": 2}, {"t": "Lattice defects", "c": 2}, {"t": "Work hardening", "c": 2}, {"t": "Ductile material", "c": 2}, {"t": "Brittle material", "c": 2}, {"t": "Tensile stress", "c": 2}, {"t": "Dispersion relation", "c": 3}, {"t": "Phonon", "c": 3}, {"t": "Heat capacity", "c": 3}, {"t": "Thermal expansion", "c": 3}, {"t": "Optical phonon branch", "c": 3}, {"t": "Acoustic phonon branch", "c": 3}, {"t": "1st Brillouin zone", "c": 3}, {"t": "Density of states (DOS)", "c": 3}, {"t": "Debye model", "c": 3}, {"t": "Thermal conductivity", "c": 3}, {"t": "Gamma-point", "c": 3}, {"t": "Electron–phonon scattering", "c": 3}, {"t": "Phonon–phonon scattering", "c": 3}, {"t": "Phonon–impurity scattering", "c": 3}, {"t": "Band structure", "c": 4}, {"t": "Band gap", "c": 4}, {"t": "Electric conductivity", "c": 4}, {"t": "Drude model", "c": 4}, {"t": "Drude–Sommerfeld model", "c": 4}, {"t": "Free-electron model", "c": 4}, {"t": "Fermi surface/energy", "c": 4}, {"t": "Equipartition theorem", "c": 4}, {"t": "Wiedemann–Franz law", "c": 4}, {"t": "Electric-field screening", "c": 4}, {"t": "Screening length", "c": 4}, {"t": "Electronic density of states (DOS)", "c": 4}, {"t": "Bloch theorem", "c": 4}, {"t": "Mean free path", "c": 4}, {"t": "Central equation", "c": 4}, {"t": "Effective mass of an electron", "c": 4}, {"t": "Compound semiconductor", "c": 5}, {"t": "Elemental semiconductor", "c": 5}, {"t": "p-type doping of semiconductors", "c": 5}, {"t": "n-type doping of semiconductors", "c": 5}, {"t": "III–V semiconductors", "c": 5}, {"t": "Intrinsic semiconductor", "c": 5}, {"t": "Hall effect", "c": 5}, {"t": "Mobility", "c": 5}, {"t": "Extrinsic semiconductor", "c": 5}, {"t": "Mass action law", "c": 5}, {"t": "Born–Oppenheimer approximation", "c": 5}, {"t": "Conduction band", "c": 5}, {"t": "Valence band", "c": 5}, {"t": "Matthiessen's rule", "c": 5}, {"t": "Indirect band gap", "c": 5}, {"t": "pn-junction", "c": 5}, {"t": "Tight-binding model", "c": 6}, {"t": "Clausius–Mossotti relation", "c": 6}, {"t": "Lorentz–Lorenz equation", "c": 6}, {"t": "Bra–ket notation", "c": 6}, {"t": "Hilbert space", "c": 6}, {"t": "Polarizability (of an atomic emitter/scatterer)", "c": 6}, {"t": "Local-field effects", "c": 6}, {"t": "Frequency-dependent permittivity", "c": 6}, {"t": "Lorentz model", "c": 6}, {"t": "YAG crystal", "c": 6}, {"t": "Insulator", "c": 6}, {"t": "Metal", "c": 6}, {"t": "Semiconductor", "c": 6}, {"t": "Cohesive energy", "c": 1}, {"t": "Electronegativity", "c": 1}, {"t": "Ionization energy", "c": 1}, {"t": "Orbital hybridization", "c": 1}, {"t": "Bonding and antibonding orbitals", "c": 1}, {"t": "Inter-atomic potential", "c": 1}, {"t": "Equilibrium bond length", "c": 1}, {"t": "London dispersion force", "c": 1}, {"t": "Group velocity", "c": 3}, {"t": "Umklapp scattering", "c": 3}, {"t": "Dielectric polarization", "c": 6}, {"t": "Electric susceptibility", "c": 6}, {"t": "Plasma frequency", "c": 6}, {"t": "Refractive index", "c": 6}]};
 const ROUND = 60;
 const COLORS = ['#7b5cfa','#f2914b','#e8d44d','#23c7d9','#3e8ef7','#3ecf6e','#f0553f'];
 const $ = id => document.getElementById(id);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const state = { active: new Set(DATA.cats.map((_, i) => i)), deck: [], phase: 'idle', played: 0, got: 0, muted: false, raf: 0, endAt: 0, lastTick: -1, cur: null };
+const state = { active: new Set(DATA.cats.map((_, i) => i)), deck: [], phase: 'idle', played: 0, got: 0, streak: 0, timerOn: true, muted: false, raf: 0, endAt: 0, lastTick: -1, cur: null };
 
 /* topic chips */
 const chips = $('chips');
@@ -198,7 +243,26 @@ let cubeX = 0, cubeY = 0;
 /* deck */
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function buildDeck() { state.deck = shuffle(DATA.terms.filter(t => state.active.has(t.c))); updateStats(); }
-function updateStats() { $('sLeft').textContent = state.deck.length; $('sPlayed').textContent = state.played; $('sGot').textContent = state.got; }
+function updateStats() { $('sLeft').textContent = state.deck.length; $('sPlayed').textContent = state.played; $('sGot').textContent = state.got; $('sStreak').textContent = state.streak; }
+function nextTerm() {
+  if (!state.deck.length) {
+    buildDeck();
+    const n = state.deck.length;
+    if (n > 1 && state.deck[n - 1] === state.cur) [state.deck[n - 1], state.deck[0]] = [state.deck[0], state.deck[n - 1]];
+  }
+  return state.deck.pop();
+}
+function updateUI() {
+  const p = state.phase, act = p === 'playing' || p === 'untimed';
+  $('gotit').hidden = !act; $('skip').hidden = !act;
+  const m = $('main');
+  m.disabled = p === 'rolling' || p === 'playing';
+  m.innerHTML = p === 'idle' ? '🎲 Roll &amp; draw a card' : p === 'playing' ? '…timer running' : p === 'rolling' ? '🎲 Rolling…' : '🎲 Draw a new card';
+  const tb = $('tbtn'); tb.disabled = p === 'rolling';
+  tb.innerHTML = state.timerOn ? '⏹ Stop timer' : '▶ Start timer';
+  tb.classList.toggle('off', !state.timerOn);
+}
+function idleRing() { $('ring').className = 'ring idle'; bar.style.strokeDashoffset = 0; $('num').textContent = state.timerOn ? ROUND : '∞'; }
 
 /* term display */
 const STOP = new Set(['of','the','an','and','to','in','for','on']);
@@ -247,27 +311,28 @@ function tick() {
 }
 function finish(guessed) {
   cancelAnimationFrame(state.raf);
+  const timed = state.phase === 'playing';
   state.phase = 'over';
   $('card').classList.add('over');
   const b = $('badge'); b.textContent = guessed ? 'Guessed! ✓' : "Time's up!"; b.classList.toggle('ok', guessed); b.classList.add('show');
-  if (guessed) { state.got++; beep(660, .12); setTimeout(() => beep(990, .2), 120); } else { beep(180, .7, 'sawtooth', .1); }
-  if (guessed) { const left = Math.max(0, (state.endAt - performance.now()) / 1000); setRing(left); }
-  $('gotit').hidden = true;
-  $('main').disabled = false; $('main').innerHTML = '🎲 Draw a new card';
+  if (guessed) {
+    state.got++; state.streak++; beep(660, .12); setTimeout(() => beep(990, .2), 120);
+    if (timed) setRing(Math.max(0, (state.endAt - performance.now()) / 1000)); else idleRing();
+    if (state.streak % 3 === 0) { const n = state.streak; setTimeout(() => celebrate(n), 500); }
+  } else { state.streak = 0; beep(180, .7, 'sawtooth', .1); }
+  updateUI(); updateStats();
   $('main').focus({ preventScroll: true });
-  updateStats();
 }
 
 /* flow */
 function roll() {
   if (state.phase === 'rolling' || state.phase === 'playing') return;
   cancelAnimationFrame(state.raf);
-  if (!state.deck.length) { buildDeck(); }
-  const next = state.deck.pop();
-  state.phase = 'rolling';
-  $('main').disabled = true; $('gotit').hidden = true;
-  $('card').classList.remove('flipped', 'over'); $('card').classList.add('hide'); $('badge').classList.remove('show', 'ok');
-  $('ring').className = 'ring idle'; bar.style.strokeDashoffset = 0; $('num').textContent = ROUND;
+  if (state.phase === 'untimed') state.streak = 0;
+  const next = nextTerm();
+  state.phase = 'rolling'; updateUI(); updateStats();
+  $('card').classList.remove('flipped', 'over', 'deal'); $('card').classList.add('hide'); $('badge').classList.remove('show', 'ok');
+  idleRing();
 
   const face = 1 + Math.floor(Math.random() * 6);
   const [fx, fy] = FACE_ROT[face];
@@ -285,31 +350,81 @@ function roll() {
     state.played++; showCard(next); updateStats();
     $('card').classList.remove('hide');
     requestAnimationFrame(() => $('card').classList.add('flipped'));
-    setTimeout(start, reduced ? 50 : 650);
+    setTimeout(afterFlip, reduced ? 50 : 650);
   }, reduced ? 500 : 2000);
 }
+function afterFlip() { if (state.timerOn) start(); else { state.phase = 'untimed'; idleRing(); updateUI(); } }
 function start() {
   state.phase = 'playing'; state.lastTick = -1;
   state.endAt = performance.now() + ROUND * 1000;
-  $('gotit').hidden = false; $('main').innerHTML = '…timer running';
-  beep(523, .1); tick();
+  updateUI(); beep(523, .1); tick();
+}
+function skipCard() {
+  if (state.phase !== 'playing' && state.phase !== 'untimed') return;
+  state.streak = 0;
+  const t = nextTerm(); state.played++; showCard(t); updateStats();
+  const c = $('card'); c.classList.remove('deal'); void c.offsetWidth; c.classList.add('deal');
+  beep(440, .07, 'triangle', .08);
+}
+function toggleTimer() {
+  if (state.phase === 'rolling') return;
+  if (state.timerOn) {
+    state.timerOn = false;
+    if (state.phase === 'playing') { cancelAnimationFrame(state.raf); state.phase = 'untimed'; }
+    if (state.phase !== 'over') idleRing(); else $('num').textContent = $('num').textContent;
+  } else {
+    state.timerOn = true;
+    if (state.phase === 'untimed') start(); else if (state.phase === 'idle') idleRing();
+  }
+  updateUI();
+}
+
+/* unicorn streak */
+const PAL = ['#f0553f', '#f2914b', '#e8d44d', '#3ecf6e', '#3e8ef7', '#7b5cfa'];
+function unicornSVG() {
+  const leg = (x, cls, far) => `<g class="leg ${cls}"><line x1="${x}" y1="60" x2="${x}" y2="98" stroke="#b9a8ff" stroke-width="12" stroke-linecap="round"/><line x1="${x}" y1="60" x2="${x}" y2="98" stroke="${far ? '#e9e4ff' : '#fff'}" stroke-width="8" stroke-linecap="round"/><rect x="${x - 5}" y="92" width="10" height="8" rx="3" fill="#ff9ad5"/></g>`;
+  const shapes = '<ellipse cx="84" cy="50" rx="46" ry="21"/><path d="M104 38 L126 2 L148 14 L126 56 Z"/><ellipse cx="141" cy="14" rx="16" ry="11" transform="rotate(28 141 14)"/><ellipse cx="156" cy="24" rx="11" ry="7.5" transform="rotate(28 156 24)"/><path d="M128 6 L130 -8 L138 2 Z"/>';
+  const tail = PAL.map((c, i) => `<path d="M46 44 C ${26 - i} ${40 + i * 3}, ${10 + i * 2} ${58 + i * 3}, ${6 + i * 2} ${86 + i * 2}" stroke="${c}" stroke-width="5.5" fill="none" stroke-linecap="round"/>`).join('');
+  const mane = PAL.map((c, i) => `<path d="M${128 - i * 2} ${-2 + i} C ${108 - i * 3} ${-6 + i * 2}, ${98 - i * 3} ${12 + i * 2}, ${100 - i * 3} ${40 + i * 2}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/>`).join('');
+  return `<svg viewBox="0 -30 172 134" xmlns="http://www.w3.org/2000/svg"><g class="tail">${tail}</g>${leg(58, 'lb2', true)}${leg(118, 'lf2', true)}${leg(70, 'lb1', false)}${leg(110, 'lf1', false)}
+  <g fill="#b9a8ff" stroke="#b9a8ff" stroke-width="5" stroke-linejoin="round">${shapes}</g><g fill="#fff">${shapes}</g>${mane}
+  <path d="M138 4 L148 1 L158 -26 Z" fill="#ffd86b" stroke="#e0a82e" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="146" cy="12" r="2.8" fill="#2b2d42"/><circle cx="147" cy="11" r=".9" fill="#fff"/><circle cx="144" cy="20" r="3.2" fill="#ffb3d9" opacity=".7"/><circle cx="162" cy="23" r="1.2" fill="#b9a8ff"/></svg>`;
+}
+function celebrate(n) {
+  const banner = $('banner'); banner.textContent = n + ' in a row!';
+  banner.classList.remove('show'); void banner.offsetWidth; banner.classList.add('show');
+  [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => beep(f, .22, 'triangle', .09), i * 110));
+  if (reduced) return;
+  const box = $('unicorns'), count = Math.min(2 + Math.floor(n / 3), 5);
+  const rows = [6, 30, 54, 18, 42], sizes = [200, 160, 125, 145, 110];
+  for (let i = 0; i < count; i++) {
+    const u = document.createElement('div'); u.className = 'uni';
+    u.style.cssText = `--s:${sizes[i]}px;--dur:${3.1 + i * .35}s;--delay:${i * .32}s;bottom:${rows[i]}%`;
+    let sp = ''; for (let k = 0; k < 5; k++) sp += `<span class="sp" style="left:${-(15 + Math.random() * 120)}%;top:${Math.random() * 90}%;color:${PAL[(k + i) % 6]};animation-delay:${(Math.random() * .5).toFixed(2)}s">✦</span>`;
+    u.innerHTML = `<div class="trail"></div>${sp}<div class="bob">${unicornSVG()}</div>`;
+    box.appendChild(u);
+  }
+  setTimeout(() => { box.innerHTML = ''; }, 6200);
 }
 
 $('main').onclick = roll;
-$('gotit').onclick = () => { if (state.phase === 'playing') finish(true); };
+$('gotit').onclick = () => { if (state.phase === 'playing' || state.phase === 'untimed') finish(true); };
+$('skip').onclick = skipCard;
+$('tbtn').onclick = toggleTimer;
 $('mute').onclick = e => { state.muted = !state.muted; e.target.textContent = 'Sound: ' + (state.muted ? 'off' : 'on'); e.target.setAttribute('aria-pressed', state.muted); };
 $('reset').onclick = () => {
-  cancelAnimationFrame(state.raf); state.phase = 'idle'; state.played = 0; state.got = 0; buildDeck();
-  $('card').classList.remove('flipped', 'over', 'hide'); $('badge').classList.remove('show', 'ok'); $('dicewrap').classList.remove('on');
-  $('gotit').hidden = true; $('main').disabled = false; $('main').innerHTML = '🎲 Roll &amp; draw a card';
-  bar.style.strokeDashoffset = 0; $('num').textContent = ROUND; $('ring').className = 'ring idle';
+  cancelAnimationFrame(state.raf); state.phase = 'idle'; state.played = 0; state.got = 0; state.streak = 0; buildDeck();
+  $('card').classList.remove('flipped', 'over', 'hide', 'deal'); $('badge').classList.remove('show', 'ok'); $('dicewrap').classList.remove('on');
+  $('unicorns').innerHTML = ''; idleRing(); updateUI();
 };
 addEventListener('keydown', e => {
   if ((e.key === ' ' || e.key === 'Enter') && document.activeElement && ['BUTTON','SUMMARY'].includes(document.activeElement.tagName)) return;
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (state.phase === 'playing') $('gotit').click(); else if (!$('main').disabled) roll(); }
+  if (e.key === 'n' || e.key === 'N') skipCard();
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (state.phase === 'playing' || state.phase === 'untimed') $('gotit').click(); else if (!$('main').disabled) roll(); }
 });
 
-buildDeck(); setRing(ROUND);
+buildDeck(); setRing(ROUND); updateUI();
 </script>
 <script src="../assets/js/course-back.js" defer></script>
 </body>
