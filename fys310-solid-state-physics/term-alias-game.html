@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Term Alias: Solid State Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --panel-2:#f2f4f7; --text:#182032; --dim:#5b6478; --faint:#9299a8; --border:#dfe3ea;
+  --accent:#2d4fd6; --accent-ink:#ffffff; --deck:#2d4fd6; --green:#148a55; --red:#cc3d3a; --yellow:#b9820f;
+  --shadow:0 14px 34px -16px rgba(20,28,48,.35);
+  --font:"Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --num:"Schibsted Grotesk", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10141d; --panel:#181e2a; --panel-2:#1f2634; --text:#e9edf5; --dim:#a2aabb; --faint:#6c7487; --border:#2a3242;
+    --accent:#6f89ff; --accent-ink:#0d1220; --deck:#3c55c9; --green:#3ccf86; --red:#f06a66; --yellow:#e6b545;
+    --shadow:0 16px 36px -16px rgba(0,0,0,.7); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10141d; --panel:#181e2a; --panel-2:#1f2634; --text:#e9edf5; --dim:#a2aabb; --faint:#6c7487; --border:#2a3242;
+  --accent:#6f89ff; --accent-ink:#0d1220; --deck:#3c55c9; --green:#3ccf86; --red:#f06a66; --yellow:#e6b545;
+  --shadow:0 16px 36px -16px rgba(0,0,0,.7); color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.5 var(--font);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:560px;margin:0 auto;padding:10px 16px 44px}
+
+/* top bar */
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:6px 0 16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+.brand .logo{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center}
+.brand small{font-weight:500;color:var(--dim);font-size:.82rem}
+.tools{display:flex;gap:6px}
+.tool{background:none;border:1px solid var(--border);border-radius:9px;padding:6px 11px;font-size:.8rem;color:var(--dim);cursor:pointer}
+.tool:hover{color:var(--text);background:var(--panel)}
+
+/* setup */
+h1{font-size:clamp(2rem,8vw,2.6rem);line-height:1.05;letter-spacing:-.03em;margin:6px 0 8px;font-weight:800}
+.lead{color:var(--dim);margin:0 0 20px;max-width:46ch}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.field{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.field+.field{margin-top:14px}
+.flabel{font-weight:600}
+.stepper{display:flex;align-items:center;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.stepper button{width:42px;height:40px;border:0;background:var(--panel-2);cursor:pointer;font-size:1.25rem;line-height:1}
+.stepper button:disabled{opacity:.35;cursor:default}
+.stepper span{min-width:42px;text-align:center;font:700 1.05rem var(--num);font-variant-numeric:tabular-nums}
+.names{display:grid;gap:8px;margin-top:14px}
+.namerow{display:flex;align-items:center;gap:10px;background:var(--panel-2);border-radius:10px;padding:0 12px;border:1px solid transparent}
+.namerow:focus-within{border-color:var(--accent)}
+.namerow .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.namerow input{flex:1;border:0;background:transparent;padding:11px 0;font:inherit;color:var(--text);outline:none;min-width:0}
+.namerow input::placeholder{color:var(--faint)}
+.seg{display:flex;background:var(--panel-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 12px;border-radius:8px;cursor:pointer;font-size:.88rem;color:var(--dim)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.14);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:.8rem;padding:7px 11px;border-radius:999px;cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--dim);display:inline-flex;align-items:center;gap:7px;transition:background .15s,border-color .15s,color .15s}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--c);opacity:.45}
+.chip[aria-pressed="true"]{color:var(--text);border-color:var(--c);background:color-mix(in srgb,var(--c) 11%,var(--panel))}
+.chip[aria-pressed="true"] i{opacity:1}
+.rules{margin-top:16px;padding:12px 16px;border:1px solid var(--border);border-radius:14px;background:var(--panel);color:var(--dim);font-size:.9rem}
+.rules summary{cursor:pointer;color:var(--text);font-weight:600}
+.rules ul{margin:10px 0 2px;padding-left:1.1rem;line-height:1.6}
+
+.btn{border:0;border-radius:12px;padding:14px 20px;font-weight:600;cursor:pointer;transition:transform .1s,filter .15s,background .15s,opacity .15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:var(--panel);border:1px solid var(--border)}
+.btn.big{width:100%;font-size:1.05rem;padding:16px}
+.btn[disabled]{opacity:.4;cursor:default;transform:none;filter:none}
+
+/* game */
+.scorebar{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;margin:0 -2px 12px;scrollbar-width:none}
+.scorebar::-webkit-scrollbar{display:none}
+.pill{flex:none;display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--border);font-size:.82rem;color:var(--dim)}
+.pill .dot{width:8px;height:8px;border-radius:50%}
+.pill b{font:700 .88rem var(--num);color:var(--text);font-variant-numeric:tabular-nums}
+.pill.on{border-color:var(--pc);color:var(--text);background:color-mix(in srgb,var(--pc) 12%,var(--panel))}
+.turnhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.who .k{font-size:.82rem;color:var(--dim)}
+.who .n{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;line-height:1.15;display:flex;align-items:center;gap:9px;word-break:break-word}
+.who .n .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.who .meta{font-size:.82rem;color:var(--faint);margin-top:3px;font-variant-numeric:tabular-nums}
+.who .meta b{font-weight:600}
+.who .meta .g{color:var(--green)} .who .meta .s{color:var(--red)}
+.timer{display:flex;align-items:center;gap:10px;flex:none}
+.ring{position:relative;width:78px;height:78px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .track{stroke:var(--border)}
+.ring .bar{stroke:var(--accent);stroke-linecap:round;transition:stroke .3s}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font:700 1.5rem/1 var(--num);font-variant-numeric:tabular-nums}
+.ring.warn .bar{stroke:var(--yellow)}
+.ring.danger .bar{stroke:var(--red)}
+.ring.danger .num{color:var(--red);animation:pulse .5s ease-in-out infinite alternate}
+.ring.idle .bar{stroke:var(--faint)}
+.ring.paused{opacity:.5}
+@keyframes pulse{to{transform:scale(1.12)}}
+.pausebtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--panel);cursor:pointer;display:grid;place-items:center;color:var(--dim)}
+.pausebtn:disabled{opacity:.35;cursor:default}
+.pausebtn svg{width:14px;height:14px;fill:currentColor}
+
+.stage{position:relative;height:clamp(260px,64vw,330px);perspective:1400px;margin:14px 0 20px}
+.slot{position:absolute;left:50%;top:0;bottom:0;width:min(100%,400px);transform:translateX(-50%)}
+.pile,.card{position:absolute;inset:0}
+.pile{border-radius:20px;background:var(--deck);border:1px solid rgba(0,0,0,.12);transition:opacity .3s}
+.pile.l1{transform:translate(5px,7px)}
+.pile.l2{transform:translate(10px,14px);filter:brightness(.92)}
+.pile.l3{transform:translate(15px,21px);filter:brightness(.84)}
+.card{transform-style:preserve-3d;will-change:transform;cursor:default}
+.card.tap{cursor:pointer}
+.face{position:absolute;inset:0;border-radius:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px 20px;box-shadow:var(--shadow)}
+.back,.ho-back{background-color:var(--deck);background-image:var(--lattice);background-size:56px 56px;background-position:center;color:#fff;border:1px solid rgba(0,0,0,.12)}
+.back .mk{width:86px;height:86px;border-radius:50%;background:var(--deck);display:grid;place-items:center;box-shadow:0 0 0 8px var(--deck)}
+.back .lb{font-weight:700;font-size:1rem;letter-spacing:-.01em;margin-top:16px;padding:4px 12px;border-radius:999px;background:var(--deck)}
+.back .hint{font-size:.82rem;opacity:.85;margin-top:6px;padding:2px 10px;border-radius:999px;background:var(--deck)}
+.front{transform:rotateY(180deg);background:var(--panel);border:1px solid var(--border)}
+.front::before{content:"";position:absolute;inset:0 0 auto;height:7px;background:var(--cc)}
+.front .cat{position:absolute;top:22px;left:18px;right:18px;font-size:.8rem;font-weight:600;color:var(--cc);line-height:1.3}
+.front .term{font-weight:800;font-size:clamp(1.55rem,7vw,2.3rem);line-height:1.12;letter-spacing:-.025em;text-wrap:balance;margin:6px 0 30px}
+.front .term.long{font-size:clamp(1.2rem,5.3vw,1.65rem)}
+.front .taboo{position:absolute;bottom:18px;left:14px;right:14px;font-size:.75rem;color:var(--faint)}
+.front .taboo span{display:inline-block;margin:6px 3px 0;padding:3px 9px;border-radius:7px;font-size:.8rem;font-weight:500;color:var(--red);background:color-mix(in srgb,var(--red) 10%,transparent);text-decoration:line-through;text-decoration-thickness:1px}
+.stamp{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) rotate(-7deg) scale(.4);opacity:0;pointer-events:none;font-weight:800;font-size:1.6rem;padding:10px 20px;border-radius:12px;border:3px solid var(--red);color:var(--red);background:color-mix(in srgb,var(--panel) 90%,transparent);transition:all .35s cubic-bezier(.3,1.6,.5,1);z-index:5;white-space:nowrap}
+.stamp.show{opacity:1;transform:translate(-50%,-50%) rotate(-7deg) scale(1)}
+.pausecover{position:absolute;inset:0;z-index:6;display:grid;place-items:center;border-radius:20px;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer}
+.pausecover div{text-align:center;font-weight:700;font-size:1.3rem}
+.pausecover small{display:block;font-weight:400;font-size:.85rem;color:var(--dim)}
+.delta{position:absolute;left:50%;top:38%;z-index:7;pointer-events:none;font:800 2.2rem/1 var(--num);animation:rise-out .8s ease-out both}
+.delta.g{color:var(--green)} .delta.s{color:var(--red)}
+@keyframes rise-out{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}25%{opacity:1;transform:translate(-50%,-10px) scale(1.05)}100%{opacity:0;transform:translate(-50%,-60px) scale(1)}}
+
+.actions{display:grid;grid-template-columns:1fr 1.35fr;gap:10px}
+.btn.skip{background:var(--panel);border:1.5px solid color-mix(in srgb,var(--red) 50%,var(--border));color:var(--red);font-size:1.02rem;padding:17px 10px}
+.btn.got{background:var(--green);color:#fff;font-size:1.02rem;padding:17px 10px}
+.btn .pts{font-weight:500;opacity:.8;margin-left:6px;font-variant-numeric:tabular-nums}
+.keys{text-align:center;font-size:.78rem;color:var(--faint);margin-top:12px}
+kbd{font:inherit;padding:1px 6px;border:1px solid var(--border);border-radius:5px;background:var(--panel)}
+
+/* summary */
+.sumhead{text-align:center;padding:4px 0 18px}
+.kicker{font-size:.88rem;color:var(--dim)}
+h2{font-size:1.65rem;margin:2px 0 4px;letter-spacing:-.02em;font-weight:800;word-break:break-word}
+.net{font:800 3.4rem/1 var(--num);margin:12px 0 10px;font-variant-numeric:tabular-nums}
+.net.pos{color:var(--green)} .net.neg{color:var(--red)}
+.counts{display:flex;justify-content:center;gap:18px;font-size:.9rem;color:var(--dim)}
+.counts b{color:var(--text)}
+.panel h3{font-size:1rem;font-weight:700;margin:0 0 4px;letter-spacing:-.01em}
+.panel .sub{font-size:.85rem;color:var(--dim);margin:0 0 6px}
+.ex{padding:13px 0 12px 14px;border-top:1px solid var(--border);position:relative}
+.ex::before{content:"";position:absolute;left:0;top:15px;bottom:14px;width:3px;border-radius:2px;background:var(--cc)}
+.ex .t{font-weight:700;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ex .tg{font-size:.75rem;font-weight:500;color:var(--red);white-space:nowrap}
+.ex .tg.left{color:var(--yellow)}
+.ex .cat{font-size:.78rem;color:var(--faint);margin-top:1px}
+.ex p{margin:5px 0 0;color:var(--dim);font-size:.94rem;line-height:1.5}
+.empty{color:var(--dim);font-size:.92rem;margin:4px 0 0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tags span{padding:5px 10px;border-radius:8px;background:color-mix(in srgb,var(--green) 11%,transparent);color:var(--green);font-size:.86rem;font-weight:500}
+.board{list-style:none;margin:6px 0 0;padding:0}
+.board li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)}
+.board li:first-child{border-top:0}
+.board .rk{width:20px;font-weight:600;font-size:.85rem;color:var(--faint);font-variant-numeric:tabular-nums}
+.board .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.board .nm{flex:1;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.board .st{font-size:.8rem;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+.board .dl{font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums}
+.board .dl.pos{color:var(--green)} .board .dl.neg{color:var(--red)}
+.board .sc{font:800 1.1rem var(--num);min-width:38px;text-align:right;font-variant-numeric:tabular-nums}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+
+/* final */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:22px 0 18px}
+.pod{width:min(30%,110px);text-align:center}
+.pod .nm{font-weight:700;font-size:.92rem;margin-bottom:6px;overflow-wrap:anywhere}
+.pod .blk{border-radius:12px 12px 4px 4px;background:var(--pc);color:#fff;display:flex;flex-direction:column;align-items:center;padding-top:12px;font:800 1.3rem var(--num);transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1.1) both}
+.pod .blk small{font:600 .75rem var(--font);opacity:.9;margin-top:2px}
+.pod:nth-child(1) .blk{animation-delay:.25s} .pod:nth-child(2) .blk{animation-delay:.05s} .pod:nth-child(3) .blk{animation-delay:.45s}
+@keyframes grow{from{transform:scaleY(0)}}
+
+/* handoff */
+.handoff{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));overflow:auto}
+.ho-inner{width:min(100%,380px);text-align:center}
+.ho-kicker{font-size:.92rem;color:var(--dim);margin-bottom:22px}
+.ho-stage{perspective:1200px;height:236px;margin-bottom:26px;position:relative}
+.ho-pile{position:absolute;left:50%;top:0;width:176px;height:236px;margin-left:-88px;border-radius:18px;background:var(--deck);transform:translate(8px,10px);filter:brightness(.88);opacity:.6}
+.ho-card{position:relative;width:176px;height:236px;margin:0 auto;transform-style:preserve-3d}
+.ho-card.go{animation:hodraw 1.2s cubic-bezier(.22,.8,.25,1) both}
+@keyframes hodraw{
+  0%{transform:translate(0,10px) rotateZ(0deg) rotateY(0deg) scale(1)}
+  32%{transform:translate(0,-34px) rotateZ(-4deg) rotateY(0deg) scale(1.05)}
+  100%{transform:translate(0,0) rotateZ(0deg) rotateY(180deg) scale(1)}
+}
+.ho-face{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}
+.ho-front{transform:rotateY(180deg);background:var(--pc);color:#fff}
+.ho-init{width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-weight:800;font-size:1.9rem;margin-bottom:14px}
+.ho-label{font-size:.8rem;opacity:.85;margin-bottom:2px}
+.ho-name{font-weight:800;font-size:1.35rem;line-height:1.15;letter-spacing:-.02em;overflow-wrap:anywhere}
+.ho-msg{font-size:1.15rem;margin:0 0 6px}
+.ho-msg b{font-weight:800}
+.ho-then{font-size:.88rem;color:var(--dim);margin:0 0 22px}
+.rise{animation:rise .45s 1s both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+
+
+/* celebrations */
+.fx{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:60}
+.uni{position:absolute;left:0;width:var(--s);animation:run var(--dur) cubic-bezier(.3,.1,.7,.9) var(--delay) both;will-change:transform}
+@keyframes run{from{transform:translateX(-520px)}to{transform:translateX(calc(100vw + 60px))}}
+.uni .bob{animation:bob .3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2.5deg)}}
+.uni svg{display:block;width:100%;height:auto;overflow:visible}
+.uni .leg{transform-box:fill-box;transform-origin:50% 0;animation:leg .3s ease-in-out infinite alternate}
+.uni .lf2{animation-delay:-.04s} .uni .lb1{animation-delay:-.3s} .uni .lb2{animation-delay:-.34s}
+@keyframes leg{from{transform:rotate(-42deg)}to{transform:rotate(42deg)}}
+.uni .tail{transform-box:fill-box;transform-origin:100% 0;animation:tail .25s ease-in-out infinite alternate}
+@keyframes tail{from{transform:rotate(-7deg)}to{transform:rotate(9deg)}}
+.uni .trail{position:absolute;right:86%;top:50%;width:400px;height:calc(var(--s) * .13);opacity:.85;
+  background:linear-gradient(to bottom,#f0553f 16.6%,#f2914b 0 33.3%,#e8d44d 0 50%,#3ecf6e 0 66.6%,#3e8ef7 0 83.3%,#7b5cfa 0);
+  -webkit-mask-image:linear-gradient(to left,#000,transparent);mask-image:linear-gradient(to left,#000,transparent)}
+.uni .sp{position:absolute;font-size:1.1rem;animation:twinkle .4s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.15;transform:scale(.6) rotate(0)}to{opacity:1;transform:scale(1.2) rotate(40deg)}}
+.streakbanner{position:fixed;left:50%;top:28%;z-index:70;pointer-events:none;opacity:0;white-space:nowrap;text-align:center;
+  font:800 clamp(2.2rem,11vw,3.6rem)/1.1 var(--font);letter-spacing:-.03em;
+  background:linear-gradient(90deg,#f0553f,#f2914b,#e8d44d,#3ecf6e,#3e8ef7,#7b5cfa);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))}
+.streakbanner.fire{background:linear-gradient(90deg,#fff3a0,#ffb020,#ff4d2e,#ff2bd6,#38e1ff);-webkit-background-clip:text;background-clip:text}
+.streakbanner.show{animation:bannerpop 2s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes bannerpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-6deg)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(2deg)}
+  24%{transform:translate(-50%,-50%) scale(1) rotate(0)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-62%) scale(1)}}
+.laser{position:absolute;width:7px;margin-left:-3.5px;transform-origin:50% 0;border-radius:4px;
+  background:linear-gradient(90deg,var(--lc),#fff 50%,var(--lc));box-shadow:0 0 10px 3px var(--lc),0 0 34px 10px var(--lc);
+  animation:zap .42s ease-out var(--d) both}
+@keyframes zap{0%{opacity:1;clip-path:inset(0 0 100% 0)}35%{opacity:1;clip-path:inset(0 0 0 0)}70%{opacity:.9}100%{opacity:0;clip-path:inset(100% 0 0 0)}}
+.boom{position:absolute;width:0;height:0}
+.boom .flash{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0 18%,#ffe066 30%,#ff8a1f 52%,rgba(255,60,30,.6) 66%,transparent 72%);animation:flash .62s ease-out var(--d) both}
+@keyframes flash{0%{transform:scale(0);opacity:1}35%{transform:scale(1.25);opacity:1}100%{transform:scale(1.7);opacity:0}}
+.boom .ring{position:absolute;left:-50px;top:-50px;width:100px;height:100px;border-radius:50%;border:3px solid #ffd34d;animation:ring .62s ease-out var(--d) both}
+@keyframes ring{0%{transform:scale(0);opacity:1}100%{transform:scale(2.4);opacity:0}}
+.boom i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--pc);box-shadow:0 0 8px var(--pc);animation:spark .65s cubic-bezier(.15,.7,.3,1) var(--d) both}
+@keyframes spark{0%{transform:translate(0,0) scale(1.3);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.shake{animation:shake .38s linear}
+@keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-7px,4px)}40%{transform:translate(6px,-5px)}60%{transform:translate(-5px,-3px)}80%{transform:translate(4px,5px)}}
+
+@media (prefers-reduced-motion: reduce){
+  .shake{animation:none}
+  .ho-card.go{animation-duration:.2s} .rise{animation-delay:.1s;animation-duration:.1s}
+  .ring.danger .num{animation:none} .pod .blk{animation:none} .delta{animation-duration:.5s}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16"><g fill="#fff"><circle cx="3" cy="3" r="2"/><circle cx="13" cy="3" r="2"/><circle cx="3" cy="13" r="2"/><circle cx="13" cy="13" r="2"/><circle cx="8" cy="8" r="2.2"/></g></svg></span>
+      Term Alias <small>FYS.310</small>
+    </div>
+    <div class="tools">
+      <button class="tool" id="muteBtn" aria-pressed="false">Sound on</button>
+      <button class="tool" id="endBtn" hidden>End game</button>
+    </div>
+  </header>
+
+  <!-- SETUP -->
+  <section id="setup">
+    <h1>Explain it without saying it.</h1>
+    <p class="lead">A team game for solid state physics. One teammate explains, the rest of the team guesses, then the phone moves on to the next team.</p>
+
+    <div class="panel">
+      <div class="field">
+        <div class="flabel">Teams</div>
+        <div class="stepper">
+          <button id="pMinus" aria-label="Fewer teams">&minus;</button>
+          <span id="pCount" aria-live="polite">2</span>
+          <button id="pPlus" aria-label="More teams">+</button>
+        </div>
+      </div>
+      <div class="names" id="names"></div>
+    </div>
+
+    <div class="panel">
+      <div class="field"><div class="flabel">Round length</div><div class="seg" id="segLen" role="group" aria-label="Round length"></div></div>
+      <div class="field"><div class="flabel">Rounds</div><div class="seg" id="segRounds" role="group" aria-label="Number of rounds"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="flabel">Topics</div>
+      <div class="chips" id="chips" role="group" aria-label="Topics"></div>
+    </div>
+
+    <button class="btn primary big" id="startBtn">Start game</button>
+
+    <details class="rules">
+      <summary>How to play</summary>
+      <ul>
+        <li>Each team takes a turn in every round. One teammate explains the cards while the rest of the team guesses. Swap the explainer every round.</li>
+        <li>Do not say the term or any crossed-out word. No gestures, spelling or rhymes.</li>
+        <li>Guessed gives the team +2 points. Skip costs the team 1 point.</li>
+        <li>A turn ends when the timer hits zero. The card on screen at that moment does not count.</li>
+        <li>Three correct guesses in a row brings out the unicorns and earns 1 bonus point. Five in a row calls in the space lasers and earns 2 bonus points. The streak repeats at 6, 9, 10 and so on, and resets on a skip or at the start of a turn.</li>
+        <li>After each turn you see a short example explanation for every card that was not guessed.</li>
+        <li>Then pass the device to the next team. The team with the highest score after the last round wins.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" hidden>
+    <div class="scorebar" id="scorebar" aria-label="Scores"></div>
+    <div class="turnhead">
+      <div class="who">
+        <div class="k">Team playing</div>
+        <div class="n"><span class="dot" id="turnDot"></span><span id="turnName"></span></div>
+        <div class="meta" id="turnMeta"></div>
+      </div>
+      <div class="timer">
+        <button class="pausebtn" id="pauseBtn" aria-label="Pause"></button>
+        <div class="ring idle" id="ring" role="timer" aria-live="off">
+          <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="44" fill="none" stroke-width="7"/><circle class="bar" id="bar" cx="50" cy="50" r="44" fill="none" stroke-width="7"/></svg>
+          <div class="num" id="num">60</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="slot" id="slot">
+        <div class="pile l3"></div><div class="pile l2"></div><div class="pile l1"></div>
+        <div class="card" id="card">
+          <div class="face back">
+            <div class="mk"><svg width="58" height="58" viewBox="0 0 60 60" aria-hidden="true"><g stroke="rgba(255,255,255,.55)" stroke-width="1.6" fill="none"><rect x="8" y="8" width="44" height="44"/><path d="M8 8 30 30 52 8M8 52 30 30 52 52"/></g><g fill="#fff"><circle cx="8" cy="8" r="4.5"/><circle cx="52" cy="8" r="4.5"/><circle cx="8" cy="52" r="4.5"/><circle cx="52" cy="52" r="4.5"/><circle cx="30" cy="30" r="5.5"/></g></svg></div>
+            <div class="lb">Term Alias</div>
+            <div class="hint" id="backHint">Tap to draw</div>
+          </div>
+          <div class="face front" id="front">
+            <div class="cat" id="cat"></div>
+            <div class="term" id="term"></div>
+            <div class="taboo" id="taboo"></div>
+          </div>
+        </div>
+      </div>
+      <div class="stamp" id="stamp">Time's up</div>
+      <div class="pausecover" id="pauseCover" hidden><div>Paused<small>Tap to continue</small></div></div>
+    </div>
+
+    <button class="btn primary big" id="drawBtn">Draw the first card</button>
+    <div class="actions" id="actions" hidden>
+      <button class="btn skip" id="skipBtn">Skip<span class="pts">&minus;1</span></button>
+      <button class="btn got" id="gotBtn">Guessed<span class="pts">+2</span></button>
+    </div>
+    <div class="keys">Keyboard: <kbd>&larr;</kbd> skip, <kbd>&rarr;</kbd> guessed, <kbd>P</kbd> pause</div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary" hidden>
+    <div class="sumhead">
+      <div class="kicker" id="sumKicker"></div>
+      <h2 id="sumTitle"></h2>
+      <div class="net" id="sumNet">0</div>
+      <div class="counts"><span><b id="sumGot">0</b> guessed</span><span><b id="sumSkip">0</b> skipped</span><span id="sumBonusWrap" hidden><b id="sumBonus">0</b> streak bonus</span></div>
+    </div>
+    <div class="panel">
+      <h3>How these could have been explained</h3>
+      <div id="sumExplain"></div>
+    </div>
+    <div class="panel" id="sumGotWrap">
+      <h3>Guessed</h3>
+      <div class="tags" id="sumGotList"></div>
+    </div>
+    <div class="panel">
+      <h3>Scores</h3>
+      <ol class="board" id="sumBoard"></ol>
+    </div>
+    <button class="btn primary big" id="nextBtn">Next team</button>
+  </section>
+
+  <!-- FINAL -->
+  <section id="final" hidden>
+    <div class="sumhead">
+      <div class="kicker">Game over</div>
+      <h2 id="finTitle"></h2>
+    </div>
+    <div class="podium" id="podium"></div>
+    <div class="panel"><h3>Final scores</h3><ol class="board" id="finBoard"></ol></div>
+    <div class="row2">
+      <button class="btn ghost" id="newBtn">Change teams</button>
+      <button class="btn primary" id="againBtn">Play again</button>
+    </div>
+  </section>
+</div>
+
+<div class="fx" id="fx" aria-hidden="true"></div>
+<div class="streakbanner" id="banner" role="status"></div>
+
+<!-- HANDOFF -->
+<div class="handoff" id="handoff" hidden>
+  <div class="ho-inner">
+    <div class="ho-kicker" id="hoKicker"></div>
+    <div class="ho-stage">
+      <div class="ho-pile"></div>
+      <div class="ho-card" id="hoCard">
+        <div class="ho-face ho-back"></div>
+        <div class="ho-face ho-front" id="hoFront">
+          <div class="ho-init" id="hoInit"></div>
+          <div class="ho-label" id="hoLabel">Next team</div>
+          <div class="ho-name" id="hoName"></div>
+        </div>
+      </div>
+    </div>
+    <p class="ho-msg rise">Pass the device to team <b id="hoMsgName"></b></p>
+    <p class="ho-then rise" id="hoThen"></p>
+    <button class="btn primary big rise" id="hoGo">Start my round</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  cats: ["Crystal structure & reciprocal lattice","Bonding in solids","Mechanical properties","Lattice vibrations & thermal properties","Electrons in solids","Semiconductors","Dielectrics & quantum models"],
+  terms: [
+    {t:"Bravais lattice",c:0,e:"An infinite grid of points generated by integer combinations of three basis vectors, where every point has identical surroundings. There are only 14 distinct kinds in three dimensions."},
+    {t:"Primitive cell",c:0,e:"The smallest volume that fills all of space when repeated by translations alone. It contains exactly one grid point."},
+    {t:"Wigner–Seitz cell",c:0,e:"Pick one grid point, draw the planes that bisect the lines to all its neighbors, and keep the smallest enclosed region. Done in reciprocal space, it gives the first Brillouin zone."},
+    {t:"Diamond structure",c:0,e:"How carbon atoms sit in the gemstone, and also Si and Ge. Two fcc sublattices shifted by a quarter of the body diagonal, so every atom has four tetrahedral neighbors."},
+    {t:"Face-centered cubic (fcc)",c:0,e:"Atoms at the eight corners of a cube plus one in the middle of each of the six sides. Copper, aluminum and gold pack this way, and it is a close-packed arrangement."},
+    {t:"Primitive cubic (Simple cubic)",c:0,e:"Atoms only at the eight corners of a cube, so one atom per unit. Polonium is the rare element that crystallizes like this."},
+    {t:"Body-centered cubic (bcc)",c:0,e:"Atoms at the eight corners of a cube plus one exactly in the middle. Iron at room temperature and sodium are examples."},
+    {t:"Zincblende structure",c:0,e:"Same atomic positions as in diamond, but the two interpenetrating fcc sublattices hold different atoms. GaAs and ZnS are examples."},
+    {t:"Ewald construction",c:0,e:"Draw a sphere of radius 2π/λ through the origin of reciprocal space. Every reciprocal point that lies on its surface gives a diffracted beam."},
+    {t:"Brillouin zone",c:0,e:"The Wigner–Seitz cell of the reciprocal lattice. Electron bands and phonon dispersions are usually drawn only inside this region."},
+    {t:"Structure factor",c:0,e:"The sum over the atoms of the basis of exp(−iG·r), weighted by how strongly each atom scatters. It tells you which diffraction peaks vanish, for example in bcc."},
+    {t:"Laue condition",c:0,e:"Diffraction occurs when the change in wavevector equals a reciprocal vector, Δk = G. It is equivalent to Bragg's law."},
+    {t:"Fourier series",c:0,e:"Writing a periodic function as a sum of complex exponentials. For a crystal the allowed wavevectors in the sum are exactly the reciprocal vectors G."},
+    {t:"Reciprocal lattice",c:0,e:"The set of wavevectors G that satisfy exp(iG·R) = 1 for every crystal translation R. A diffraction pattern is essentially a picture of it."},
+    {t:"Truncated octahedron",c:0,e:"The shape of the first Brillouin zone of an fcc crystal, and of the Wigner–Seitz cell of bcc. It has 8 hexagonal and 6 square faces."},
+    {t:"Covalent bond",c:1,e:"Neighboring atoms share a pair of electrons in overlapping orbitals. It is strong and directional, as in silicon and carbon."},
+    {t:"Ionic bond",c:1,e:"One atom transfers an electron to another and the oppositely charged ions attract by the Coulomb force. NaCl is the textbook case."},
+    {t:"Van der Waals bond",c:1,e:"Weak attraction between neutral atoms caused by fluctuating, induced dipoles, falling off as 1/r⁶. It holds solid argon together."},
+    {t:"Metallic bond",c:1,e:"Positive ion cores held together by a sea of delocalized valence electrons shared across the whole crystal."},
+    {t:"Hydrogen bond",c:1,e:"A proton attached to O or N is attracted to a lone pair on a neighboring molecule. It holds ice together and pairs the two strands of DNA."},
+    {t:"Antisymmetric wavefunction",c:1,e:"For identical fermions the many-particle state changes sign when two particles are swapped. A Slater determinant builds this in automatically."},
+    {t:"Madelung constant",c:1,e:"The dimensionless lattice sum that gives the electrostatic energy of one ion in the field of all the others. About 1.748 for NaCl."},
+    {t:"Pauli exclusion principle",c:1,e:"No two fermions can occupy the same quantum state. It is why electrons fill levels up to the Fermi energy and why atoms repel at short distance."},
+    {t:"Stress–Strain curve",c:2,e:"The plot from a tensile test: force per area against relative elongation. It shows the linear region, the yield point, the maximum and the fracture."},
+    {t:"Elastic deformation",c:2,e:"A shape change that fully disappears once the load is removed. Atoms are only slightly displaced from their equilibrium positions."},
+    {t:"Plastic deformation",c:2,e:"A permanent shape change after loading past the yield point. It is carried by moving dislocations."},
+    {t:"Elastic constants",c:2,e:"The C_ij coefficients in Hooke's law for a crystal. A cubic crystal needs only three of them: C11, C12 and C44."},
+    {t:"Stress",c:2,e:"Force per unit area acting inside a material, measured in pascals. In general it is a tensor with normal and shear parts."},
+    {t:"Strain",c:2,e:"The relative change in length, ΔL/L. It has no units."},
+    {t:"Young's modulus",c:2,e:"The slope of the linear part of the tensile test, stress divided by strain along the pulling direction. About 200 GPa for steel."},
+    {t:"Shear modulus",c:2,e:"The ratio of tangential force per area to the resulting angular distortion. Usually written G."},
+    {t:"Necking",c:2,e:"Late in a tensile test the cross section suddenly narrows locally into a waist. That is where the sample will break."},
+    {t:"True stress",c:2,e:"Force divided by the actual, current cross-sectional area instead of the original one. It keeps rising even after the engineering curve peaks."},
+    {t:"Lattice defects",c:2,e:"Imperfections in the crystal such as vacancies, interstitials, dislocations and grain boundaries."},
+    {t:"Work hardening",c:2,e:"A metal gets stronger the more it is plastically deformed, because dislocations multiply and tangle. Think of bending a paper clip back and forth."},
+    {t:"Ductile material",c:2,e:"It can be stretched a lot plastically before it breaks, like copper wire."},
+    {t:"Brittle material",c:2,e:"It breaks suddenly with almost no plastic flow, like glass or ceramics."},
+    {t:"Tensile stress",c:2,e:"Pulling force per area that tries to lengthen the sample."},
+    {t:"Dispersion relation",c:3,e:"The function ω(k) that links frequency and wavevector of a wave. Its slope gives the group velocity."},
+    {t:"Phonon",c:3,e:"The quantum of a collective lattice vibration with energy ħω. It plays the same role for sound waves as the photon does for light."},
+    {t:"Heat capacity",c:3,e:"Energy needed to raise the temperature of a solid by one kelvin. In insulators it follows T³ at low temperature and approaches 3Nk_B at high temperature."},
+    {t:"Thermal expansion",c:3,e:"Solids grow when warmed because the interatomic potential is asymmetric, so the average spacing increases with vibration amplitude."},
+    {t:"Optical phonon branch",c:3,e:"Vibration modes where neighboring atoms of the basis move against each other, so ω stays finite at k = 0. They exist only with two or more atoms per unit cell."},
+    {t:"Acoustic phonon branch",c:3,e:"Vibration modes where neighboring atoms move together and ω goes to zero linearly at small k. The slope there is the speed of sound."},
+    {t:"1st Brillouin zone",c:3,e:"The region around k = 0 bounded by planes that bisect the shortest reciprocal vectors. In 1D it runs from −π/a to π/a."},
+    {t:"Density of states (DOS)",c:3,e:"The number of available vibration modes per unit frequency interval. In the Debye picture it grows as ω² up to the cutoff."},
+    {t:"Debye model",c:3,e:"Treat all vibrations as sound waves with ω = vk, cut off at a maximum frequency so the total mode count is right. It gives the T³ law at low temperature."},
+    {t:"Thermal conductivity",c:3,e:"The κ in Fourier's law, j = −κ∇T. It tells how well a solid carries heat, mostly by phonons in insulators and by electrons in metals."},
+    {t:"Gamma-point",c:3,e:"The center of the first Brillouin zone, k = 0."},
+    {t:"Electron–phonon scattering",c:3,e:"Conduction carriers lose momentum by emitting or absorbing quanta of lattice vibration. It dominates the resistivity of metals at room temperature."},
+    {t:"Phonon–phonon scattering",c:3,e:"Anharmonic coupling lets vibration quanta collide and merge. It limits heat transport in insulators at high temperature."},
+    {t:"Phonon–impurity scattering",c:3,e:"Vibration quanta bounce off foreign atoms, vacancies or different isotopes. It matters most for heat transport at low temperature."},
+    {t:"Band structure",c:4,e:"The plot of allowed electron energies E(k) along high-symmetry lines of the Brillouin zone."},
+    {t:"Band gap",c:4,e:"An energy window with no allowed electron levels, between the highest filled and the lowest empty states. About 1.1 eV in silicon."},
+    {t:"Electric conductivity",c:4,e:"The σ in Ohm's law, j = σE. In the Drude picture it equals ne²τ/m."},
+    {t:"Drude model",c:4,e:"A classical picture of a metal: electrons as a gas of particles that bounce off the ions, with a mean time τ between collisions."},
+    {t:"Drude–Sommerfeld model",c:4,e:"Free electrons in a box, but treated as fermions obeying Fermi–Dirac statistics. It explains why the electronic heat capacity is so small."},
+    {t:"Free-electron model",c:4,e:"Valence carriers treated as noninteracting particles in a box with zero potential, which gives E = ħ²k²/2m."},
+    {t:"Fermi surface/energy",c:4,e:"The top of the electron sea at zero temperature: the highest occupied level, and in k-space the boundary between filled and empty orbitals."},
+    {t:"Equipartition theorem",c:4,e:"Classically, every quadratic term in the energy gets k_BT/2 on average. For a solid it gives the Dulong–Petit value of 3R per mole."},
+    {t:"Wiedemann–Franz law",c:4,e:"In metals, the ratio of thermal to electrical conductivity is proportional to temperature. The constant of proportionality is the Lorenz number."},
+    {t:"Electric-field screening",c:4,e:"Mobile charges rearrange around an inserted charge and cancel its influence, so its potential decays much faster than 1/r."},
+    {t:"Screening length",c:4,e:"The distance over which free carriers cancel the potential of an inserted charge. It is below an ångström in metals and much longer in lightly doped semiconductors."},
+    {t:"Electronic density of states (DOS)",c:4,e:"How many electron levels are available per unit energy. For free carriers in 3D it grows as √E, and its value at E_F sets the heat capacity of a metal."},
+    {t:"Bloch theorem",c:4,e:"In a periodic potential every eigenstate is a plane wave times a function with the period of the crystal, ψ = e^{ik·r} u(r)."},
+    {t:"Mean free path",c:4,e:"The average distance a carrier travels between two collisions, roughly v_F τ in a metal."},
+    {t:"Central equation",c:4,e:"What you get by expanding both the periodic potential and the wavefunction in plane waves and inserting them into the Schrödinger problem. The resulting algebraic system opens gaps at the zone boundaries."},
+    {t:"Effective mass of an electron",c:4,e:"m* = ħ²/(d²E/dk²). It describes how a carrier in a band responds to a force. Flat bands mean heavy carriers, strongly curved bands mean light ones."},
+    {t:"Compound semiconductor",c:5,e:"A material built from two or more elements, such as GaAs or InP, with a moderate energy gap between filled and empty levels."},
+    {t:"Elemental semiconductor",c:5,e:"A material made of a single group IV element, like Si or Ge, whose conductivity rises with temperature."},
+    {t:"p-type doping of semiconductors",c:5,e:"Adding acceptor atoms such as boron to silicon. Each one captures an electron from the valence levels and leaves a mobile hole, so holes carry most of the current."},
+    {t:"n-type doping of semiconductors",c:5,e:"Adding donor atoms such as phosphorus to silicon. The extra valence electron is weakly bound and easily released into the conduction levels."},
+    {t:"III–V semiconductors",c:5,e:"Compounds of group 13 and group 15 elements, like GaAs, GaN and InP. Many have direct gaps and are used in LEDs and lasers."},
+    {t:"Intrinsic semiconductor",c:5,e:"Pure, undoped material where electron and hole densities are equal and set only by temperature and the size of the gap."},
+    {t:"Hall effect",c:5,e:"Drive a current through a sample in a perpendicular magnetic field and a transverse voltage appears. Its sign gives the carrier type and its size gives the carrier density."},
+    {t:"Mobility",c:5,e:"Drift velocity per unit applied field, μ = eτ/m*. It is higher in GaAs than in Si."},
+    {t:"Extrinsic semiconductor",c:5,e:"A material whose carrier density is set by deliberately added impurities rather than by thermal excitation across the gap."},
+    {t:"Mass action law",c:5,e:"At thermal equilibrium the product of electron and hole densities equals n_i², no matter how the material is doped."},
+    {t:"Born–Oppenheimer approximation",c:5,e:"Nuclei are thousands of times heavier than electrons, so you solve for the electrons with the nuclei frozen in place. The nuclei then move in the resulting energy landscape."},
+    {t:"Conduction band",c:5,e:"The lowest set of empty electron levels above the gap. Electrons excited into it can move and carry current."},
+    {t:"Valence band",c:5,e:"The highest set of filled electron levels below the gap. Missing electrons there behave as positive holes."},
+    {t:"Matthiessen's rule",c:5,e:"Scattering rates from independent mechanisms add up. So resistivity is the sum of a temperature-dependent phonon part and a constant impurity part."},
+    {t:"Indirect band gap",c:5,e:"The conduction minimum and the valence maximum sit at different k. Optical transitions then need a phonon to supply momentum, which is why silicon is a poor light emitter."},
+    {t:"pn-junction",c:5,e:"The interface between p-doped and n-doped regions. Carriers diffuse across and leave a depletion region with a built-in voltage, which makes a diode."},
+    {t:"Tight-binding model",c:6,e:"Build crystal states from atomic orbitals with a small hopping amplitude t between neighbors. In 1D this gives E(k) = ε₀ − 2t cos(ka)."},
+    {t:"Clausius–Mossotti relation",c:6,e:"Links the microscopic polarizability α of each atom to the macroscopic dielectric constant: (ε_r − 1)/(ε_r + 2) = Nα/3ε₀."},
+    {t:"Lorentz–Lorenz equation",c:6,e:"The same local-field result as Clausius–Mossotti, written for optics with the refractive index: (n² − 1)/(n² + 2) = Nα/3ε₀."},
+    {t:"Bra–ket notation",c:6,e:"Dirac's shorthand where a state is written |ψ⟩, its dual ⟨φ|, and ⟨φ|ψ⟩ is their inner product."},
+    {t:"Hilbert space",c:6,e:"The complete vector space with an inner product in which quantum states live. Wavefunctions are its elements."},
+    {t:"Polarizability (of an atomic emitter/scatterer)",c:6,e:"The α in p = αE. It tells how large a dipole moment a single atom or molecule develops in an applied field."},
+    {t:"Local-field effects",c:6,e:"An atom in a dense medium feels not only the average applied E but also the dipoles of its neighbors. For cubic symmetry this adds P/3ε₀."},
+    {t:"Frequency-dependent permittivity",c:6,e:"ε(ω), how the dielectric response changes with the driving frequency. Its real part gives refraction and its imaginary part gives absorption."},
+    {t:"Lorentz model",c:6,e:"Bound electrons treated as damped harmonic oscillators driven by the light wave. It gives a resonance with absorption and anomalous dispersion around it."},
+    {t:"YAG crystal",c:6,e:"Yttrium aluminum garnet. Doped with Nd ions, it is the gain medium of the common 1064 nm solid-state laser."},
+    {t:"Insulator",c:6,e:"A material with a large gap and completely filled bands, so essentially no current flows at room temperature. Quartz is an example."},
+    {t:"Metal",c:6,e:"A material with a partially filled band, so electrons conduct even at T = 0. Its resistivity rises with temperature."},
+    {t:"Semiconductor",c:6,e:"A material with a moderate gap of roughly 0.5 to 3 eV. Its conductivity rises with temperature and can be tuned by doping."},
+    {t:"Cohesive energy",c:1,e:"The energy needed to take a solid apart into free, neutral atoms at rest and infinitely far apart."},
+    {t:"Electronegativity",c:1,e:"How strongly an atom pulls shared electrons toward itself. Fluorine tops the scale, and a large difference between two atoms means ionic character."},
+    {t:"Ionization energy",c:1,e:"The energy needed to remove the outermost electron from a free atom. It is 13.6 eV for the H atom."},
+    {t:"Orbital hybridization",c:1,e:"Mixing s and p states into new directional lobes, like the four sp³ lobes pointing to the corners of a tetrahedron in silicon."},
+    {t:"Bonding and antibonding orbitals",c:1,e:"Two overlapping atomic states split into a lower symmetric combination with charge between the nuclei and a higher one with a node in the middle."},
+    {t:"Inter-atomic potential",c:1,e:"Energy of a pair of atoms as a function of their separation, like Lennard-Jones: steep repulsion at short range and weak attraction farther out."},
+    {t:"Equilibrium bond length",c:1,e:"The separation at the minimum of the pair energy curve, where the net force between two atoms vanishes."},
+    {t:"London dispersion force",c:1,e:"Weak attraction between neutral atoms from correlated quantum fluctuations of their dipoles. It scales as 1/r⁶ and is the attractive part of the van der Waals interaction."},
+    {t:"Group velocity",c:3,e:"dω/dk, the speed at which a wave packet and its energy travel. For lattice waves it drops to zero at the zone boundary."},
+    {t:"Umklapp scattering",c:3,e:"A three-phonon process where the summed wavevector leaves the first zone and is folded back by a reciprocal vector G. It gives insulators a finite thermal resistance."},
+    {t:"Dielectric polarization",c:6,e:"The induced dipole moment per unit volume, P, in a material placed in an electric field."},
+    {t:"Electric susceptibility",c:6,e:"The χ in P = ε₀χE. It equals ε_r − 1."},
+    {t:"Plasma frequency",c:6,e:"ω_p = √(ne²/ε₀m). Below it a metal reflects light, above it the metal becomes transparent, which is why alkali metals pass UV."},
+    {t:"Refractive index",c:6,e:"n = c/v, the factor by which light slows down in a medium. For a nonmagnetic material it equals √ε_r."},
+    {t:"Miller indices",c:0,e:"Three integers (hkl) that label a family of lattice planes. Take the intercepts of the plane with the three axes in units of the cell edges, invert them, and clear fractions."},
+    {t:"Bragg's law",c:0,e:"Constructive reflection from parallel crystal planes happens when nλ = 2d sinθ. It links the wavelength, the plane spacing and the angle at which a diffraction peak appears."},
+    {t:"Basis",c:0,e:"The group of atoms attached to every grid point. The grid plus this group gives the full crystal. In diamond it consists of two identical atoms."},
+    {t:"Lattice constant",c:0,e:"The edge length a of the conventional cubic cell, which is the repeat distance of the crystal. About 5.43 Å for silicon."},
+    {t:"Coordination number",c:0,e:"How many nearest neighbors an atom has. It is 6 for simple cubic, 8 for bcc, and 12 for fcc and hcp."},
+    {t:"Hexagonal close-packed (hcp)",c:0,e:"Dense atomic layers stacked in an ABAB sequence, with 12 neighbors per atom. Magnesium and zinc crystallize this way, with an ideal c/a ratio of about 1.63."},
+    {t:"Hooke's law",c:2,e:"For small deformations, stress is proportional to strain. For a spring it reads F = kx."},
+    {t:"Poisson's ratio",c:2,e:"When you stretch a rod it gets thinner. This is minus the sideways strain divided by the strain along the pull. It is about 0.3 for most metals."},
+    {t:"Bulk modulus",c:2,e:"Resistance to uniform compression: the pressure increase divided by the relative volume decrease. Large for diamond and small for rubber."},
+    {t:"Yield strength",c:2,e:"The stress at which a material stops springing back and starts to deform permanently. Often defined at 0.2% leftover strain."},
+    {t:"Dislocation",c:2,e:"A line imperfection where an extra half-plane of atoms ends inside the crystal. Its motion under shear lets metals deform at stresses far below the ideal value."},
+    {t:"Debye temperature",c:3,e:"The scale Θ_D = ħω_max/k_B that sets where the T³ behavior of lattice heat capacity turns into the classical one. About 645 K for diamond and 105 K for lead."},
+    {t:"Dulong–Petit law",c:3,e:"At high temperature the heat capacity of a solid approaches 3R per mole, about 25 J/(mol K), whatever the material. It follows from classical equipartition."},
+    {t:"Fermi–Dirac distribution",c:4,e:"The probability that a state of energy E is occupied in thermal equilibrium: f = 1/(exp((E − μ)/k_BT) + 1). It is a sharp step at T = 0 and smears over a width of about k_BT."},
+    {t:"Chemical potential",c:4,e:"The energy μ at which the occupation probability of a state is one half. At T = 0 it equals the Fermi energy, and it shifts with temperature and doping."},
+    {t:"Nearly free electron model",c:4,e:"Treat the periodic ion potential as a weak perturbation on plane waves. Bragg reflection at the zone boundaries then opens energy gaps of size 2|U_G|."},
+    {t:"Kronig–Penney model",c:4,e:"A solvable 1D crystal with a periodic row of square barriers and wells. Matching the wavefunctions gives a cosine condition that produces allowed bands and forbidden gaps."},
+    {t:"Direct band gap",c:5,e:"The conduction minimum lies right above the valence maximum at the same k. Light is absorbed or emitted without help from lattice vibrations, as in GaAs, which is why it is used in LEDs and lasers."},
+    {t:"Hole",c:5,e:"A missing electron in an almost full band that behaves like a mobile particle with positive charge +e and its own effective mass."},
+    {t:"Donor and acceptor",c:5,e:"The two kinds of dopant atoms. One kind gives an extra carrier to the conduction levels, like phosphorus in Si. The other kind captures one from the valence levels, like boron."}
+  ]
+};
+
+const CAT_COLORS = ['#5b4fd6','#d9752f','#a98510','#1797ab','#2e6fe0','#1e9a5b','#cf4a47'];
+const PLAYER_COLORS = ['#2d4fd6','#d9752f','#1797ab','#1e9a5b','#cf4a47','#8a4fd0','#a98510','#c4459a','#4f7a8f','#6b7a1e'];
+const $ = id => document.getElementById(id);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MINUS = '\u2212';
+const fmt = n => n > 0 ? '+' + n : n < 0 ? MINUS + Math.abs(n) : '0';
+
+/* lattice pattern for card backs */
+const latticeSVG = `<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g stroke='rgba(255,255,255,0.16)' stroke-width='1' fill='none'><path d='M0 0H56M0 0V56M0 0L28 28L56 0M0 56L28 28'/></g><g fill='rgba(255,255,255,0.32)'><circle cx='0' cy='0' r='2.4'/><circle cx='56' cy='0' r='2.4'/><circle cx='0' cy='56' r='2.4'/><circle cx='56' cy='56' r='2.4'/></g><circle cx='28' cy='28' r='2.8' fill='rgba(255,255,255,0.5)'/></svg>`;
+document.documentElement.style.setProperty('--lattice', `url("data:image/svg+xml,${encodeURIComponent(latticeSVG)}")`);
+
+const S = {
+  count: 2, names: [], roundLen: 60, roundsEach: 3,
+  active: new Set(DATA.cats.map((_, i) => i)),
+  players: [], deck: [], turn: 0, round: 1,
+  phase: 'setup', running: false, paused: false, busy: false, flying: false,
+  cur: null, streak: 0, endAt: 0, remain: 0, raf: 0, lastTick: -1, delta: 0,
+  log: { got: [], skip: [], left: null, bonus: 0 }, muted: false, sumTimer: 0
+};
+
+/* ---------- audio ---------- */
+let ac;
+function beep(f, d, type = 'sine', v = .1) {
+  if (S.muted) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = f; g.gain.value = v;
+    g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + d);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
+  } catch (e) {}
+}
+$('muteBtn').onclick = e => {
+  S.muted = !S.muted;
+  e.target.textContent = S.muted ? 'Sound off' : 'Sound on';
+  e.target.setAttribute('aria-pressed', S.muted);
+};
+
+/* ---------- screens ---------- */
+function show(id) {
+  ['setup', 'game', 'summary', 'final'].forEach(s => $(s).hidden = s !== id);
+  $('endBtn').hidden = !(id === 'game' || id === 'summary');
+  window.scrollTo(0, 0);
+}
+
+/* ---------- setup ---------- */
+function renderNames() {
+  const box = $('names');
+  const typed = [...box.querySelectorAll('input')].map(i => i.value);
+  typed.forEach((v, i) => S.names[i] = v);
+  box.innerHTML = '';
+  for (let i = 0; i < S.count; i++) {
+    const row = document.createElement('label'); row.className = 'namerow';
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = PLAYER_COLORS[i];
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.maxLength = 18; inp.autocomplete = 'off'; inp.placeholder = 'Team ' + (i + 1);
+    inp.setAttribute('aria-label', 'Name of team ' + (i + 1));
+    inp.value = S.names[i] || '';
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); const nx = box.querySelectorAll('input')[i + 1]; nx ? nx.focus() : $('startBtn').focus(); }
+    });
+    row.append(dot, inp); box.appendChild(row);
+  }
+  $('pCount').textContent = S.count;
+  $('pMinus').disabled = S.count <= 2; $('pPlus').disabled = S.count >= 4;
+}
+$('pMinus').onclick = () => { if (S.count > 2) { S.count--; renderNames(); } };
+$('pPlus').onclick = () => { if (S.count < 4) { S.count++; renderNames(); const ins = $('names').querySelectorAll('input'); ins[ins.length - 1].focus(); } };
+
+function seg(el, opts, get, set) {
+  el.innerHTML = '';
+  opts.forEach(([v, label]) => {
+    const b = document.createElement('button'); b.textContent = label;
+    b.setAttribute('aria-pressed', get() === v);
+    b.onclick = () => { set(v); [...el.children].forEach((c, i) => c.setAttribute('aria-pressed', opts[i][0] === v)); };
+    el.appendChild(b);
+  });
+}
+seg($('segLen'), [[45, '45 s'], [60, '60 s'], [90, '90 s'], [120, '2 min']], () => S.roundLen, v => S.roundLen = v);
+seg($('segRounds'), [[1, '1'], [2, '2'], [3, '3'], [5, '5'], [0, '\u221E']], () => S.roundsEach, v => S.roundsEach = v);
+
+DATA.cats.forEach((name, i) => {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.style.setProperty('--c', CAT_COLORS[i]); b.setAttribute('aria-pressed', 'true');
+  const dot = document.createElement('i'); b.append(dot, name);
+  b.onclick = () => {
+    if (S.active.has(i)) { if (S.active.size > 1) S.active.delete(i); } else S.active.add(i);
+    b.setAttribute('aria-pressed', S.active.has(i));
+  };
+  $('chips').appendChild(b);
+});
+
+$('startBtn').onclick = () => {
+  const names = [...$('names').querySelectorAll('input')].map((inp, k) => inp.value.trim() || 'Team ' + (k + 1));
+  S.names = [...$('names').querySelectorAll('input')].map(i => i.value);
+  S.players = names.map((n, i) => ({ name: n, color: PLAYER_COLORS[i], score: 0, got: 0, skip: 0 }));
+  newGame();
+};
+function newGame() {
+  S.players.forEach(p => { p.score = 0; p.got = 0; p.skip = 0; });
+  S.turn = 0; S.round = 1; buildDeck();
+  showHandoff();
+}
+
+/* ---------- deck ---------- */
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function buildDeck() { S.deck = shuffle(DATA.terms.filter(t => S.active.has(t.c))); }
+function nextTerm() {
+  if (!S.deck.length) {
+    buildDeck();
+    const n = S.deck.length;
+    if (n > 1 && S.deck[n - 1] === S.cur) [S.deck[n - 1], S.deck[0]] = [S.deck[0], S.deck[n - 1]];
+  }
+  return S.deck.pop();
+}
+function updatePile() {
+  const n = S.deck.length;
+  document.querySelectorAll('.pile').forEach((el, i) => { const layer = 3 - i; el.style.opacity = n >= layer ? 1 : 0; });
+}
+
+/* ---------- card ---------- */
+const STOP = new Set(['of', 'the', 'an', 'and', 'to', 'in', 'for', 'on']);
+function tabooWords(term) {
+  const seen = new Set();
+  return term.replace(/[()/]/g, ' ').split(/[\s–—\-]+/)
+    .map(w => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}'’]+$/gu, ''))
+    .filter(w => w.length > 2 && !STOP.has(w.toLowerCase()) && !seen.has(w.toLowerCase()) && seen.add(w.toLowerCase()));
+}
+function fillCard(t) {
+  $('front').style.setProperty('--cc', CAT_COLORS[t.c]);
+  $('cat').textContent = DATA.cats[t.c];
+  const te = $('term'); te.textContent = t.t; te.classList.toggle('long', t.t.length > 26);
+  const tb = $('taboo'); tb.innerHTML = '';
+  const words = tabooWords(t.t);
+  if (words.length) {
+    const lab = document.createElement('div'); lab.textContent = "Don't say";
+    const wrap = document.createElement('div');
+    words.forEach(w => { const s = document.createElement('span'); s.textContent = w; wrap.appendChild(s); });
+    tb.append(lab, wrap);
+  }
+}
+const T = (x, y, z, ry, s) => `translate(${x},${y}) rotateZ(${z}deg) rotateY(${ry}deg) scale(${s})`;
+const DOWN = T('0px', '0px', 0, 0, 1);
+const UP = T('0px', '-6px', 0, 180, 1);
+const MS = reduced ? { draw: 180, fly: 140 } : { draw: 640, fly: 330 };
+
+function dealNext(cb) {
+  const c = $('card');
+  const t = nextTerm(); S.cur = t; fillCard(t);
+  S.busy = true; c.style.opacity = '1'; c.classList.remove('tap');
+  const a = c.animate([
+    { transform: DOWN },
+    { transform: T('0px', '-46px', -3, 0, 1.04), offset: .36 },
+    { transform: UP }
+  ], { duration: MS.draw, easing: 'cubic-bezier(.25,.8,.25,1)' });
+  c.style.transform = UP;
+  beep(392, .05, 'triangle', .05); setTimeout(() => beep(523, .05, 'triangle', .04), MS.draw * .5);
+  updatePile();
+  a.onfinish = () => { S.busy = false; cb && cb(); };
+}
+
+function mark(kind) {
+  if (S.phase !== 'playing' || !S.running || S.paused || S.busy) return;
+  const p = S.players[S.turn], t = S.cur;
+  let gain = 0;
+  if (kind === 'got') {
+    S.streak++;
+    const bonus = S.streak % 5 === 0 ? 2 : S.streak % 3 === 0 ? 1 : 0;
+    gain = 2 + bonus;
+    p.score += gain; p.got++; S.log.got.push(t); S.delta += gain; S.log.bonus += bonus;
+    beep(660, .1); setTimeout(() => beep(990, .16), 90);
+    if (bonus === 2) setTimeout(() => lasers(S.streak, bonus), 250);
+    else if (bonus === 1) setTimeout(() => unicorns(S.streak, bonus), 250);
+  } else { gain = -1; p.score--; p.skip++; S.log.skip.push(t); S.delta--; S.streak = 0; beep(240, .14, 'triangle', .07); }
+  floatDelta(gain); renderScorebar(); renderTurnMeta();
+  S.busy = true; S.flying = true;
+  const c = $('card'), sg = kind === 'got' ? 1 : -1;
+  const a = c.animate([
+    { transform: UP, opacity: 1 },
+    { transform: T(`${sg * 125}%`, '-28px', sg * 16, 180, .95), opacity: 0 }
+  ], { duration: MS.fly, easing: 'cubic-bezier(.5,0,.75,.4)' });
+  c.style.opacity = '0';
+  a.onfinish = () => {
+    S.flying = false; c.style.transform = DOWN;
+    if (S.phase === 'playing') dealNext(); else S.busy = false;
+  };
+}
+function floatDelta(gain) {
+  const d = document.createElement('div');
+  d.className = 'delta ' + (gain > 0 ? 'g' : 's');
+  d.textContent = gain > 0 ? '+' + gain : MINUS + Math.abs(gain);
+  $('stage').appendChild(d); setTimeout(() => d.remove(), 900);
+}
+
+/* ---------- timer ---------- */
+const CIRC = 2 * Math.PI * 44;
+$('bar').style.strokeDasharray = CIRC;
+function setRing(left) {
+  $('bar').style.strokeDashoffset = CIRC * (1 - Math.max(0, left) / S.roundLen);
+  const s = Math.max(0, Math.ceil(left));
+  $('num').textContent = s;
+  const r = $('ring');
+  r.classList.toggle('idle', !S.running && S.phase !== 'over');
+  r.classList.toggle('warn', S.running && left <= 20 && left > 10);
+  r.classList.toggle('danger', S.running && left <= 10);
+  r.classList.toggle('paused', S.paused);
+  if (S.running && s !== S.lastTick) { S.lastTick = s; if (s <= 5 && s > 0) beep(880, .08, 'square', .04); }
+}
+function tick() {
+  const left = (S.endAt - performance.now()) / 1000;
+  if (left <= 0) { setRing(0); return timeUp(); }
+  setRing(left); S.raf = requestAnimationFrame(tick);
+}
+function startTimer() {
+  if (S.phase !== 'playing') return;
+  S.running = true; S.lastTick = -1;
+  S.endAt = performance.now() + S.roundLen * 1000;
+  beep(523, .1); updateControls(); tick();
+}
+function togglePause() {
+  if (S.phase !== 'playing' || !S.running) return;
+  if (!S.paused) { S.paused = true; S.remain = (S.endAt - performance.now()) / 1000; cancelAnimationFrame(S.raf); setRing(S.remain); }
+  else { S.paused = false; S.endAt = performance.now() + S.remain * 1000; tick(); }
+  updateControls();
+}
+function timeUp() {
+  cancelAnimationFrame(S.raf);
+  S.phase = 'over';
+  S.log.left = S.flying ? null : S.cur;
+  setRing(0); S.running = false;
+  $('stamp').classList.add('show');
+  beep(196, .55, 'sawtooth', .07);
+  try { navigator.vibrate && navigator.vibrate(220); } catch (e) {}
+  updateControls();
+  S.sumTimer = setTimeout(showSummary, reduced ? 700 : 1700);
+}
+
+/* ---------- turn ---------- */
+const ICON_PAUSE = '<svg viewBox="0 0 14 14"><rect x="2" y="1" width="3.5" height="12" rx="1"/><rect x="8.5" y="1" width="3.5" height="12" rx="1"/></svg>';
+const ICON_PLAY = '<svg viewBox="0 0 14 14"><path d="M3 1.5v11l9.5-5.5z"/></svg>';
+function updateControls() {
+  const ph = S.phase;
+  $('drawBtn').hidden = ph !== 'ready';
+  $('actions').hidden = ph === 'ready';
+  const off = ph !== 'playing' || !S.running || S.paused;
+  $('gotBtn').disabled = off; $('skipBtn').disabled = off;
+  const pb = $('pauseBtn');
+  pb.disabled = !(ph === 'playing' && S.running);
+  pb.innerHTML = S.paused ? ICON_PLAY : ICON_PAUSE;
+  pb.setAttribute('aria-label', S.paused ? 'Resume' : 'Pause');
+  $('pauseCover').hidden = !S.paused;
+  $('card').classList.toggle('tap', ph === 'ready');
+}
+function roundLabel() { return S.roundsEach ? `Round ${S.round} of ${S.roundsEach}` : `Round ${S.round}`; }
+function renderTurnMeta() {
+  const m = $('turnMeta');
+  m.innerHTML = '';
+  const add = (txt, cls) => { const s = document.createElement('span'); if (cls) s.className = cls; s.textContent = txt; m.appendChild(s); };
+  add(roundLabel());
+  if (S.phase !== 'ready') { add(', '); add(S.log.got.length + ' guessed', 'g'); add(', '); add(S.log.skip.length + ' skipped', 's'); }
+}
+function renderScorebar() {
+  const b = $('scorebar'); b.innerHTML = '';
+  S.players.forEach((p, i) => {
+    const d = document.createElement('div');
+    d.className = 'pill' + (i === S.turn ? ' on' : ''); d.style.setProperty('--pc', p.color);
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = p.color;
+    const nm = document.createElement('span'); nm.textContent = p.name;
+    const sc = document.createElement('b'); sc.textContent = p.score < 0 ? MINUS + Math.abs(p.score) : p.score;
+    d.append(dot, nm, sc); b.appendChild(d);
+  });
+  const on = b.querySelector('.on');
+  if (on) b.scrollLeft = on.offsetLeft - b.clientWidth / 2 + on.clientWidth / 2;
+}
+function enterTurn() {
+  const p = S.players[S.turn];
+  clearTimeout(S.sumTimer); cancelAnimationFrame(S.raf);
+  Object.assign(S, { phase: 'ready', running: false, paused: false, busy: false, flying: false, delta: 0, cur: null, streak: 0, lastTick: -1 });
+  clearFx();
+  S.log = { got: [], skip: [], left: null, bonus: 0 };
+  $('turnDot').style.background = p.color; $('turnName').textContent = p.name;
+  $('stamp').classList.remove('show');
+  const c = $('card'); c.getAnimations().forEach(a => a.cancel()); c.style.transform = DOWN; c.style.opacity = '1';
+  renderScorebar(); renderTurnMeta(); setRing(S.roundLen); updatePile(); updateControls();
+  show('game');
+  $('drawBtn').focus({ preventScroll: true });
+}
+function drawFirst() {
+  if (S.phase !== 'ready') return;
+  S.phase = 'playing'; updateControls(); renderTurnMeta();
+  dealNext(startTimer);
+}
+$('drawBtn').onclick = drawFirst;
+$('card').onclick = () => { if (S.phase === 'ready') drawFirst(); };
+$('gotBtn').onclick = () => mark('got');
+$('skipBtn').onclick = () => mark('skip');
+$('pauseBtn').onclick = togglePause;
+$('pauseCover').onclick = togglePause;
+
+/* ---------- handoff ---------- */
+function showHandoff() {
+  const p = S.players[S.turn];
+  ['setup', 'game', 'summary', 'final'].forEach(s => $(s).hidden = true);
+  $('endBtn').hidden = true;
+  const first = S.turn === 0 && S.round === 1;
+  $('hoKicker').textContent = roundLabel();
+  $('hoLabel').textContent = first ? 'First team up' : 'Next team up';
+  $('hoInit').textContent = ([...p.name][0] || '?').toUpperCase();
+  $('hoName').textContent = p.name;
+  $('hoFront').style.setProperty('--pc', p.color);
+  $('hoMsgName').textContent = p.name;
+  const nx = S.players[(S.turn + 1) % S.players.length];
+  $('hoThen').textContent = `Choose one explainer. The rest of the team guesses. ${nx.name} is up after you.`;
+  $('hoGo').textContent = `We're ready, start the turn`;
+  const h = $('handoff'); h.hidden = false; h.scrollTop = 0;
+  const card = $('hoCard'); card.classList.remove('go'); void card.offsetWidth; card.classList.add('go');
+  h.querySelectorAll('.rise').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+  [330, 392, 494].forEach((f, i) => setTimeout(() => beep(f, .07, 'triangle', .05), 120 + i * 90));
+  setTimeout(() => beep(660, .18, 'sine', .07), reduced ? 100 : 800);
+  setTimeout(() => $('hoGo').focus({ preventScroll: true }), reduced ? 150 : 1100);
+}
+$('hoGo').onclick = () => { $('handoff').hidden = true; enterTurn(); };
+
+/* ---------- summary ---------- */
+function rankPlayers() {
+  const arr = S.players.slice().sort((a, b) => b.score - a.score || b.got - a.got);
+  let rank = 0, prev = null;
+  return arr.map((p, i) => { if (prev === null || p.score !== prev) { rank = i + 1; prev = p.score; } return { p, rank }; });
+}
+function renderBoard(el, opts = {}) {
+  el.innerHTML = '';
+  const cur = S.players[S.turn];
+  rankPlayers().forEach(({ p, rank }) => {
+    const li = document.createElement('li');
+    const mk = (cls, txt) => { const s = document.createElement('span'); s.className = cls; if (txt != null) s.textContent = txt; li.appendChild(s); return s; };
+    mk('rk', rank);
+    mk('dot').style.background = p.color;
+    mk('nm', p.name);
+    if (opts.stats) mk('st', `${p.got} guessed, ${p.skip} skipped`);
+    if (opts.delta && p === cur) mk('dl ' + (S.delta > 0 ? 'pos' : S.delta < 0 ? 'neg' : ''), fmt(S.delta));
+    mk('sc', p.score < 0 ? MINUS + Math.abs(p.score) : p.score);
+    el.appendChild(li);
+  });
+}
+function peekNext() {
+  let t = S.turn + 1, r = S.round;
+  if (t >= S.players.length) { t = 0; r++; }
+  return { t, r, end: S.roundsEach > 0 && r > S.roundsEach };
+}
+function showSummary() {
+  clearTimeout(S.sumTimer);
+  if (S.phase === 'summary') return;
+  S.phase = 'summary';
+  const p = S.players[S.turn];
+  $('sumKicker').textContent = roundLabel();
+  $('sumTitle').textContent = `${p.name}'s turn`;
+  const n = $('sumNet'); n.textContent = fmt(S.delta); n.className = 'net ' + (S.delta > 0 ? 'pos' : S.delta < 0 ? 'neg' : '');
+  $('sumBonusWrap').hidden = !S.log.bonus; $('sumBonus').textContent = '+' + S.log.bonus;
+  $('sumGot').textContent = S.log.got.length; $('sumSkip').textContent = S.log.skip.length;
+
+  const ex = $('sumExplain'); ex.innerHTML = '';
+  const items = S.log.skip.map(t => ({ t, tag: 'Skipped', cls: '' }));
+  if (S.log.left) items.push({ t: S.log.left, tag: 'Time ran out', cls: 'left' });
+  if (!items.length) {
+    const e = document.createElement('p'); e.className = 'empty';
+    e.textContent = 'Nothing was skipped this round. Every card on screen was guessed.';
+    ex.appendChild(e);
+  }
+  items.forEach(({ t, tag, cls }) => {
+    const d = document.createElement('div'); d.className = 'ex'; d.style.setProperty('--cc', CAT_COLORS[t.c]);
+    const head = document.createElement('div'); head.className = 't';
+    const tt = document.createElement('span'); tt.textContent = t.t;
+    const tg = document.createElement('span'); tg.className = 'tg ' + cls; tg.textContent = tag;
+    head.append(tt, tg);
+    const cat = document.createElement('div'); cat.className = 'cat'; cat.textContent = DATA.cats[t.c];
+    const para = document.createElement('p'); para.textContent = t.e;
+    d.append(head, cat, para); ex.appendChild(d);
+  });
+
+  const gl = $('sumGotList'); gl.innerHTML = '';
+  $('sumGotWrap').hidden = !S.log.got.length;
+  S.log.got.forEach(t => { const s = document.createElement('span'); s.textContent = t.t; gl.appendChild(s); });
+
+  renderBoard($('sumBoard'), { delta: true });
+  const nx = peekNext();
+  $('nextBtn').textContent = nx.end ? 'See final results' : `Pass to ${S.players[nx.t].name}`;
+  show('summary');
+}
+$('nextBtn').onclick = () => {
+  const nx = peekNext();
+  S.turn = nx.t; S.round = nx.r;
+  if (nx.end) showFinal(); else showHandoff();
+};
+
+/* ---------- final ---------- */
+function showFinal() {
+  clearFx(); clearTimeout(S.sumTimer); cancelAnimationFrame(S.raf);
+  S.phase = 'final'; S.running = false; S.paused = false;
+  $('handoff').hidden = true;
+  const ranked = rankPlayers();
+  const top = ranked.filter(r => r.rank === 1).map(r => r.p.name);
+  $('finTitle').textContent = top.length === 1 ? `${top[0]} wins` : `Shared win: ${top.join(' and ')}`;
+  const pod = $('podium'); pod.innerHTML = '';
+  const order = ranked.length >= 3 ? [1, 0, 2] : ranked.length === 2 ? [1, 0] : [0];
+  const heights = [132, 98, 74];
+  order.forEach(idx => {
+    const r = ranked[idx]; if (!r) return;
+    const col = document.createElement('div'); col.className = 'pod'; col.style.setProperty('--pc', r.p.color);
+    const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = r.p.name;
+    const blk = document.createElement('div'); blk.className = 'blk'; blk.style.height = heights[idx] + 'px';
+    blk.textContent = r.p.score < 0 ? MINUS + Math.abs(r.p.score) : r.p.score;
+    const sm = document.createElement('small'); sm.textContent = r.rank === 1 ? '1st' : r.rank === 2 ? '2nd' : r.rank === 3 ? '3rd' : r.rank + 'th';
+    blk.appendChild(sm); col.append(nm, blk); pod.appendChild(col);
+  });
+  renderBoard($('finBoard'), { stats: true });
+  show('final');
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, .22, 'triangle', .08), i * 120));
+}
+$('againBtn').onclick = newGame;
+$('newBtn').onclick = () => { S.phase = 'setup'; renderNames(); show('setup'); };
+$('endBtn').onclick = () => {
+  if (!confirm('End the game now and show the final scores?')) return;
+  if (S.phase === 'playing' || S.phase === 'over') {
+    cancelAnimationFrame(S.raf); clearTimeout(S.sumTimer); S.running = false;
+  }
+  showFinal();
+};
+
+
+/* ---------- celebrations ---------- */
+let fxTimer = 0;
+function clearFx() { clearTimeout(fxTimer); $('fx').innerHTML = ''; $('banner').classList.remove('show'); }
+function banner(text, fire) {
+  const b = $('banner'); b.textContent = text; b.classList.toggle('fire', !!fire);
+  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+function sweep(f0, f1, d, type = 'square', v = .06) {
+  if (S.muted) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(t + d);
+  } catch (e) {}
+}
+function boomSound() {
+  if (S.muted) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const len = ac.sampleRate * .45, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+    const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = buf; f.type = 'lowpass'; f.frequency.value = 900; g.gain.value = .35;
+    src.connect(f); f.connect(g); g.connect(ac.destination); src.start();
+  } catch (e) {}
+}
+
+const PAL = ['#f0553f', '#f2914b', '#e8d44d', '#3ecf6e', '#3e8ef7', '#7b5cfa'];
+function unicornSVG() {
+  const leg = (x, cls, far) => `<g class="leg ${cls}"><line x1="${x}" y1="60" x2="${x}" y2="98" stroke="#b9a8ff" stroke-width="12" stroke-linecap="round"/><line x1="${x}" y1="60" x2="${x}" y2="98" stroke="${far ? '#e9e4ff' : '#fff'}" stroke-width="8" stroke-linecap="round"/><rect x="${x - 5}" y="92" width="10" height="8" rx="3" fill="#ff9ad5"/></g>`;
+  const shapes = '<ellipse cx="84" cy="50" rx="46" ry="21"/><path d="M104 38 L126 2 L148 14 L126 56 Z"/><ellipse cx="141" cy="14" rx="16" ry="11" transform="rotate(28 141 14)"/><ellipse cx="156" cy="24" rx="11" ry="7.5" transform="rotate(28 156 24)"/><path d="M128 6 L130 -8 L138 2 Z"/>';
+  const tail = PAL.map((c, i) => `<path d="M46 44 C ${26 - i} ${40 + i * 3}, ${10 + i * 2} ${58 + i * 3}, ${6 + i * 2} ${86 + i * 2}" stroke="${c}" stroke-width="5.5" fill="none" stroke-linecap="round"/>`).join('');
+  const mane = PAL.map((c, i) => `<path d="M${128 - i * 2} ${-2 + i} C ${108 - i * 3} ${-6 + i * 2}, ${98 - i * 3} ${12 + i * 2}, ${100 - i * 3} ${40 + i * 2}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/>`).join('');
+  return `<svg viewBox="0 -30 172 134" xmlns="http://www.w3.org/2000/svg"><g class="tail">${tail}</g>${leg(58, 'lb2', true)}${leg(118, 'lf2', true)}${leg(70, 'lb1', false)}${leg(110, 'lf1', false)}
+  <g fill="#b9a8ff" stroke="#b9a8ff" stroke-width="5" stroke-linejoin="round">${shapes}</g><g fill="#fff">${shapes}</g>${mane}
+  <path d="M138 4 L148 1 L158 -26 Z" fill="#ffd86b" stroke="#e0a82e" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="146" cy="12" r="2.8" fill="#2b2d42"/><circle cx="147" cy="11" r=".9" fill="#fff"/><circle cx="144" cy="20" r="3.2" fill="#ffb3d9" opacity=".7"/><circle cx="162" cy="23" r="1.2" fill="#b9a8ff"/></svg>`;
+}
+function unicorns(n, bonus) {
+  if (S.phase !== 'playing') return;
+  clearFx(); banner(n + ' in a row! +' + bonus + ' bonus');
+  [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => beep(f, .18, 'triangle', .08), i * 90));
+  if (reduced) { fxTimer = setTimeout(clearFx, 2000); return; }
+  const box = $('fx'), rows = [8, 34, 58], sizes = [190, 150, 120];
+  for (let i = 0; i < 3; i++) {
+    const u = document.createElement('div'); u.className = 'uni';
+    u.style.cssText = `--s:${sizes[i]}px;--dur:${1.75 - i * .1}s;--delay:${i * .1}s;bottom:${rows[i]}%`;
+    let sp = ''; for (let k = 0; k < 5; k++) sp += `<span class="sp" style="left:${-(15 + Math.random() * 110)}%;top:${Math.random() * 90}%;color:${PAL[(k + i) % 6]}">✦</span>`;
+    u.innerHTML = `<div class="trail"></div>${sp}<div class="bob">${unicornSVG()}</div>`;
+    box.appendChild(u);
+  }
+  fxTimer = setTimeout(clearFx, 2000);
+}
+function lasers(n, bonus) {
+  if (S.phase !== 'playing') return;
+  clearFx(); banner(n + ' in a row! +' + bonus + ' bonus', true);
+  if (reduced) { [392, 523, 659, 784].forEach((f, i) => setTimeout(() => beep(f, .2, 'square', .05), i * 100)); fxTimer = setTimeout(clearFx, 2000); return; }
+  const box = $('fx'), W = innerWidth, H = innerHeight;
+  const colors = ['#ff2b5e', '#38e1ff', '#7dff5a', '#ff2bd6', '#ffe14d', '#38e1ff', '#ff2b5e'];
+  const shots = 7;
+  for (let i = 0; i < shots; i++) {
+    const d = i * .2 + Math.random() * .06;
+    const ox = Math.random() * W, oy = -40;
+    const tx = W * (.12 + Math.random() * .76), ty = H * (.18 + Math.random() * .7);
+    const len = Math.hypot(tx - ox, ty - oy), ang = Math.atan2(ty - oy, tx - ox) * 180 / Math.PI - 90;
+    const lc = colors[i % colors.length];
+    const l = document.createElement('div'); l.className = 'laser';
+    l.style.cssText = `left:${ox}px;top:${oy}px;height:${len}px;transform:rotate(${ang}deg);--lc:${lc};--d:${d}s`;
+    box.appendChild(l);
+    const b = document.createElement('div'); b.className = 'boom';
+    const bd = d + .14;
+    b.style.cssText = `left:${tx}px;top:${ty}px;--d:${bd}s`;
+    let parts = '<div class="flash"></div><div class="ring"></div>';
+    for (let k = 0; k < 14; k++) {
+      const a = (k / 14) * Math.PI * 2 + Math.random() * .3, r = 50 + Math.random() * 70;
+      parts += `<i style="--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r}px;--pc:${['#ffe14d', '#ff8a1f', '#ff3b2e', lc][k % 4]}"></i>`;
+    }
+    b.innerHTML = parts; box.appendChild(b);
+    setTimeout(() => sweep(1600, 180, .22, 'square', .05), d * 1000);
+    setTimeout(() => {
+      boomSound();
+      const w = document.querySelector('.wrap'); w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake');
+    }, bd * 1000);
+  }
+  fxTimer = setTimeout(() => { clearFx(); document.querySelector('.wrap').classList.remove('shake'); }, 2000);
+}
+
+/* ---------- keyboard ---------- */
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (!$('handoff').hidden) return;
+  const onBtn = document.activeElement && document.activeElement.tagName === 'BUTTON';
+  if (S.phase === 'ready' && (e.key === ' ' || e.key === 'Enter') && !onBtn) { e.preventDefault(); drawFirst(); }
+  else if (S.phase === 'playing') {
+    if (e.key === 'ArrowRight') { e.preventDefault(); mark('got'); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); mark('skip'); }
+    else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePause(); }
+  }
+});
+
+/* ---------- init ---------- */
+renderNames();
+show('setup');
+</script>
+<script src="../assets/js/course-back.js" defer></script>
+</body>
+</html>
